@@ -124,3 +124,33 @@ The application will be available at http://localhost:8081.
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
+
+## Testing Guidelines
+
+- Each new component must have accompanying tests
+- Use Vitest for unit and component testing
+- Follow the given/when/then pattern in test comments
+- Test files should be co-located with the component (same directory)
+- Use React Testing Library for component testing
+- Mock external dependencies (e.g., axios) appropriately
+- Maintain high test coverage for critical paths
+
+### Example Test Structure
+```typescript
+// given
+describe('ComponentName', () => {
+  // when
+  it('should behave in a certain way', () => {
+    // then
+    expect(result).toBe(expected);
+  });
+});
+```
+
+### Running Tests
+```bash
+npm run test        # Run tests once
+npm run test:watch  # Run tests in watch mode
+npm run test:ui     # Run tests with UI
+npm run test:coverage # Run tests with coverage report
+```
