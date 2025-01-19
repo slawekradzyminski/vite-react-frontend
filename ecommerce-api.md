@@ -1,5 +1,11 @@
 # E-commerce API Design
 
+## Authentication
+All endpoints require authentication via JWT token in the Authorization header:
+```http
+Authorization: Bearer <token>
+```
+
 ## Models
 
 ### Product
@@ -66,9 +72,10 @@
 
 ### Products
 
-#### Get All Products
+#### Get All Products (Authenticated)
 ```http
 GET /api/products
+Authorization: Required
 Query Parameters:
   - page: number (default: 0)
   - size: number (default: 20)
@@ -85,13 +92,26 @@ Response: 200 OK
   size: number;
   number: number;
 }
+
+Error Response: 401 Unauthorized
+{
+  "error": "Unauthorized",
+  "message": "Full authentication is required to access this resource"
+}
 ```
 
-#### Get Product by ID
+#### Get Product by ID (Authenticated)
 ```http
 GET /api/products/{id}
+Authorization: Required
 Response: 200 OK
 Product
+
+Error Response: 401 Unauthorized
+{
+  "error": "Unauthorized",
+  "message": "Full authentication is required to access this resource"
+}
 ```
 
 #### Create Product (Admin only)
@@ -241,6 +261,18 @@ Order
 ## Error Responses
 
 ```http
+401 Unauthorized
+{
+  "error": "Unauthorized",
+  "message": "Full authentication is required to access this resource"
+}
+
+403 Forbidden
+{
+  "error": "Forbidden",
+  "message": "Access is denied"
+}
+
 400 Bad Request
 {
   "error": "Validation failed",
@@ -249,19 +281,10 @@ Order
   }
 }
 
-401 Unauthorized
-{
-  "error": "Authentication required"
-}
-
-403 Forbidden
-{
-  "error": "Insufficient permissions"
-}
-
 404 Not Found
 {
-  "error": "Resource not found"
+  "error": "Not Found",
+  "message": "Resource not found"
 }
 
 409 Conflict
