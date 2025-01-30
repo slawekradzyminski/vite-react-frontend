@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { auth } from '../lib/api';
 import type { User } from '../types/auth';
+import { Role } from '../types/auth';
 
 export function UsersPage() {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ export function UsersPage() {
     },
   });
 
-  const isAdmin = currentUser?.data.roles.includes('ROLE_ADMIN');
+  const isAdmin = currentUser?.data.roles.includes(Role.ADMIN);
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">

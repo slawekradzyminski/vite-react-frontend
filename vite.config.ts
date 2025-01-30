@@ -6,6 +6,11 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 8081,
+    host: true,
+  },
+  preview: {
+    port: 8081,
+    host: true,
   },
   test: {
     globals: true,
