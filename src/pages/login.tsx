@@ -9,22 +9,56 @@ export function LoginPage() {
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<{
+    username?: string;
+    password?: string;
+  }>({});
+
+  const validateForm = (username: string, password: string) => {
+    const errors: { username?: string; password?: string } = {};
+
+    if (!username) {
+      errors.username = 'Username is required';
+    } else if (username.length < 4) {
+      errors.username = 'Username must be at least 4 characters';
+    }
+
+    if (!password) {
+      errors.password = 'Password is required';
+    } else if (password.length < 4) {
+      errors.password = 'Password must be at least 4 characters';
+    }
+
+    return errors;
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
+    setValidationErrors({});
 
     const formData = new FormData(e.currentTarget);
     const username = formData.get('username') as string;
     const password = formData.get('password') as string;
+
+    const errors = validateForm(username, password);
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const response = await auth.login({ username, password });
       localStorage.setItem('token', response.data.token);
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to login');
+      if (err.response?.status === 422) {
+        setError('Invalid username/password');
+      } else {
+        setError(err.response?.data?.message || 'Failed to login');
+      }
     } finally {
       setLoading(false);
     }
@@ -46,10 +80,12 @@ export function LoginPage() {
                 id="username"
                 name="username"
                 type="text"
-                required
                 className="mt-1"
                 placeholder="Username"
               />
+              {validationErrors.username && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.username}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="password">Password</Label>
@@ -57,10 +93,12 @@ export function LoginPage() {
                 id="password"
                 name="password"
                 type="password"
-                required
                 className="mt-1"
                 placeholder="Password"
               />
+              {validationErrors.password && (
+                <p className="mt-1 text-sm text-red-600">{validationErrors.password}</p>
+              )}
             </div>
           </div>
 
