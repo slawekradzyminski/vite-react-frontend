@@ -1,0 +1,58 @@
+## Project Structure and Organization
+
+This rule defines the project's structure and coding patterns.
+
+### Directory Structure
+```
+src/
+├── components/         # Reusable UI components
+│   ├── ui/            # Base UI components
+│   └── *.tsx          # Feature components
+├── lib/               # Utilities and services
+│   ├── api.ts         # API client
+│   └── utils.ts       # Utility functions
+├── pages/             # Page components
+├── types/             # TypeScript types
+└── App.tsx            # Main component
+```
+
+### Component Guidelines
+- Place reusable UI components in `components/ui/`
+- Feature components go in `components/`
+- Pages go in `pages/`
+- Types go in `types/` directory
+
+### Styling Guidelines
+- Use Tailwind CSS utility classes
+- Follow shadcn/ui component patterns
+- Maintain responsive design
+- Avoid inline styles
+
+### API Integration
+- Use React Query for server state
+- Define types for API responses
+- Handle errors consistently
+- Use axios interceptors for auth
+
+### Authentication
+- Use `ProtectedRoute` for protected routes
+- Check roles: `currentUser?.data.roles.includes()`
+- Handle 401/403 errors in API interceptor
+
+### Type Definitions
+- Place shared types in `types/` directory
+- Use TypeScript interfaces over types
+- Export types from feature-specific files
+- Follow naming convention: `IEntityName` or `EntityNameProps`
+
+### State Management
+- Use React Query for server state
+- Use React Context for global UI state
+- Prefer local state when possible
+- Implement proper cache invalidation
+
+### Code Style
+- Use modern ES6+ syntax
+- Use named exports
+- Implement proper error handling
+- Add appropriate TypeScript types 
