@@ -18,4 +18,4 @@ while [ $elapsed -lt $timeout ]; do
 done
 
 echo "Frontend failed to respond within $timeout seconds"
-exit 1 
+exit 1
