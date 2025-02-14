@@ -45,14 +45,19 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
         
-      - name: Make wait script executable
-        run: chmod +x ./scripts/wait-for-backend.sh
+      - name: Make scripts executable
+        run: |
+          chmod +x ./scripts/wait-for-backend.sh
+          chmod +x ./scripts/wait-for-frontend.sh
         
       - name: Wait for backend
         run: ./scripts/wait-for-backend.sh
         
-      - name: Build application
-        run: npm run build
+      - name: Start dev server
+        run: npm run dev &
+        
+      - name: Wait for frontend
+        run: ./scripts/wait-for-frontend.sh
         
       - name: Run Playwright tests
         run: npm run test:e2e
