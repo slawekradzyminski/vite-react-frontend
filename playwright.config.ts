@@ -25,6 +25,6 @@ export default defineConfig({
   webServer: {
     command: 'npm run dev',
     url: 'http://localhost:8081',
-    reuseExistingServer: false,
+    reuseExistingServer: true,
   },
 }); 
