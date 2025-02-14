@@ -1,0 +1,16 @@
+services:
+  backend:
+    image: slawekradzyminski/backend:2.4.8
+    platform: linux/amd64
+    restart: always
+    ports:
+      - "4001:4001"
+    hostname: backend
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+    networks:
+      - my-private-ntwk
+
+networks:
+  my-private-ntwk:
+    driver: bridge
