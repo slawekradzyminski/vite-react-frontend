@@ -37,7 +37,7 @@ export function RegisterPage() {
       toast({
         variant: 'success',
         title: 'Success',
-        description: 'Registration successful! You can now log in.',
+        description: 'Registration successful',
       });
       navigate('/login');
     } catch (err: any) {

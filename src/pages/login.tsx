@@ -7,11 +7,12 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { auth } from '../lib/api';
 import { LoginFormData, loginSchema } from '../validators/auth';
+import { useToast } from '../hooks/toast';
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const toast = useToast();
 
   const {
     register,
@@ -23,7 +24,6 @@ export function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    setError('');
     setLoading(true);
 
     try {
@@ -32,9 +32,17 @@ export function LoginPage() {
       navigate('/');
     } catch (err: any) {
       if (err.response?.status === 422) {
-        setError('Invalid username/password');
+        toast({
+          variant: 'error',
+          title: 'Error',
+          description: 'Invalid username/password',
+        });
       } else {
-        setError(err.response?.data?.message || 'Failed to login');
+        toast({
+          variant: 'error',
+          title: 'Error',
+          description: err.response?.data?.message || 'Failed to login',
+        });
       }
     } finally {
       setLoading(false);
@@ -79,12 +87,6 @@ export function LoginPage() {
               )}
             </div>
           </div>
-
-          {error && (
-            <div className="text-sm text-red-600">
-              {error}
-            </div>
-          )}
 
           <div>
             <Button

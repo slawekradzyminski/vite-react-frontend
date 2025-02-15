@@ -1,3 +1,17 @@
+# Code Style Rules
+
+## Styling
+- CSS should be kept in separate `.css` files, not in inline Tailwind classes
+- Use CSS modules for component-specific styles
+- Follow BEM naming convention for CSS classes
+- Avoid inline styles unless absolutely necessary for dynamic values
+
+## JavaScript/TypeScript
+- Use modern syntax (import/export)
+- Avoid unnecessary comments explaining obvious code
+- Place TypeScript types in `/types` folder
+- Follow given/when/then pattern in test comments
+
 ## AI Agent Behavior
 
 This rule defines how the AI agent should behave when making changes to the codebase.
