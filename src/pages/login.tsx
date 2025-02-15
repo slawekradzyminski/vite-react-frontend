@@ -1,56 +1,33 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { auth } from '../lib/api';
+import { LoginFormData, loginSchema } from '../validators/auth';
 
 export function LoginPage() {
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<{
-    username?: string;
-    password?: string;
-  }>({});
 
-  const validateForm = (username: string, password: string) => {
-    const errors: { username?: string; password?: string } = {};
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    mode: 'onSubmit',
+  });
 
-    if (!username) {
-      errors.username = 'Username is required';
-    } else if (username.length < 4) {
-      errors.username = 'Username must be at least 4 characters';
-    }
-
-    if (!password) {
-      errors.password = 'Password is required';
-    } else if (password.length < 4) {
-      errors.password = 'Password must be at least 4 characters';
-    }
-
-    return errors;
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const onSubmit = async (data: LoginFormData) => {
     setError('');
-    setValidationErrors({});
-
-    const formData = new FormData(e.currentTarget);
-    const username = formData.get('username') as string;
-    const password = formData.get('password') as string;
-
-    const errors = validateForm(username, password);
-    if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
-      return;
-    }
-
     setLoading(true);
 
     try {
-      const response = await auth.login({ username, password });
+      const response = await auth.login(data);
       localStorage.setItem('token', response.data.token);
       navigate('/');
     } catch (err: any) {
@@ -72,32 +49,33 @@ export function LoginPage() {
             Sign in to your account
           </h2>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className="space-y-4 rounded-md shadow-sm">
             <div>
               <Label htmlFor="username">Username</Label>
               <Input
                 id="username"
-                name="username"
-                type="text"
                 className="mt-1"
                 placeholder="Username"
+                error={errors.username?.message}
+                {...register('username')}
               />
-              {validationErrors.username && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.username}</p>
+              {errors.username?.message && (
+                <p className="mt-1 text-sm text-red-600" role="alert">{errors.username.message}</p>
               )}
             </div>
             <div>
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
-                name="password"
                 type="password"
                 className="mt-1"
                 placeholder="Password"
+                error={errors.password?.message}
+                {...register('password')}
               />
-              {validationErrors.password && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.password}</p>
+              {errors.password?.message && (
+                <p className="mt-1 text-sm text-red-600" role="alert">{errors.password.message}</p>
               )}
             </div>
           </div>

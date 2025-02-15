@@ -1,36 +1,51 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { auth } from '../lib/api';
 import { Role } from '../types/auth';
+import { RegisterFormData, registerSchema } from '../validators/auth';
 
 export function RegisterPage() {
   const navigate = useNavigate();
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError('');
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    mode: 'onSubmit',
+    reValidateMode: 'onSubmit',
+  });
+
+  const onSubmit = async (data: RegisterFormData) => {
     setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const data = {
-      username: formData.get('username') as string,
-      password: formData.get('password') as string,
-      email: formData.get('email') as string,
-      firstName: formData.get('firstName') as string,
-      lastName: formData.get('lastName') as string,
-      roles: [Role.CLIENT],
-    };
+    setSuccess(false);
+    setSubmitError('');
 
     try {
-      await auth.register(data);
-      navigate('/login');
+      await auth.register({
+        ...data,
+        roles: [Role.CLIENT],
+      });
+      setSuccess(true);
+      setTimeout(() => {
+        navigate('/login');
+      }, 1500);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to register');
+      const errorMessage = err.response?.data?.message;
+      if (errorMessage?.toLowerCase().includes('already in use')) {
+        setSubmitError('Username already exists');
+      } else {
+        setSubmitError(errorMessage || 'Failed to register');
+      }
     } finally {
       setLoading(false);
     }
@@ -44,68 +59,86 @@ export function RegisterPage() {
             Create your account
           </h2>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className="space-y-4">
             <div>
               <Label htmlFor="username">Username</Label>
               <Input
                 id="username"
-                name="username"
-                type="text"
-                required
                 className="mt-1"
                 placeholder="Username"
+                error={errors.username?.message}
+                {...register('username')}
               />
+              {errors.username?.message && (
+                <p className="mt-1 text-sm text-red-600" role="alert">{errors.username.message}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
-                name="email"
                 type="email"
-                required
                 className="mt-1"
                 placeholder="Email"
+                error={errors.email?.message}
+                {...register('email')}
               />
+              {errors.email?.message && (
+                <p className="mt-1 text-sm text-red-600" role="alert">{errors.email.message}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
-                name="password"
                 type="password"
-                required
                 className="mt-1"
                 placeholder="Password"
+                error={errors.password?.message}
+                {...register('password')}
               />
+              {errors.password?.message && (
+                <p className="mt-1 text-sm text-red-600" role="alert">{errors.password.message}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="firstName">First Name</Label>
               <Input
                 id="firstName"
-                name="firstName"
-                type="text"
-                required
                 className="mt-1"
                 placeholder="First Name"
+                error={errors.firstName?.message}
+                {...register('firstName')}
               />
+              {errors.firstName?.message && (
+                <p className="mt-1 text-sm text-red-600" role="alert">{errors.firstName.message}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="lastName">Last Name</Label>
               <Input
                 id="lastName"
-                name="lastName"
-                type="text"
-                required
                 className="mt-1"
                 placeholder="Last Name"
+                error={errors.lastName?.message}
+                {...register('lastName')}
               />
+              {errors.lastName?.message && (
+                <p className="mt-1 text-sm text-red-600" role="alert">{errors.lastName.message}</p>
+              )}
             </div>
           </div>
 
-          {error && (
+          {submitError && (
             <div className="text-sm text-red-600">
-              {error}
+              {submitError}
+            </div>
+          )}
+
+          {success && (
+            <div className="text-sm text-green-600">
+              Registration successful
             </div>
           )}
 

@@ -1,42 +1,37 @@
-export type LoginRequest = {
-  username: string;
-  password: string;
-};
+import { RegisterFormData, LoginFormData } from '../validators/auth';
 
 export enum Role {
   ADMIN = 'ROLE_ADMIN',
   CLIENT = 'ROLE_CLIENT',
 }
 
-export type LoginResponse = {
+export interface RegisterRequest extends RegisterFormData {
+  roles: Role[];
+}
+
+export interface LoginRequest extends LoginFormData {}
+
+export interface LoginResponse {
   token: string;
   username: string;
   email: string;
   firstName: string;
   lastName: string;
-  roles: Array<Role>;
-};
+  roles: Role[];
+}
 
-export type RegisterRequest = {
-  username: string;
-  email: string;
-  password: string;
-  firstName: string;
-  lastName: string;
-  roles: Array<Role>;
-};
-
-export type User = {
+export interface User {
   id: number;
   username: string;
   email: string;
-  roles: Array<Role>;
   firstName: string;
   lastName: string;
-};
+  roles: Role[];
+}
 
-export type UserEditDTO = {
+export interface UserEditDTO {
   email: string;
-  firstName: string;
-  lastName: string;
-}; 
+  firstName?: string;
+  lastName?: string;
+  roles?: Role[];
+} 
