@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import { getRandomUser } from './generators/userGenerator';
+import { registerUser } from './http/postSignUp'; 
 
 test.describe('Login Page', () => {
   test.beforeEach(async ({ page }) => {
@@ -7,8 +9,10 @@ test.describe('Login Page', () => {
 
   test('should successfully login with valid credentials', async ({ page }) => {
     // given
-    const username = 'admin';
-    const password = 'admin';
+    const user = getRandomUser();
+    await registerUser(user);
+    const username = user.username;
+    const password = user.password;
 
     // when
     await page.getByLabel('Username').fill(username);

@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import { getRandomUser } from './generators/userGenerator';
+import { registerUser } from './http/postSignUp';
 
 test.describe('Register Page', () => {
   test.beforeEach(async ({ page }) => {
@@ -7,19 +9,14 @@ test.describe('Register Page', () => {
 
   test('should successfully register with valid data', async ({ page }) => {
     // given
-    const timestamp = Date.now();
-    const username = `testuser${timestamp}`;
-    const email = `test${timestamp}@example.com`;
-    const password = 'password123';
-    const firstName = 'John';
-    const lastName = 'Smith';
+    const user = getRandomUser();
 
     // when
-    await page.getByLabel('Username').fill(username);
-    await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Password').fill(password);
-    await page.getByLabel('First Name').fill(firstName);
-    await page.getByLabel('Last Name').fill(lastName);
+    await page.getByLabel('Username').fill(user.username);
+    await page.getByLabel('Email').fill(user.email);
+    await page.getByLabel('Password').fill(user.password);
+    await page.getByLabel('First Name').fill(user.firstName);
+    await page.getByLabel('Last Name').fill(user.lastName);
     await page.getByRole('button', { name: 'Create account' }).click();
 
     // then
@@ -29,18 +26,15 @@ test.describe('Register Page', () => {
 
   test('should show error when username already exists', async ({ page }) => {
     // given
-    const username = 'admin';
-    const email = 'unique@example.com';
-    const password = 'password123';
-    const firstName = 'John';
-    const lastName = 'Smith';
+    const user = getRandomUser();
+    await registerUser(user);
 
     // when
-    await page.getByLabel('Username').fill(username);
-    await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Password').fill(password);
-    await page.getByLabel('First Name').fill(firstName);
-    await page.getByLabel('Last Name').fill(lastName);
+    await page.getByLabel('Username').fill(user.username);
+    await page.getByLabel('Email').fill(user.email);
+    await page.getByLabel('Password').fill(user.password);
+    await page.getByLabel('First Name').fill(user.firstName);
+    await page.getByLabel('Last Name').fill(user.lastName);
     await page.getByRole('button', { name: 'Create account' }).click();
 
     // then
@@ -62,18 +56,14 @@ test.describe('Register Page', () => {
 
   test('should show validation error for username less than 4 characters', async ({ page }) => {
     // given
-    const username = 'abc';
-    const email = 'test@example.com';
-    const password = 'password123';
-    const firstName = 'John';
-    const lastName = 'Smith';
+    const user = getRandomUser();
 
     // when
-    await page.getByLabel('Username').fill(username);
-    await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Password').fill(password);
-    await page.getByLabel('First Name').fill(firstName);
-    await page.getByLabel('Last Name').fill(lastName);
+    await page.getByLabel('Username').fill('123');
+    await page.getByLabel('Email').fill(user.email);
+    await page.getByLabel('Password').fill(user.password);
+    await page.getByLabel('First Name').fill(user.firstName);
+    await page.getByLabel('Last Name').fill(user.lastName);
     await page.getByRole('button', { name: 'Create account' }).click();
 
     // then
@@ -82,18 +72,14 @@ test.describe('Register Page', () => {
 
   test('should show validation error for password less than 8 characters', async ({ page }) => {
     // given
-    const username = 'testuser';
-    const email = 'test@example.com';
-    const password = '1234567';
-    const firstName = 'John';
-    const lastName = 'Smith';
+    const user = getRandomUser();
 
     // when
-    await page.getByLabel('Username').fill(username);
-    await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Password').fill(password);
-    await page.getByLabel('First Name').fill(firstName);
-    await page.getByLabel('Last Name').fill(lastName);
+    await page.getByLabel('Username').fill(user.username);
+    await page.getByLabel('Email').fill(user.email);
+    await page.getByLabel('Password').fill('1234567');
+    await page.getByLabel('First Name').fill(user.firstName);
+    await page.getByLabel('Last Name').fill(user.lastName);
     await page.getByRole('button', { name: 'Create account' }).click();
 
     // then
@@ -102,18 +88,14 @@ test.describe('Register Page', () => {
 
   test('should show validation error for invalid email format', async ({ page }) => {
     // given
-    const username = 'testuser';
-    const email = 'invalid-email';
-    const password = 'password123';
-    const firstName = 'John';
-    const lastName = 'Smith';
+    const user = getRandomUser();
 
     // when
-    await page.getByLabel('Username').fill(username);
-    await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Password').fill(password);
-    await page.getByLabel('First Name').fill(firstName);
-    await page.getByLabel('Last Name').fill(lastName);
+    await page.getByLabel('Username').fill(user.username);
+    await page.getByLabel('Email').fill('invalid-email');
+    await page.getByLabel('Password').fill(user.password);
+    await page.getByLabel('First Name').fill(user.firstName);
+    await page.getByLabel('Last Name').fill(user.lastName);
     await page.getByRole('button', { name: 'Create account' }).click();
 
     // then
@@ -122,18 +104,14 @@ test.describe('Register Page', () => {
 
   test('should show validation error for first name less than 4 characters', async ({ page }) => {
     // given
-    const username = 'testuser';
-    const email = 'test@example.com';
-    const password = 'password123';
-    const firstName = 'Bob';
-    const lastName = 'Smith';
+    const user = getRandomUser();
 
     // when
-    await page.getByLabel('Username').fill(username);
-    await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Password').fill(password);
-    await page.getByLabel('First Name').fill(firstName);
-    await page.getByLabel('Last Name').fill(lastName);
+    await page.getByLabel('Username').fill(user.username);
+    await page.getByLabel('Email').fill(user.email);
+    await page.getByLabel('Password').fill(user.password);
+    await page.getByLabel('First Name').fill('123');
+    await page.getByLabel('Last Name').fill(user.lastName);
     await page.getByRole('button', { name: 'Create account' }).click();
 
     // then
@@ -142,18 +120,14 @@ test.describe('Register Page', () => {
 
   test('should show validation error for last name less than 4 characters', async ({ page }) => {
     // given
-    const username = 'testuser';
-    const email = 'test@example.com';
-    const password = 'password123';
-    const firstName = 'John';
-    const lastName = 'Doe';
+    const user = getRandomUser();
 
     // when
-    await page.getByLabel('Username').fill(username);
-    await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Password').fill(password);
-    await page.getByLabel('First Name').fill(firstName);
-    await page.getByLabel('Last Name').fill(lastName);
+    await page.getByLabel('Username').fill('123');
+    await page.getByLabel('Email').fill(user.email);
+    await page.getByLabel('Password').fill(user.password);
+    await page.getByLabel('First Name').fill(user.firstName);
+    await page.getByLabel('Last Name').fill('123');
     await page.getByRole('button', { name: 'Create account' }).click();
 
     // then
