@@ -23,7 +23,7 @@ test.describe('Register Page', () => {
     await page.getByRole('button', { name: 'Create account' }).click();
 
     // then
-    await expect(page.getByText('Registration successful')).toBeVisible();
+    await expect(page.locator('[data-state="open"]')).toContainText('Registration successful');
     await expect(page).toHaveURL('/login', { timeout: 10000 });
   });
 

@@ -1,49 +1,18 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { LoginPage } from './pages/login';
-import { RegisterPage } from './pages/register';
-import { HomePage } from './pages/home';
-import { UsersPage } from './pages/users';
-import { EditUserPage } from './pages/edit-user';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import { AppRoutes } from './AppRoutes';
+import { ToastProvider } from './components/ui/toast';
 
 const queryClient = new QueryClient();
 
-function App() {
+export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <HomePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/users"
-            element={
-              <ProtectedRoute>
-                <UsersPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/users/:username/edit"
-            element={
-              <ProtectedRoute>
-                <EditUserPage />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </Router>
+      <BrowserRouter>
+        <ToastProvider>
+          <AppRoutes />
+        </ToastProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 }
-
-export default App;

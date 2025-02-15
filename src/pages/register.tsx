@@ -8,12 +8,13 @@ import { Label } from '../components/ui/label';
 import { auth } from '../lib/api';
 import { Role } from '../types/auth';
 import { RegisterFormData, registerSchema } from '../validators/auth';
+import { useToast } from '../hooks/toast';
 
 export function RegisterPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const toast = useToast();
 
   const {
     register,
@@ -22,12 +23,10 @@ export function RegisterPage() {
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     mode: 'onSubmit',
-    reValidateMode: 'onSubmit',
   });
 
   const onSubmit = async (data: RegisterFormData) => {
     setLoading(true);
-    setSuccess(false);
     setSubmitError('');
 
     try {
@@ -35,10 +34,12 @@ export function RegisterPage() {
         ...data,
         roles: [Role.CLIENT],
       });
-      setSuccess(true);
-      setTimeout(() => {
-        navigate('/login');
-      }, 1500);
+      toast({
+        variant: 'success',
+        title: 'Success',
+        description: 'Registration successful! You can now log in.',
+      });
+      navigate('/login');
     } catch (err: any) {
       const errorMessage = err.response?.data?.message;
       if (errorMessage?.toLowerCase().includes('already in use')) {
@@ -133,12 +134,6 @@ export function RegisterPage() {
           {submitError && (
             <div className="text-sm text-red-600">
               {submitError}
-            </div>
-          )}
-
-          {success && (
-            <div className="text-sm text-green-600">
-              Registration successful
             </div>
           )}
 

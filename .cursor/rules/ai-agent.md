@@ -46,3 +46,8 @@ Iterate if needed.
    - Always refer to the OpenAPI documentation at `http://localhost:4001/v3/api-docs`
    - Use Swagger UI for interactive API testing
    - Check the backend source code in `backend.md` for implementation details
+
+3. Test failures may be caused by recent changes since git HEAD is kept stable. To see the changes use:
+   ```bash
+   git --no-pager diff
+   ```
