@@ -1,6 +1,9 @@
-## Environment Setup and Debugging
+---
+description: Environment setup, debugging practices, and development workflow
+globs: docker-compose.yml,package.json,vite.config.js
+---
 
-This rule defines environment setup and debugging practices.
+# Environment Setup and Debugging
 
 ### Development Environment
 - Frontend dev server: `http://localhost:8081`
@@ -29,11 +32,6 @@ docker logs <container-id>
 - Check JWT token validity
 - Verify token is included in requests
 - Check token expiration
-
-#### CORS Issues
-- Verify request origin (default: http://localhost:8081)
-- Check backend CORS configuration
-- Verify request headers
 
 #### API Errors
 - Check backend logs for details

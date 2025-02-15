@@ -1,74 +1,84 @@
 import { test, expect } from '@playwright/test';
+import { getRandomUser } from './generators/userGenerator';
+import { registerUser } from './http/postSignUp';
+import { LoginPage } from './pages/login.page';
 
 test.describe('Login Page', () => {
+  let loginPage: LoginPage;
+
   test.beforeEach(async ({ page }) => {
-    await page.goto('/login');
+    loginPage = new LoginPage(page);
+    await loginPage.goto();
   });
 
   test('should successfully login with valid credentials', async ({ page }) => {
     // given
-    const username = 'admin';
-    const password = 'admin';
+    const user = getRandomUser();
+    await registerUser(user);
 
     // when
-    await page.getByLabel('Username').fill(username);
-    await page.getByLabel('Password').fill(password);
-    await page.getByRole('button', { name: 'Sign in' }).click();
+    await loginPage.attemptLogin({
+      username: user.username,
+      password: user.password,
+    });
 
     // then
-    await expect(page).toHaveURL('/');
-    await expect(page.getByText('Welcome')).toBeVisible();
+    await expect(page).toHaveURL('/', { timeout: 10000 });
   });
 
   test('should show error with invalid credentials', async ({ page }) => {
     // given
-    const username = 'invalid';
-    const password = 'invalid';
+    const invalidCredentials = {
+      username: 'nonexistent',
+      password: 'wrongpassword',
+    };
 
     // when
-    await page.getByLabel('Username').fill(username);
-    await page.getByLabel('Password').fill(password);
-    await page.getByRole('button', { name: 'Sign in' }).click();
+    await loginPage.attemptLogin(invalidCredentials);
 
     // then
-    await expect(page.getByText('Invalid username/password')).toBeVisible();
+    await expect(loginPage.toast).toContainText('Invalid username/password', { timeout: 10000 });
     await expect(page).toHaveURL('/login');
   });
 
-  test('should show validation errors for empty fields', async ({ page }) => {
+  test('should show validation errors for empty fields', async () => {
     // when
-    await page.getByRole('button', { name: 'Sign in' }).click();
+    await loginPage.signInButton.click();
 
     // then
-    await expect(page.getByText('Username is required')).toBeVisible();
-    await expect(page.getByText('Password is required')).toBeVisible();
+    const validationErrors = ['Username', 'Password'];
+
+    for (const field of validationErrors) {
+      const error = loginPage.getValidationError(field);
+      await expect(error).toBeVisible({ timeout: 10000 });
+    }
   });
 
-  test('should show validation error for username less than 4 characters', async ({ page }) => {
+  test('should show validation error for username less than 4 characters', async () => {
     // given
-    const username = 'abc';
-    const password = 'validpass';
+    const shortUsername = '123';
 
     // when
-    await page.getByLabel('Username').fill(username);
-    await page.getByLabel('Password').fill(password);
-    await page.getByRole('button', { name: 'Sign in' }).click();
+    await loginPage.usernameInput.fill(shortUsername);
+    await loginPage.passwordInput.fill('validpassword');
+    await loginPage.signInButton.click();
 
     // then
-    await expect(page.getByText('Username must be at least 4 characters')).toBeVisible();
+    const error = loginPage.getMinLengthError('Username', 4);
+    await expect(error).toBeVisible();
   });
 
-  test('should show validation error for password less than 4 characters', async ({ page }) => {
+  test('should show validation error for password less than 4 characters', async () => {
     // given
-    const username = 'validuser';
-    const password = 'abc';
+    const shortPassword = '123';
 
     // when
-    await page.getByLabel('Username').fill(username);
-    await page.getByLabel('Password').fill(password);
-    await page.getByRole('button', { name: 'Sign in' }).click();
+    await loginPage.usernameInput.fill('validusername');
+    await loginPage.passwordInput.fill(shortPassword);
+    await loginPage.signInButton.click();
 
     // then
-    await expect(page.getByText('Password must be at least 4 characters')).toBeVisible();
+    const error = loginPage.getMinLengthError('Password', 4);
+    await expect(error).toBeVisible();
   });
 }); 

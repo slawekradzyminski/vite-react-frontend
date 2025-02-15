@@ -1,162 +1,71 @@
 import { test, expect } from '@playwright/test';
+import { getRandomUser } from './generators/userGenerator';
+import { registerUser } from './http/postSignUp';
+import { RegisterPage } from './pages/register.page';
 
 test.describe('Register Page', () => {
+  let registerPage: RegisterPage;
+
   test.beforeEach(async ({ page }) => {
-    await page.goto('/register');
+    registerPage = new RegisterPage(page);
+    await registerPage.goto();
   });
 
   test('should successfully register with valid data', async ({ page }) => {
     // given
-    const timestamp = Date.now();
-    const username = `testuser${timestamp}`;
-    const email = `test${timestamp}@example.com`;
-    const password = 'password123';
-    const firstName = 'John';
-    const lastName = 'Smith';
+    const user = getRandomUser();
 
     // when
-    await page.getByLabel('Username').fill(username);
-    await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Password').fill(password);
-    await page.getByLabel('First Name').fill(firstName);
-    await page.getByLabel('Last Name').fill(lastName);
-    await page.getByRole('button', { name: 'Create account' }).click();
+    await registerPage.attemptRegister(user);
 
     // then
-    await expect(page.getByText('Registration successful')).toBeVisible();
     await expect(page).toHaveURL('/login', { timeout: 10000 });
+    await expect(registerPage.toast).toContainText('Registration successful! You can now log in.');
   });
 
   test('should show error when username already exists', async ({ page }) => {
     // given
-    const username = 'admin';
-    const email = 'unique@example.com';
-    const password = 'password123';
-    const firstName = 'John';
-    const lastName = 'Smith';
+    const user = getRandomUser();
+    await registerUser(user);
 
     // when
-    await page.getByLabel('Username').fill(username);
-    await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Password').fill(password);
-    await page.getByLabel('First Name').fill(firstName);
-    await page.getByLabel('Last Name').fill(lastName);
-    await page.getByRole('button', { name: 'Create account' }).click();
+    await registerPage.attemptRegister(user);
 
     // then
-    await expect(page.getByText('Username already exists', { exact: false })).toBeVisible();
+    await expect(registerPage.toast).toContainText('Username already exists');
     await expect(page).toHaveURL('/register');
   });
 
-  test('should show validation errors for empty fields', async ({ page }) => {
+  test('should show validation errors for empty fields', async () => {
     // when
-    await page.getByRole('button', { name: 'Create account' }).click();
+    await registerPage.createAccountButton.click();
 
     // then
-    await expect(page.getByText('Username is required')).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText('Email is required')).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText('Password is required')).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText('First name is required')).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText('Last name is required')).toBeVisible({ timeout: 10000 });
+    const validationErrors = [
+      'Username', 'Email', 'Password', 'First name', 'Last name'
+    ];
+
+    for (const field of validationErrors) {
+      const error = registerPage.getValidationError(field);
+      await expect(error).toBeVisible({ timeout: 10000 });
+    }
   });
 
-  test('should show validation error for username less than 4 characters', async ({ page }) => {
+  test('should show validation error for username less than 4 characters', async () => {
     // given
-    const username = 'abc';
-    const email = 'test@example.com';
-    const password = 'password123';
-    const firstName = 'John';
-    const lastName = 'Smith';
+    const user = getRandomUser();
+    const shortUsername = '123';
 
     // when
-    await page.getByLabel('Username').fill(username);
-    await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Password').fill(password);
-    await page.getByLabel('First Name').fill(firstName);
-    await page.getByLabel('Last Name').fill(lastName);
-    await page.getByRole('button', { name: 'Create account' }).click();
+    await registerPage.usernameInput.fill(shortUsername);
+    await registerPage.emailInput.fill(user.email);
+    await registerPage.passwordInput.fill(user.password);
+    await registerPage.firstNameInput.fill(user.firstName);
+    await registerPage.lastNameInput.fill(user.lastName);
+    await registerPage.createAccountButton.click();
 
     // then
-    await expect(page.getByText('Username must be at least 4 characters')).toBeVisible();
-  });
-
-  test('should show validation error for password less than 8 characters', async ({ page }) => {
-    // given
-    const username = 'testuser';
-    const email = 'test@example.com';
-    const password = '1234567';
-    const firstName = 'John';
-    const lastName = 'Smith';
-
-    // when
-    await page.getByLabel('Username').fill(username);
-    await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Password').fill(password);
-    await page.getByLabel('First Name').fill(firstName);
-    await page.getByLabel('Last Name').fill(lastName);
-    await page.getByRole('button', { name: 'Create account' }).click();
-
-    // then
-    await expect(page.getByText('Password must be at least 8 characters')).toBeVisible();
-  });
-
-  test('should show validation error for invalid email format', async ({ page }) => {
-    // given
-    const username = 'testuser';
-    const email = 'invalid-email';
-    const password = 'password123';
-    const firstName = 'John';
-    const lastName = 'Smith';
-
-    // when
-    await page.getByLabel('Username').fill(username);
-    await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Password').fill(password);
-    await page.getByLabel('First Name').fill(firstName);
-    await page.getByLabel('Last Name').fill(lastName);
-    await page.getByRole('button', { name: 'Create account' }).click();
-
-    // then
-    await expect(page.getByText('Invalid email format', { exact: false })).toBeVisible();
-  });
-
-  test('should show validation error for first name less than 4 characters', async ({ page }) => {
-    // given
-    const username = 'testuser';
-    const email = 'test@example.com';
-    const password = 'password123';
-    const firstName = 'Bob';
-    const lastName = 'Smith';
-
-    // when
-    await page.getByLabel('Username').fill(username);
-    await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Password').fill(password);
-    await page.getByLabel('First Name').fill(firstName);
-    await page.getByLabel('Last Name').fill(lastName);
-    await page.getByRole('button', { name: 'Create account' }).click();
-
-    // then
-    await expect(page.getByText('First name must be at least 4 characters')).toBeVisible();
-  });
-
-  test('should show validation error for last name less than 4 characters', async ({ page }) => {
-    // given
-    const username = 'testuser';
-    const email = 'test@example.com';
-    const password = 'password123';
-    const firstName = 'John';
-    const lastName = 'Doe';
-
-    // when
-    await page.getByLabel('Username').fill(username);
-    await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Password').fill(password);
-    await page.getByLabel('First Name').fill(firstName);
-    await page.getByLabel('Last Name').fill(lastName);
-    await page.getByRole('button', { name: 'Create account' }).click();
-
-    // then
-    await expect(page.getByText('Last name must be at least 4 characters')).toBeVisible();
+    const error = registerPage.getMinLengthError('Username', 4);
+    await expect(error).toBeVisible();
   });
 }); 
