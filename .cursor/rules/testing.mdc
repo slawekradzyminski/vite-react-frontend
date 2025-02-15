@@ -1,11 +1,9 @@
-## Testing Patterns
+---
+description: Testing patterns and conventions for unit tests (Vitest) and E2E tests (Playwright)
+globs: **/*.test.tsx,**/*.test.ts,e2e/*.spec.ts
+---
 
-This rule applies to all test files in the project.
-
-### File Patterns
-- `**/*.test.tsx`
-- `**/*.test.ts`
-- `e2e/*.spec.ts`
+# Testing Patterns
 
 ### Testing Structure
 Always follow the given/when/then pattern in test comments:
@@ -76,4 +74,4 @@ npm run test:e2e     # Run e2e tests
 npm run test:e2e:ai  # List reporter (AI friendly)
 npm run test:e2e:ui  # UI mode
 npm run test:e2e:debug # Debug mode
-``` 
+```

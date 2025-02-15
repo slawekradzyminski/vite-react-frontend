@@ -1,3 +1,8 @@
+---
+description: AI agent behavior, code style rules, and testing procedures
+globs: src/**/*.css,src/**/*.tsx,src/**/*.ts,**/*.test.ts,**/*.test.tsx
+---
+
 # Code Style Rules
 
 ## Styling
@@ -13,8 +18,6 @@
 - Follow given/when/then pattern in test comments
 
 ## AI Agent Behavior
-
-This rule defines how the AI agent should behave when making changes to the codebase.
 
 ### After Code Changes
 After any batch of code changes, ALWAYS:
@@ -45,23 +48,24 @@ If tests fail:
 # Always run both:
 npm test            # Run unit tests
 npm run test:e2e:ai # Run E2E tests with AI-friendly output
-``` 
+```
 Iterate if needed.
 
-1. **Backend Communication**
-   - The backend container logs can be accessed using:
-     ```bash
-     docker ps # to get the container ID
-     docker logs <container-id>
-     ```
-   - Monitor the logs for request/response details and error messages
+### Backend Communication
+- The backend container logs can be accessed using:
+  ```bash
+  docker ps # to get the container ID
+  docker logs <container-id>
+  ```
+- Monitor the logs for request/response details and error messages
 
-2. **API Documentation**
-   - Always refer to the OpenAPI documentation at `http://localhost:4001/v3/api-docs`
-   - Use Swagger UI for interactive API testing
-   - Check the backend source code in `backend.md` for implementation details
+### API Documentation
+- Always refer to the OpenAPI documentation at `http://localhost:4001/v3/api-docs`
+- Use Swagger UI for interactive API testing
+- Check the backend source code in `backend.md` for implementation details
 
-3. Test failures may be caused by recent changes since git HEAD is kept stable. To see the changes use:
-   ```bash
-   git --no-pager diff
-   ```
+### Git Changes
+Test failures may be caused by recent changes since git HEAD is kept stable. To see the changes use:
+```bash
+git --no-pager diff
+``` 

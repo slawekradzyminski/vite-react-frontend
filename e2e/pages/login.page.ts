@@ -6,12 +6,14 @@ export class LoginPage {
   readonly passwordInput: Locator;
   readonly signInButton: Locator;
   readonly toast: Locator;
+  readonly registerLink: Locator;
 
   constructor(protected readonly page: Page) {
     this.usernameInput = page.getByLabel('Username');
     this.passwordInput = page.getByLabel('Password');
     this.signInButton = page.getByRole('button', { name: 'Sign in' });
     this.toast = page.locator('[data-state="open"]');
+    this.registerLink = page.getByRole('button', { name: 'Register' });
   }
 
   async goto() {

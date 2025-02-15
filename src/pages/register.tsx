@@ -14,7 +14,7 @@ export function RegisterPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState('');
-  const toast = useToast();
+  const { toast } = useToast();
 
   const {
     register,
@@ -34,12 +34,8 @@ export function RegisterPage() {
         ...data,
         roles: [Role.CLIENT],
       });
-      toast({
-        variant: 'success',
-        title: 'Success',
-        description: 'Registration successful',
-      });
-      navigate('/login');
+      
+      navigate('/login', { state: { toast: { variant: 'success', title: 'Success', description: 'Registration successful! You can now log in.' } } });
     } catch (err: any) {
       const errorMessage = err.response?.data?.message;
       if (errorMessage?.toLowerCase().includes('already in use')) {

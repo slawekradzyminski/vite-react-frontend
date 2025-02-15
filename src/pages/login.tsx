@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../components/ui/button';
@@ -11,8 +11,9 @@ import { useToast } from '../hooks/toast';
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
-  const toast = useToast();
+  const { toast } = useToast();
 
   const {
     register,
@@ -22,6 +23,13 @@ export function LoginPage() {
     resolver: zodResolver(loginSchema),
     mode: 'onSubmit',
   });
+
+  useEffect(() => {
+    if (location.state?.toast) {
+      toast(location.state.toast);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location, toast]);
 
   const onSubmit = async (data: LoginFormData) => {
     setLoading(true);

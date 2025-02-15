@@ -19,8 +19,8 @@ test.describe('Register Page', () => {
     await registerPage.attemptRegister(user);
 
     // then
-    await expect(registerPage.toast).toContainText('Registration successful');
     await expect(page).toHaveURL('/login', { timeout: 10000 });
+    await expect(registerPage.toast).toContainText('Registration successful! You can now log in.');
   });
 
   test('should show error when username already exists', async ({ page }) => {

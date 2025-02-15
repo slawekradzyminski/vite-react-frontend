@@ -7,9 +7,11 @@ export interface ToastProps {
   variant?: 'default' | 'success' | 'error';
 }
 
-type ToastFunction = (props: ToastProps) => void;
+type ToastContextValue = {
+  toast: (props: ToastProps) => void;
+};
 
-export const ToastContext = React.createContext<ToastFunction | undefined>(undefined);
+export const ToastContext = React.createContext<ToastContextValue | undefined>(undefined);
 
 export function useToast() {
   const context = React.useContext(ToastContext);

@@ -1,6 +1,9 @@
-## Project Structure and Organization
+---
+description: Project structure, organization, and coding patterns
+globs: **/*.test.tsx,**/*.test.ts,e2e/*.spec.ts
+---
 
-This rule defines the project's structure and coding patterns.
+# Project Structure and Organization
 
 ### Directory Structure
 ```
