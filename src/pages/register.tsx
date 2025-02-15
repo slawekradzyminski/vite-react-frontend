@@ -43,7 +43,11 @@ export function RegisterPage() {
     } catch (err: any) {
       const errorMessage = err.response?.data?.message;
       if (errorMessage?.toLowerCase().includes('already in use')) {
-        setSubmitError('Username already exists');
+        toast({
+          variant: 'error',
+          title: 'Error',
+          description: 'Username already exists',
+        });
       } else {
         setSubmitError(errorMessage || 'Failed to register');
       }

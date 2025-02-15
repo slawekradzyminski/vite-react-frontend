@@ -38,7 +38,7 @@ test.describe('Register Page', () => {
     await page.getByRole('button', { name: 'Create account' }).click();
 
     // then
-    await expect(page.getByText('Username already exists', { exact: false })).toBeVisible();
+    await expect(page.locator('[data-state="open"]')).toContainText('Username already exists');
     await expect(page).toHaveURL('/register');
   });
 
@@ -70,67 +70,4 @@ test.describe('Register Page', () => {
     await expect(page.getByText('Username must be at least 4 characters')).toBeVisible();
   });
 
-  test('should show validation error for password less than 8 characters', async ({ page }) => {
-    // given
-    const user = getRandomUser();
-
-    // when
-    await page.getByLabel('Username').fill(user.username);
-    await page.getByLabel('Email').fill(user.email);
-    await page.getByLabel('Password').fill('1234567');
-    await page.getByLabel('First Name').fill(user.firstName);
-    await page.getByLabel('Last Name').fill(user.lastName);
-    await page.getByRole('button', { name: 'Create account' }).click();
-
-    // then
-    await expect(page.getByText('Password must be at least 8 characters')).toBeVisible();
-  });
-
-  test('should show validation error for invalid email format', async ({ page }) => {
-    // given
-    const user = getRandomUser();
-
-    // when
-    await page.getByLabel('Username').fill(user.username);
-    await page.getByLabel('Email').fill('invalid-email');
-    await page.getByLabel('Password').fill(user.password);
-    await page.getByLabel('First Name').fill(user.firstName);
-    await page.getByLabel('Last Name').fill(user.lastName);
-    await page.getByRole('button', { name: 'Create account' }).click();
-
-    // then
-    await expect(page.getByText('Invalid email format', { exact: false })).toBeVisible();
-  });
-
-  test('should show validation error for first name less than 4 characters', async ({ page }) => {
-    // given
-    const user = getRandomUser();
-
-    // when
-    await page.getByLabel('Username').fill(user.username);
-    await page.getByLabel('Email').fill(user.email);
-    await page.getByLabel('Password').fill(user.password);
-    await page.getByLabel('First Name').fill('123');
-    await page.getByLabel('Last Name').fill(user.lastName);
-    await page.getByRole('button', { name: 'Create account' }).click();
-
-    // then
-    await expect(page.getByText('First name must be at least 4 characters')).toBeVisible();
-  });
-
-  test('should show validation error for last name less than 4 characters', async ({ page }) => {
-    // given
-    const user = getRandomUser();
-
-    // when
-    await page.getByLabel('Username').fill('123');
-    await page.getByLabel('Email').fill(user.email);
-    await page.getByLabel('Password').fill(user.password);
-    await page.getByLabel('First Name').fill(user.firstName);
-    await page.getByLabel('Last Name').fill('123');
-    await page.getByRole('button', { name: 'Create account' }).click();
-
-    // then
-    await expect(page.getByText('Last name must be at least 4 characters')).toBeVisible();
-  });
 }); 

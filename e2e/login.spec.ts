@@ -20,8 +20,8 @@ test.describe('Login Page', () => {
     await page.getByRole('button', { name: 'Sign in' }).click();
 
     // then
+    await page.getByText('Welcome').waitFor({ state: 'visible' });
     await expect(page).toHaveURL('/');
-    await expect(page.getByText('Welcome')).toBeVisible();
   });
 
   test('should show error with invalid credentials', async ({ page }) => {
