@@ -60,6 +60,33 @@ describe('Navigation', () => {
   });
 
   // given
+  it('shows QR Code link when authenticated', async () => {
+    // when
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValue({
+      data: {
+        id: 1,
+        username: 'testuser',
+        email: 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        roles: [Role.CLIENT],
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+
+    renderWithProviders(<Navigation />);
+
+    // then
+    await waitFor(() => {
+      expect(screen.getByText('QR Code')).toBeInTheDocument();
+    });
+  });
+
+  // given
   it('handles logout correctly', async () => {
     // when
     localStorage.setItem('token', 'fake-token');

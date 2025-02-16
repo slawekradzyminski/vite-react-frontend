@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type { LoginRequest, LoginResponse, RegisterRequest, User, UserEditDTO } from '../types/auth';
 import type { EmailDto, EmailResponse } from '../types/email';
+import type { CreateQrDto, QrCodeResponse } from '../types/qr';
 
 const api = axios.create({
   baseURL: 'http://localhost:4001',
@@ -60,6 +61,18 @@ export const auth = {
 export const email = {
   send: (data: EmailDto) =>
     api.post<EmailResponse>('/email', data),
+};
+
+export const qr = {
+  create: async (data: CreateQrDto): Promise<QrCodeResponse> => {
+    const response = await api.post('/qr/create', data, {
+      responseType: 'blob',
+    });
+    return {
+      type: 'image/png',
+      data: response.data,
+    };
+  },
 };
 
 export default api; 

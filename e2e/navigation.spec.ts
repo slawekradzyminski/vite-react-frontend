@@ -72,4 +72,45 @@ test.describe('Navigation', () => {
     // verify login link is visible
     await expect(page.getByText('Login')).toBeVisible();
   });
+
+  test('should navigate to QR code page', async ({ page }) => {
+    // given
+    const user = getRandomUser();
+    await registerUser(user);
+    await loginPage.goto();
+    await loginPage.attemptLogin({
+      username: user.username,
+      password: user.password,
+    });
+
+    // when
+    await page.getByText('QR Code').click();
+
+    // then
+    await expect(page).toHaveURL('/qr');
+    await expect(page.getByRole('heading', { name: /qr code generator/i })).toBeVisible();
+  });
+
+  test('should navigate to QR code page in mobile view', async ({ page }) => {
+    // given
+    const user = getRandomUser();
+    await registerUser(user);
+    await page.setViewportSize({ width: 375, height: 667 });
+    await loginPage.goto();
+    await loginPage.attemptLogin({
+      username: user.username,
+      password: user.password,
+    });
+
+    // wait for the page to load completely
+    await page.waitForLoadState('networkidle');
+
+    // when - open mobile menu and click QR Code
+    await page.locator('nav').getByRole('button', { name: 'Open main menu' }).click();
+    await page.getByTestId('mobile-menu-qr code').click();
+
+    // then
+    await expect(page).toHaveURL('/qr');
+    await expect(page.getByRole('heading', { name: /qr code generator/i })).toBeVisible();
+  });
 }); 

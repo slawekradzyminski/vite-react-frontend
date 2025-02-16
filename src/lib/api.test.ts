@@ -1,24 +1,25 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { auth } from './api';
 import { Role } from '../types/auth';
+import { qr } from './api';
 
-const mockPost = vi.hoisted(() => vi.fn());
-const mockGet = vi.hoisted(() => vi.fn());
-const mockPut = vi.hoisted(() => vi.fn());
-const mockDelete = vi.hoisted(() => vi.fn());
+// Hoist mocks
+const mockAxios = vi.hoisted(() => ({
+  interceptors: {
+    request: { use: vi.fn() },
+    response: { use: vi.fn() },
+  },
+  post: vi.fn(),
+  get: vi.fn(),
+  put: vi.fn(),
+  delete: vi.fn(),
+  create: vi.fn(),
+}));
 
 vi.mock('axios', () => ({
   default: {
-    create: () => ({
-      interceptors: {
-        request: { use: vi.fn() },
-        response: { use: vi.fn() },
-      },
-      post: mockPost,
-      get: mockGet,
-      put: mockPut,
-      delete: mockDelete,
-    }),
+    ...mockAxios,
+    create: vi.fn(() => mockAxios),
   },
 }));
 
@@ -38,7 +39,7 @@ describe('auth API', () => {
     it('calls the correct endpoint with credentials', async () => {
       // then
       await auth.login(loginData);
-      expect(mockPost).toHaveBeenCalledWith('/users/signin', loginData);
+      expect(mockAxios.post).toHaveBeenCalledWith('/users/signin', loginData);
     });
   });
 
@@ -57,7 +58,7 @@ describe('auth API', () => {
     it('calls the correct endpoint with user data', async () => {
       // then
       await auth.register(registerData);
-      expect(mockPost).toHaveBeenCalledWith('/users/signup', registerData);
+      expect(mockAxios.post).toHaveBeenCalledWith('/users/signup', registerData);
     });
   });
 
@@ -67,7 +68,7 @@ describe('auth API', () => {
     it('calls the correct endpoint', async () => {
       // then
       await auth.getUsers();
-      expect(mockGet).toHaveBeenCalledWith('/users');
+      expect(mockAxios.get).toHaveBeenCalledWith('/users');
     });
   });
 
@@ -79,7 +80,41 @@ describe('auth API', () => {
       
       // then
       await auth.deleteUser(username);
-      expect(mockDelete).toHaveBeenCalledWith(`/users/${username}`);
+      expect(mockAxios.delete).toHaveBeenCalledWith(`/users/${username}`);
+    });
+  });
+});
+
+describe('API Client', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('QR API', () => {
+    // given
+    it('should generate QR code', async () => {
+      const mockBlob = new Blob(['test'], { type: 'image/png' });
+      mockAxios.post.mockResolvedValue({ data: mockBlob });
+
+      // when
+      const response = await qr.create({ text: 'test' });
+
+      // then
+      expect(mockAxios.post).toHaveBeenCalledWith('/qr/create', { text: 'test' }, { responseType: 'blob' });
+      expect(response.type).toBe('image/png');
+      expect(response.data).toBeInstanceOf(Blob);
+    });
+
+    // given
+    it('should handle API errors', async () => {
+      const error = new Error('API Error');
+      mockAxios.post.mockRejectedValue(error);
+
+      // when
+      const promise = qr.create({ text: '' });
+
+      // then
+      await expect(promise).rejects.toThrow('API Error');
     });
   });
 }); 

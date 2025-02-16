@@ -38,6 +38,7 @@ src/
   - Delete users (admin only)
 - Modern UI components
 - Type-safe API calls
+- QR code generator
 - Responsive design
 
 ## Development Setup

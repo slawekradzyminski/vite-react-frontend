@@ -5,6 +5,7 @@ import { HomePage } from './pages/home';
 import { UsersPage } from './pages/users';
 import { EditUserPage } from './pages/edit-user';
 import { EmailPage } from './pages/email';
+import { QrCodePage } from './pages/qr';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 export function AppRoutes() {
@@ -41,6 +42,14 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <EmailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/qr"
+        element={
+          <ProtectedRoute>
+            <QrCodePage />
           </ProtectedRoute>
         }
       />

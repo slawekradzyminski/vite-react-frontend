@@ -126,6 +126,18 @@ File: pom.xml
             <scope>runtime</scope>
         </dependency>
 
+        <!-- QR codes -->
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.5.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>javase</artifactId>
+            <version>3.5.3</version>
+        </dependency>
+
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -780,6 +792,55 @@ public class ProductController {
                 : ResponseEntity.notFound().build();
     }
 } 
+
+================================================
+File: src/main/java/com/awesome/testing/controller/QrController.java
+================================================
+package com.awesome.testing.controller;
+
+import com.awesome.testing.dto.qr.CreateQrDto;
+import com.awesome.testing.service.QrService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import org.springframework.http.MediaType;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+
+@RestController
+@RequestMapping("/qr")
+@Tag(name = "QR", description = "Endpoint for QR code generation")
+@RequiredArgsConstructor
+public class QrController {
+
+    private final QrService qrService;
+
+    @SneakyThrows
+    @PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.IMAGE_PNG_VALUE)
+    @Operation(summary = "Generator QR code", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully generated QR code"),
+            @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public byte[] createQrCode(@RequestBody @Validated CreateQrDto createQrDto) {
+        BufferedImage qrImage = qrService.generateQrCode(createQrDto.getText());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(qrImage, "png", baos);
+        return baos.toByteArray();
+    }
+
+}
+
 
 ================================================
 File: src/main/java/com/awesome/testing/controller/cart/CartController.java
@@ -1998,6 +2059,30 @@ public class ProductUpdateDto {
 }
 
 ================================================
+File: src/main/java/com/awesome/testing/dto/qr/CreateQrDto.java
+================================================
+package com.awesome.testing.dto.qr;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Schema(description = "QR link")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class CreateQrDto {
+
+    @NotBlank(message = "Text is required")
+    @Schema(description = "Text to use in QR code", example = "https://awesome-testing.com")
+    private String text;
+
+}
+
+
+================================================
 File: src/main/java/com/awesome/testing/dto/user/LoginDto.java
 ================================================
 package com.awesome.testing.dto.user;
@@ -2946,6 +3031,56 @@ public class EmailConfig {
 
 
 ================================================
+File: src/main/java/com/awesome/testing/qr/QrGenerator.java
+================================================
+package com.awesome.testing.qr;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.qrcode.QRCodeWriter;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
+import org.springframework.stereotype.Component;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Component
+public class QrGenerator {
+
+    @SneakyThrows
+    public static BufferedImage generateQRCodeImage(String barcodeText) {
+        QRCodeWriter barcodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix =
+                barcodeWriter.encode(barcodeText, BarcodeFormat.QR_CODE, 400, 400);
+
+        return MatrixToImageWriter.toBufferedImage(bitMatrix);
+    }
+
+    @SneakyThrows
+    public static void saveImage(BufferedImage bufferedImage, File qrCodeFile) {
+        ImageIO.write(bufferedImage, "png", qrCodeFile);
+    }
+
+    @SneakyThrows
+    public static String readQRCode(File file) {
+        BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(
+                new BufferedImageLuminanceSource(ImageIO.read(file))));
+        return new MultiFormatReader().decode(binaryBitmap).getText();
+    }
+
+}
+
+
+================================================
 File: src/main/java/com/awesome/testing/repository/CartItemRepository.java
 ================================================
 package com.awesome.testing.repository;
@@ -3775,6 +3910,27 @@ public class ProductService {
 }
 
 ================================================
+File: src/main/java/com/awesome/testing/service/QrService.java
+================================================
+package com.awesome.testing.service;
+
+import com.awesome.testing.qr.QrGenerator;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.awt.image.BufferedImage;
+
+@Service
+@RequiredArgsConstructor
+public class QrService {
+
+    public BufferedImage generateQrCode(String text) {
+        return QrGenerator.generateQRCodeImage(text);
+    }
+}
+
+
+================================================
 File: src/main/java/com/awesome/testing/service/UserService.java
 ================================================
 package com.awesome.testing.service;
@@ -4140,4 +4296,3 @@ UserController:
 
 JmsSender:
   sendEmail: Sending email to Active MQ
-

@@ -76,7 +76,6 @@ export function EmailForm({ onSubmit, isLoading = false }: EmailFormProps) {
           id="message"
           className="mt-1"
           placeholder="Your message"
-          error={errors.message?.message}
           {...register('message')}
         />
         {errors.message?.message && (

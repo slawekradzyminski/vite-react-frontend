@@ -32,6 +32,7 @@ export function Navigation() {
     { label: 'Products', path: '/products' },
     { label: 'Cart', path: '/cart' },
     { label: 'Send Email', path: '/email' },
+    { label: 'QR Code', path: '/qr' },
     { label: 'Profile', path: '/profile' },
   ];
 
