@@ -56,7 +56,7 @@ describe('Navigation', () => {
       expect(screen.getByText('Test User')).toBeInTheDocument();
       expect(screen.getByText('Logout')).toBeInTheDocument();
       expect(screen.queryByText('Login')).not.toBeInTheDocument();
-    });
+    }, { timeout: 2000 });
   });
 
   // given
@@ -83,6 +83,60 @@ describe('Navigation', () => {
     // then
     await waitFor(() => {
       expect(screen.getByText('QR Code')).toBeInTheDocument();
+    });
+  });
+
+  // given
+  it('shows Users link when user is admin', async () => {
+    // when
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValue({
+      data: {
+        id: 1,
+        username: 'admin',
+        email: 'admin@example.com',
+        firstName: 'Admin',
+        lastName: 'User',
+        roles: [Role.ADMIN],
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+
+    renderWithProviders(<Navigation />);
+
+    // then
+    await waitFor(() => {
+      expect(screen.getByText('Users')).toBeInTheDocument();
+    });
+  });
+
+  // given
+  it('does not show Users link for non-admin users', async () => {
+    // when
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValue({
+      data: {
+        id: 1,
+        username: 'testuser',
+        email: 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        roles: [Role.CLIENT],
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+
+    renderWithProviders(<Navigation />);
+
+    // then
+    await waitFor(() => {
+      expect(screen.queryByText('Users')).not.toBeInTheDocument();
     });
   });
 
@@ -118,8 +172,28 @@ describe('Navigation', () => {
   // given
   it('toggles mobile menu correctly', async () => {
     // when
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValueOnce({
+      data: {
+        id: 1,
+        username: 'testuser',
+        email: 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        roles: [Role.CLIENT],
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+
     renderWithProviders(<Navigation />);
-    
+
+    await waitFor(() => {
+      expect(screen.getByText('Test User')).toBeInTheDocument();
+    }, { timeout: 2000 });
+
     const menuButton = screen.getByRole('button', { name: /open main menu/i });
     await user.click(menuButton);
 
@@ -130,7 +204,7 @@ describe('Navigation', () => {
     expect(mobileMenu).toHaveTextContent('Products');
     expect(mobileMenu).toHaveTextContent('Cart');
     expect(mobileMenu).toHaveTextContent('Send Email');
-    expect(mobileMenu).toHaveTextContent('Profile');
+    expect(mobileMenu).not.toHaveTextContent('Users');
 
     // when
     await user.click(menuButton);
@@ -140,13 +214,67 @@ describe('Navigation', () => {
   });
 
   // given
-  it('closes mobile menu when a link is clicked', async () => {
+  it('shows Users link in mobile menu for admin users', async () => {
     // when
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValueOnce({
+      data: {
+        id: 1,
+        username: 'admin',
+        email: 'admin@example.com',
+        firstName: 'Admin',
+        lastName: 'User',
+        roles: [Role.ADMIN],
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+
     renderWithProviders(<Navigation />);
-    
+
+    await waitFor(() => {
+      expect(screen.getByText('Admin User')).toBeInTheDocument();
+    }, { timeout: 2000 });
+
     const menuButton = screen.getByRole('button', { name: /open main menu/i });
     await user.click(menuButton);
-    
+
+    // then
+    const mobileMenu = screen.getByTestId('mobile-menu');
+    expect(mobileMenu).toBeVisible();
+    expect(mobileMenu).toHaveTextContent('Users');
+  });
+
+  // given
+  it('closes mobile menu when a link is clicked', async () => {
+    // when
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValueOnce({
+      data: {
+        id: 1,
+        username: 'testuser',
+        email: 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        roles: [Role.CLIENT],
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+
+    renderWithProviders(<Navigation />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Test User')).toBeInTheDocument();
+    }, { timeout: 2000 });
+
+    const menuButton = screen.getByRole('button', { name: /open main menu/i });
+    await user.click(menuButton);
+
     const mobileHomeLink = screen.getByTestId('mobile-menu-home');
     await user.click(mobileHomeLink);
 

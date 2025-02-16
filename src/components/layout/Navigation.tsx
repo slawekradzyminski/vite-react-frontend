@@ -4,6 +4,7 @@ import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { auth } from '../../lib/api';
 import { Button } from '../ui/button';
+import { Role } from '../../types/auth';
 
 export function Navigation() {
   const navigate = useNavigate();
@@ -27,13 +28,15 @@ export function Navigation() {
     setIsOpen(!isOpen);
   };
 
+  const isAdmin = user?.data?.roles.includes(Role.ADMIN);
+
   const menuItems = [
     { label: 'Home', path: '/' },
     { label: 'Products', path: '/products' },
     { label: 'Cart', path: '/cart' },
     { label: 'Send Email', path: '/email' },
     { label: 'QR Code', path: '/qr' },
-    { label: 'Profile', path: '/profile' },
+    ...(isAdmin ? [{ label: 'Users', path: '/users' }] : []),
   ];
 
   return (

@@ -1,24 +1,26 @@
-import { ReactNode } from 'react';
 import { render } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastProvider } from '../components/ui/toast';
+import { Theme } from '@radix-ui/themes';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
+export function renderWithProviders(ui: React.ReactElement) {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
     },
-  },
-});
+  });
 
-export function renderWithProviders(ui: ReactNode) {
   return render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <ToastProvider>
-          {ui}
-        </ToastProvider>
+        <Theme>
+          <ToastProvider>
+            {ui}
+          </ToastProvider>
+        </Theme>
       </BrowserRouter>
     </QueryClientProvider>
   );
