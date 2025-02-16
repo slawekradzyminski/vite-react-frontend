@@ -4,6 +4,7 @@ import { RegisterPage } from './pages/register';
 import { HomePage } from './pages/home';
 import { UsersPage } from './pages/users';
 import { EditUserPage } from './pages/edit-user';
+import { EmailPage } from './pages/email';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 export function AppRoutes() {
@@ -32,6 +33,14 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <EditUserPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/email"
+        element={
+          <ProtectedRoute>
+            <EmailPage />
           </ProtectedRoute>
         }
       />

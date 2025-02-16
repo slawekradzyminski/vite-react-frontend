@@ -20,7 +20,7 @@ Implement mail sending functionality for registered users, integrating with the 
    - Create `src/pages/email/index.tsx`
    - Protect route using existing `ProtectedRoute` component
    - Form for composing and sending emails:
-     - To field (autocomplete with registered users)
+     - To field (autocomplete with registered users from `/users` endpoint)
      - Subject field
      - Message field (rich text editor)
    - Loading states and error handling
@@ -33,8 +33,8 @@ Implement mail sending functionality for registered users, integrating with the 
    - Error message display
    - Success feedback
 
-## 3. Types and Validators
-1. **Types (`src/types/email.ts`)**
+## 3. Types and Validators ✅
+1. **Types (`src/types/email.ts`)** ✅
    ```typescript
    interface EmailDto {
      to: string;
@@ -50,24 +50,24 @@ Implement mail sending functionality for registered users, integrating with the 
    }
    ```
 
-2. **Validators (`src/validators/email.ts`)**
+2. **Validators (`src/validators/email.ts`)** ✅
    - Validation schema for email form:
      - To: required, valid email, must exist in system
      - Subject: required, min/max length
      - Message: required, min/max length
    - Error messages for validation failures
 
-## 4. API Integration
-1. **API Client (`src/lib/api.ts`)**
-   - Add email-related functions:
+## 4. API Integration ✅
+1. **API Client (`src/lib/api.ts`)** ✅
+   - Add email-related function:
      ```typescript
      email: {
        send: (data: EmailDto) => api.post<EmailResponse>('/email', data),
-       getUsers: () => api.get<string[]>('/email/users'),
      }
      ```
    - Handle response status codes (200, 400, 401)
    - Add proper error handling
+   - Skip auth header for public endpoints (login/register)
 
 ## 5. State Management
 - Add email-related mutations using React Query:
@@ -78,7 +78,7 @@ Implement mail sending functionality for registered users, integrating with the 
     onError: (error) => showErrorToast(error),
   });
   ```
-- Add query for fetching users list
+- Use existing `auth.getUsers()` query for recipient autocomplete
 - Handle loading and error states
 - Show success/error notifications using toast
 
@@ -89,6 +89,7 @@ Implement mail sending functionality for registered users, integrating with the 
    - Test loading states
    - Test error handling
    - Test success notifications
+   - Test recipient autocomplete
 
 2. **API Integration Tests**
    - Test successful email sending
@@ -102,12 +103,13 @@ Implement mail sending functionality for registered users, integrating with the 
 
 ## Implementation Order
 1. ✅ Create navigation structure
-2. Create email types and validators
-3. Create email form component
-4. Integrate API endpoint
-5. Add tests for each component
-6. Polish UI and UX
-7. Final testing and bug fixes
+2. ✅ Create email types and validators
+3. ✅ Update API client
+4. Create email form component
+5. Create email page
+6. Add tests for each component
+7. Polish UI and UX
+8. Final testing and bug fixes
 
 ## Technical Considerations
 - Ensure proper error handling
@@ -116,4 +118,4 @@ Implement mail sending functionality for registered users, integrating with the 
 - Implement proper form validation
 - Ensure responsive design
 - Handle unauthorized scenarios
-- Validate recipient email exists in the system 
+- Use existing users list for recipient validation 

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { LoginRequest, LoginResponse, RegisterRequest, User, UserEditDTO } from '../types/auth';
+import type { EmailDto, EmailResponse } from '../types/email';
 
 const api = axios.create({
   baseURL: 'http://localhost:4001',
@@ -8,7 +9,13 @@ const api = axios.create({
   },
 });
 
+const PUBLIC_ENDPOINTS = ['/users/signin', '/users/signup'];
+
 api.interceptors.request.use((config) => {
+  if (config.url && PUBLIC_ENDPOINTS.includes(config.url)) {
+    return config;
+  }
+
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -48,6 +55,11 @@ export const auth = {
 
   updateUser: (username: string, data: UserEditDTO) =>
     api.put<User>(`/users/${username}`, data),
+};
+
+export const email = {
+  send: (data: EmailDto) =>
+    api.post<EmailResponse>('/email', data),
 };
 
 export default api; 
