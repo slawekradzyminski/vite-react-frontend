@@ -1,167 +1,4 @@
 ================================================
-File: README.md
-================================================
-# Secure Backend API with E-commerce Features
-
-A secure backend API built with Spring Boot that provides user authentication, authorization, email functionality, and e-commerce features.
-
-## Features
-
-- User authentication with JWT tokens
-- Role-based authorization (ADMIN and CLIENT roles)
-- User management (signup, signin, edit, delete)
-- Email sending functionality via ActiveMQ
-- Product management
-- Shopping cart functionality
-- Order management
-- Swagger/OpenAPI documentation
-- Comprehensive test coverage
-
-## Technologies
-
-- Java 17
-- Spring Boot 3.x
-- Spring Security with JWT
-- Spring Data JPA
-- ActiveMQ for email queue
-- H2 Database (for development)
-- JUnit 5 for testing
-- Swagger/OpenAPI for documentation
-
-## Getting Started
-
-### Prerequisites
-
-- Java 17 or higher
-- Maven 3.x
-- ActiveMQ (for email functionality)
-
-### Running the Application
-
-1. Clone the repository
-2. Configure ActiveMQ connection in `application.yml`
-3. Run the application:
-   ```bash
-   mvn spring-boot:run
-   ```
-
-The application will start on `http://localhost:8080`
-
-### Running Tests
-
-```bash
-mvn test
-```
-
-## API Documentation
-
-Once the application is running, you can access the Swagger UI at:
-`http://localhost:4001/swagger-ui/index.html`
-
-## API Endpoints
-
-### Authentication
-- POST `/users/signin` - Authenticate user and get JWT token
-- POST `/users/signup` - Register a new user
-- GET `/users/refresh` - Refresh JWT token
-
-### User Management
-- GET `/users/me` - Get current user information
-- GET `/users` - Get all users (ADMIN only)
-- GET `/users/{username}` - Get user by username
-- PUT `/users/{username}` - Update user
-- DELETE `/users/{username}` - Delete user (ADMIN only)
-
-### Products
-- GET `/api/products` - Get all products (authenticated)
-- GET `/api/products/{id}` - Get product by ID (authenticated)
-- POST `/api/products` - Create new product (ADMIN only)
-- PUT `/api/products/{id}` - Update product (ADMIN only)
-- DELETE `/api/products/{id}` - Delete product (ADMIN only)
-
-### Shopping Cart
-- GET `/api/cart` - Get current user's cart
-- POST `/api/cart/items` - Add item to cart
-- PUT `/api/cart/items/{productId}` - Update item quantity
-- DELETE `/api/cart/items/{productId}` - Remove item from cart
-- DELETE `/api/cart` - Clear cart
-
-### Orders
-- POST `/api/orders` - Create a new order
-- GET `/api/orders` - Get user's orders
-- GET `/api/orders/{id}` - Get order by ID
-- PUT `/api/orders/{id}/status` - Update order status (ADMIN only)
-- POST `/api/orders/{id}/cancel` - Cancel order
-
-### Email
-- POST `/email` - Send an email (authenticated users only)
-
-## Security
-
-- JWT tokens for authentication
-- Password encryption using BCrypt
-- Role-based access control
-- Cross-Origin Resource Sharing (CORS) configured for localhost:8081
-
-## Error Handling
-
-The API uses standard HTTP status codes:
-- 200: Success
-- 201: Created
-- 400: Bad Request
-- 401: Unauthorized
-- 403: Forbidden
-- 404: Not Found
-- 422: Unprocessable Entity
-- 500: Internal Server Error
-
-## Development
-
-### Project Structure
-
-```
-src/
-├── main/
-│   ├── java/
-│   │   └── com/awesome/testing/
-│   │       ├── controller/    # REST controllers
-│   │       ├── dto/          # Data Transfer Objects
-│   │       ├── model/        # Domain models
-│   │       ├── repository/   # Data access layer
-│   │       ├── security/     # Security configuration
-│   │       └── service/      # Business logic
-│   └── resources/
-│       └── application.yml   # Application configuration
-└── test/
-    └── java/
-        └── com/awesome/testing/
-            └── endpoints/     # Integration tests
-```
-
-### AI Debugging Tips
-
-When working with AI assistants, keep in mind:
-
-1. Test failures may be caused by recent changes since git HEAD is kept stable. To see the changes use:
-   ```bash
-   git --no-pager diff
-   ```
-
-2. To run a single test and save the output to the testlogs folder, use JUnit notation:
-   ```bash
-   mvn test -Dtest=TestClassName#testMethodName > ./testlogs/test-output.log
-   ```
-   This helps in analyzing test failures by providing detailed logs.
-
-3. The test logs can be read and analyzed by AI to help diagnose issues.
-
-4. When making changes, always verify that all tests pass using:
-   ```bash
-   mvn test
-   ```
-
-
-================================================
 File: pom.xml
 ================================================
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -185,7 +22,7 @@ File: pom.xml
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.1</version>
+        <version>3.4.2</version>
         <relativePath/>
     </parent>
 
@@ -211,9 +48,29 @@ File: pom.xml
             <artifactId>spring-boot-starter-artemis</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-jms-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-jms-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.zalando</groupId>
             <artifactId>logbook-spring-boot-starter</artifactId>
-            <version>3.7.2</version>
+            <version>3.10.0</version>
         </dependency>
 
         <!-- Jakarta EE -->
@@ -253,21 +110,20 @@ File: pom.xml
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.8.1</version>
+            <version>2.8.4</version>
         </dependency>
 
         <!-- H2 Database -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>runtime</scope>
         </dependency>
 
-        <!-- ModelMapper -->
+        <!-- PostgreSQL -->
         <dependency>
-            <groupId>org.modelmapper</groupId>
-            <artifactId>modelmapper</artifactId>
-            <version>3.2.0</version>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- Lombok -->
@@ -286,6 +142,12 @@ File: pom.xml
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.datafaker</groupId>
+            <artifactId>datafaker</artifactId>
+            <version>2.4.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -322,42 +184,193 @@ package com.awesome.testing;
 
 import com.awesome.testing.fakedata.SetupData;
 
-import org.modelmapper.ModelMapper;
-import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 public class JwtAuthServiceApp implements CommandLineRunner {
 
-    @Autowired
+    @Autowired(required = false)
     private SetupData setupData;
 
     public static void main(String[] args) {
         SpringApplication.run(JwtAuthServiceApp.class, args);
     }
 
-    @Bean
-    public ModelMapper modelMapper() {
-        ModelMapper modelMapper = new ModelMapper();
-        modelMapper.getConfiguration()
-                .setMatchingStrategy(MatchingStrategies.STRICT)
-                .setFieldMatchingEnabled(true)
-                .setFieldAccessLevel(org.modelmapper.config.Configuration.AccessLevel.PRIVATE)
-                .setSkipNullEnabled(true)
-                .setPropertyCondition(context -> context.getSource() != null);
-        return modelMapper;
-    }
-
     @Override
     public void run(String... params) {
-        setupData.setupData();
+        if (setupData != null) {
+            setupData.setupData();
+        }
     }
 }
 
+
+================================================
+File: src/main/java/com/awesome/testing/config/DockerisedConfig.java
+================================================
+package com.awesome.testing.config;
+
+import jakarta.persistence.EntityManagerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
+import org.springframework.data.transaction.ChainedTransactionManager;
+import org.springframework.jms.connection.JmsTransactionManager;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
+import org.springframework.beans.factory.annotation.Value;
+
+@SuppressWarnings("unused")
+@Configuration
+@Profile("!local")
+public class DockerisedConfig {
+
+    @Value("${spring.artemis.broker-url}")
+    private String brokerUrl;
+
+    @Value("${spring.artemis.user}")
+    private String username;
+
+    @Value("${spring.artemis.password}")
+    private String password;
+
+    @Bean
+    public ActiveMQConnectionFactory connectionFactory() {
+        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(brokerUrl);
+        connectionFactory.setUser(username);
+        connectionFactory.setPassword(password);
+        return connectionFactory;
+    }
+
+    @Bean(name = "jpaTransactionManager")
+    public PlatformTransactionManager jpaTransactionManager(EntityManagerFactory entityManagerFactory) {
+        return new JpaTransactionManager(entityManagerFactory);
+    }
+
+    @Bean(name = "jmsTransactionManager")
+    public PlatformTransactionManager jmsTransactionManager() {
+        return new JmsTransactionManager(connectionFactory());
+    }
+
+    @Primary
+    @Bean(name = "transactionManager")
+    public PlatformTransactionManager transactionManager(
+            EntityManagerFactory entityManagerFactory,
+            ActiveMQConnectionFactory connectionFactory) {
+        return new ChainedTransactionManager(
+                jpaTransactionManager(entityManagerFactory),
+                jmsTransactionManager()
+        );
+    }
+} 
+
+================================================
+File: src/main/java/com/awesome/testing/config/LocalConfig.java
+================================================
+package com.awesome.testing.config;
+
+import jakarta.persistence.EntityManagerFactory;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.activemq.artemis.api.core.TransportConfiguration;
+import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
+import org.apache.activemq.artemis.core.remoting.impl.invm.InVMConnectorFactory;
+import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
+import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
+import org.springframework.jms.support.converter.MessageConverter;
+import org.springframework.jms.support.converter.MessageType;
+import org.springframework.jms.connection.CachingConnectionFactory;
+import org.springframework.jms.connection.JmsTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.data.transaction.ChainedTransactionManager;
+import org.springframework.orm.jpa.JpaTransactionManager;
+
+@SuppressWarnings("unused")
+@Slf4j
+@Configuration
+@Profile("local")
+public class LocalConfig {
+
+    @SneakyThrows
+    @Bean(initMethod = "start", destroyMethod = "stop")
+    public EmbeddedActiveMQ embeddedActiveMQ() {
+        EmbeddedActiveMQ embeddedActiveMQ = new EmbeddedActiveMQ();
+        ConfigurationImpl configuration = new ConfigurationImpl();
+        configuration.setPersistenceEnabled(false);
+        configuration.setSecurityEnabled(false);
+        configuration.addAcceptorConfiguration("invm", "vm://0");
+        configuration.addConnectorConfiguration("invm", new TransportConfiguration(InVMConnectorFactory.class.getName()));
+        embeddedActiveMQ.setConfiguration(configuration);
+        return embeddedActiveMQ;
+    }
+
+    @Bean
+    public ActiveMQConnectionFactory connectionFactory(EmbeddedActiveMQ embeddedActiveMQ) {
+        ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory("vm://0");
+        factory.setUser("admin");
+        factory.setPassword("admin");
+        return factory;
+    }
+
+    @Bean
+    public CachingConnectionFactory cachingConnectionFactory(ActiveMQConnectionFactory connectionFactory) {
+        CachingConnectionFactory cachingConnectionFactory = new CachingConnectionFactory();
+        cachingConnectionFactory.setTargetConnectionFactory(connectionFactory);
+        cachingConnectionFactory.setSessionCacheSize(10);
+        cachingConnectionFactory.setCacheConsumers(false);
+        cachingConnectionFactory.setCacheProducers(true);
+        return cachingConnectionFactory;
+    }
+
+    @Bean
+    public MessageConverter jacksonJmsMessageConverter() {
+        MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
+        converter.setTargetType(MessageType.TEXT);
+        converter.setTypeIdPropertyName("_awesome_");
+        return converter;
+    }
+
+    @Bean
+    public JmsTemplate jmsTemplate(CachingConnectionFactory cachingConnectionFactory, MessageConverter messageConverter) {
+        JmsTemplate jmsTemplate = new JmsTemplate(cachingConnectionFactory);
+        jmsTemplate.setMessageConverter(messageConverter);
+        jmsTemplate.setSessionTransacted(true);
+        jmsTemplate.setDefaultDestinationName("email");
+        return jmsTemplate;
+    }
+
+    @Bean(name = "jpaTransactionManager")
+    public PlatformTransactionManager jpaTransactionManager(EntityManagerFactory entityManagerFactory) {
+        return new JpaTransactionManager(entityManagerFactory);
+    }
+
+    @Bean(name = "jmsTransactionManager")
+    public PlatformTransactionManager jmsTransactionManager(CachingConnectionFactory cachingConnectionFactory) {
+        return new JmsTransactionManager(cachingConnectionFactory);
+    }
+
+    @Primary
+    @Bean(name = "transactionManager")
+    public PlatformTransactionManager transactionManager(
+            EntityManagerFactory entityManagerFactory,
+            CachingConnectionFactory cachingConnectionFactory) {
+        return new ChainedTransactionManager(
+                jpaTransactionManager(entityManagerFactory),
+                jmsTransactionManager(cachingConnectionFactory)
+        );
+    }
+} 
 
 ================================================
 File: src/main/java/com/awesome/testing/config/LogbookConfig.java
@@ -370,6 +383,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zalando.logbook.HttpLogFormatter;
 
+@SuppressWarnings("unused")
 @Configuration
 public class LogbookConfig {
 
@@ -398,6 +412,7 @@ import lombok.RequiredArgsConstructor;
 import org.zalando.logbook.*;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -428,7 +443,7 @@ public class PrettyPrintingHttpLogFormatter implements HttpLogFormatter {
 
     private Map<String, Object> toJson(HttpRequest request, Precorrelation precorrelation) throws IOException {
         String body = request.getBodyAsString();
-        Map<String, Object> content = Map.of(
+        return Map.of(
                 "origin", "remote",
                 "type", "request",
                 "correlation", precorrelation.getId(),
@@ -438,12 +453,11 @@ public class PrettyPrintingHttpLogFormatter implements HttpLogFormatter {
                 "headers", request.getHeaders(),
                 "body", body
         );
-        return content;
     }
 
     private Map<String, Object> toJson(HttpResponse response, Correlation correlation) throws IOException {
         String body = response.getBodyAsString();
-        Map<String, Object> content = Map.of(
+        return Map.of(
                 "origin", "local",
                 "type", "response",
                 "correlation", correlation.getId(),
@@ -453,14 +467,13 @@ public class PrettyPrintingHttpLogFormatter implements HttpLogFormatter {
                 "headers", response.getHeaders(),
                 "body", body
         );
-        return content;
     }
 
     private String formatWithPrettyBody(Map<String, Object> content) throws JsonProcessingException {
         if (content.containsKey("body") && content.get("body") instanceof String) {
             try {
                 Object body = mapper.readValue((String) content.get("body"), Object.class);
-                Map<String, Object> mutableContent = new java.util.HashMap<>(content);
+                Map<String, Object> mutableContent = new HashMap<>(content);
                 mutableContent.put("body", body);
                 content = mutableContent;
             } catch (JsonProcessingException ignored) {
@@ -472,9 +485,9 @@ public class PrettyPrintingHttpLogFormatter implements HttpLogFormatter {
 } 
 
 ================================================
-File: src/main/java/com/awesome/testing/configuration/SwaggerConfig.java
+File: src/main/java/com/awesome/testing/config/SwaggerConfig.java
 ================================================
-package com.awesome.testing.configuration;
+package com.awesome.testing.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -511,137 +524,47 @@ public class SwaggerConfig {
 
 
 ================================================
-File: src/main/java/com/awesome/testing/controller/CartController.java
+File: src/main/java/com/awesome/testing/controller/EmailController.java
 ================================================
 package com.awesome.testing.controller;
 
-import com.awesome.testing.dto.CartDTO;
-import com.awesome.testing.dto.CartItemDTO;
-import com.awesome.testing.service.CartService;
+import com.awesome.testing.dto.email.EmailDto;
+import com.awesome.testing.service.EmailService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-
-@RestController
-@RequestMapping("/api/cart")
-@RequiredArgsConstructor
-@Tag(name = "Cart", description = "Shopping cart management endpoints")
-public class CartController {
-
-    private final CartService cartService;
-
-    @GetMapping
-    @Operation(summary = "Get current user's cart", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully retrieved cart"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
-    public ResponseEntity<CartDTO> getCart(@AuthenticationPrincipal Object principal) {
-        return ResponseEntity.ok(cartService.getCart(principal.toString()));
-    }
-
-    @PostMapping("/items")
-    @Operation(summary = "Add item to cart", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Item added successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid input"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized"),
-        @ApiResponse(responseCode = "404", description = "Product not found")
-    })
-    public ResponseEntity<CartDTO> addToCart(
-            @AuthenticationPrincipal Object principal,
-            @Valid @RequestBody CartItemDTO cartItemDTO) {
-        return ResponseEntity.ok(cartService.addToCart(principal.toString(), cartItemDTO));
-    }
-
-    @PutMapping("/items/{productId}")
-    @Operation(summary = "Update item quantity", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Item quantity updated successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid input"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized"),
-        @ApiResponse(responseCode = "404", description = "Cart item not found")
-    })
-    public ResponseEntity<CartDTO> updateCartItem(
-            @AuthenticationPrincipal Object principal,
-            @PathVariable Long productId,
-            @Valid @RequestBody CartItemDTO cartItemDTO) {
-        return ResponseEntity.ok(cartService.updateCartItem(principal.toString(), productId, cartItemDTO));
-    }
-
-    @DeleteMapping("/items/{productId}")
-    @Operation(summary = "Remove item from cart", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Item removed successfully"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized"),
-        @ApiResponse(responseCode = "404", description = "Cart item not found")
-    })
-    public ResponseEntity<CartDTO> removeFromCart(
-            @AuthenticationPrincipal Object principal,
-            @PathVariable Long productId) {
-        return ResponseEntity.ok(cartService.removeFromCart(principal.toString(), productId));
-    }
-
-    @DeleteMapping
-    @Operation(summary = "Clear cart", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Cart cleared successfully"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
-    public ResponseEntity<Void> clearCart(@AuthenticationPrincipal Object principal) {
-        cartService.clearCart(principal.toString());
-        return ResponseEntity.ok().build();
-    }
-} 
-
-================================================
-File: src/main/java/com/awesome/testing/controller/EmailController.java
-================================================
-package com.awesome.testing.controller;
-
-import com.awesome.testing.dto.EmailDTO;
-import com.awesome.testing.service.EmailService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-
-@CrossOrigin(origins = "http://localhost:8081", maxAge = 3600)
 @RestController
 @RequestMapping("/email")
 @Tag(name = "email", description = "Email sending endpoints")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class EmailController {
 
     private final EmailService emailService;
 
+    @Value("${activemq.destination}")
+    private String destination;
+
     @PostMapping
-    @Operation(summary = "Send an email")
-    @ApiResponses(value = {
+    @Operation(summary = "Send email")
+    @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Email sent successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data", content = @Content),
-            @ApiResponse(responseCode = "500", description = "Error sending email", content = @Content)
+            @ApiResponse(responseCode = "400", description = "Invalid email data", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public ResponseEntity<Void> sendEmail(
-            @Parameter(description = "Email details") @Valid @RequestBody EmailDTO emailDTO) {
-        emailService.sendEmail(emailDTO);
+    public ResponseEntity<Void> sendEmail(@RequestBody @Valid EmailDto emailDto) {
+        emailService.sendEmail(emailDto, destination);
         return ResponseEntity.ok().build();
     }
-
 }
 
 
@@ -650,14 +573,15 @@ File: src/main/java/com/awesome/testing/controller/OrderController.java
 ================================================
 package com.awesome.testing.controller;
 
-import com.awesome.testing.dto.AddressDTO;
-import com.awesome.testing.dto.OrderDTO;
-import com.awesome.testing.dto.PageDTO;
-import com.awesome.testing.model.OrderStatus;
+import com.awesome.testing.dto.order.AddressDto;
+import com.awesome.testing.dto.order.OrderDto;
+import com.awesome.testing.dto.order.PageDto;
+import com.awesome.testing.dto.order.OrderStatus;
 import com.awesome.testing.security.CustomPrincipal;
 import com.awesome.testing.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -684,14 +608,13 @@ public class OrderController {
     @Operation(summary = "Create a new order from cart")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Order created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input or empty cart"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "403", description = "Forbidden")
+            @ApiResponse(responseCode = "400", description = "Invalid input or empty cart", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public ResponseEntity<OrderDTO> createOrder(
+    public ResponseEntity<OrderDto> createOrder(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomPrincipal principal,
-            @Valid @RequestBody AddressDTO addressDTO) {
-        OrderDTO order = orderService.createOrder(principal.getUsername(), addressDTO);
+            @Valid @RequestBody AddressDto addressDto) {
+        OrderDto order = orderService.createOrder(principal.getUsername(), addressDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
 
@@ -699,14 +622,14 @@ public class OrderController {
     @Operation(summary = "Get user's orders")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Orders retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public ResponseEntity<PageDTO<OrderDTO>> getUserOrders(
+    public ResponseEntity<PageDto<OrderDto>> getUserOrders(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomPrincipal principal,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) OrderStatus status) {
-        return ResponseEntity.ok(PageDTO.from(
+        return ResponseEntity.ok(PageDto.from(
                 orderService.getUserOrders(principal.getUsername(), status, PageRequest.of(page, size))
         ));
     }
@@ -715,10 +638,10 @@ public class OrderController {
     @Operation(summary = "Get order by ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Order retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "404", description = "Order not found")
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Order not found", content = @Content)
     })
-    public ResponseEntity<OrderDTO> getOrder(
+    public ResponseEntity<OrderDto> getOrder(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomPrincipal principal,
             @PathVariable Long id) {
         return ResponseEntity.ok(orderService.getOrder(principal.getUsername(), id));
@@ -729,12 +652,12 @@ public class OrderController {
     @Operation(summary = "Update order status (Admin only)")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Order status updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid status transition"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "403", description = "Forbidden"),
-            @ApiResponse(responseCode = "404", description = "Order not found")
+            @ApiResponse(responseCode = "400", description = "Invalid status transition", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Order not found", content = @Content)
     })
-    public ResponseEntity<OrderDTO> updateOrderStatus(
+    public ResponseEntity<OrderDto> updateOrderStatus(
             @PathVariable Long id,
             @RequestBody OrderStatus status) {
         return ResponseEntity.ok(orderService.updateOrderStatus(id, status));
@@ -744,11 +667,11 @@ public class OrderController {
     @Operation(summary = "Cancel order")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Order cancelled successfully"),
-            @ApiResponse(responseCode = "400", description = "Order cannot be cancelled"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "404", description = "Order not found")
+            @ApiResponse(responseCode = "400", description = "Order cannot be cancelled", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Order not found", content = @Content)
     })
-    public ResponseEntity<OrderDTO> cancelOrder(
+    public ResponseEntity<OrderDto> cancelOrder(
             @Parameter(hidden = true) @AuthenticationPrincipal CustomPrincipal principal,
             @PathVariable Long id) {
         return ResponseEntity.ok(orderService.updateOrderStatus(id, OrderStatus.CANCELLED));
@@ -760,10 +683,12 @@ File: src/main/java/com/awesome/testing/controller/ProductController.java
 ================================================
 package com.awesome.testing.controller;
 
-import com.awesome.testing.dto.ProductDTO;
-import com.awesome.testing.model.Product;
+import com.awesome.testing.dto.product.ProductCreateDto;
+import com.awesome.testing.dto.product.ProductDto;
+import com.awesome.testing.dto.product.ProductUpdateDto;
 import com.awesome.testing.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -789,9 +714,9 @@ public class ProductController {
     @Operation(summary = "Get all products", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved products"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized")
+        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
-    public ResponseEntity<List<Product>> getAllProducts() {
+    public ResponseEntity<List<ProductDto>> getAllProducts() {
         return ResponseEntity.ok(productService.getAllProducts());
     }
 
@@ -799,10 +724,10 @@ public class ProductController {
     @Operation(summary = "Get product by ID", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved product"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized"),
-        @ApiResponse(responseCode = "404", description = "Product not found")
+        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
     })
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+    public ResponseEntity<ProductDto> getProductById(@PathVariable Long id) {
         return productService.getProductById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -813,12 +738,12 @@ public class ProductController {
     @Operation(summary = "Create new product", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Product created successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid input"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized"),
-        @ApiResponse(responseCode = "403", description = "Forbidden - requires admin role")
+        @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Forbidden - requires admin role", content = @Content)
     })
-    public ResponseEntity<Product> createProduct(@Valid @RequestBody ProductDTO productDTO) {
-        Product savedProduct = productService.createProduct(productDTO);
+    public ResponseEntity<ProductDto> createProduct(@Valid @RequestBody ProductCreateDto productCreateDto) {
+        ProductDto savedProduct = productService.createProduct(productCreateDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
     }
 
@@ -827,15 +752,15 @@ public class ProductController {
     @Operation(summary = "Update existing product", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Product updated successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid input"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized"),
-        @ApiResponse(responseCode = "403", description = "Forbidden - requires admin role"),
-        @ApiResponse(responseCode = "404", description = "Product not found")
+        @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+        @ApiResponse(responseCode = "403", description = "Forbidden - requires admin role", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
     })
-    public ResponseEntity<Product> updateProduct(
+    public ResponseEntity<ProductDto> updateProduct(
             @PathVariable Long id,
-            @Valid @RequestBody ProductDTO productDTO) {
-        return productService.updateProduct(id, productDTO)
+            @Valid @RequestBody ProductUpdateDto productUpdateDto) {
+        return productService.updateProduct(id, productUpdateDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -843,6 +768,12 @@ public class ProductController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "Delete product", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Product deleted successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden - requires admin role", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
+    })
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         return productService.deleteProduct(id)
                 ? ResponseEntity.noContent().build()
@@ -851,9 +782,357 @@ public class ProductController {
 } 
 
 ================================================
-File: src/main/java/com/awesome/testing/controller/UserDeleteController.java
+File: src/main/java/com/awesome/testing/controller/cart/CartController.java
 ================================================
-package com.awesome.testing.controller;
+package com.awesome.testing.controller.cart;
+
+import com.awesome.testing.dto.cart.CartDto;
+import com.awesome.testing.security.CustomPrincipal;
+import com.awesome.testing.service.CartService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/cart")
+@RequiredArgsConstructor
+@Tag(name = "Cart", description = "Shopping cart management endpoints")
+public class CartController {
+
+    private final CartService cartService;
+
+    @GetMapping
+    @Operation(summary = "Get current user's cart", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved cart"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public ResponseEntity<CartDto> getCart(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomPrincipal principal) {
+        return ResponseEntity.ok(cartService.getCart(principal.toString()));
+    }
+
+    @DeleteMapping
+    @Operation(summary = "Clear cart", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Cart cleared successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    public ResponseEntity<Void> clearCart(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomPrincipal principal) {
+        cartService.clearCart(principal.toString());
+        return ResponseEntity.ok().build();
+    }
+} 
+
+================================================
+File: src/main/java/com/awesome/testing/controller/cart/CartItemsController.java
+================================================
+package com.awesome.testing.controller.cart;
+
+import com.awesome.testing.dto.cart.CartDto;
+import com.awesome.testing.dto.cart.CartItemDto;
+import com.awesome.testing.dto.cart.UpdateCartItemDto;
+import com.awesome.testing.security.CustomPrincipal;
+import com.awesome.testing.service.CartService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/cart")
+@RequiredArgsConstructor
+@Tag(name = "Cart", description = "Shopping cart management endpoints")
+public class CartItemsController {
+
+    private final CartService cartService;
+
+    @PostMapping("/items")
+    @Operation(summary = "Add item to cart", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Item added successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
+    })
+    public ResponseEntity<CartDto> addToCart(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomPrincipal principal,
+            @Valid @RequestBody CartItemDto cartItemDto) {
+        return ResponseEntity.ok(cartService.addToCart(principal.toString(), cartItemDto));
+    }
+
+    @PutMapping("/items/{productId}")
+    @Operation(summary = "Update item quantity", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Item quantity updated successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Cart item not found", content = @Content)
+    })
+    public ResponseEntity<CartDto> updateCartItem(
+            @Parameter(hidden = true)  @AuthenticationPrincipal CustomPrincipal principal,
+            @PathVariable Long productId,
+            @Valid @RequestBody UpdateCartItemDto updateCartItemDto) {
+        return ResponseEntity.ok(cartService.updateCartItem(principal.toString(), productId, updateCartItemDto));
+    }
+
+    @DeleteMapping("/items/{productId}")
+    @Operation(summary = "Remove item from cart", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Item removed successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Cart item not found", content = @Content)
+    })
+    public ResponseEntity<CartDto> removeFromCart(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomPrincipal principal,
+            @PathVariable Long productId) {
+        return ResponseEntity.ok(cartService.removeFromCart(principal.toString(), productId));
+    }
+
+}
+
+================================================
+File: src/main/java/com/awesome/testing/controller/exception/CartExceptionHandler.java
+================================================
+package com.awesome.testing.controller.exception;
+
+import com.awesome.testing.controller.cart.CartItemsController;
+import com.awesome.testing.dto.ErrorDto;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice(assignableTypes = {
+        CartItemsController.class
+})
+@Order(Ordered.HIGHEST_PRECEDENCE)
+public class CartExceptionHandler {
+
+    @ExceptionHandler(ProductNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorDto handleProductNotFoundException(ProductNotFoundException ex) {
+        return new ErrorDto(ex.getMessage());
+    }
+
+    @ExceptionHandler(CartItemNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorDto handleCartItemNotFoundException(CartItemNotFoundException ex) {
+        return new ErrorDto(ex.getMessage());
+    }
+}
+
+================================================
+File: src/main/java/com/awesome/testing/controller/exception/CartItemNotFoundException.java
+================================================
+package com.awesome.testing.controller.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class CartItemNotFoundException extends RuntimeException {
+    public CartItemNotFoundException(String message) {
+        super(message);
+    }
+} 
+
+================================================
+File: src/main/java/com/awesome/testing/controller/exception/CustomException.java
+================================================
+package com.awesome.testing.controller.exception;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+
+@RequiredArgsConstructor
+@Getter
+public class CustomException extends RuntimeException {
+
+    private static final long serialVersionUID = 1L;
+
+    final String message;
+    final HttpStatus httpStatus;
+
+}
+
+
+================================================
+File: src/main/java/com/awesome/testing/controller/exception/GlobalExceptionHandlerController.java
+================================================
+package com.awesome.testing.controller.exception;
+
+import java.util.Map;
+import java.util.HashMap;
+
+import com.awesome.testing.dto.ErrorDto;
+import org.springframework.boot.web.error.ErrorAttributeOptions;
+import org.springframework.boot.web.servlet.error.DefaultErrorAttributes;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.authentication.BadCredentialsException;
+
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
+public class GlobalExceptionHandlerController extends DefaultErrorAttributes {
+
+    @Override
+    public Map<String, Object> getErrorAttributes(WebRequest webRequest, ErrorAttributeOptions options) {
+        Map<String, Object> errorAttributes = super.getErrorAttributes(webRequest, options);
+        errorAttributes.remove("trace");
+        return errorAttributes;
+    }
+
+    @ExceptionHandler(CustomException.class)
+    public ResponseEntity<ErrorDto> handleCustomException(CustomException ex) {
+        return ResponseEntity
+                .status(ex.getHttpStatus())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new ErrorDto(ex.getMessage()));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        return ResponseEntity
+                .badRequest()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errors);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException ex) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("error", ex.getMessage());
+        return ResponseEntity
+                .badRequest()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errors);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorDto> handleAccessDeniedException(AccessDeniedException ex) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new ErrorDto("Access denied"));
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorDto> handleBadCredentialsException(BadCredentialsException ex) {
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new ErrorDto("Invalid username/password supplied"));
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorDto> handleAuthenticationException(AuthenticationException ex) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new ErrorDto("Unauthorized"));
+    }
+
+}
+
+
+================================================
+File: src/main/java/com/awesome/testing/controller/exception/ProductNotFoundException.java
+================================================
+package com.awesome.testing.controller.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class ProductNotFoundException extends RuntimeException {
+    public ProductNotFoundException(String message) {
+        super(message);
+    }
+} 
+
+================================================
+File: src/main/java/com/awesome/testing/controller/exception/UserExceptionHandler.java
+================================================
+package com.awesome.testing.controller.exception;
+
+import com.awesome.testing.controller.users.*;
+import com.awesome.testing.dto.ErrorDto;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.http.HttpStatus;
+
+@RestControllerAdvice(assignableTypes = {
+        UserDeleteController.class,
+        UserEditController.class,
+        UserGetSingleUserController.class,
+})
+@Order(Ordered.HIGHEST_PRECEDENCE)
+public class UserExceptionHandler {
+
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorDto handleUserNotFoundException(UserNotFoundException ex) {
+        return new ErrorDto(ex.getMessage());
+    }
+}
+
+================================================
+File: src/main/java/com/awesome/testing/controller/exception/UserNotFoundException.java
+================================================
+package com.awesome.testing.controller.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class UserNotFoundException extends RuntimeException {
+    public UserNotFoundException(String message) {
+        super(message);
+    }
+} 
+
+================================================
+File: src/main/java/com/awesome/testing/controller/users/UserDeleteController.java
+================================================
+package com.awesome.testing.controller.users;
 
 import com.awesome.testing.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -882,8 +1161,8 @@ public class UserDeleteController {
     @Operation(summary = "Delete user", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "User was deleted"),
-            @ApiResponse(responseCode = "400", description = "Something went wrong", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Access denied", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized – Missing or invalid token", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden – Insufficient permissions", content = @Content),
             @ApiResponse(responseCode = "404", description = "The user doesn't exist", content = @Content)
     })
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -895,12 +1174,12 @@ public class UserDeleteController {
 
 
 ================================================
-File: src/main/java/com/awesome/testing/controller/UserEditController.java
+File: src/main/java/com/awesome/testing/controller/users/UserEditController.java
 ================================================
-package com.awesome.testing.controller;
+package com.awesome.testing.controller.users;
 
-import com.awesome.testing.dto.UserEditDTO;
-import com.awesome.testing.model.User;
+import com.awesome.testing.dto.user.UserEditDto;
+import com.awesome.testing.entity.UserEntity;
 import com.awesome.testing.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -929,13 +1208,13 @@ public class UserEditController {
     @Operation(summary = "Update user", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User was updated"),
-            @ApiResponse(responseCode = "400", description = "Something went wrong", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Access denied", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized – Missing or invalid token", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden – Insufficient permissions", content = @Content),
             @ApiResponse(responseCode = "404", description = "The user doesn't exist", content = @Content)
     })
-    public User edit(
+    public UserEntity edit(
             @Parameter(description = "Username") @PathVariable String username,
-            @Parameter(description = "User details") @Valid @RequestBody UserEditDTO userDto) {
+            @Parameter(description = "User details") @Valid @RequestBody UserEditDto userDto) {
         return userService.edit(username, userDto);
     }
 
@@ -943,11 +1222,12 @@ public class UserEditController {
 
 
 ================================================
-File: src/main/java/com/awesome/testing/controller/UserGetController.java
+File: src/main/java/com/awesome/testing/controller/users/UserGetSingleUserController.java
 ================================================
-package com.awesome.testing.controller;
+package com.awesome.testing.controller.users;
 
-import com.awesome.testing.dto.UserResponseDTO;
+import com.awesome.testing.dto.user.UserResponseDto;
+import com.awesome.testing.entity.UserEntity;
 import com.awesome.testing.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -958,62 +1238,84 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:8081", maxAge = 3600)
 @RestController
 @RequestMapping("/users")
 @Tag(name = "users", description = "User management endpoints")
 @RequiredArgsConstructor
-public class UserGetController {
+public class UserGetSingleUserController {
 
     private final UserService userService;
-    private final ModelMapper modelMapper;
-
-    @GetMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_CLIENT')")
-    @Operation(summary = "Get all users", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "List of users",
-                    content = @Content(schema = @Schema(implementation = UserResponseDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Something went wrong", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Access denied", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Users not found", content = @Content)
-    })
-    public List<UserResponseDTO> getAll() {
-        return userService.getAll().stream()
-                .map(user -> modelMapper.map(user, UserResponseDTO.class))
-                .collect(Collectors.toList());
-    }
 
     @GetMapping("/{username}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "Get user by username", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User details",
-                    content = @Content(schema = @Schema(implementation = UserResponseDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Something went wrong", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Access denied", content = @Content),
+                    content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized – Missing or invalid token", content = @Content),
             @ApiResponse(responseCode = "404", description = "The user doesn't exist", content = @Content)
     })
-    public UserResponseDTO getByUsername(@Parameter(description = "Username") @PathVariable String username) {
-        return modelMapper.map(userService.search(username), UserResponseDTO.class);
+    public UserResponseDto getByUsername(@Parameter(description = "Username") @PathVariable String username) {
+        UserEntity user = userService.search(username);
+        return UserResponseDto.from(user);
     }
 
 }
 
 
 ================================================
-File: src/main/java/com/awesome/testing/controller/UserMeController.java
+File: src/main/java/com/awesome/testing/controller/users/UserGetUsersController.java
 ================================================
-package com.awesome.testing.controller;
+package com.awesome.testing.controller.users;
 
-import com.awesome.testing.dto.UserResponseDTO;
+import com.awesome.testing.dto.user.UserResponseDto;
+import com.awesome.testing.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@CrossOrigin(origins = "http://localhost:8081", maxAge = 3600)
+@RestController
+@RequestMapping("/users")
+@Tag(name = "users", description = "User management endpoints")
+@RequiredArgsConstructor
+public class UserGetUsersController {
+
+    private final UserService userService;
+
+    @GetMapping
+    @Operation(summary = "Get all users", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "List of users",
+                    content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized – Missing or invalid token", content = @Content)
+    })
+    public List<UserResponseDto> getAll() {
+        return userService.getAll().stream()
+                .map(UserResponseDto::from)
+                .toList();
+    }
+
+}
+
+
+================================================
+File: src/main/java/com/awesome/testing/controller/users/UserMeController.java
+================================================
+package com.awesome.testing.controller.users;
+
+import com.awesome.testing.dto.user.UserResponseDto;
+import com.awesome.testing.entity.UserEntity;
 import com.awesome.testing.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -1024,7 +1326,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -1038,27 +1339,26 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserMeController {
 
     private final UserService userService;
-    private final ModelMapper modelMapper;
 
     @GetMapping("/me")
     @Operation(summary = "Get current user information", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Current user details",
-                    content = @Content(schema = @Schema(implementation = UserResponseDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Something went wrong", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Access denied", content = @Content)
+                    content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized – Missing or invalid token", content = @Content)
     })
-    public UserResponseDTO whoami(HttpServletRequest req) {
-        return modelMapper.map(userService.whoami(req), UserResponseDTO.class);
+    public UserResponseDto whoAmI(HttpServletRequest req) {
+        UserEntity user = userService.whoAmI(req);
+        return UserResponseDto.from(user);
     }
 
 }
 
 
 ================================================
-File: src/main/java/com/awesome/testing/controller/UserRefreshController.java
+File: src/main/java/com/awesome/testing/controller/users/UserRefreshController.java
 ================================================
-package com.awesome.testing.controller;
+package com.awesome.testing.controller.users;
 
 import com.awesome.testing.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -1089,24 +1389,23 @@ public class UserRefreshController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "New JWT token",
                     content = @Content(schema = @Schema(type = "string", example = "eyJhbGciOiJIUzI1NiJ9..."))),
-            @ApiResponse(responseCode = "400", description = "Something went wrong", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Access denied", content = @Content)
+            @ApiResponse(responseCode = "401", description = "Unauthorized – Missing or invalid token", content = @Content)
     })
     public String refresh(HttpServletRequest req) {
-        return userService.refresh(userService.whoami(req).getUsername());
+        return userService.refresh(userService.whoAmI(req).getUsername());
     }
 
 }
 
 
 ================================================
-File: src/main/java/com/awesome/testing/controller/UserSignInController.java
+File: src/main/java/com/awesome/testing/controller/users/UserSignInController.java
 ================================================
-package com.awesome.testing.controller;
+package com.awesome.testing.controller.users;
 
-import com.awesome.testing.dto.LoginDTO;
-import com.awesome.testing.dto.LoginResponseDTO;
-import com.awesome.testing.model.User;
+import com.awesome.testing.dto.user.LoginDto;
+import com.awesome.testing.dto.user.LoginResponseDto;
+import com.awesome.testing.entity.UserEntity;
 import com.awesome.testing.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -1133,47 +1432,37 @@ public class UserSignInController {
     @Operation(summary = "Authenticate user and return JWT token")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully authenticated",
-                    content = @Content(schema = @Schema(implementation = LoginResponseDTO.class))),
+                    content = @Content(schema = @Schema(implementation = LoginResponseDto.class))),
             @ApiResponse(responseCode = "400", description = "Field validation failed", content = @Content),
-            @ApiResponse(responseCode = "422", description = "Invalid username/password supplied", content = @Content),
-            @ApiResponse(responseCode = "500", description = "Something went wrong", content = @Content)
+            @ApiResponse(responseCode = "422", description = "Invalid username/password supplied", content = @Content)
     })
-    public LoginResponseDTO login(
-            @Parameter(description = "Login details") @Valid @RequestBody LoginDTO loginDetails) {
+    public LoginResponseDto login(
+            @Parameter(description = "Login details") @Valid @RequestBody LoginDto loginDetails) {
         String token = userService.signIn(loginDetails.getUsername(), loginDetails.getPassword());
-        User user = userService.search(loginDetails.getUsername());
+        UserEntity user = userService.search(loginDetails.getUsername());
 
-        return LoginResponseDTO.builder()
-                .username(user.getUsername())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .roles(user.getRoles())
-                .token(token)
-                .email(user.getEmail())
-                .build();
+        return LoginResponseDto.from(token, user);
     }
 
 }
 
 
 ================================================
-File: src/main/java/com/awesome/testing/controller/UserSignUpController.java
+File: src/main/java/com/awesome/testing/controller/users/UserSignUpController.java
 ================================================
-package com.awesome.testing.controller;
+package com.awesome.testing.controller.users;
 
-import com.awesome.testing.dto.UserRegisterDTO;
-import com.awesome.testing.model.User;
+import com.awesome.testing.dto.user.UserRegisterDto;
 import com.awesome.testing.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -1183,34 +1472,173 @@ import jakarta.validation.Valid;
 @RequestMapping("/users")
 @Tag(name = "users", description = "User management endpoints")
 @RequiredArgsConstructor
+@Validated
 public class UserSignUpController {
 
     private final UserService userService;
-    private final ModelMapper modelMapper;
 
     @PostMapping("/signup")
     @Operation(summary = "Create a new user account")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "User was successfully created",
-                    content = @Content(schema = @Schema(type = "string", example = "eyJhbGciOiJIUzI1NiJ9..."))),
-            @ApiResponse(responseCode = "400", description = "Something went wrong", content = @Content),
-            @ApiResponse(responseCode = "422", description = "Username is already in use", content = @Content),
-            @ApiResponse(responseCode = "500", description = "Something went wrong", content = @Content)
+            @ApiResponse(responseCode = "201", description = "User was successfully created"),
+            @ApiResponse(responseCode = "400", description = "Validation failed", content = @Content)
     })
     @ResponseStatus(HttpStatus.CREATED)
-    public void signup(
-            @Parameter(description = "Signup User") @Valid @RequestBody UserRegisterDTO user) {
-        userService.signup(modelMapper.map(user, User.class));
+    public void signup(@Parameter(description = "Signup User") @Valid @RequestBody UserRegisterDto userDto) {
+        userService.signup(userDto);
     }
 
 }
 
 
 ================================================
-File: src/main/java/com/awesome/testing/dto/AddressDTO.java
+File: src/main/java/com/awesome/testing/dto/ErrorDto.java
 ================================================
 package com.awesome.testing.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ErrorDto {
+
+    @Schema(description = "Error message", example = "Error message")
+    private String message;
+
+}
+
+
+================================================
+File: src/main/java/com/awesome/testing/dto/cart/CartDto.java
+================================================
+package com.awesome.testing.dto.cart;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class CartDto {
+    @Schema(description = "Cart owner", example = "admin")
+
+    private String username;
+
+    private List<CartItemDto> items;
+
+    @Schema(description = "Total Cart price", example = "199.56")
+    private BigDecimal totalPrice;
+
+    @Schema(description = "Total number of items", example = "7")
+    private int totalItems;
+} 
+
+================================================
+File: src/main/java/com/awesome/testing/dto/cart/CartItemDto.java
+================================================
+package com.awesome.testing.dto.cart;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class CartItemDto {
+
+    @Schema(description = "Product id", example = "13")
+    @NotNull
+    private Long productId;
+
+    @Schema(description = "Product quantity", example = "1")
+    @NotNull
+    @Min(1)
+    private Integer quantity;
+
+}
+
+================================================
+File: src/main/java/com/awesome/testing/dto/cart/UpdateCartItemDto.java
+================================================
+package com.awesome.testing.dto.cart;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UpdateCartItemDto {
+
+    @Schema(description = "Product quantity", example = "1")
+    @NotNull
+    @Min(1)
+    private Integer quantity;
+
+}
+
+================================================
+File: src/main/java/com/awesome/testing/dto/email/EmailDto.java
+================================================
+package com.awesome.testing.dto.email;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class EmailDto {
+
+    @Schema(description = "Email recipient", example = "user@example.com")
+    @Email(message = "Invalid email format")
+    private String to;
+    
+    @Schema(description = "Email subject", example = "Important message")
+    @NotBlank(message = "Email subject is required")
+    private String subject;
+    
+    @Schema(description = "Email content", example = "Please read this message carefully")
+    @NotBlank(message = "Email content is required")
+    private String message;
+}
+
+
+================================================
+File: src/main/java/com/awesome/testing/dto/order/AddressDto.java
+================================================
+package com.awesome.testing.dto.order;
+
+import com.awesome.testing.entity.AddressEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -1224,7 +1652,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "Address data transfer object")
-public class AddressDTO {
+public class AddressDto {
     @NotBlank(message = "Street is required")
     @Schema(description = "Street address", example = "123 Main St")
     private String street;
@@ -1245,182 +1673,24 @@ public class AddressDTO {
     @NotBlank(message = "Country is required")
     @Schema(description = "Country", example = "Poland")
     private String country;
+
+    public static AddressDto from(AddressEntity address) {
+        return AddressDto.builder()
+                .street(address.getStreet())
+                .city(address.getCity())
+                .state(address.getState())
+                .zipCode(address.getZipCode())
+                .country(address.getCountry())
+                .build();
+    }
 } 
 
 ================================================
-File: src/main/java/com/awesome/testing/dto/CartDTO.java
+File: src/main/java/com/awesome/testing/dto/order/OrderDto.java
 ================================================
-package com.awesome.testing.dto;
+package com.awesome.testing.dto.order;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class CartDTO {
-    private String username;
-    private List<CartItemDTO> items;
-    private BigDecimal totalPrice;
-    private int totalItems;
-} 
-
-================================================
-File: src/main/java/com/awesome/testing/dto/CartItemDTO.java
-================================================
-package com.awesome.testing.dto;
-
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
-
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class CartItemDTO {
-    @NotNull
-    private Long productId;
-
-    @NotNull
-    @Min(1)
-    private Integer quantity;
-
-    private String productName;
-    private BigDecimal unitPrice;
-    private BigDecimal totalPrice;
-} 
-
-================================================
-File: src/main/java/com/awesome/testing/dto/EmailDTO.java
-================================================
-package com.awesome.testing.dto;
-
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class EmailDTO {
-    @Schema(description = "Email recipient", example = "user@example.com")
-    private String recipient;
-    
-    @Schema(description = "Email subject", example = "Important message")
-    private String subject;
-    
-    @Schema(description = "Email content", example = "Please read this message carefully")
-    private String content;
-}
-
-
-================================================
-File: src/main/java/com/awesome/testing/dto/ErrorDTO.java
-================================================
-package com.awesome.testing.dto;
-
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class ErrorDTO {
-    @Schema(description = "Error message", example = "Something went wrong")
-    private String message;
-}
-
-
-================================================
-File: src/main/java/com/awesome/testing/dto/LoginDTO.java
-================================================
-package com.awesome.testing.dto;
-
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import jakarta.validation.constraints.Size;
-
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class LoginDTO {
-
-    @Size(min = 4, max = 255, message = "Minimum username length: 4 characters")
-    @Schema(description = "Username", example = "admin")
-    private String username;
-
-    @Size(min = 4, max = 255, message = "Minimum password length: 4 characters")
-    @Schema(description = "Password", example = "admin")
-    private String password;
-
-}
-
-
-================================================
-File: src/main/java/com/awesome/testing/dto/LoginResponseDTO.java
-================================================
-package com.awesome.testing.dto;
-
-import com.awesome.testing.model.Role;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
-import lombok.Value;
-
-import java.util.List;
-
-@Value
-@Builder
-public class LoginResponseDTO {
-
-    @Schema(description = "JWT token", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
-    String token;
-
-    @Schema(description = "Username", example = "johndoe")
-    String username;
-
-    @Schema(description = "Email address", example = "john.doe@example.com")
-    String email;
-
-    @Schema(description = "First name", example = "John")
-    String firstName;
-
-    @Schema(description = "Last name", example = "Doe")
-    String lastName;
-
-    @Schema(description = "User roles", example = "[\"ROLE_USER\"]")
-    List<Role> roles;
-
-}
-
-
-================================================
-File: src/main/java/com/awesome/testing/dto/OrderDTO.java
-================================================
-package com.awesome.testing.dto;
-
-import com.awesome.testing.model.OrderStatus;
+import com.awesome.testing.entity.OrderEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -1439,7 +1709,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "Order data transfer object")
-public class OrderDTO {
+public class OrderDto {
     @Schema(description = "Order ID", example = "1")
     private Long id;
 
@@ -1449,7 +1719,7 @@ public class OrderDTO {
     @Builder.Default
     @Valid
     @Schema(description = "Order items")
-    private List<OrderItemDTO> items = new ArrayList<>();
+    private List<OrderItemDto> items = new ArrayList<>();
 
     @Schema(description = "Total amount", example = "1999.98")
     private BigDecimal totalAmount;
@@ -1460,20 +1730,34 @@ public class OrderDTO {
     @Valid
     @NotNull(message = "Shipping address is required")
     @Schema(description = "Shipping address")
-    private AddressDTO shippingAddress;
+    private AddressDto shippingAddress;
 
     @Schema(description = "Creation timestamp")
     private LocalDateTime createdAt;
 
     @Schema(description = "Last update timestamp")
     private LocalDateTime updatedAt;
+
+    public static OrderDto from(OrderEntity order) {
+        return OrderDto.builder()
+                .id(order.getId())
+                .username(order.getUsername())
+                .items(order.getItems().stream().map(OrderItemDto::from).toList())
+                .totalAmount(order.getTotalAmount())
+                .status(order.getStatus())
+                .shippingAddress(AddressDto.from(order.getShippingAddress()))
+                .createdAt(order.getCreatedAt())
+                .updatedAt(order.getUpdatedAt())
+                .build();
+    }
 } 
 
 ================================================
-File: src/main/java/com/awesome/testing/dto/OrderItemDTO.java
+File: src/main/java/com/awesome/testing/dto/order/OrderItemDto.java
 ================================================
-package com.awesome.testing.dto;
+package com.awesome.testing.dto.order;
 
+import com.awesome.testing.entity.OrderItemEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -1489,7 +1773,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "Order item data transfer object")
-public class OrderItemDTO {
+public class OrderItemDto {
     @Schema(description = "Order item ID", example = "1")
     private Long id;
 
@@ -1510,12 +1794,36 @@ public class OrderItemDTO {
 
     @Schema(description = "Total price", example = "1999.98")
     private BigDecimal totalPrice;
+
+    public static OrderItemDto from(OrderItemEntity item) {
+        return OrderItemDto.builder()
+                .id(item.getId())
+                .productId(item.getProduct().getId())
+                .productName(item.getProduct().getName())
+                .quantity(item.getQuantity())
+                .unitPrice(item.getPrice())
+                .totalPrice(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .build();
+    }
 } 
 
 ================================================
-File: src/main/java/com/awesome/testing/dto/PageDTO.java
+File: src/main/java/com/awesome/testing/dto/order/OrderStatus.java
 ================================================
-package com.awesome.testing.dto;
+package com.awesome.testing.dto.order;
+
+public enum OrderStatus {
+    PENDING,
+    PAID,
+    SHIPPED,
+    DELIVERED,
+    CANCELLED
+} 
+
+================================================
+File: src/main/java/com/awesome/testing/dto/order/PageDto.java
+================================================
+package com.awesome.testing.dto.order;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -1527,15 +1835,15 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PageDTO<T> {
+public class PageDto<T> {
     private List<T> content;
     private int pageNumber;
     private int pageSize;
     private long totalElements;
     private int totalPages;
 
-    public static <T> PageDTO<T> from(Page<T> page) {
-        return new PageDTO<>(
+    public static <T> PageDto<T> from(Page<T> page) {
+        return new PageDto<>(
             page.getContent(),
             page.getNumber(),
             page.getSize(),
@@ -1546,9 +1854,9 @@ public class PageDTO<T> {
 } 
 
 ================================================
-File: src/main/java/com/awesome/testing/dto/ProductDTO.java
+File: src/main/java/com/awesome/testing/dto/product/ProductCreateDto.java
 ================================================
-package com.awesome.testing.dto;
+package com.awesome.testing.dto.product;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
@@ -1558,15 +1866,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Product data transfer object")
-public class ProductDTO {
-    private Long id;
+@Schema(description = "Create product data transfer object")
+public class ProductCreateDto {
 
     @NotBlank(message = "Product name is required")
     @Size(min = 3, max = 100, message = "Product name must be between 3 and 100 characters")
@@ -1596,16 +1902,201 @@ public class ProductDTO {
     @Schema(description = "Product image URL", example = "https://example.com/iphone13.jpg")
     private String imageUrl;
 
+}
+
+================================================
+File: src/main/java/com/awesome/testing/dto/product/ProductDto.java
+================================================
+package com.awesome.testing.dto.product;
+
+import com.awesome.testing.entity.ProductEntity;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ProductDto {
+
+    private Long id;
+    private String name;
+    private String description;
+    private BigDecimal price;
+    private Integer stockQuantity;
+    private String category;
+    private String imageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public static ProductDto from(ProductEntity productEntity) {
+        return ProductDto.builder()
+                .id(productEntity.getId())
+                .name(productEntity.getName())
+                .description(productEntity.getDescription())
+                .price(productEntity.getPrice())
+                .stockQuantity(productEntity.getStockQuantity())
+                .category(productEntity.getCategory())
+                .imageUrl(productEntity.getImageUrl())
+                .createdAt(productEntity.getCreatedAt())
+                .updatedAt(productEntity.getUpdatedAt())
+                .build();
+    }
+
 } 
 
 ================================================
-File: src/main/java/com/awesome/testing/dto/UserEditDTO.java
+File: src/main/java/com/awesome/testing/dto/product/ProductUpdateDto.java
 ================================================
-package com.awesome.testing.dto;
+package com.awesome.testing.dto.product;
 
-import com.awesome.testing.model.Role;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Schema(description = "Update product data transfer object")
+public class ProductUpdateDto {
+
+    @Size(min = 3, max = 100, message = "Product name must be between 3 and 100 characters")
+    @Schema(description = "Product name", example = "iPhone 13")
+    private String name;
+
+    @Size(max = 1000, message = "Description cannot exceed 1000 characters")
+    @Schema(description = "Product description", example = "Latest iPhone model with A15 Bionic chip")
+    private String description;
+
+    @DecimalMin(value = "0.01", message = "Price must be greater than 0")
+    @Digits(integer = 8, fraction = 2, message = "Price must have at most 8 digits and 2 decimals")
+    @Schema(description = "Product price", example = "999.99")
+    private BigDecimal price;
+
+    @Min(value = 0, message = "Stock quantity cannot be negative")
+    @Schema(description = "Available stock quantity", example = "100")
+    private Integer stockQuantity;
+
+    @Schema(description = "Product category", example = "Electronics")
+    private String category;
+
+    @Pattern(regexp = "^(https?://.*|)$", message = "Image URL must be a valid URL or empty")
+    @Schema(description = "Product image URL", example = "https://example.com/iphone13.jpg")
+    private String imageUrl;
+
+}
+
+================================================
+File: src/main/java/com/awesome/testing/dto/user/LoginDto.java
+================================================
+package com.awesome.testing.dto.user;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import jakarta.validation.constraints.Size;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class LoginDto {
+
+    @Size(min = 4, max = 255, message = "Minimum username length: 4 characters")
+    @Schema(description = "Username", example = "admin")
+    private String username;
+
+    @Size(min = 4, max = 255, message = "Minimum password length: 4 characters")
+    @Schema(description = "Password", example = "admin")
+    private String password;
+
+}
+
+
+================================================
+File: src/main/java/com/awesome/testing/dto/user/LoginResponseDto.java
+================================================
+package com.awesome.testing.dto.user;
+
+import com.awesome.testing.entity.UserEntity;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
+import lombok.Value;
+
+import java.util.List;
+
+@Value
+@Builder
+public class LoginResponseDto {
+
+    @Schema(description = "JWT token", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
+    String token;
+
+    @Schema(description = "Username", example = "johndoe")
+    String username;
+
+    @Schema(description = "Email address", example = "john.doe@example.com")
+    String email;
+
+    @Schema(description = "First name", example = "John")
+    String firstName;
+
+    @Schema(description = "Last name", example = "Doe")
+    String lastName;
+
+    @Schema(description = "User roles", example = "[\"ROLE_CLIENT\"]")
+    List<Role> roles;
+
+    public static LoginResponseDto from(String token, UserEntity user) {
+        return LoginResponseDto.builder()
+                .username(user.getUsername())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .roles(user.getRoles())
+                .token(token)
+                .email(user.getEmail())
+                .build();
+    }
+
+}
+
+
+================================================
+File: src/main/java/com/awesome/testing/dto/user/Role.java
+================================================
+package com.awesome.testing.dto.user;
+
+import org.springframework.security.core.GrantedAuthority;
+
+public enum Role implements GrantedAuthority {
+    ROLE_ADMIN, ROLE_CLIENT;
+
+    public String getAuthority() {
+        return name();
+    }
+
+}
+
+
+================================================
+File: src/main/java/com/awesome/testing/dto/user/UserEditDto.java
+================================================
+package com.awesome.testing.dto.user;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
@@ -1617,7 +2108,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class UserEditDTO {
+public class UserEditDto {
 
     @Size(min = 4, max = 255, message = "Minimum username length: 4 characters")
     @Schema(description = "Username", example = "johndoe")
@@ -1628,94 +2119,77 @@ public class UserEditDTO {
     @Schema(description = "Email address", example = "john.doe@example.com")
     private String email;
 
-    @Size(min = 8, message = "Minimum password length: 8 characters")
-    @Schema(description = "Password", example = "password123")
-    private String password;
-
-    @Size(max = 255)
+    @Size(min = 4, max = 255, message = "Minimum firstName length: 4 characters")
     @Schema(description = "First name", example = "John")
     private String firstName;
 
-    @Size(max = 255)
+    @Size(min = 4, max = 255, message = "Minimum lastName length: 4 characters")
     @Schema(description = "Last name", example = "Doe")
     private String lastName;
 
-    @Schema(description = "User roles", example = "[\"ROLE_USER\"]")
+    @Schema(description = "User roles", example = "[\"ROLE_CLIENT\"]")
     private List<Role> roles;
 
 }
 
 
 ================================================
-File: src/main/java/com/awesome/testing/dto/UserRegisterDTO.java
+File: src/main/java/com/awesome/testing/dto/user/UserRegisterDto.java
 ================================================
-package com.awesome.testing.dto;
+package com.awesome.testing.dto.user;
 
-import com.awesome.testing.model.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 
 @Data
 @Builder
-public class UserRegisterDTO {
+public class UserRegisterDto {
 
+    @NotNull(message = "Username is required")
     @Size(min = 4, max = 255, message = "Minimum username length: 4 characters")
     @Schema(description = "Username", example = "johndoe")
     private String username;
 
+    @NotNull(message = "Email is required")
     @Email(message = "Email should be valid")
     @Schema(description = "Email address", example = "john.doe@example.com")
     private String email;
 
-    @Size(min = 4, message = "Minimum password length: 4 characters")
+    @NotNull(message = "Password is required")
+    @Size(min = 8, max = 255, message = "Minimum password length: 8 characters")
     @Schema(description = "Password", example = "password123")
     private String password;
 
-    @Size(max = 255)
+    @NotNull(message = "firstName is required")
+    @Size(min = 4, max = 255, message = "Minimum firstName length: 4 characters")
     @Schema(description = "First name", example = "John")
     private String firstName;
 
-    @Size(max = 255)
-    @Schema(description = "Last name", example = "Doe")
+    @NotNull(message = "lastName is required")
+    @Size(min = 4, max = 255, message = "Minimum lastName length: 4 characters")
+    @Schema(description = "Last name", example = "Boyd")
     private String lastName;
 
-    @Schema(description = "User roles", example = "[\"ROLE_USER\"]")
-    @NotEmpty(message = "User must have at least one role")
+    @NotEmpty(message = "At least one role must be specified")
+    @Schema(description = "User roles", example = "[\"ROLE_CLIENT\"]")
     private List<Role> roles;
 
 }
 
 
 ================================================
-File: src/main/java/com/awesome/testing/dto/UserRegisterResponseDTO.java
+File: src/main/java/com/awesome/testing/dto/user/UserResponseDto.java
 ================================================
-package com.awesome.testing.dto;
+package com.awesome.testing.dto.user;
 
-import lombok.*;
-
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-public class UserRegisterResponseDTO {
-
-    String token;
-
-}
-
-
-================================================
-File: src/main/java/com/awesome/testing/dto/UserResponseDTO.java
-================================================
-package com.awesome.testing.dto;
-
-import com.awesome.testing.model.Role;
+import com.awesome.testing.entity.UserEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -1728,7 +2202,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserResponseDTO {
+public class UserResponseDto {
 
     @Schema(description = "User ID", example = "1")
     Integer id;
@@ -1739,439 +2213,35 @@ public class UserResponseDTO {
     @Schema(description = "Email address", example = "john.doe@example.com")
     String email;
 
-    @Schema(description = "User roles", example = "[\"ROLE_USER\"]")
+    @Schema(description = "User roles", example = "[\"ROLE_CLIENT\"]")
     List<Role> roles;
 
     @Schema(description = "First name", example = "John")
     String firstName;
 
-    @Schema(description = "Last name", example = "Doe")
+    @Schema(description = "Last name", example = "Boyd")
     String lastName;
 
-}
-
-
-================================================
-File: src/main/java/com/awesome/testing/exception/CustomException.java
-================================================
-package com.awesome.testing.exception;
-
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-
-@RequiredArgsConstructor
-@Getter
-public class CustomException extends RuntimeException {
-
-    private static final long serialVersionUID = 1L;
-
-    final String message;
-    final HttpStatus httpStatus;
-
-}
-
-
-================================================
-File: src/main/java/com/awesome/testing/exception/GlobalExceptionHandlerController.java
-================================================
-package com.awesome.testing.exception;
-
-import java.util.Map;
-import java.util.HashMap;
-
-import com.awesome.testing.dto.ErrorDTO;
-import org.springframework.boot.web.error.ErrorAttributeOptions;
-import org.springframework.boot.web.servlet.error.DefaultErrorAttributes;
-import org.springframework.web.context.request.WebRequest;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.authentication.BadCredentialsException;
-
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
-@RestControllerAdvice
-public class GlobalExceptionHandlerController extends DefaultErrorAttributes {
-
-    @Override
-    public Map<String, Object> getErrorAttributes(WebRequest webRequest, ErrorAttributeOptions options) {
-        Map<String, Object> errorAttributes = super.getErrorAttributes(webRequest, options);
-        errorAttributes.remove("trace");
-        return errorAttributes;
-    }
-
-    @ExceptionHandler(CustomException.class)
-    public ResponseEntity<ErrorDTO> handleCustomException(CustomException ex) {
-        return ResponseEntity
-                .status(ex.getHttpStatus())
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(new ErrorDTO(ex.getMessage()));
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return ResponseEntity
-                .badRequest()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(errors);
-    }
-
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorDTO> handleAccessDeniedException(AccessDeniedException ex) {
-        return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(new ErrorDTO("Access denied"));
-    }
-
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ErrorDTO> handleBadCredentialsException(BadCredentialsException ex) {
-        return ResponseEntity
-                .status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(new ErrorDTO("Invalid username/password supplied"));
-    }
-
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ErrorDTO> handleAuthenticationException(AuthenticationException ex) {
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(new ErrorDTO("Unauthorized"));
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorDTO> handleException(Exception ex) {
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(new ErrorDTO("Internal server error"));
-    }
-
-    @ExceptionHandler(UserNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorDTO handleUserNotFoundException(UserNotFoundException ex) {
-        return new ErrorDTO(ex.getMessage());
-    }
-}
-
-
-================================================
-File: src/main/java/com/awesome/testing/exception/UserNotFoundException.java
-================================================
-package com.awesome.testing.exception;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
-@ResponseStatus(HttpStatus.NOT_FOUND)
-public class UserNotFoundException extends RuntimeException {
-    public UserNotFoundException(String message) {
-        super(message);
-    }
-} 
-
-================================================
-File: src/main/java/com/awesome/testing/fakedata/SetupData.java
-================================================
-package com.awesome.testing.fakedata;
-
-import org.springframework.stereotype.Component;
-
-import lombok.RequiredArgsConstructor;
-
-@Component
-@RequiredArgsConstructor
-public class SetupData {
-
-    private final SetupUsers setupUsers;
-    private final SetupProducts setupProducts;
-
-    public void setupData() {
-        setupUsers.createUsers();
-        setupProducts.createProducts();
-    }
-
-}
-
-
-================================================
-File: src/main/java/com/awesome/testing/fakedata/SetupProducts.java
-================================================
-package com.awesome.testing.fakedata;
-
-import com.awesome.testing.dto.ProductDTO;
-import com.awesome.testing.service.ProductService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
-
-@Component
-@RequiredArgsConstructor
-public class SetupProducts {
-
-    private final ProductService productService;
-
-    public void createProducts() {
-        // Electronics
-        createProduct(
-            "iPhone 13 Pro",
-            "Latest iPhone model with A15 Bionic chip, Pro camera system, and Super Retina XDR display",
-            new BigDecimal("999.99"),
-            50,
-            "Electronics",
-            "https://example.com/iphone13pro.jpg"
-        );
-
-        createProduct(
-            "Samsung Galaxy S21",
-            "5G smartphone with 8K video, all-day battery, and powerful performance",
-            new BigDecimal("799.99"),
-            75,
-            "Electronics",
-            "https://example.com/galaxys21.jpg"
-        );
-
-        // Computers
-        createProduct(
-            "MacBook Pro 14\"",
-            "Apple M1 Pro chip, 16GB RAM, 512GB SSD, Liquid Retina XDR display",
-            new BigDecimal("1999.99"),
-            25,
-            "Computers",
-            "https://example.com/macbookpro.jpg"
-        );
-
-        // Gaming
-        createProduct(
-            "PlayStation 5",
-            "Next-gen gaming console with 4K graphics, ray tracing, and ultra-high speed SSD",
-            new BigDecimal("499.99"),
-            30,
-            "Gaming",
-            "https://example.com/ps5.jpg"
-        );
-
-        // Home & Kitchen
-        createProduct(
-            "Ninja Foodi 9-in-1",
-            "Deluxe XL pressure cooker and air fryer with multiple cooking functions",
-            new BigDecimal("249.99"),
-            100,
-            "Home & Kitchen",
-            "https://example.com/ninjafoodi.jpg"
-        );
-
-        // Books
-        createProduct(
-            "Clean Code",
-            "A Handbook of Agile Software Craftsmanship by Robert C. Martin",
-            new BigDecimal("44.99"),
-            200,
-            "Books",
-            "https://example.com/cleancode.jpg"
-        );
-
-        // Wearables
-        createProduct(
-            "Apple Watch Series 7",
-            "Always-On Retina display, health monitoring, and fitness tracking",
-            new BigDecimal("399.99"),
-            60,
-            "Wearables",
-            "https://example.com/applewatch.jpg"
-        );
-
-        // Audio
-        createProduct(
-            "Sony WH-1000XM4",
-            "Industry-leading noise canceling wireless headphones with exceptional sound",
-            new BigDecimal("349.99"),
-            85,
-            "Audio",
-            "https://example.com/sonywh1000xm4.jpg"
-        );
-    }
-
-    private void createProduct(String name, String description, BigDecimal price, 
-                             Integer stockQuantity, String category, String imageUrl) {
-        ProductDTO product = ProductDTO.builder()
-                .name(name)
-                .description(description)
-                .price(price)
-                .stockQuantity(stockQuantity)
-                .category(category)
-                .imageUrl(imageUrl)
+    public static UserResponseDto from(UserEntity user) {
+        return UserResponseDto.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .roles(user.getRoles())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
                 .build();
-        
-        productService.createProduct(product);
-    }
-} 
-
-================================================
-File: src/main/java/com/awesome/testing/fakedata/SetupUsers.java
-================================================
-package com.awesome.testing.fakedata;
-
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
-import com.awesome.testing.model.Role;
-import com.awesome.testing.model.User;
-import com.awesome.testing.service.UserService;
-
-import lombok.RequiredArgsConstructor;
-
-@Component
-@RequiredArgsConstructor
-public class SetupUsers {
-
-    private final UserService userService;
-
-    public void createUsers() {
-        User admin = SetupUsers.createAdminUser(
-                "admin",
-                "admin",
-                "awesome@testing.com",
-                "Slawomir",
-                "Radzyminski"
-        );
-        userService.signup(admin);
-
-        User admin2 = SetupUsers.createAdminUser(
-                "admin2",
-                "admin2",
-                "john.doe@company.com",
-                "John",
-                "Doe"
-        );
-        userService.signup(admin2);
-
-        User client1 = SetupUsers.createClientUser(
-                "client",
-                "client",
-                "alice.smith@yahoo.com",
-                "Alice",
-                "Smith"
-        );
-        userService.signup(client1);
-
-        User client2 = SetupUsers.createClientUser(
-                "client2",
-                "client2",
-                "bob.johnson@google.com",
-                "Bob",
-                "Johnson"
-        );
-        userService.signup(client2);
-
-        User client3 = SetupUsers.createClientUser(
-                "client3",
-                "client3",
-                "charlie.brown@example.com",
-                "Charlie",
-                "Brown"
-        );
-        userService.signup(client3);
-    }
-
-    public static User createAdminUser(String username, String password, String email, String firstName, String lastName) {
-        User admin = new User();
-        admin.setUsername(username);
-        admin.setPassword(password);
-        admin.setEmail(email);
-        admin.setFirstName(firstName);
-        admin.setLastName(lastName);
-        admin.setRoles(List.of(Role.ROLE_ADMIN));
-        return admin;
-    }
-
-    public static User createClientUser(String username, String password, String email, String firstName, String lastName) {
-        User client = new User();
-        client.setUsername(username);
-        client.setPassword(password);
-        client.setEmail(email);
-        client.setFirstName(firstName);
-        client.setLastName(lastName);
-        client.setRoles(List.of(Role.ROLE_CLIENT));
-        return client;
-    }
-}
-
-================================================
-File: src/main/java/com/awesome/testing/jms/EmailConfig.java
-================================================
-package com.awesome.testing.jms;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
-import org.springframework.jms.support.converter.MessageConverter;
-import org.springframework.jms.support.converter.MessageType;
-
-@SuppressWarnings("unused")
-@Configuration
-public class EmailConfig {
-
-    @Bean
-    public MessageConverter jacksonJmsMessageConverter() {
-        MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
-        converter.setTargetType(MessageType.TEXT);
-        converter.setTypeIdPropertyName("_awesome_");
-        return converter;
     }
 
 }
 
 
 ================================================
-File: src/main/java/com/awesome/testing/jms/JmsSender.java
+File: src/main/java/com/awesome/testing/entity/AddressEntity.java
 ================================================
-package com.awesome.testing.jms;
+package com.awesome.testing.entity;
 
-import com.awesome.testing.dto.EmailDTO;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
-
-@Component
-@Slf4j
-public class JmsSender {
-
-    @Autowired
-    private JmsTemplate jmsTemplate;
-
-    @Async
-    public void asyncSendTo(String destination, EmailDTO email) {
-        jmsTemplate.convertAndSend(destination, email);
-        log.info("Message {} sent successfully", email);
-    }
-
-}
-
-
-================================================
-File: src/main/java/com/awesome/testing/model/Address.java
-================================================
-package com.awesome.testing.model;
-
+import com.awesome.testing.dto.order.AddressDto;
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -2183,18 +2253,28 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Address {
+public class AddressEntity {
     private String street;
     private String city;
     private String state;
     private String zipCode;
     private String country;
+
+    public static AddressEntity from(AddressDto dto) {
+        return AddressEntity.builder()
+                .street(dto.getStreet())
+                .city(dto.getCity())
+                .state(dto.getState())
+                .zipCode(dto.getZipCode())
+                .country(dto.getCountry())
+                .build();
+    }
 } 
 
 ================================================
-File: src/main/java/com/awesome/testing/model/CartItem.java
+File: src/main/java/com/awesome/testing/entity/CartItemEntity.java
 ================================================
-package com.awesome.testing.model;
+package com.awesome.testing.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -2209,7 +2289,7 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CartItem {
+public class CartItemEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -2219,7 +2299,7 @@ public class CartItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    private ProductEntity product;
 
     @Column(nullable = false)
     private Integer quantity;
@@ -2232,10 +2312,11 @@ public class CartItem {
 } 
 
 ================================================
-File: src/main/java/com/awesome/testing/model/Order.java
+File: src/main/java/com/awesome/testing/entity/OrderEntity.java
 ================================================
-package com.awesome.testing.model;
+package com.awesome.testing.entity;
 
+import com.awesome.testing.dto.order.OrderStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -2255,7 +2336,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Order {
+public class OrderEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -2265,7 +2346,7 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<OrderItem> items = new ArrayList<>();
+    private List<OrderItemEntity> items = new ArrayList<>();
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
@@ -2275,7 +2356,7 @@ public class Order {
     private OrderStatus status;
 
     @Embedded
-    private Address shippingAddress;
+    private AddressEntity shippingAddress;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -2285,21 +2366,21 @@ public class Order {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    public void addItem(OrderItem item) {
+    public void addItem(OrderItemEntity item) {
         items.add(item);
         item.setOrder(this);
     }
 
-    public void removeItem(OrderItem item) {
+    public void removeItem(OrderItemEntity item) {
         items.remove(item);
         item.setOrder(null);
     }
 } 
 
 ================================================
-File: src/main/java/com/awesome/testing/model/OrderItem.java
+File: src/main/java/com/awesome/testing/entity/OrderItemEntity.java
 ================================================
-package com.awesome.testing.model;
+package com.awesome.testing.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -2315,44 +2396,40 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderItem {
+public class OrderItemEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
-    private Order order;
+    private OrderEntity order;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    private ProductEntity product;
 
     @Column(nullable = false)
     private Integer quantity;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price; // price at the time of order
+
+    public static OrderItemEntity from(CartItemEntity cartItem) {
+        return OrderItemEntity.builder()
+                .product(cartItem.getProduct())
+                .quantity(cartItem.getQuantity())
+                .price(cartItem.getPrice())
+                .build();
+    }
 } 
 
 ================================================
-File: src/main/java/com/awesome/testing/model/OrderStatus.java
+File: src/main/java/com/awesome/testing/entity/ProductEntity.java
 ================================================
-package com.awesome.testing.model;
+package com.awesome.testing.entity;
 
-public enum OrderStatus {
-    PENDING,
-    PAID,
-    SHIPPED,
-    DELIVERED,
-    CANCELLED
-} 
-
-================================================
-File: src/main/java/com/awesome/testing/model/Product.java
-================================================
-package com.awesome.testing.model;
-
+import com.awesome.testing.dto.product.ProductCreateDto;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -2367,7 +2444,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Product {
+public class ProductEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -2396,35 +2473,27 @@ public class Product {
     @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    public static ProductEntity from(ProductCreateDto productCreateDto) {
+        return ProductEntity.builder()
+                .name(productCreateDto.getName())
+                .description(productCreateDto.getDescription())
+                .price(productCreateDto.getPrice())
+                .stockQuantity(productCreateDto.getStockQuantity())
+                .category(productCreateDto.getCategory())
+                .imageUrl(productCreateDto.getImageUrl())
+                .build();
+    }
 } 
 
 ================================================
-File: src/main/java/com/awesome/testing/model/Role.java
+File: src/main/java/com/awesome/testing/entity/UserEntity.java
 ================================================
-package com.awesome.testing.model;
+package com.awesome.testing.entity;
 
-import org.springframework.security.core.GrantedAuthority;
-
-public enum Role implements GrantedAuthority {
-    ROLE_ADMIN, ROLE_CLIENT;
-
-    public String getAuthority() {
-        return name();
-    }
-
-}
-
-
-================================================
-File: src/main/java/com/awesome/testing/model/User.java
-================================================
-package com.awesome.testing.model;
-
+import com.awesome.testing.dto.user.Role;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
@@ -2435,7 +2504,7 @@ import java.util.List;
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Table(name = "app_user")
-public class User {
+public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -2474,11 +2543,414 @@ public class User {
 
 
 ================================================
+File: src/main/java/com/awesome/testing/fakedata/SetupData.java
+================================================
+package com.awesome.testing.fakedata;
+
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+
+@Component
+@Transactional
+@RequiredArgsConstructor
+@Profile("!test") // Active in all profiles except test
+public class SetupData {
+
+    private final SetupUsers setupUsers;
+    private final SetupProducts setupProducts;
+    private final SetupOrders setupOrders;
+
+    @Transactional
+    public void setupData() {
+        setupUsers.createUsers();
+        setupProducts.createProducts();
+        setupOrders.createOrdersAndCart();
+    }
+
+}
+
+
+================================================
+File: src/main/java/com/awesome/testing/fakedata/SetupOrders.java
+================================================
+package com.awesome.testing.fakedata;
+
+import com.awesome.testing.dto.order.OrderStatus;
+import com.awesome.testing.entity.*;
+import com.awesome.testing.repository.CartItemRepository;
+import com.awesome.testing.repository.OrderRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Component
+@RequiredArgsConstructor
+public class SetupOrders {
+
+    private final OrderRepository orderRepository;
+    private final CartItemRepository cartItemRepository;
+    private final SetupUsers setupUsers;
+    private final SetupProducts setupProducts;
+
+    @Transactional
+    public void createOrdersAndCart() {
+        if (orderRepository.count() > 0) {
+            return;
+        }
+
+        UserEntity client = setupUsers.getClientUser();
+        UserEntity client2 = setupUsers.getClient2User();
+
+        ProductEntity iphone = setupProducts.getIPhone();
+        ProductEntity macbook = setupProducts.getMacBook();
+        ProductEntity ps5 = setupProducts.getPlayStation();
+        ProductEntity watch = setupProducts.getAppleWatch();
+        ProductEntity headphones = setupProducts.getSonyHeadphones();
+
+        // Create orders for client1 in different statuses
+        createOrder(client, iphone, 1, OrderStatus.DELIVERED, LocalDateTime.now().minusDays(7));
+        createOrder(client, macbook, 1, OrderStatus.SHIPPED, LocalDateTime.now().minusDays(2));
+        createOrder(client, ps5, 1, OrderStatus.PENDING, LocalDateTime.now().minusHours(2));
+
+        // Create one order for client2
+        createOrder(client2, iphone, 1, OrderStatus.PAID, LocalDateTime.now().minusDays(1));
+
+        // Add items to client2's cart
+        createCartItem(client2, watch, 1);
+        createCartItem(client2, headphones, 2);
+    }
+
+    private void createOrder(UserEntity user, ProductEntity product, int quantity, OrderStatus status, LocalDateTime createdAt) {
+        BigDecimal totalPrice = product.getPrice().multiply(BigDecimal.valueOf(quantity));
+        
+        OrderItemEntity orderItem = new OrderItemEntity();
+        orderItem.setProduct(product);
+        orderItem.setQuantity(quantity);
+        orderItem.setPrice(product.getPrice());
+
+        OrderEntity order = new OrderEntity();
+        order.setUsername(user.getUsername());
+        order.setItems(List.of(orderItem));
+        order.setTotalAmount(totalPrice);
+        order.setStatus(status);
+        order.setShippingAddress(createAddress());
+        order.setCreatedAt(createdAt);
+        order.setUpdatedAt(createdAt);
+
+        orderItem.setOrder(order);
+        orderRepository.save(order);
+    }
+
+    private void createCartItem(UserEntity user, ProductEntity product, int quantity) {
+        CartItemEntity cartItem = new CartItemEntity();
+        cartItem.setUsername(user.getUsername());
+        cartItem.setProduct(product);
+        cartItem.setQuantity(quantity);
+        cartItem.setPrice(product.getPrice());
+        cartItem.setVersion(0L);
+
+        cartItemRepository.save(cartItem);
+    }
+
+    private AddressEntity createAddress() {
+        return AddressEntity.builder()
+                .street("123 Main St")
+                .city("New York")
+                .state("NY")
+                .zipCode("10001")
+                .country("USA")
+                .build();
+    }
+} 
+
+================================================
+File: src/main/java/com/awesome/testing/fakedata/SetupProducts.java
+================================================
+package com.awesome.testing.fakedata;
+
+import com.awesome.testing.entity.ProductEntity;
+import com.awesome.testing.repository.ProductRepository;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+
+@Component
+@RequiredArgsConstructor
+public class SetupProducts {
+
+    private final ProductRepository productRepository;
+
+    @Getter private ProductEntity iPhone;
+    @Getter private ProductEntity galaxyS21;
+    @Getter private ProductEntity macBook;
+    @Getter private ProductEntity playStation;
+    @Getter private ProductEntity ninjaFoodi;
+    @Getter private ProductEntity cleanCode;
+    @Getter private ProductEntity appleWatch;
+    @Getter private ProductEntity sonyHeadphones;
+
+    @Transactional
+    public void createProducts() {
+        if (productRepository.count() > 0) {
+            return;
+        }
+
+        // Electronics
+        iPhone = createProduct(
+            "iPhone 13 Pro",
+            "Latest iPhone model with A15 Bionic chip, Pro camera system, and Super Retina XDR display",
+            new BigDecimal("999.99"),
+            50,
+            "Electronics",
+            "https://example.com/iphone13pro.jpg"
+        );
+
+        galaxyS21 = createProduct(
+            "Samsung Galaxy S21",
+            "5G smartphone with 8K video, all-day battery, and powerful performance",
+            new BigDecimal("799.99"),
+            75,
+            "Electronics",
+            "https://example.com/galaxys21.jpg"
+        );
+
+        // Computers
+        macBook = createProduct(
+            "MacBook Pro 14\"",
+            "Apple M1 Pro chip, 16GB RAM, 512GB SSD, Liquid Retina XDR display",
+            new BigDecimal("1999.99"),
+            25,
+            "Computers",
+            "https://example.com/macbookpro.jpg"
+        );
+
+        // Gaming
+        playStation = createProduct(
+            "PlayStation 5",
+            "Next-gen gaming console with 4K graphics, ray tracing, and ultra-high speed SSD",
+            new BigDecimal("499.99"),
+            30,
+            "Gaming",
+            "https://example.com/ps5.jpg"
+        );
+
+        // Home & Kitchen
+        ninjaFoodi = createProduct(
+            "Ninja Foodi 9-in-1",
+            "Deluxe XL pressure cooker and air fryer with multiple cooking functions",
+            new BigDecimal("249.99"),
+            100,
+            "Home & Kitchen",
+            "https://example.com/ninjafoodi.jpg"
+        );
+
+        // Books
+        cleanCode = createProduct(
+            "Clean Code",
+            "A Handbook of Agile Software Craftsmanship by Robert C. Martin",
+            new BigDecimal("44.99"),
+            200,
+            "Books",
+            "https://example.com/cleancode.jpg"
+        );
+
+        // Wearables
+        appleWatch = createProduct(
+            "Apple Watch Series 7",
+            "Always-On Retina display, health monitoring, and fitness tracking",
+            new BigDecimal("399.99"),
+            60,
+            "Wearables",
+            "https://example.com/applewatch.jpg"
+        );
+
+        // Audio
+        sonyHeadphones = createProduct(
+            "Sony WH-1000XM4",
+            "Industry-leading noise canceling wireless headphones with exceptional sound",
+            new BigDecimal("349.99"),
+            85,
+            "Audio",
+            "https://example.com/sonywh1000xm4.jpg"
+        );
+    }
+
+    private ProductEntity createProduct(String name, String description, BigDecimal price, int quantity, String category, String imageUrl) {
+        ProductEntity product = ProductEntity.builder()
+            .name(name)
+            .description(description)
+            .price(price)
+            .stockQuantity(quantity)
+            .category(category)
+            .imageUrl(imageUrl)
+            .build();
+        return productRepository.save(product);
+    }
+} 
+
+================================================
+File: src/main/java/com/awesome/testing/fakedata/SetupUsers.java
+================================================
+package com.awesome.testing.fakedata;
+
+import java.util.List;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.awesome.testing.dto.user.Role;
+import com.awesome.testing.entity.UserEntity;
+import com.awesome.testing.repository.UserRepository;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Component
+@Transactional
+@RequiredArgsConstructor
+public class SetupUsers {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Getter private UserEntity adminUser;
+    @Getter private UserEntity admin2User;
+    @Getter private UserEntity clientUser;
+    @Getter private UserEntity client2User;
+    @Getter private UserEntity client3User;
+
+    @Transactional
+    public void createUsers() {
+        if (userRepository.count() > 0) {
+            return;
+        }
+
+        adminUser = createAdminUser(
+                "admin",
+                "admin",
+                "awesome@testing.com",
+                "Slawomir",
+                "Radzyminski"
+        );
+        userRepository.save(adminUser);
+
+        admin2User = createAdminUser(
+                "admin2",
+                "admin2",
+                "john.doe@company.com",
+                "John",
+                "Doe"
+        );
+        userRepository.save(admin2User);
+
+        clientUser = createClientUser(
+                "client",
+                "client",
+                "alice.smith@yahoo.com",
+                "Alice",
+                "Smith"
+        );
+        userRepository.save(clientUser);
+
+        client2User = createClientUser(
+                "client2",
+                "client2",
+                "bob.johnson@google.com",
+                "Bob",
+                "Johnson"
+        );
+        userRepository.save(client2User);
+
+        client3User = createClientUser(
+                "client3",
+                "client3",
+                "charlie.brown@example.com",
+                "Charlie",
+                "Brown"
+        );
+        userRepository.save(client3User);
+    }
+
+    private UserEntity createAdminUser(String username, String password, String email, String firstName, String lastName) {
+        UserEntity admin = new UserEntity();
+        admin.setUsername(username);
+        admin.setPassword(passwordEncoder.encode(password));
+        admin.setEmail(email);
+        admin.setFirstName(firstName);
+        admin.setLastName(lastName);
+        admin.setRoles(List.of(Role.ROLE_ADMIN));
+        return admin;
+    }
+
+    private UserEntity createClientUser(String username, String password, String email, String firstName, String lastName) {
+        UserEntity client = new UserEntity();
+        client.setUsername(username);
+        client.setPassword(passwordEncoder.encode(password));
+        client.setEmail(email);
+        client.setFirstName(firstName);
+        client.setLastName(lastName);
+        client.setRoles(List.of(Role.ROLE_CLIENT));
+        return client;
+    }
+}
+
+================================================
+File: src/main/java/com/awesome/testing/jms/EmailConfig.java
+================================================
+package com.awesome.testing.jms;
+
+import jakarta.jms.ConnectionFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
+import org.springframework.jms.support.converter.MessageConverter;
+import org.springframework.jms.support.converter.MessageType;
+import org.springframework.jms.annotation.EnableJms;
+
+@SuppressWarnings("unused")
+@Configuration
+@EnableJms
+@Profile("!local")
+public class EmailConfig {
+
+    @Bean
+    public JmsTemplate jmsTemplate(ConnectionFactory connectionFactory, MessageConverter messageConverter) {
+        JmsTemplate jmsTemplate = new JmsTemplate(connectionFactory);
+        jmsTemplate.setMessageConverter(messageConverter);
+        jmsTemplate.setSessionTransacted(true);
+        return jmsTemplate;
+    }
+
+    @Bean
+    public MappingJackson2MessageConverter jacksonJmsMessageConverter() {
+        MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
+        converter.setTargetType(MessageType.TEXT);
+        converter.setTypeIdPropertyName("_awesome_");
+        return converter;
+    }
+
+}
+
+
+================================================
 File: src/main/java/com/awesome/testing/repository/CartItemRepository.java
 ================================================
 package com.awesome.testing.repository;
 
-import com.awesome.testing.model.CartItem;
+import com.awesome.testing.entity.CartItemEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -2488,12 +2960,12 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CartItemRepository extends JpaRepository<CartItem, Long> {
-    @Query("SELECT ci FROM CartItem ci JOIN FETCH ci.product WHERE ci.username = :username")
-    List<CartItem> findByUsername(@Param("username") String username);
+public interface CartItemRepository extends JpaRepository<CartItemEntity, Long> {
+    @Query("SELECT ci FROM CartItemEntity ci JOIN FETCH ci.product WHERE ci.username = :username")
+    List<CartItemEntity> findByUsername(@Param("username") String username);
 
-    @Query("SELECT ci FROM CartItem ci JOIN FETCH ci.product WHERE ci.username = :username AND ci.product.id = :productId")
-    Optional<CartItem> findByUsernameAndProductId(@Param("username") String username, @Param("productId") Long productId);
+    @Query("SELECT ci FROM CartItemEntity ci JOIN FETCH ci.product WHERE ci.username = :username AND ci.product.id = :productId")
+    Optional<CartItemEntity> findByUsernameAndProductId(@Param("username") String username, @Param("productId") Long productId);
 
     void deleteByUsername(String username);
 
@@ -2505,8 +2977,8 @@ File: src/main/java/com/awesome/testing/repository/OrderRepository.java
 ================================================
 package com.awesome.testing.repository;
 
-import com.awesome.testing.model.Order;
-import com.awesome.testing.model.OrderStatus;
+import com.awesome.testing.entity.OrderEntity;
+import com.awesome.testing.dto.order.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -2517,15 +2989,15 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface OrderRepository extends JpaRepository<Order, Long> {
-    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.items WHERE o.username = :username")
-    Page<Order> findByUsername(@Param("username") String username, Pageable pageable);
+public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
+    @Query("SELECT o FROM OrderEntity o LEFT JOIN FETCH o.items WHERE o.username = :username")
+    Page<OrderEntity> findByUsername(@Param("username") String username, Pageable pageable);
 
-    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.items WHERE o.username = :username AND o.status = :status")
-    Page<Order> findByUsernameAndStatus(@Param("username") String username, @Param("status") OrderStatus status, Pageable pageable);
+    @Query("SELECT o FROM OrderEntity o LEFT JOIN FETCH o.items WHERE o.username = :username AND o.status = :status")
+    Page<OrderEntity> findByUsernameAndStatus(@Param("username") String username, @Param("status") OrderStatus status, Pageable pageable);
 
-    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.items WHERE o.id = :id AND o.username = :username")
-    Optional<Order> findByIdAndUsername(@Param("id") Long id, @Param("username") String username);
+    @Query("SELECT o FROM OrderEntity o LEFT JOIN FETCH o.items WHERE o.id = :id AND o.username = :username")
+    Optional<OrderEntity> findByIdAndUsername(@Param("id") Long id, @Param("username") String username);
 } 
 
 ================================================
@@ -2533,11 +3005,11 @@ File: src/main/java/com/awesome/testing/repository/ProductRepository.java
 ================================================
 package com.awesome.testing.repository;
 
-import com.awesome.testing.model.Product;
+import com.awesome.testing.entity.ProductEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
+public interface ProductRepository extends JpaRepository<ProductEntity, Long>, JpaSpecificationExecutor<ProductEntity> {
     // JpaSpecificationExecutor allows for dynamic querying (filtering by category, price range, etc.)
 } 
 
@@ -2546,18 +3018,51 @@ File: src/main/java/com/awesome/testing/repository/UserRepository.java
 ================================================
 package com.awesome.testing.repository;
 
-import com.awesome.testing.model.User;
+import com.awesome.testing.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import jakarta.transaction.Transactional;
 
-public interface UserRepository extends JpaRepository<User, Integer> {
+import java.util.Optional;
 
-    boolean existsByUsername(String username);
+public interface UserRepository extends JpaRepository<UserEntity, Integer> {
 
-    User findByUsername(String username);
+    Optional<UserEntity> findByUsername(String username);
 
     @Transactional
     void deleteByUsername(String username);
+
+}
+
+
+================================================
+File: src/main/java/com/awesome/testing/security/AuthenticationHandler.java
+================================================
+package com.awesome.testing.security;
+
+import com.awesome.testing.controller.exception.CustomException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.stereotype.Component;
+
+@RequiredArgsConstructor
+@Component
+public class AuthenticationHandler {
+
+    private final AuthenticationManager authenticationManager;
+
+    public void authUser(String username, String password) {
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+        } catch (BadCredentialsException e) {
+            throw new CustomException("Invalid username/password supplied", HttpStatus.UNPROCESSABLE_ENTITY);
+        } catch (AuthenticationException e) {
+            throw new CustomException("Unauthorized", HttpStatus.UNAUTHORIZED);
+        }
+    }
 
 }
 
@@ -2588,17 +3093,19 @@ File: src/main/java/com/awesome/testing/security/JwtTokenFilter.java
 ================================================
 package com.awesome.testing.security;
 
-import com.awesome.testing.exception.CustomException;
+import com.awesome.testing.controller.exception.CustomException;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+
+import static com.awesome.testing.utils.ErrorResponseDefinition.sendErrorResponse;
 
 @RequiredArgsConstructor
 public class JwtTokenFilter extends OncePerRequestFilter {
@@ -2607,61 +3114,31 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+            throws IOException {
         String token = jwtTokenProvider.extractTokenFromRequest(request);
         try {
             if (token == null) {
                 filterChain.doFilter(request, response);
                 return;
             }
-            
+
             if (jwtTokenProvider.validateToken(token)) {
                 Authentication auth = jwtTokenProvider.getAuthentication(token);
                 SecurityContextHolder.getContext().setAuthentication(auth);
                 filterChain.doFilter(request, response);
                 return;
             }
-            
             SecurityContextHolder.clearContext();
-            response.setContentType("application/json;charset=UTF-8");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("{\"message\":\"Invalid or expired token\"}");
+            sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "Invalid or expired token");
+
         } catch (CustomException ex) {
             SecurityContextHolder.clearContext();
-            response.setContentType("application/json;charset=UTF-8");
-            response.setStatus(ex.getHttpStatus().value());
-            response.getWriter().write("{\"message\":\"" + ex.getMessage() + "\"}");
+            sendErrorResponse(response, ex.getHttpStatus(), ex.getMessage());
+
         } catch (Exception ex) {
             SecurityContextHolder.clearContext();
-            response.setContentType("application/json;charset=UTF-8");
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("{\"message\":\"Internal server error\"}");
+            sendErrorResponse(response, HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
         }
-    }
-
-}
-
-
-================================================
-File: src/main/java/com/awesome/testing/security/JwtTokenFilterConfigurer.java
-================================================
-package com.awesome.testing.security;
-
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.web.DefaultSecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-@RequiredArgsConstructor
-public class JwtTokenFilterConfigurer extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> {
-
-    private final JwtTokenProvider jwtTokenProvider;
-
-    @Override
-    public void configure(HttpSecurity http) {
-        JwtTokenFilter customFilter = new JwtTokenFilter(jwtTokenProvider);
-        http.addFilterBefore(customFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
 }
@@ -2674,12 +3151,12 @@ package com.awesome.testing.security;
 
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 
-import com.awesome.testing.exception.CustomException;
+import com.awesome.testing.controller.exception.CustomException;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -2693,7 +3170,7 @@ import org.springframework.stereotype.Component;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import com.awesome.testing.model.Role;
+import com.awesome.testing.dto.user.Role;
 
 import javax.crypto.SecretKey;
 
@@ -2710,6 +3187,7 @@ public class JwtTokenProvider {
     private final MyUserDetails myUserDetails;
     private SecretKey key;
 
+    @SuppressWarnings("unused")
     @PostConstruct
     protected void init() {
         String longSecretKey = secretKey + secretKey + secretKey + secretKey; // Repeat 4 times to ensure length
@@ -2733,16 +3211,11 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    private List<SimpleGrantedAuthority> getRoles(List<Role> roles) {
-        return roles.stream()
-                .map(role -> new SimpleGrantedAuthority(role.getAuthority()))
-                .collect(Collectors.toList());
-    }
-
     public Authentication getAuthentication(String token) {
         String username = getUsername(token);
         UserDetails userDetails = myUserDetails.loadUserByUsername(username);
-        return new UsernamePasswordAuthenticationToken(new CustomPrincipal(username, userDetails), "", userDetails.getAuthorities());
+        CustomPrincipal principal = new CustomPrincipal(username, userDetails);
+        return new UsernamePasswordAuthenticationToken(principal, "", userDetails.getAuthorities());
     }
 
     public String getUsername(String token) {
@@ -2755,11 +3228,10 @@ public class JwtTokenProvider {
     }
 
     public String extractTokenFromRequest(HttpServletRequest req) {
-        String bearerToken = req.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
+        return Optional.ofNullable(req.getHeader("Authorization"))
+                .filter(token -> token.startsWith("Bearer "))
+                .map(token -> token.substring(7))
+                .orElse(null);
     }
 
     public boolean validateToken(String token) {
@@ -2772,6 +3244,12 @@ public class JwtTokenProvider {
         } catch (JwtException | IllegalArgumentException e) {
             throw new CustomException("Invalid or expired token", HttpStatus.UNAUTHORIZED);
         }
+    }
+
+    private List<SimpleGrantedAuthority> getRoles(List<Role> roles) {
+        return roles.stream()
+                .map(role -> new SimpleGrantedAuthority(role.getAuthority()))
+                .toList();
     }
 }
 
@@ -2788,7 +3266,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.awesome.testing.model.User;
+import com.awesome.testing.entity.UserEntity;
 
 import java.text.MessageFormat;
 
@@ -2802,13 +3280,12 @@ public class MyUserDetails implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        final User user = userRepository.findByUsername(username);
+        return userRepository.findByUsername(username)
+                .map(user -> toUserDetails(username, user))
+                .orElseThrow(() -> notFound(username));
+    }
 
-        if (user == null) {
-            throw new UsernameNotFoundException(
-                    MessageFormat.format("User ''{0}'' not found", username));
-        }
-
+    private UserDetails toUserDetails(String username, UserEntity user) {
         return withUsername(username)
                 .password(user.getPassword())
                 .authorities(user.getRoles())
@@ -2819,6 +3296,11 @@ public class MyUserDetails implements UserDetailsService {
                 .build();
     }
 
+    private UsernameNotFoundException notFound(String username) {
+        return new UsernameNotFoundException(
+                MessageFormat.format("User ''{0}'' not found", username));
+    }
+
 }
 
 
@@ -2827,77 +3309,94 @@ File: src/main/java/com/awesome/testing/security/WebSecurityConfig.java
 ================================================
 package com.awesome.testing.security;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.util.Arrays;
+import java.io.IOException;
+import java.util.List;
 
+import static com.awesome.testing.utils.ErrorResponseDefinition.sendErrorResponse;
+
+@SuppressWarnings("unused")
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
+    private static final List<String> ALLOWED_ENDPOINTS = List.of(
+            "/users/signin",
+            "/users/signup",
+            "/h2-console/**",
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-resources/**",
+            "/webjars/**",
+            "/actuator/**"
+    );
+
     private final JwtTokenProvider jwtTokenProvider;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         // Disable CSRF as we use JWT
-        http.csrf(csrf -> csrf.disable());
-        
+        http.csrf(AbstractHttpConfigurer::disable);
+
         // Enable CORS
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
-        
+
         // No session will be created or used by Spring Security
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        
-        // Entry points
-        http.authorizeHttpRequests(auth -> auth
-            .requestMatchers("/users/signin").permitAll()
-            .requestMatchers("/users/signup").permitAll()
-            .requestMatchers("/h2-console/**").permitAll()
-            // Swagger endpoints
-            .requestMatchers("/v3/api-docs/**").permitAll()
-            .requestMatchers("/swagger-ui/**").permitAll()
-            .requestMatchers("/swagger-resources/**").permitAll()
-            .requestMatchers("/webjars/**").permitAll()
-            // All other endpoints require authentication
-            .anyRequest().authenticated()
-        );
 
-        // Handle errors
+        // Define authorization rules
+        http.authorizeHttpRequests(auth -> {
+            ALLOWED_ENDPOINTS.forEach(endpoint -> auth.requestMatchers(new AntPathRequestMatcher(endpoint)).permitAll());
+            auth.anyRequest().authenticated();
+        });
+
+        // Handle authentication and authorization errors
         http.exceptionHandling(ex -> ex
-            .accessDeniedHandler((request, response, accessDeniedException) -> {
-                response.setContentType("application/json;charset=UTF-8");
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.getWriter().write("{\"message\":\"Access denied\"}");
-            })
-            .authenticationEntryPoint((request, response, authException) -> {
-                response.setContentType("application/json;charset=UTF-8");
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("{\"message\":\"Unauthorized\"}");
-            })
+                .accessDeniedHandler(this::handleAccessDenied)
+                .authenticationEntryPoint(this::handleUnauthorized)
         );
 
         // Apply JWT security filter
         http.addFilterBefore(new JwtTokenFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    private void handleAccessDenied(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    AccessDeniedException ex) throws IOException {
+        sendErrorResponse(response, HttpStatus.FORBIDDEN, "Access denied");
+    }
+
+    private void handleUnauthorized(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    AuthenticationException ex) throws IOException {
+        sendErrorResponse(response, HttpStatus.UNAUTHORIZED, "Unauthorized");
     }
 
     @Bean
@@ -2913,11 +3412,11 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8081"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept"));
+        configuration.setAllowedOrigins(List.of("http://localhost:8081"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "Accept"));
         configuration.setAllowCredentials(true);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
@@ -2930,10 +3429,13 @@ File: src/main/java/com/awesome/testing/service/CartService.java
 ================================================
 package com.awesome.testing.service;
 
-import com.awesome.testing.dto.CartDTO;
-import com.awesome.testing.dto.CartItemDTO;
-import com.awesome.testing.model.CartItem;
-import com.awesome.testing.model.Product;
+import com.awesome.testing.controller.exception.CartItemNotFoundException;
+import com.awesome.testing.controller.exception.ProductNotFoundException;
+import com.awesome.testing.dto.cart.CartDto;
+import com.awesome.testing.dto.cart.CartItemDto;
+import com.awesome.testing.dto.cart.UpdateCartItemDto;
+import com.awesome.testing.entity.CartItemEntity;
+import com.awesome.testing.entity.ProductEntity;
 import com.awesome.testing.repository.CartItemRepository;
 import com.awesome.testing.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -2951,59 +3453,40 @@ public class CartService {
     private final ProductRepository productRepository;
 
     @Transactional(readOnly = true)
-    public CartDTO getCart(String username) {
-        List<CartItem> cartItems = cartItemRepository.findByUsername(username);
-        return createCartDTO(username, cartItems);
+    public CartDto getCart(String username) {
+        return getCartDto(username);
     }
 
     @Transactional
-    public CartDTO addToCart(String username, CartItemDTO cartItemDTO) {
-        Product product = productRepository.findById(cartItemDTO.getProductId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+    public CartDto addToCart(String username, CartItemDto cartItemDto) {
+        ProductEntity product = productRepository.findById(cartItemDto.getProductId())
+                .orElseThrow(() -> new ProductNotFoundException("Product not found"));
 
-        CartItem cartItem = cartItemRepository.findByUsernameAndProductId(username, cartItemDTO.getProductId())
-                .map(existingItem -> updateItem(cartItemDTO, existingItem, product))
-                .orElseGet(() -> createItem(username, cartItemDTO, product));
+        CartItemEntity cartItem = cartItemRepository.findByUsernameAndProductId(username, cartItemDto.getProductId())
+                .map(existingItem -> updateItem(cartItemDto, existingItem, product))
+                .orElseGet(() -> createItem(username, cartItemDto, product));
 
         cartItemRepository.save(cartItem);
-        List<CartItem> cartItems = cartItemRepository.findByUsername(username);
-        return createCartDTO(username, cartItems);
-    }
-
-    private CartItem createItem(String username, CartItemDTO cartItemDTO, Product product) {
-        return CartItem.builder()
-                .username(username)
-                .product(product)
-                .quantity(cartItemDTO.getQuantity())
-                .price(product.getPrice())
-                .version(0L)
-                .build();
-    }
-
-    private CartItem updateItem(CartItemDTO cartItemDTO, CartItem existingItem, Product product) {
-        existingItem.setQuantity(existingItem.getQuantity() + cartItemDTO.getQuantity());
-        existingItem.setPrice(product.getPrice());
-        return existingItem;
+        return getCartDto(username);
     }
 
     @Transactional
-    public CartDTO updateCartItem(String username, Long productId, CartItemDTO cartItemDTO) {
-        CartItem cartItem = cartItemRepository.findByUsernameAndProductId(username, productId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+    public CartDto updateCartItem(String username, Long productId, UpdateCartItemDto updateCartItemDto) {
+        CartItemEntity cartItem = getCartItemEntity(username, productId);
 
-        cartItem.setQuantity(cartItemDTO.getQuantity());
+        cartItem.setQuantity(updateCartItemDto.getQuantity());
         cartItem.setPrice(cartItem.getProduct().getPrice());
         cartItemRepository.save(cartItem);
 
-        List<CartItem> cartItems = cartItemRepository.findByUsername(username);
-        return createCartDTO(username, cartItems);
+        return getCartDto(username);
     }
 
     @Transactional
-    public CartDTO removeFromCart(String username, Long productId) {
+    public CartDto removeFromCart(String username, Long productId) {
+        getCartItemEntity(username, productId);
+
         cartItemRepository.deleteByUsernameAndProductId(username, productId);
-        List<CartItem> cartItems = cartItemRepository.findByUsername(username);
-        return createCartDTO(username, cartItems);
+        return getCartDto(username);
     }
 
     @Transactional
@@ -3011,8 +3494,18 @@ public class CartService {
         cartItemRepository.deleteByUsername(username);
     }
 
-    private CartDTO createCartDTO(String username, List<CartItem> cartItems) {
-        return CartDTO.builder()
+    private CartDto getCartDto(String username) {
+        List<CartItemEntity> cartItems = cartItemRepository.findByUsername(username);
+        return createCartDto(username, cartItems);
+    }
+
+    private CartItemEntity getCartItemEntity(String username, Long productId) {
+        return cartItemRepository.findByUsernameAndProductId(username, productId)
+                .orElseThrow(() -> new CartItemNotFoundException("Cart item not found"));
+    }
+
+    private CartDto createCartDto(String username, List<CartItemEntity> cartItems) {
+        return CartDto.builder()
                 .username(username)
                 .items(getItems(cartItems))
                 .totalPrice(calculateTotalPrice(cartItems))
@@ -3020,29 +3513,49 @@ public class CartService {
                 .build();
     }
 
-    private List<CartItemDTO> getItems(List<CartItem> cartItems) {
+    private CartItemEntity createItem(String username, CartItemDto cartItemDto, ProductEntity product) {
+        return CartItemEntity.builder()
+                .username(username)
+                .product(product)
+                .quantity(cartItemDto.getQuantity())
+                .price(product.getPrice())
+                .version(0L)
+                .build();
+    }
+
+    private CartItemEntity updateItem(CartItemDto cartItemDto, CartItemEntity existingItem, ProductEntity product) {
+        existingItem.setQuantity(existingItem.getQuantity() + cartItemDto.getQuantity());
+        existingItem.setPrice(product.getPrice());
+        return existingItem;
+    }
+
+    private List<CartItemDto> getItems(List<CartItemEntity> cartItems) {
         return cartItems.stream()
-                .map(this::convertToCartItemDTO)
+                .map(this::convertToCartItemDto)
                 .toList();
     }
 
-    private CartItemDTO convertToCartItemDTO(CartItem item) {
-        return CartItemDTO.builder()
+    private CartItemDto convertToCartItemDto(CartItemEntity item) {
+        return CartItemDto.builder()
                 .productId(item.getProduct().getId())
                 .quantity(item.getQuantity())
                 .build();
     }
 
-    private int calculateTotalItems(List<CartItem> cartItems) {
+    private int calculateTotalItems(List<CartItemEntity> cartItems) {
         return cartItems.stream()
-                .mapToInt(CartItem::getQuantity)
+                .mapToInt(CartItemEntity::getQuantity)
                 .sum();
     }
 
-    private BigDecimal calculateTotalPrice(List<CartItem> cartItems) {
+    private BigDecimal calculateTotalPrice(List<CartItemEntity> cartItems) {
         return cartItems.stream()
-                .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .map(this::multiplyByQuantity)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal multiplyByQuantity(CartItemEntity item) {
+        return item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
     }
 } 
 
@@ -3051,11 +3564,12 @@ File: src/main/java/com/awesome/testing/service/EmailService.java
 ================================================
 package com.awesome.testing.service;
 
-import com.awesome.testing.dto.EmailDTO;
-import com.awesome.testing.jms.JmsSender;
+import com.awesome.testing.dto.email.EmailDto;
+import com.awesome.testing.service.delay.DelayGenerator;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -3063,27 +3577,41 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class EmailService {
 
-    private final JmsSender jmsSender;
+    private final JmsTemplate jmsTemplate;
+    private final DelayGenerator delayGenerator;
 
-    @Value("${activemq.destination}")
-    private String destination;
-
-    public void sendEmail(EmailDTO email) {
-        jmsSender.asyncSendTo(destination, email);
+    public void sendEmail(EmailDto emailDto, String destination) {
+        Thread.ofVirtual().start(() -> {
+            try {
+                long delay = delayGenerator.getDelayMillis();
+                logDelay(delay);
+                Thread.sleep(delay);
+                jmsTemplate.convertAndSend(destination, emailDto);
+                log.info("Email sent to {}", emailDto.getTo());
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("Email sending was interrupted", e);
+            }
+        });
     }
 
-} 
+    private void logDelay(long delay) {
+        long minutes = delay / 60000;
+        long seconds = (delay % 60000) / 1000;
+        log.info("Delaying email send by {} minutes and {} seconds", minutes, seconds);
+    }
+}
 
 ================================================
 File: src/main/java/com/awesome/testing/service/OrderService.java
 ================================================
 package com.awesome.testing.service;
 
-import com.awesome.testing.dto.AddressDTO;
-import com.awesome.testing.dto.OrderDTO;
-import com.awesome.testing.dto.OrderItemDTO;
-import com.awesome.testing.exception.CustomException;
-import com.awesome.testing.model.*;
+import com.awesome.testing.dto.order.AddressDto;
+import com.awesome.testing.dto.order.OrderDto;
+import com.awesome.testing.controller.exception.CustomException;
+import com.awesome.testing.dto.order.OrderStatus;
+import com.awesome.testing.entity.*;
 import com.awesome.testing.repository.CartItemRepository;
 import com.awesome.testing.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
@@ -3104,57 +3632,38 @@ public class OrderService {
     private final CartItemRepository cartItemRepository;
 
     @Transactional
-    public OrderDTO createOrder(String username, AddressDTO addressDTO) {
-        List<CartItem> cartItems = cartItemRepository.findByUsername(username);
+    public OrderDto createOrder(String username, AddressDto addressDto) {
+        List<CartItemEntity> cartItems = cartItemRepository.findByUsername(username);
         if (cartItems.isEmpty()) {
             throw new CustomException("Cart is empty", HttpStatus.BAD_REQUEST);
         }
 
-        Order order = Order.builder()
-                .username(username)
-                .status(OrderStatus.PENDING)
-                .shippingAddress(mapToAddress(addressDTO))
-                .totalAmount(BigDecimal.ZERO)
-                .build();
-
+        OrderEntity order = getInitialEmptyOrder(username, addressDto);
         cartItems.forEach(cartItem -> updateOrder(cartItem, order));
-
-        Order savedOrder = orderRepository.save(order);
+        OrderEntity savedOrder = orderRepository.save(order);
         cartItemRepository.deleteByUsername(username);
 
-        return mapToOrderDTO(savedOrder);
-    }
-
-    private void updateOrder(CartItem cartItem, Order order) {
-        OrderItem orderItem = OrderItem.builder()
-                .product(cartItem.getProduct())
-                .quantity(cartItem.getQuantity())
-                .price(cartItem.getPrice())
-                .build();
-        order.addItem(orderItem);
-        order.setTotalAmount(order.getTotalAmount().add(
-                cartItem.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()))
-        ));
+        return OrderDto.from(savedOrder);
     }
 
     @Transactional(readOnly = true)
-    public Page<OrderDTO> getUserOrders(String username, OrderStatus status, Pageable pageable) {
-        Page<Order> orders = status == null ?
+    public Page<OrderDto> getUserOrders(String username, OrderStatus status, Pageable pageable) {
+        Page<OrderEntity> orders = status == null ?
                 orderRepository.findByUsername(username, pageable) :
                 orderRepository.findByUsernameAndStatus(username, status, pageable);
-        return orders.map(this::mapToOrderDTO);
+        return orders.map(OrderDto::from);
     }
 
     @Transactional(readOnly = true)
-    public OrderDTO getOrder(String username, Long orderId) {
+    public OrderDto getOrder(String username, Long orderId) {
         return orderRepository.findByIdAndUsername(orderId, username)
-                .map(this::mapToOrderDTO)
+                .map(OrderDto::from)
                 .orElseThrow(() -> new CustomException("Order not found", HttpStatus.NOT_FOUND));
     }
 
     @Transactional
-    public OrderDTO updateOrderStatus(Long orderId, OrderStatus newStatus) {
-        Order order = orderRepository.findById(orderId)
+    public OrderDto updateOrderStatus(Long orderId, OrderStatus newStatus) {
+        OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException("Order not found", HttpStatus.NOT_FOUND));
 
         if (newStatus == OrderStatus.CANCELLED && !canBeCancelled(order.getStatus())) {
@@ -3162,67 +3671,41 @@ public class OrderService {
         }
 
         order.setStatus(newStatus);
-        return mapToOrderDTO(orderRepository.save(order));
+        return OrderDto.from(orderRepository.save(order));
+    }
+
+    private OrderEntity getInitialEmptyOrder(String username, AddressDto addressDto) {
+        return OrderEntity.builder()
+                .username(username)
+                .status(OrderStatus.PENDING)
+                .shippingAddress(AddressEntity.from(addressDto))
+                .totalAmount(BigDecimal.ZERO)
+                .build();
+    }
+
+    private void updateOrder(CartItemEntity cartItem, OrderEntity order) {
+        OrderItemEntity orderItem = OrderItemEntity.from(cartItem);
+        order.addItem(orderItem);
+        order.setTotalAmount(order.getTotalAmount().add(
+                cartItem.getPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity()))
+        ));
     }
 
     private boolean canBeCancelled(OrderStatus status) {
         return status == OrderStatus.PENDING || status == OrderStatus.PAID;
     }
 
-    private Address mapToAddress(AddressDTO dto) {
-        return Address.builder()
-                .street(dto.getStreet())
-                .city(dto.getCity())
-                .state(dto.getState())
-                .zipCode(dto.getZipCode())
-                .country(dto.getCountry())
-                .build();
-    }
-
-    private OrderDTO mapToOrderDTO(Order order) {
-        return OrderDTO.builder()
-                .id(order.getId())
-                .username(order.getUsername())
-                .items(mapToOrderItemDTOs(order.getItems()))
-                .totalAmount(order.getTotalAmount())
-                .status(order.getStatus())
-                .shippingAddress(mapToAddressDTO(order.getShippingAddress()))
-                .createdAt(order.getCreatedAt())
-                .updatedAt(order.getUpdatedAt())
-                .build();
-    }
-
-    private List<OrderItemDTO> mapToOrderItemDTOs(List<OrderItem> items) {
-        return items.stream()
-                .map(item -> OrderItemDTO.builder()
-                        .id(item.getId())
-                        .productId(item.getProduct().getId())
-                        .productName(item.getProduct().getName())
-                        .quantity(item.getQuantity())
-                        .unitPrice(item.getPrice())
-                        .totalPrice(item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
-                        .build())
-                .toList();
-    }
-
-    private AddressDTO mapToAddressDTO(Address address) {
-        return AddressDTO.builder()
-                .street(address.getStreet())
-                .city(address.getCity())
-                .state(address.getState())
-                .zipCode(address.getZipCode())
-                .country(address.getCountry())
-                .build();
-    }
-} 
+}
 
 ================================================
 File: src/main/java/com/awesome/testing/service/ProductService.java
 ================================================
 package com.awesome.testing.service;
 
-import com.awesome.testing.dto.ProductDTO;
-import com.awesome.testing.model.Product;
+import com.awesome.testing.dto.product.ProductCreateDto;
+import com.awesome.testing.dto.product.ProductDto;
+import com.awesome.testing.dto.product.ProductUpdateDto;
+import com.awesome.testing.entity.ProductEntity;
 import com.awesome.testing.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -3231,6 +3714,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+import static com.awesome.testing.utils.EntityUpdater.updateIfNotNull;
+
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -3238,40 +3723,33 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     @Transactional(readOnly = true)
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public List<ProductDto> getAllProducts() {
+        return productRepository.findAll()
+                .stream()
+                .map(ProductDto::from)
+                .toList();
     }
 
     @Transactional(readOnly = true)
-    public Optional<Product> getProductById(Long id) {
-        return productRepository.findById(id);
+    public Optional<ProductDto> getProductById(Long id) {
+        return productRepository.findById(id)
+                .map(ProductDto::from);
     }
 
     @Transactional
-    public Product createProduct(ProductDTO productDTO) {
-        Product product = Product.builder()
-                .name(productDTO.getName())
-                .description(productDTO.getDescription())
-                .price(productDTO.getPrice())
-                .stockQuantity(productDTO.getStockQuantity())
-                .category(productDTO.getCategory())
-                .imageUrl(productDTO.getImageUrl())
-                .build();
-        
-        return productRepository.save(product);
+    public ProductDto createProduct(ProductCreateDto productCreateDto) {
+        ProductEntity product = ProductEntity.from(productCreateDto);
+        productRepository.save(product);
+        return ProductDto.from(product);
     }
 
     @Transactional
-    public Optional<Product> updateProduct(Long id, ProductDTO productDTO) {
+    public Optional<ProductDto> updateProduct(Long id, ProductUpdateDto productUpdateDto) {
         return productRepository.findById(id)
                 .map(product -> {
-                    product.setName(productDTO.getName());
-                    product.setDescription(productDTO.getDescription());
-                    product.setPrice(productDTO.getPrice());
-                    product.setStockQuantity(productDTO.getStockQuantity());
-                    product.setCategory(productDTO.getCategory());
-                    product.setImageUrl(productDTO.getImageUrl());
-                    return productRepository.save(product);
+                    toUpdatedProduct(productUpdateDto, product);
+                    productRepository.save(product);
+                    return ProductDto.from(product);
                 });
     }
 
@@ -3284,142 +3762,279 @@ public class ProductService {
                 })
                 .orElse(false);
     }
-} 
+
+    private void toUpdatedProduct(ProductUpdateDto productUpdateDto, ProductEntity product) {
+        updateIfNotNull(productUpdateDto.getName(), ProductEntity::setName, product);
+        updateIfNotNull(productUpdateDto.getDescription(), ProductEntity::setDescription, product);
+        updateIfNotNull(productUpdateDto.getPrice(), ProductEntity::setPrice, product);
+        updateIfNotNull(productUpdateDto.getStockQuantity(), ProductEntity::setStockQuantity, product);
+        updateIfNotNull(productUpdateDto.getCategory(), ProductEntity::setCategory, product);
+        updateIfNotNull(productUpdateDto.getImageUrl(), ProductEntity::setImageUrl, product);
+    }
+
+}
 
 ================================================
 File: src/main/java/com/awesome/testing/service/UserService.java
 ================================================
 package com.awesome.testing.service;
 
-import com.awesome.testing.dto.UserEditDTO;
-import com.awesome.testing.exception.CustomException;
-import com.awesome.testing.exception.UserNotFoundException;
+import com.awesome.testing.dto.user.UserEditDto;
+import com.awesome.testing.dto.user.UserRegisterDto;
+import com.awesome.testing.controller.exception.CustomException;
+import com.awesome.testing.controller.exception.UserNotFoundException;
+import com.awesome.testing.security.AuthenticationHandler;
 import jakarta.servlet.http.HttpServletRequest;
-import com.awesome.testing.model.Role;
-import com.awesome.testing.model.User;
+import com.awesome.testing.entity.UserEntity;
 import com.awesome.testing.repository.UserRepository;
 import com.awesome.testing.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.List;
 
+import static com.awesome.testing.utils.EntityUpdater.updateIfNotNull;
+
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
-    private final AuthenticationManager authenticationManager;
+    private final AuthenticationHandler authenticationHandler;
 
     public String signIn(String username, String password) {
-        try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-            return jwtTokenProvider.createToken(username, userRepository.findByUsername(username).getRoles());
-        } catch (BadCredentialsException e) {
-            throw new CustomException("Invalid username/password supplied", HttpStatus.UNPROCESSABLE_ENTITY);
-        } catch (AuthenticationException e) {
-            throw new CustomException("Unauthorized", HttpStatus.UNAUTHORIZED);
-        }
+        authenticationHandler.authUser(username, password);
+        UserEntity user = getUser(username);
+        return jwtTokenProvider.createToken(username, user.getRoles());
     }
 
-    public void signup(User user) {
-        if (!userRepository.existsByUsername(user.getUsername())) {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            if (user.getRoles() == null || user.getRoles().isEmpty()) {
-                user.setRoles(Collections.singletonList(Role.ROLE_CLIENT));
-            }
-            userRepository.save(user);
-        } else {
-            throw new CustomException("Username is already in use", HttpStatus.UNPROCESSABLE_ENTITY);
-        }
+    @Transactional
+    public void signup(UserRegisterDto userRegisterDto) {
+        userRepository.findByUsername(userRegisterDto.getUsername())
+                .ifPresentOrElse(
+                        it -> returnBadRequest(),
+                        () -> userRepository.save(getUser(userRegisterDto))
+                );
     }
 
     public void delete(String username) {
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new UserNotFoundException("The user doesn't exist");
-        }
+        getUser(username);
         userRepository.deleteByUsername(username);
     }
 
-    public User search(String username) {
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new UserNotFoundException("The user doesn't exist");
-        }
-        return user;
+    public UserEntity search(String username) {
+        return getUser(username);
     }
 
-    public User whoami(HttpServletRequest req) {
+    public UserEntity whoAmI(HttpServletRequest req) {
         String username = jwtTokenProvider.getUsername(jwtTokenProvider.extractTokenFromRequest(req));
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new UserNotFoundException("The user doesn't exist");
-        }
-        return user;
+        return getUser(username);
     }
 
     public String refresh(String username) {
-        return jwtTokenProvider.createToken(username, userRepository.findByUsername(username).getRoles());
+        UserEntity user = getUser(username);
+        return jwtTokenProvider.createToken(username, user.getRoles());
     }
 
-    public List<User> getAll() {
+    public List<UserEntity> getAll() {
         return userRepository.findAll();
     }
 
-    public User edit(String username, UserEditDTO userDto) {
-        User existingUser = userRepository.findByUsername(username);
-        if (existingUser == null) {
-            throw new UserNotFoundException("The user doesn't exist");
-        }
-        
-        if (userDto.getEmail() != null) {
-            existingUser.setEmail(userDto.getEmail());
-        }
-        if (userDto.getFirstName() != null) {
-            existingUser.setFirstName(userDto.getFirstName());
-        }
-        if (userDto.getLastName() != null) {
-            existingUser.setLastName(userDto.getLastName());
-        }
-        if (userDto.getRoles() != null) {
-            existingUser.setRoles(userDto.getRoles());
-        }
-        if (userDto.getPassword() != null) {
-            existingUser.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        }
-        
+    public UserEntity edit(String username, UserEditDto userDto) {
+        UserEntity existingUser = getUser(username);
+
+        updateIfNotNull(userDto.getEmail(), UserEntity::setEmail, existingUser);
+        updateIfNotNull(userDto.getFirstName(), UserEntity::setFirstName, existingUser);
+        updateIfNotNull(userDto.getLastName(), UserEntity::setLastName, existingUser);
+        updateIfNotNull(userDto.getRoles(), UserEntity::setRoles, existingUser);
+
         return userRepository.save(existingUser);
     }
 
+    @SuppressWarnings("unused")
     public boolean exists(String username) {
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new UserNotFoundException("User not found");
-        }
+        getUser(username);
         return true;
+    }
+
+    private UserEntity getUser(UserRegisterDto userRegisterDto) {
+        UserEntity user = new UserEntity();
+        user.setUsername(userRegisterDto.getUsername());
+        user.setFirstName(userRegisterDto.getFirstName());
+        user.setLastName(userRegisterDto.getLastName());
+        user.setRoles(userRegisterDto.getRoles());
+        user.setEmail(userRegisterDto.getEmail());
+        user.setPassword(passwordEncoder.encode(userRegisterDto.getPassword()));
+        return user;
+    }
+
+    private void returnBadRequest() {
+        throw new CustomException("Username is already in use", HttpStatus.BAD_REQUEST);
+    }
+
+    private UserEntity getUser(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("The user doesn't exist"));
     }
 
 }
 
 
 ================================================
-File: src/main/resources/application.yml
+File: src/main/java/com/awesome/testing/service/delay/DelayGenerator.java
+================================================
+package com.awesome.testing.service.delay;
+
+public interface DelayGenerator {
+    long getDelayMillis();
+} 
+
+================================================
+File: src/main/java/com/awesome/testing/service/delay/RandomDelayGenerator.java
+================================================
+package com.awesome.testing.service.delay;
+
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
+@Component
+@Profile("!test")
+public class RandomDelayGenerator implements DelayGenerator {
+    private static final long MIN_DELAY = TimeUnit.SECONDS.toMillis(10);
+    private static final long MAX_DELAY = TimeUnit.MINUTES.toMillis(10);
+    private final Random random = new Random();
+
+    @Override
+    public long getDelayMillis() {
+        return MIN_DELAY + (long) (random.nextDouble() * (MAX_DELAY - MIN_DELAY));
+    }
+} 
+
+================================================
+File: src/main/java/com/awesome/testing/utils/EntityUpdater.java
+================================================
+package com.awesome.testing.utils;
+
+import lombok.experimental.UtilityClass;
+
+import java.util.function.BiConsumer;
+
+@UtilityClass
+public class EntityUpdater {
+
+    public static <T, V> void updateIfNotNull(V value, BiConsumer<T, V> setter, T entity) {
+        if (value != null) {
+            setter.accept(entity, value);
+        }
+    }
+
+}
+
+
+================================================
+File: src/main/java/com/awesome/testing/utils/ErrorResponseDefinition.java
+================================================
+package com.awesome.testing.utils;
+
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.experimental.UtilityClass;
+import org.springframework.http.HttpStatus;
+
+import java.io.IOException;
+
+@UtilityClass
+public class ErrorResponseDefinition {
+
+    public static void sendErrorResponse(HttpServletResponse response, HttpStatus status, String message) throws IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        response.setStatus(status.value());
+        response.getWriter().write("""
+            {
+                "message": "%s"
+            }
+            """.formatted(message));
+    }
+
+}
+
+
+================================================
+File: src/main/resources/application-docker.yml
 ================================================
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
-    username: root
-    password: root
+    url: jdbc:postgresql://postgres:5432/testdb
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        id:
+          new_generator_mappings: false
+  artemis:
+    mode: native
+    broker-url: tcp://activemq:61616
+    user: admin
+    password: admin
+    pool:
+      enabled: true
+      max-connections: 10
+    packages:
+      trust-all: true
+  jackson:
+    serialization:
+      indent-output: true
+
+activemq:
+  destination: email
+
+server:
+  port: 4001
+  error:
+    include-message: always
+    include-binding-errors: always
+
+security:
+  jwt:
+    token:
+      secret-key: secret-key
+      expire-length: 300000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+logging:
+  level:
+    root: INFO
+    org.zalando.logbook: TRACE
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n" 
+
+================================================
+File: src/main/resources/application-local.yml
+================================================
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: sa
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -3433,11 +4048,20 @@ spring:
     console:
       enabled: true
       path: /h2-console
-  activemq:
-    in-memory: false
-    broker-url: tcp://host.docker.internal:61616
+  artemis:
+    mode: embedded
+    embedded:
+      enabled: true
+      queues: email
+      persistent: false
+    broker-url: vm://0
     user: admin
     password: admin
+  jms:
+    pub-sub-domain: false
+    template:
+      default-destination: email
+      receive-timeout: 2000
   jackson:
     serialization:
       indent-output: true
@@ -3450,26 +4074,50 @@ server:
   error:
     include-message: always
     include-binding-errors: always
-    include-stacktrace: ON_PARAM
-    include-exception: false
+
+security:
+  jwt:
+    token:
+      secret-key: secret-key
+      expire-length: 300000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+logging:
+  level:
+    root: INFO
+    org.zalando.logbook: TRACE
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n" 
+
+================================================
+File: src/main/resources/application.yml
+================================================
+spring:
+  profiles:
+    active: docker
+  main:
+    allow-bean-definition-overriding: true
+
+server:
   servlet:
     encoding:
       charset: UTF-8
       enabled: true
       force: true
 
-
-security:
-  jwt:
-    token:
-      secret-key: secret-key
-      expire-length: 300000 # 5 minutes duration by default: 5 minutes * 60 seconds * 1000 miliseconds
-
 logbook:
   include: "/**"
   exclude: 
     - "/swagger-ui/**"
+    - "/v3/api-docs"
     - "/v3/api-docs/**"
+    - "/actuator/**"
+    - "/favicon.ico"
   format:
     style: json
   write:
@@ -3479,13 +4127,6 @@ logbook:
     headers:
       - x-secret
       - cookie
-
-logging:
-  level:
-    root: INFO
-    org.zalando.logbook: TRACE
-  pattern:
-    console: "%msg%n"
 
 UserController:
   signin: Authenticates user and returns its JWT token.
@@ -3499,12 +4140,4 @@ UserController:
 
 JmsSender:
   sendEmail: Sending email to Active MQ
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-
-
 
