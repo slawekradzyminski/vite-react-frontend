@@ -68,4 +68,12 @@ test.describe('Register Page', () => {
     const error = registerPage.getMinLengthError('Username', 4);
     await expect(error).toBeVisible();
   });
+
+  test('should navigate to login page when clicking Sign In link', async ({ page }) => {
+    // when
+    await registerPage.signInLink.click();
+
+    // then
+    await expect(page).toHaveURL('/login');
+  });
 }); 

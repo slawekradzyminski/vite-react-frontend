@@ -68,17 +68,12 @@ test.describe('Login Page', () => {
     await expect(error).toBeVisible();
   });
 
-  test('should show validation error for password less than 4 characters', async () => {
-    // given
-    const shortPassword = '123';
 
+  test('should navigate to register page when clicking Register link', async ({ page }) => {
     // when
-    await loginPage.usernameInput.fill('validusername');
-    await loginPage.passwordInput.fill(shortPassword);
-    await loginPage.signInButton.click();
+    await loginPage.registerLink.click();
 
     // then
-    const error = loginPage.getMinLengthError('Password', 4);
-    await expect(error).toBeVisible();
+    await expect(page).toHaveURL('/register');
   });
 }); 

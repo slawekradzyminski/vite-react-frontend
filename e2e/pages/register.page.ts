@@ -9,6 +9,7 @@ export class RegisterPage {
   readonly lastNameInput: Locator;
   readonly createAccountButton: Locator;
   readonly toast: Locator;
+  readonly signInLink: Locator;
 
   constructor(private readonly page: Page) {
     this.usernameInput = page.getByLabel('Username');
@@ -18,6 +19,7 @@ export class RegisterPage {
     this.lastNameInput = page.getByLabel('Last Name');
     this.createAccountButton = page.getByRole('button', { name: 'Create account' });
     this.toast = page.locator('[data-state="open"]');
+    this.signInLink = page.getByRole('button', { name: 'Sign in' });
   }
 
   async goto() {
