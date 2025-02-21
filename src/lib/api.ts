@@ -2,6 +2,7 @@ import axios from 'axios';
 import type { LoginRequest, LoginResponse, RegisterRequest, User, UserEditDTO } from '../types/auth';
 import type { EmailDto, EmailResponse } from '../types/email';
 import type { CreateQrDto, QrCodeResponse } from '../types/qr';
+import type { GenerateRequestDto } from '../types/ollama';
 
 const api = axios.create({
   baseURL: 'http://localhost:4001',
@@ -72,6 +73,15 @@ export const qr = {
       type: 'image/png',
       data: response.data,
     };
+  },
+};
+
+export const ollama = {
+  generate: async (data: GenerateRequestDto) => {
+    const response = await api.post('/api/ollama/generate', data, {
+      responseType: 'stream',
+    });
+    return response.data;
   },
 };
 
