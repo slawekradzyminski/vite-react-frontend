@@ -19,12 +19,14 @@ test.describe('Ollama Generate', () => {
     await expect(page).toHaveURL('/', { timeout: 10000 });
   });
 
-  test('should display streaming response chunks', async ({ page }) => {
+  test('should display streaming response chunks with markdown formatting', async ({ page }) => {
     // given
     const chunks = [
-      { model: 'gemma:2b', response: 'Hello', done: false },
-      { model: 'gemma:2b', response: ' World', done: false },
-      { model: 'gemma:2b', response: '!', done: true }
+      { model: 'gemma:2b', response: '# Heading\n\n', done: false },
+      { model: 'gemma:2b', response: '- List item 1\n', done: false },
+      { model: 'gemma:2b', response: '- List item 2\n\n', done: false },
+      { model: 'gemma:2b', response: '**Bold text**\n\n', done: false },
+      { model: 'gemma:2b', response: '`code block`', done: true }
     ];
 
     // Debug: Log all network requests and responses
@@ -57,41 +59,17 @@ test.describe('Ollama Generate', () => {
     // when
     await page.goto('/ollama-generate');
     await page.fill('textarea#prompt', 'Test prompt');
-    
-    // Log initial state
-    const initialContent = await page.textContent('.whitespace-pre-wrap');
-    console.log('Initial content:', initialContent);
-    
     await page.click('button:has-text("Generate")');
 
-    // Log content immediately after clicking
-    const contentAfterClick = await page.textContent('.whitespace-pre-wrap');
-    console.log('Content after click:', contentAfterClick);
-
     // then
-    // Wait for content to start appearing
-    await expect(async () => {
-      const content = await page.textContent('.whitespace-pre-wrap');
-      console.log('Current content:', content);
-      expect(content).not.toBe('Response will appear here');
-      expect(content).not.toBe('');
-    }).toPass({ timeout: 5000 });
-
-    // Wait for content to be updated
-    let previousContent = '';
-    await expect(async () => {
-      const content = await page.textContent('.whitespace-pre-wrap');
-      console.log('Current content:', content);
-      expect(content).not.toBe(previousContent);
-      previousContent = content ?? '';
-    }).toPass({ timeout: 5000 });
-
-    // Wait for final content
-    await expect(async () => {
-      const content = await page.textContent('.whitespace-pre-wrap');
-      console.log('Final content:', content);
-      expect(content).toBe('Hello World!');
-    }).toPass({ timeout: 5000 });
+    // Wait for markdown elements to be rendered in the response area
+    const responseArea = page.locator('.prose');
+    await expect(responseArea.locator('h1')).toHaveText('Heading');
+    await expect(responseArea.locator('ul > li')).toHaveCount(2);
+    await expect(responseArea.locator('ul > li').nth(0)).toHaveText('List item 1');
+    await expect(responseArea.locator('ul > li').nth(1)).toHaveText('List item 2');
+    await expect(responseArea.locator('strong')).toHaveText('Bold text');
+    await expect(responseArea.locator('code')).toHaveText('code block');
 
     // Verify button state
     await expect(page.getByRole('button', { name: 'Generate' })).toBeEnabled();
