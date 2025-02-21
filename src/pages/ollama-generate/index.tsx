@@ -1,131 +1,13 @@
-import React, { useState } from 'react';
-import { GenerateRequestDto } from '../../types/ollama';
-import { useToast } from '../../hooks/toast';
+import { useState } from 'react';
+import { useOllama } from '../../hooks/useOllama';
+import { Spinner } from '../../components/ui/spinner';
 
 export function OllamaGeneratePage() {
   const [prompt, setPrompt] = useState('');
-  const [response, setResponse] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const { toast } = useToast();
+  const { isGenerating, response, generate } = useOllama();
 
-  const handleGenerate = async () => {
-    if (!prompt.trim()) {
-      toast({
-        variant: 'error',
-        description: 'Please enter a prompt',
-      });
-      return;
-    }
-
-    setIsGenerating(true);
-    setResponse(''); // Clear previous response
-
-    try {
-      const requestBody: GenerateRequestDto = {
-        model: 'gemma:2b',
-        prompt,
-        options: { temperature: 0 },
-      };
-
-      // Post to your SSE endpoint
-      const res = await fetch('http://localhost:4001/api/ollama/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token') ?? ''}`,
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!res.ok || !res.body) {
-        if (res.status === 401) {
-          toast({
-            variant: 'error',
-            description: 'Please log in to use this feature',
-          });
-          return;
-        }
-        throw new Error(`Failed to fetch stream: ${res.statusText}`);
-      }
-
-      // Read the streamed body via a reader
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder('utf-8');
-      let buffer = ''; // accumulate partial text here
-
-      let done = false;
-      while (!done) {
-        const { value, done: streamDone } = await reader.read();
-        done = streamDone;
-        if (value) {
-          // Decode the chunk to string
-          const chunkText = decoder.decode(value, { stream: true });
-          buffer += chunkText;  // add to our running buffer
-
-          // Split on double-newline to get complete SSE events
-          const events = buffer.split('\n\n');
-          // Save the last partial piece in buffer
-          buffer = events.pop() ?? '';
-
-          // Process each complete event
-          for (const eventBlock of events) {
-            // Each event block has multiple lines, each starting with "data:"
-            // We need to join them and remove the "data:" prefixes
-            const jsonString = eventBlock
-              .split('\n')
-              .map(line => line.replace(/^data:/, '').trim())
-              .join('')
-              .trim();
-
-            if (!jsonString) continue;
-
-            try {
-              const sseData = JSON.parse(jsonString);
-              if (sseData.response) {
-                setResponse(prev => prev + sseData.response);
-              }
-              if (sseData.done) {
-                await reader.cancel();
-                done = true;
-                break;
-              }
-            } catch (err) {
-              console.error('Failed to parse SSE JSON', err, jsonString);
-              // Continue processing other events
-            }
-          }
-        }
-      }
-
-      // Process any remaining complete event in the buffer
-      if (buffer.trim()) {
-        const jsonString = buffer
-          .split('\n')
-          .map(line => line.replace(/^data:/, '').trim())
-          .join('')
-          .trim();
-
-        if (jsonString) {
-          try {
-            const sseData = JSON.parse(jsonString);
-            if (sseData.response) {
-              setResponse(prev => prev + sseData.response);
-            }
-          } catch (err) {
-            console.debug('Failed to parse final SSE chunk', err);
-          }
-        }
-      }
-
-    } catch (error) {
-      console.error('Streaming error:', error);
-      toast({
-        variant: 'error',
-        description: error instanceof Error ? error.message : 'Failed to generate response',
-      });
-    } finally {
-      setIsGenerating(false);
-    }
+  const handleGenerate = () => {
+    generate(prompt);
   };
 
   return (
@@ -153,11 +35,12 @@ export function OllamaGeneratePage() {
       </button>
 
       <div className="mt-4">
-        <label className="block font-medium mb-2">Response</label>
-        <div 
-          className={`w-full min-h-[100px] border rounded p-2 whitespace-pre-wrap ${isGenerating ? 'animate-pulse' : ''}`}
-        >
-          {response || (isGenerating ? 'Generating response...' : 'Response will appear here')}
+        <div className="flex items-center justify-between mb-2">
+          <label className="font-medium">Response</label>
+          {isGenerating && <Spinner size="sm" />}
+        </div>
+        <div className="w-full min-h-[100px] border rounded p-2 whitespace-pre-wrap text-black">
+          {response || 'Response will appear here'}
         </div>
       </div>
     </div>

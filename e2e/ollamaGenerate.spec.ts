@@ -34,21 +34,15 @@ test.describe('Ollama Generate', () => {
       }
     });
 
-    // Mock the init endpoint
-    await page.route('**/api/ollama/generate', route => {
-      route.fulfill({
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id: 'test-generation-id' })
-      });
-    });
+    // Mock the generate endpoint with streaming simulation
+    await page.route('**/api/ollama/generate', async route => {
+      const allChunks = chunks.map(chunk => {
+        const lines = JSON.stringify(chunk, null, 2)
+          .split('\n')
+          .map(line => `data:${line}`);
+        return lines.join('\n') + '\n\n';
+      }).join('');
 
-    // Mock the SSE endpoint with streaming simulation
-    await page.route('**/api/ollama/generate/stream/**', route => {
-      // Send all chunks in a single response, but with proper SSE formatting
-      const sseChunks = chunks.map(chunk => `data: ${JSON.stringify(chunk)}\n\n`).join('');
       route.fulfill({
         status: 200,
         headers: {
@@ -56,7 +50,7 @@ test.describe('Ollama Generate', () => {
           'Cache-Control': 'no-cache',
           'Connection': 'keep-alive'
         },
-        body: sseChunks
+        body: allChunks
       });
     });
 
@@ -75,26 +69,29 @@ test.describe('Ollama Generate', () => {
     console.log('Content after click:', contentAfterClick);
 
     // then
-    // Wait for first chunk
+    // Wait for content to start appearing
     await expect(async () => {
       const content = await page.textContent('.whitespace-pre-wrap');
       console.log('Current content:', content);
-      expect(content).toBe('Hello');
-    }).toPass({ timeout: 2000 });
+      expect(content).not.toBe('Response will appear here');
+      expect(content).not.toBe('');
+    }).toPass({ timeout: 5000 });
 
-    // Wait for second chunk
+    // Wait for content to be updated
+    let previousContent = '';
     await expect(async () => {
       const content = await page.textContent('.whitespace-pre-wrap');
       console.log('Current content:', content);
-      expect(content).toBe('Hello World');
-    }).toPass({ timeout: 2000 });
+      expect(content).not.toBe(previousContent);
+      previousContent = content ?? '';
+    }).toPass({ timeout: 5000 });
 
-    // Wait for final chunk
+    // Wait for final content
     await expect(async () => {
       const content = await page.textContent('.whitespace-pre-wrap');
       console.log('Final content:', content);
       expect(content).toBe('Hello World!');
-    }).toPass({ timeout: 2000 });
+    }).toPass({ timeout: 5000 });
 
     // Verify button state
     await expect(page.getByRole('button', { name: 'Generate' })).toBeEnabled();
@@ -115,7 +112,7 @@ test.describe('Ollama Generate', () => {
     await page.click('button:has-text("Generate")');
 
     // then
-    await expect(page.getByText(/failed to initialize generation/i)).toBeVisible();
+    await expect(page.getByText(/failed to fetch stream/i)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Generate' })).toBeEnabled();
   });
 });

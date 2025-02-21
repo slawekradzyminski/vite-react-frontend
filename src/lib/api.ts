@@ -78,10 +78,24 @@ export const qr = {
 
 export const ollama = {
   generate: async (data: GenerateRequestDto) => {
-    const response = await api.post('/api/ollama/generate', data, {
-      responseType: 'stream',
+    const response = await fetch('http://localhost:4001/api/ollama/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token') ?? ''}`,
+      },
+      body: JSON.stringify(data),
     });
-    return response.data;
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
+      throw new Error(`Failed to fetch stream: ${response.statusText}`);
+    }
+
+    return response;
   },
 };
 
