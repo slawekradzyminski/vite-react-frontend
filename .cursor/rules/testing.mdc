@@ -2,7 +2,6 @@
 description: Testing patterns and conventions for unit tests (Vitest) and E2E tests (Playwright)
 globs: **/*.test.tsx,**/*.test.ts,e2e/*.spec.ts
 ---
-
 # Testing Patterns
 
 ### Testing Structure
@@ -38,39 +37,51 @@ describe('ComponentName', () => {
 
 ### E2E Tests (Playwright)
 - Place all E2E tests in the `e2e/` directory
+- Use page objects for better maintainability and reusability
 - Test complete user journeys
-- Use page objects when possible
 - Test against real backend service
 - File naming pattern: `featureName.spec.ts`
 - Application runs on port 8081 (http://localhost:8081)
 
-### Playwright MCP Server
-The MCP (Multi-Channel Protocol) server provides interactive capabilities for test development:
-- Real-time interaction with running tests
-- Visual debugging and element inspection
-- Screenshot capture
-- Form interaction testing
-- Navigation testing
+### Page Object Pattern
+- Create page objects in `e2e/pages/` directory
+- Each page object should encapsulate:
+  - Locators for UI elements
+  - Common actions and interactions
+  - Navigation methods
+- Use meaningful names for methods and properties
+- Keep selectors maintainable (prefer role-based or test-id based)
 
-Requirements:
-- Development server must be running on port 8081
-- MCP server must be connected to Cursor
-- Tests should be written using page object pattern
-
-MCP Commands:
+Example:
 ```typescript
-// Navigation
-await page.goto('http://localhost:8081/login');
+export class LoginPage {
+  constructor(protected readonly page: Page) {
+    this.emailInput = page.getByLabel('Email');
+    this.submitButton = page.getByRole('button', { name: 'Submit' });
+  }
 
-// Screenshots
-await page.screenshot({ path: 'screenshot.png' });
+  async login(email: string, password: string) {
+    await this.emailInput.fill(email);
+    await this.submitButton.click();
+  }
+}
+```
 
-// Form interactions
-await page.fill('#username', 'testuser');
-await page.click('button[type="submit"]');
+### Authentication in Tests
+- Use `auth.fixture.ts` for tests requiring authenticated state
+- Fixture provides:
+  - Pre-authenticated page
+  - User context
+  - Helper methods
 
-// Assertions
-await expect(page).toHaveURL('/dashboard');
+Example:
+```typescript
+import { test } from './fixtures/auth.fixture';
+
+test('protected route', async ({ authenticatedPage }) => {
+  const { page, user } = authenticatedPage;
+  await page.goto('/protected');
+});
 ```
 
 ### Test Commands
