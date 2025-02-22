@@ -7,6 +7,7 @@ import { EditUserPage } from './pages/edit-user';
 import { EmailPage } from './pages/email';
 import { QrCodePage } from './pages/qr';
 import { OllamaGeneratePage } from './pages/ollama-generate';
+import { OllamaChatPage } from './pages/ollama-chat';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 export function AppRoutes() {
@@ -59,6 +60,14 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <OllamaGeneratePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ollama-chat"
+        element={
+          <ProtectedRoute>
+            <OllamaChatPage />
           </ProtectedRoute>
         }
       />

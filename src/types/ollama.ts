@@ -28,4 +28,28 @@ export interface OllamaChunkEvent {
     created_at: string;
     total_duration?: number | null;
   };
+}
+
+/** Chat message format for the chat endpoint */
+export interface ChatMessageDto {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
+/** Request body for the chat endpoint */
+export interface ChatRequestDto {
+  model: string;
+  messages: ChatMessageDto[];
+  options?: {
+    temperature?: number;
+    // add more if needed
+  };
+}
+
+/** Response from the chat endpoint */
+export interface ChatResponseDto {
+  model: string;
+  message: ChatMessageDto;
+  done: boolean;
+  created_at: string;
 } 

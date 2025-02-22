@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { LoginRequest, LoginResponse, RegisterRequest, User, UserEditDTO } from '../types/auth';
 import type { EmailDto, EmailResponse } from '../types/email';
 import type { CreateQrDto, QrCodeResponse } from '../types/qr';
-import type { GenerateRequestDto } from '../types/ollama';
+import type { GenerateRequestDto, ChatRequestDto } from '../types/ollama';
 
 const api = axios.create({
   baseURL: 'http://localhost:4001',
@@ -79,6 +79,27 @@ export const qr = {
 export const ollama = {
   generate: async (data: GenerateRequestDto) => {
     const response = await fetch('http://localhost:4001/api/ollama/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token') ?? ''}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
+      throw new Error(`Failed to fetch stream: ${response.statusText}`);
+    }
+
+    return response;
+  },
+
+  chat: async (data: ChatRequestDto) => {
+    const response = await fetch('http://localhost:4001/api/ollama/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
