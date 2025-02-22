@@ -1,58 +1,46 @@
 import { test, expect } from './fixtures/auth.fixture';
+import { QrPage } from './pages/qr.page';
+
 test.describe('QR Code Page', () => {
+  let qrPage: QrPage;
 
   test.beforeEach(async ({ authenticatedPage }) => {
-    const page = authenticatedPage.page;
-    await page.goto('/qr');
+    qrPage = new QrPage(authenticatedPage.page);
+    await qrPage.goto();
   });
 
-  test('should render QR code generator with all elements', async ({ authenticatedPage }) => {
-    // given
-    const page = authenticatedPage.page;
-
+  test('should render QR code generator with all elements', async () => {
     // then
-    await expect(page).toHaveURL('/qr');
-    await expect(page.getByRole('heading', { name: /qr code generator/i })).toBeVisible();
-    await expect(page.getByRole('textbox')).toBeVisible();
-    await expect(page.getByRole('button', { name: /generate qr code/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /clear/i })).toBeVisible();
+    await expect(qrPage.heading).toBeVisible();
+    await expect(qrPage.textInput).toBeVisible();
+    await expect(qrPage.generateButton).toBeVisible();
+    await expect(qrPage.clearButton).toBeVisible();
   });
 
-  test('should generate and display QR code', async ({ authenticatedPage }) => {
-    // given
-    const page = authenticatedPage.page;
-
+  test('should generate and display QR code', async () => {
     // when
-    await page.getByRole('textbox').fill('test text');
-    await page.getByRole('button', { name: /generate qr code/i }).click();
+    await qrPage.generateQrCode('test text');
 
     // then
-    await expect(page.getByRole('img', { name: /generated qr code/i })).toBeVisible();
+    await expect(qrPage.qrCodeImage).toBeVisible();
   });
 
-  test('should show error when submitting empty text', async ({ authenticatedPage }) => {
-    // given
-    const page = authenticatedPage.page;
-
+  test('should show error when submitting empty text', async () => {
     // when
-    await page.getByRole('button', { name: /generate qr code/i }).click();
+    await qrPage.generateButton.click();
 
     // then
-    await expect(page.locator('[data-state="open"]')).toContainText('Please enter text to generate QR code');
+    await expect(qrPage.toast).toContainText('Please enter text to generate QR code');
   });
 
-  test('should clear QR code when clicking clear button', async ({ authenticatedPage }) => {
-    // given
-    const page = authenticatedPage.page;
-
+  test('should clear QR code when clicking clear button', async () => {
     // when
-    await page.getByRole('textbox').fill('test text');
-    await page.getByRole('button', { name: /generate qr code/i }).click();
-    await expect(page.getByRole('img', { name: /generated qr code/i })).toBeVisible();
-    await page.getByRole('button', { name: /clear/i }).click();
+    await qrPage.generateQrCode('test text');
+    await expect(qrPage.qrCodeImage).toBeVisible();
+    await qrPage.clear();
 
     // then
-    await expect(page.getByRole('img', { name: /generated qr code/i })).not.toBeVisible();
-    await expect(page.getByRole('textbox')).toHaveValue('');
+    await expect(qrPage.qrCodeImage).not.toBeVisible();
+    await expect(qrPage.textInput).toHaveValue('');
   });
 }); 

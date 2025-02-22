@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useOllama } from '../../hooks/useOllama';
 import { Spinner } from '../../components/ui/spinner';
 import ReactMarkdown from 'react-markdown';
+import styles from './OllamaGenerate.module.css';
 
 export function OllamaGeneratePage() {
   const [prompt, setPrompt] = useState('');
@@ -40,9 +41,11 @@ export function OllamaGeneratePage() {
           <label className="font-medium">Response</label>
           {isGenerating && <Spinner size="sm" />}
         </div>
-        <div className="w-full min-h-[100px] border rounded p-2 whitespace-pre-wrap text-black prose prose-sm max-w-none">
+        <div className="w-full min-h-[100px] border rounded p-2 whitespace-pre-wrap text-black">
           {response ? (
-            <ReactMarkdown>{response}</ReactMarkdown>
+            <div className={styles.markdownContainer}>
+              <ReactMarkdown>{response}</ReactMarkdown>
+            </div>
           ) : (
             'Response will appear here'
           )}

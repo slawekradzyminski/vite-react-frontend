@@ -1,5 +1,5 @@
 import { APIRequestContext } from '@playwright/test';
-import { BACKEND_URL } from '../utils/constants';
+import { BACKEND_URL } from '../config/constants';
 
 export async function deleteUser(
     request: APIRequestContext,

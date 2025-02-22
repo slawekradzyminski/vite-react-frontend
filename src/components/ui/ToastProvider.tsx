@@ -71,7 +71,7 @@ function InternalToastProvider({ children }: { children: React.ReactNode }) {
                   {title}
                 </ToastPrimitive.Title>
               )}
-              <ToastPrimitive.Description className={styles.description} data-testid="toast-description">
+              <ToastPrimitive.Description className={styles.description}>
                 {description}
               </ToastPrimitive.Description>
             </div>

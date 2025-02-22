@@ -1,5 +1,5 @@
 import { APIRequestContext } from '@playwright/test';
-import { BACKEND_URL } from '../utils/constants';
+import { BACKEND_URL } from '../config/constants';
 import { SignInRequest, SignInResponse } from '../types/auth';
 
 export async function postSignIn(
