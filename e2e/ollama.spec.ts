@@ -27,6 +27,19 @@ test.describe('Ollama Generate', () => {
     await expect(ollamaPage.generateButton).toBeEnabled();
   });
 
+  test('should initialize with default model and allow model change', async ({ authenticatedPage }) => {
+    // given
+    await ollamaMocks.mockSuccess(authenticatedPage.page);
+    await ollamaPage.goto();
+    await expect(ollamaPage.modelInput).toHaveValue('llama3.2:1b');
+
+    // when
+    await ollamaPage.generate('Test prompt', 'mistral:7b');
+
+    // then
+    await expect(ollamaPage.modelInput).toHaveValue('mistral:7b');
+  });
+
   test('should handle streaming errors gracefully', async ({ authenticatedPage }) => {
     // given
     await ollamaMocks.mockError(authenticatedPage.page);

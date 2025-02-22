@@ -19,8 +19,8 @@ describe('OllamaGeneratePage', () => {
   it('handles streaming chunks correctly', async () => {
     // given
     const mockResponse = new Response(
-      'data: {"model":"gemma:2b","response":"Hello","done":false}\n\n' +
-      'data: {"model":"gemma:2b","response":" World","done":true}\n\n',
+      'data: {"model":"llama3.2:1b","response":"Hello","done":false}\n\n' +
+      'data: {"model":"llama3.2:1b","response":" World","done":true}\n\n',
       {
         headers: { 'Content-Type': 'text/event-stream' }
       }
@@ -35,6 +35,36 @@ describe('OllamaGeneratePage', () => {
     // then
     await waitFor(() => {
       expect(screen.getByText('Hello World')).toBeInTheDocument();
+    });
+    expect(vi.mocked(ollama.generate)).toHaveBeenCalledWith(expect.objectContaining({
+      model: 'llama3.2:1b'
+    }));
+  });
+
+  it('allows changing the model', async () => {
+    // given
+    const mockResponse = new Response(
+      'data: {"model":"mistral:7b","response":"Response","done":true}\n\n',
+      {
+        headers: { 'Content-Type': 'text/event-stream' }
+      }
+    );
+    vi.mocked(ollama.generate).mockResolvedValue(mockResponse);
+
+    // when
+    renderWithProviders(<OllamaGeneratePage />);
+    const modelInput = screen.getByLabelText(/model/i);
+    await userEvent.clear(modelInput);
+    await userEvent.type(modelInput, 'mistral:7b');
+    await userEvent.type(screen.getByLabelText(/prompt/i), 'test prompt');
+    await userEvent.click(screen.getByRole('button', { name: /generate/i }));
+
+    // then
+    await waitFor(() => {
+      expect(vi.mocked(ollama.generate)).toHaveBeenCalledWith(expect.objectContaining({
+        model: 'mistral:7b',
+        prompt: 'test prompt'
+      }));
     });
   });
 
@@ -127,5 +157,14 @@ describe('OllamaGeneratePage', () => {
       expect(screen.getByText('Please enter a prompt')).toBeInTheDocument();
     });
     expect(ollama.generate).not.toHaveBeenCalled();
+  });
+
+  it('initializes with default model value', () => {
+    // when
+    renderWithProviders(<OllamaGeneratePage />);
+    
+    // then
+    const modelInput = screen.getByLabelText(/model/i);
+    expect(modelInput).toHaveValue('llama3.2:1b');
   });
 }); 

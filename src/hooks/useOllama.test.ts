@@ -49,8 +49,8 @@ describe('useOllama', () => {
   it('processes successful response', async () => {
     // given
     const mockResponse = new Response(
-      'data: {"model":"gemma:2b","response":"Hello","done":false}\n\n' +
-      'data: {"model":"gemma:2b","response":" World","done":true}\n\n',
+      'data: {"model":"llama3.2:1b","response":"Hello","done":false}\n\n' +
+      'data: {"model":"llama3.2:1b","response":" World","done":true}\n\n',
       {
         headers: { 'Content-Type': 'text/event-stream' }
       }
@@ -68,7 +68,7 @@ describe('useOllama', () => {
     expect(result.current.response).toBe('Hello World');
     expect(result.current.isGenerating).toBe(false);
     expect(ollama.generate).toHaveBeenCalledWith({
-      model: 'gemma:2b',
+      model: 'llama3.2:1b',
       prompt: 'test prompt',
       options: { temperature: 0 },
     });

@@ -20,6 +20,7 @@ interface UseOllamaOptions {
 export function useOllama(options?: UseOllamaOptions) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [response, setResponse] = useState('');
+  const [model, setModel] = useState('llama3.2:1b');
   const { toast } = useToast();
 
   const generate = async (prompt: string) => {
@@ -36,7 +37,7 @@ export function useOllama(options?: UseOllamaOptions) {
 
     try {
       const requestBody: GenerateRequestDto = {
-        model: 'gemma:2b',
+        model,
         prompt,
         options: { temperature: 0 },
       };
@@ -81,5 +82,7 @@ export function useOllama(options?: UseOllamaOptions) {
     isGenerating,
     response,
     generate,
+    model,
+    setModel,
   };
 } 
