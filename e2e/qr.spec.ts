@@ -1,27 +1,14 @@
-import { test, expect } from '@playwright/test';
-import { getRandomUser } from './generators/userGenerator';
-import { registerUser } from './http/postSignUp';
-import { LoginPage } from './pages/login.page';
-
+import { test, expect } from './fixtures/auth.fixture';
 test.describe('QR Code Page', () => {
-  let loginPage: LoginPage;
 
-  test.beforeEach(async ({ page }) => {
-    loginPage = new LoginPage(page);
+  test.beforeEach(async ({ authenticatedPage }) => {
+    const page = authenticatedPage.page;
+    await page.goto('/qr');
   });
 
-  test('should render QR code generator with all elements', async ({ page }) => {
+  test('should render QR code generator with all elements', async ({ authenticatedPage }) => {
     // given
-    const user = getRandomUser();
-    await registerUser(user);
-    await loginPage.goto();
-    await loginPage.attemptLogin({
-      username: user.username,
-      password: user.password,
-    });
-
-    // when
-    await page.getByText('QR Code').click();
+    const page = authenticatedPage.page;
 
     // then
     await expect(page).toHaveURL('/qr');
@@ -31,16 +18,9 @@ test.describe('QR Code Page', () => {
     await expect(page.getByRole('button', { name: /clear/i })).toBeVisible();
   });
 
-  test('should generate and display QR code', async ({ page }) => {
+  test('should generate and display QR code', async ({ authenticatedPage }) => {
     // given
-    const user = getRandomUser();
-    await registerUser(user);
-    await loginPage.goto();
-    await loginPage.attemptLogin({
-      username: user.username,
-      password: user.password,
-    });
-    await page.getByText('QR Code').click();
+    const page = authenticatedPage.page;
 
     // when
     await page.getByRole('textbox').fill('test text');
@@ -50,16 +30,9 @@ test.describe('QR Code Page', () => {
     await expect(page.getByRole('img', { name: /generated qr code/i })).toBeVisible();
   });
 
-  test('should show error when submitting empty text', async ({ page }) => {
+  test('should show error when submitting empty text', async ({ authenticatedPage }) => {
     // given
-    const user = getRandomUser();
-    await registerUser(user);
-    await loginPage.goto();
-    await loginPage.attemptLogin({
-      username: user.username,
-      password: user.password,
-    });
-    await page.getByText('QR Code').click();
+    const page = authenticatedPage.page;
 
     // when
     await page.getByRole('button', { name: /generate qr code/i }).click();
@@ -68,23 +41,14 @@ test.describe('QR Code Page', () => {
     await expect(page.locator('[data-state="open"]')).toContainText('Please enter text to generate QR code');
   });
 
-  test('should clear QR code when clicking clear button', async ({ page }) => {
+  test('should clear QR code when clicking clear button', async ({ authenticatedPage }) => {
     // given
-    const user = getRandomUser();
-    await registerUser(user);
-    await loginPage.goto();
-    await loginPage.attemptLogin({
-      username: user.username,
-      password: user.password,
-    });
-    await page.getByText('QR Code').click();
+    const page = authenticatedPage.page;
 
-    // when - generate QR code
+    // when
     await page.getByRole('textbox').fill('test text');
     await page.getByRole('button', { name: /generate qr code/i }).click();
     await expect(page.getByRole('img', { name: /generated qr code/i })).toBeVisible();
-
-    // when - clear QR code
     await page.getByRole('button', { name: /clear/i }).click();
 
     // then

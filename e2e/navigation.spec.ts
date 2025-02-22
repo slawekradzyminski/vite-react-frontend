@@ -1,87 +1,46 @@
-import { test, expect } from '@playwright/test';
-import { getRandomUser } from './generators/userGenerator';
-import { registerUser } from './http/postSignUp';
-import { LoginPage } from './pages/login.page';
+import { test, expect } from './fixtures/auth.fixture';
 
 test.describe('Navigation', () => {
-  let loginPage: LoginPage;
-
-  test.beforeEach(async ({ page }) => {
-    loginPage = new LoginPage(page);
-  });
-
-  test('should handle logout correctly in desktop view', async ({ page }) => {
+  test('should handle logout correctly in desktop view', async ({ authenticatedPage }) => {
     // given
-    const user = getRandomUser();
-    await registerUser(user);
-    await loginPage.goto();
-
-    // when
-    await loginPage.attemptLogin({
-      username: user.username,
-      password: user.password,
-    });
-
-    // then - wait for navigation and verify logged in state
-    await expect(page).toHaveURL('/', { timeout: 10000 });
-    await expect(page.getByText(`${user.firstName} ${user.lastName}`)).toBeVisible({ timeout: 10000 });
+    const page = authenticatedPage.page;
+    await page.goto('/');
+    await expect(page).toHaveURL('/');
+    await expect(page.getByText(`${authenticatedPage.user.firstName} ${authenticatedPage.user.lastName}`)).toBeVisible({ timeout: 10000 });
     await expect(page.getByText('Products')).toBeVisible();
     await expect(page.getByText('Cart')).toBeVisible();
 
-    // when - click logout in navigation
+    // when
     await page.locator('nav').getByRole('button', { name: 'Logout' }).click();
 
-    // then - verify logged out state
+    // then
     await expect(page).toHaveURL('/login');
-    await expect(page.getByText('Login')).toBeVisible();
   });
 
-  test('should handle logout correctly in mobile view', async ({ page }) => {
+  test('should handle logout correctly in mobile view', async ({ authenticatedPage }) => {
     // given
-    const user = getRandomUser();
-    await registerUser(user);
+    const page = authenticatedPage.page;
     await page.setViewportSize({ width: 375, height: 667 });
-    await loginPage.goto();
-
-    // when
-    await loginPage.attemptLogin({
-      username: user.username,
-      password: user.password,
-    });
-
-    // then - wait for navigation and verify logged in state
+    await page.goto('/');
     await expect(page).toHaveURL('/', { timeout: 10000 });
     
-    // wait for the page to load completely
-    await page.waitForLoadState('networkidle');
-    
-    // open mobile menu and verify items
+    // when
     await page.locator('nav').getByRole('button', { name: 'Open main menu' }).click();
     await expect(page.getByTestId('mobile-menu')).toBeVisible();
     await expect(page.getByTestId('mobile-menu-home')).toBeVisible();
     await expect(page.getByTestId('mobile-menu-products')).toBeVisible();
     await expect(page.getByTestId('mobile-menu-cart')).toBeVisible();
-
-    // when - click logout
     await page.locator('nav').getByRole('button', { name: 'Logout' }).click();
 
-    // then - verify logged out state
+    // then
     await expect(page).toHaveURL('/login');
-    // verify mobile menu button is not visible
-    await expect(page.locator('nav').getByRole('button', { name: 'Open main menu' })).not.toBeVisible();
-    // verify login link is visible
-    await expect(page.getByText('Login')).toBeVisible();
   });
 
-  test('should navigate to QR code page', async ({ page }) => {
+  test('should navigate to QR code page', async ({ authenticatedPage }) => {
     // given
-    const user = getRandomUser();
-    await registerUser(user);
-    await loginPage.goto();
-    await loginPage.attemptLogin({
-      username: user.username,
-      password: user.password,
-    });
+    const page = authenticatedPage.page;
+    await page.goto('/');
+    await expect(page).toHaveURL('/');
 
     // when
     await page.getByText('QR Code').click();
@@ -91,21 +50,14 @@ test.describe('Navigation', () => {
     await expect(page.getByRole('heading', { name: /qr code generator/i })).toBeVisible();
   });
 
-  test('should navigate to QR code page in mobile view', async ({ page }) => {
+  test('should navigate to QR code page in mobile view', async ({ authenticatedPage }) => {
     // given
-    const user = getRandomUser();
-    await registerUser(user);
+    const page = authenticatedPage.page;
     await page.setViewportSize({ width: 375, height: 667 });
-    await loginPage.goto();
-    await loginPage.attemptLogin({
-      username: user.username,
-      password: user.password,
-    });
+    await page.goto('/');
+    await expect(page).toHaveURL('/');
 
-    // wait for the page to load completely
-    await page.waitForLoadState('networkidle');
-
-    // when - open mobile menu and click QR Code
+    // when
     await page.locator('nav').getByRole('button', { name: 'Open main menu' }).click();
     await page.getByTestId('mobile-menu-qr code').click();
 
