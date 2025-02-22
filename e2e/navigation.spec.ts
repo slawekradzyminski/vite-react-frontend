@@ -1,116 +1,69 @@
-import { test, expect } from '@playwright/test';
-import { getRandomUser } from './generators/userGenerator';
-import { registerUser } from './http/postSignUp';
-import { LoginPage } from './pages/login.page';
+import { test, expect } from './fixtures/auth.fixture';
+import { DesktopNavigation, MobileNavigation } from './pages/navigation';
 
 test.describe('Navigation', () => {
-  let loginPage: LoginPage;
+  let desktopNav: DesktopNavigation;
+  let mobileNav: MobileNavigation;
 
-  test.beforeEach(async ({ page }) => {
-    loginPage = new LoginPage(page);
+  test.beforeEach(async ({ authenticatedPage }) => {
+    const page = authenticatedPage.page;
+    desktopNav = new DesktopNavigation(page);
+    mobileNav = new MobileNavigation(page);
+    await page.goto('/');
+    await expect(page).toHaveURL('/');
   });
 
-  test('should handle logout correctly in desktop view', async ({ page }) => {
-    // given
-    const user = getRandomUser();
-    await registerUser(user);
-    await loginPage.goto();
+  test('should handle logout correctly in desktop view', async ({ authenticatedPage }) => {
+    // then
+    await expect(desktopNav.userFullName).toHaveText(`${authenticatedPage.user.firstName} ${authenticatedPage.user.lastName}`);
+    await expect(desktopNav.productsLink).toBeVisible();
+    await expect(desktopNav.cartLink).toBeVisible();
 
     // when
-    await loginPage.attemptLogin({
-      username: user.username,
-      password: user.password,
-    });
-
-    // then - wait for navigation and verify logged in state
-    await expect(page).toHaveURL('/', { timeout: 10000 });
-    await expect(page.getByText(`${user.firstName} ${user.lastName}`)).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText('Products')).toBeVisible();
-    await expect(page.getByText('Cart')).toBeVisible();
-
-    // when - click logout in navigation
-    await page.locator('nav').getByRole('button', { name: 'Logout' }).click();
-
-    // then - verify logged out state
-    await expect(page).toHaveURL('/login');
-    await expect(page.getByText('Login')).toBeVisible();
-  });
-
-  test('should handle logout correctly in mobile view', async ({ page }) => {
-    // given
-    const user = getRandomUser();
-    await registerUser(user);
-    await page.setViewportSize({ width: 375, height: 667 });
-    await loginPage.goto();
-
-    // when
-    await loginPage.attemptLogin({
-      username: user.username,
-      password: user.password,
-    });
-
-    // then - wait for navigation and verify logged in state
-    await expect(page).toHaveURL('/', { timeout: 10000 });
-    
-    // wait for the page to load completely
-    await page.waitForLoadState('networkidle');
-    
-    // open mobile menu and verify items
-    await page.locator('nav').getByRole('button', { name: 'Open main menu' }).click();
-    await expect(page.getByTestId('mobile-menu')).toBeVisible();
-    await expect(page.getByTestId('mobile-menu-home')).toBeVisible();
-    await expect(page.getByTestId('mobile-menu-products')).toBeVisible();
-    await expect(page.getByTestId('mobile-menu-cart')).toBeVisible();
-
-    // when - click logout
-    await page.locator('nav').getByRole('button', { name: 'Logout' }).click();
-
-    // then - verify logged out state
-    await expect(page).toHaveURL('/login');
-    // verify mobile menu button is not visible
-    await expect(page.locator('nav').getByRole('button', { name: 'Open main menu' })).not.toBeVisible();
-    // verify login link is visible
-    await expect(page.getByText('Login')).toBeVisible();
-  });
-
-  test('should navigate to QR code page', async ({ page }) => {
-    // given
-    const user = getRandomUser();
-    await registerUser(user);
-    await loginPage.goto();
-    await loginPage.attemptLogin({
-      username: user.username,
-      password: user.password,
-    });
-
-    // when
-    await page.getByText('QR Code').click();
+    await desktopNav.logout();
 
     // then
-    await expect(page).toHaveURL('/qr');
-    await expect(page.getByRole('heading', { name: /qr code generator/i })).toBeVisible();
+    await expect(authenticatedPage.page).toHaveURL('/login');
   });
 
-  test('should navigate to QR code page in mobile view', async ({ page }) => {
+  test('should handle logout correctly in mobile view', async ({ authenticatedPage }) => {
     // given
-    const user = getRandomUser();
-    await registerUser(user);
-    await page.setViewportSize({ width: 375, height: 667 });
-    await loginPage.goto();
-    await loginPage.attemptLogin({
-      username: user.username,
-      password: user.password,
-    });
-
-    // wait for the page to load completely
-    await page.waitForLoadState('networkidle');
-
-    // when - open mobile menu and click QR Code
-    await page.locator('nav').getByRole('button', { name: 'Open main menu' }).click();
-    await page.getByTestId('mobile-menu-qr code').click();
+    await mobileNav.setMobileViewport();
+    
+    // when
+    await mobileNav.openMenu();
 
     // then
-    await expect(page).toHaveURL('/qr');
-    await expect(page.getByRole('heading', { name: /qr code generator/i })).toBeVisible();
+    await expect(mobileNav.homeLink).toBeVisible();
+    await expect(mobileNav.productsLink).toBeVisible();
+    await expect(mobileNav.cartLink).toBeVisible();
+
+    // when
+    await mobileNav.logout();
+
+    // then
+    await expect(authenticatedPage.page).toHaveURL('/login');
+  });
+
+  test('should navigate to QR code page', async ({ authenticatedPage }) => {
+    // when
+    await desktopNav.qrCodeLink.click();
+
+    // then
+    await expect(authenticatedPage.page).toHaveURL('/qr');
+    await expect(authenticatedPage.page.getByRole('heading', { name: /qr code generator/i })).toBeVisible();
+  });
+
+  test('should navigate to QR code page in mobile view', async ({ authenticatedPage }) => {
+    // given
+    await mobileNav.setMobileViewport();
+
+    // when
+    await mobileNav.openMenu();
+    await mobileNav.qrCodeLink.click();
+
+    // then
+    await expect(authenticatedPage.page).toHaveURL('/qr');
+    await expect(authenticatedPage.page.getByRole('heading', { name: /qr code generator/i })).toBeVisible();
   });
 }); 

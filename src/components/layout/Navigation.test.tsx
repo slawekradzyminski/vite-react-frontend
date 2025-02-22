@@ -60,6 +60,33 @@ describe('Navigation', () => {
   });
 
   // given
+  it('shows Ollama Generate link when authenticated', async () => {
+    // when
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValue({
+      data: {
+        id: 1,
+        username: 'testuser',
+        email: 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        roles: [Role.CLIENT],
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+
+    renderWithProviders(<Navigation />);
+
+    // then
+    await waitFor(() => {
+      expect(screen.getByText('LLM')).toBeInTheDocument();
+    });
+  });
+
+  // given
   it('shows QR Code link when authenticated', async () => {
     // when
     localStorage.setItem('token', 'fake-token');
@@ -118,6 +145,22 @@ describe('Navigation', () => {
   // given
   it('toggles mobile menu correctly', async () => {
     // when
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValue({
+      data: {
+        id: 1,
+        username: 'testuser',
+        email: 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        roles: [Role.CLIENT],
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+
     renderWithProviders(<Navigation />);
     
     const menuButton = screen.getByRole('button', { name: /open main menu/i });
@@ -131,6 +174,7 @@ describe('Navigation', () => {
     expect(mobileMenu).toHaveTextContent('Cart');
     expect(mobileMenu).toHaveTextContent('Send Email');
     expect(mobileMenu).toHaveTextContent('Profile');
+    expect(mobileMenu).toHaveTextContent('LLM');
 
     // when
     await user.click(menuButton);
@@ -142,6 +186,22 @@ describe('Navigation', () => {
   // given
   it('closes mobile menu when a link is clicked', async () => {
     // when
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValue({
+      data: {
+        id: 1,
+        username: 'testuser',
+        email: 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        roles: [Role.CLIENT],
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+
     renderWithProviders(<Navigation />);
     
     const menuButton = screen.getByRole('button', { name: /open main menu/i });

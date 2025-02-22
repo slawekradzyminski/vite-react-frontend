@@ -34,6 +34,7 @@ export function Navigation() {
     { label: 'Send Email', path: '/email' },
     { label: 'QR Code', path: '/qr' },
     { label: 'Profile', path: '/profile' },
+    { label: 'LLM', path: '/ollama-generate' },
   ];
 
   return (

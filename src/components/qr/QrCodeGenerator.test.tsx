@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QrCodeGenerator } from './QrCodeGenerator';
 import { qr } from '../../lib/api';
-import { ToastContext } from '../../hooks/toast';
+import { ToastContext } from '../../hooks/useToast';
 
 vi.mock('../../lib/api', () => ({
   qr: {

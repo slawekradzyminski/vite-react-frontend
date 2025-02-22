@@ -53,16 +53,13 @@ test.describe('Register Page', () => {
 
   test('should show validation error for username less than 4 characters', async () => {
     // given
-    const user = getRandomUser();
-    const shortUsername = '123';
+    const invalidUser = {
+      ...getRandomUser(),
+      username: '123'
+    };
 
     // when
-    await registerPage.usernameInput.fill(shortUsername);
-    await registerPage.emailInput.fill(user.email);
-    await registerPage.passwordInput.fill(user.password);
-    await registerPage.firstNameInput.fill(user.firstName);
-    await registerPage.lastNameInput.fill(user.lastName);
-    await registerPage.createAccountButton.click();
+    await registerPage.attemptRegister(invalidUser);
 
     // then
     const error = registerPage.getMinLengthError('Username', 4);

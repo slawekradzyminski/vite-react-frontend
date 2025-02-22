@@ -1,8 +1,8 @@
 import * as React from 'react';
 import * as ToastPrimitive from '@radix-ui/react-toast';
 import { useLocation } from 'react-router-dom';
-import { ToastProps, ToastContext } from '../../hooks/toast';
-import styles from './toast.module.css';
+import { ToastProps, ToastContext } from '../../hooks/useToast';
+import styles from './ToastProvider.module.css';
 import { useEffect } from 'react';
 
 type InternalToast = ToastProps & {
