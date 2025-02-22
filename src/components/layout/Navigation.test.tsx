@@ -82,7 +82,7 @@ describe('Navigation', () => {
 
     // then
     await waitFor(() => {
-      expect(screen.getByText('Ollama Generate')).toBeInTheDocument();
+      expect(screen.getByText('LLM')).toBeInTheDocument();
     });
   });
 
@@ -174,7 +174,7 @@ describe('Navigation', () => {
     expect(mobileMenu).toHaveTextContent('Cart');
     expect(mobileMenu).toHaveTextContent('Send Email');
     expect(mobileMenu).toHaveTextContent('Profile');
-    expect(mobileMenu).toHaveTextContent('Ollama Generate');
+    expect(mobileMenu).toHaveTextContent('LLM');
 
     // when
     await user.click(menuButton);
