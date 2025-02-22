@@ -6,7 +6,7 @@ import styles from './OllamaGenerate.module.css';
 
 export function OllamaGeneratePage() {
   const [prompt, setPrompt] = useState('');
-  const { isGenerating, response, generate } = useOllama();
+  const { isGenerating, response, generate, model, setModel } = useOllama();
 
   const handleGenerate = () => {
     generate(prompt);
@@ -15,6 +15,20 @@ export function OllamaGeneratePage() {
   return (
     <div className="max-w-xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Single Prompt to Ollama</h1>
+
+      <div className="mb-4">
+        <label htmlFor="model" className="block font-medium mb-2">
+          Model
+        </label>
+        <input
+          id="model"
+          type="text"
+          className="w-full border rounded p-2"
+          value={model}
+          onChange={(e) => setModel(e.target.value)}
+          placeholder="Enter model name"
+        />
+      </div>
 
       <label htmlFor="prompt" className="block font-medium mb-2">
         Prompt
