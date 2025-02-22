@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useToast } from './toast';
+import { useToast } from './useToast';
 import { GenerateRequestDto } from '../types/ollama';
 import { processSSEResponse } from '../lib/sse';
 import { ollama } from '../lib/api';

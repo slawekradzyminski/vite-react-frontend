@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { useOllama } from './useOllama';
 import { ollama } from '../lib/api';
-import { useToast } from './toast';
+import { useToast } from './useToast';
 
 vi.mock('../lib/api', () => ({
   ollama: {
@@ -10,7 +10,7 @@ vi.mock('../lib/api', () => ({
   },
 }));
 
-vi.mock('./toast', () => ({
+vi.mock('./useToast', () => ({
   useToast: vi.fn(),
 }));
 

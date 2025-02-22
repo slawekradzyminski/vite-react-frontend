@@ -8,7 +8,7 @@ import { Label } from '../components/ui/label';
 import { auth } from '../lib/api';
 import { Role } from '../types/auth';
 import { RegisterFormData, registerSchema } from '../validators/auth';
-import { useToast } from '../hooks/toast';
+import { useToast } from '../hooks/useToast';
 
 export function RegisterPage() {
   const navigate = useNavigate();

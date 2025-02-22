@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { qr } from '../../lib/api';
 import { Button } from '../ui/button';
-import { useToast } from '../../hooks/toast';
+import { useToast } from '../../hooks/useToast';
 import { Card, Text, TextArea, Flex } from '@radix-ui/themes';
 
 export function QrCodeGenerator() {

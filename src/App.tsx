@@ -1,7 +1,7 @@
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppRoutes } from './AppRoutes';
-import { ToastProvider } from './components/ui/toast';
+import { ToastProvider } from './components/ui/ToastProvider';
 import { Navigation } from './components/layout/Navigation';
 import { Theme } from '@radix-ui/themes';
 import '@radix-ui/themes/styles.css';

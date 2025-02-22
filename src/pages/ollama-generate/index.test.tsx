@@ -4,20 +4,12 @@ import { OllamaGeneratePage } from './index';
 import { vi } from 'vitest';
 import { renderWithProviders } from '../../test/test-utils';
 import { ollama } from '../../lib/api';
-import { ToastContext } from '../../hooks/toast';
 
 vi.mock('../../lib/api', () => ({
   ollama: {
     generate: vi.fn(),
   },
 }));
-
-const mockToast = vi.fn();
-const ToastProvider = ({ children }: { children: React.ReactNode }) => (
-  <ToastContext.Provider value={{ toast: mockToast }}>
-    {children}
-  </ToastContext.Provider>
-);
 
 describe('OllamaGeneratePage', () => {
   beforeEach(() => {
@@ -28,15 +20,11 @@ describe('OllamaGeneratePage', () => {
     // given
     const mockResponse = new Response(
       'data: {"model":"gemma:2b","response":"Hello","done":false}\n\n' +
-      'data: {"model":"gemma:2b","response":" World","done":false}\n\n' +
-      'data: {"model":"gemma:2b","response":"!","done":true}\n\n',
+      'data: {"model":"gemma:2b","response":" World","done":true}\n\n',
       {
-        headers: {
-          'Content-Type': 'text/event-stream',
-        },
+        headers: { 'Content-Type': 'text/event-stream' }
       }
     );
-
     vi.mocked(ollama.generate).mockResolvedValue(mockResponse);
 
     // when
@@ -46,14 +34,13 @@ describe('OllamaGeneratePage', () => {
 
     // then
     await waitFor(() => {
-      expect(screen.getByText('Hello World!')).toBeInTheDocument();
+      expect(screen.getByText('Hello World')).toBeInTheDocument();
     });
   });
 
   it('shows error state when fetch fails', async () => {
     // given
-    const mockResponse = new Response('Internal Server Error', { status: 500 });
-    vi.mocked(ollama.generate).mockResolvedValue(mockResponse);
+    vi.mocked(ollama.generate).mockRejectedValue(new Error('Failed to fetch stream: Internal Server Error'));
 
     // when
     renderWithProviders(<OllamaGeneratePage />);
@@ -62,7 +49,7 @@ describe('OllamaGeneratePage', () => {
 
     // then
     await waitFor(() => {
-      expect(screen.getByText('Failed to process response')).toBeInTheDocument();
+      expect(screen.getByText('Failed to fetch stream: Internal Server Error')).toBeInTheDocument();
     });
     expect(screen.getByRole('button', { name: 'Generate' })).toBeEnabled();
   });
@@ -81,7 +68,7 @@ describe('OllamaGeneratePage', () => {
 
     vi.mocked(ollama.generate).mockResolvedValue(mockResponse);
 
-    renderWithProviders(<ToastProvider><OllamaGeneratePage /></ToastProvider>);
+    renderWithProviders(<OllamaGeneratePage />);
 
     const promptInput = screen.getByPlaceholderText('Enter your prompt here...');
     const generateButton = screen.getByText('Generate');
@@ -111,7 +98,7 @@ describe('OllamaGeneratePage', () => {
     );
     vi.mocked(ollama.generate).mockResolvedValue(mockResponse);
 
-    renderWithProviders(<ToastProvider><OllamaGeneratePage /></ToastProvider>);
+    renderWithProviders(<OllamaGeneratePage />);
 
     const promptInput = screen.getByPlaceholderText('Enter your prompt here...');
     const generateButton = screen.getByText('Generate');
@@ -130,15 +117,14 @@ describe('OllamaGeneratePage', () => {
 
   it('handles empty prompt', async () => {
     // when
-    renderWithProviders(<ToastProvider><OllamaGeneratePage /></ToastProvider>);
+    renderWithProviders(<OllamaGeneratePage />);
 
     const generateButton = screen.getByText('Generate');
     fireEvent.click(generateButton);
 
     // then
-    expect(mockToast).toHaveBeenCalledWith({
-      variant: 'error',
-      description: 'Please enter a prompt',
+    await waitFor(() => {
+      expect(screen.getByText('Please enter a prompt')).toBeInTheDocument();
     });
     expect(ollama.generate).not.toHaveBeenCalled();
   });

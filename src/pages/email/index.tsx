@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { email } from '../../lib/api';
 import { EmailForm } from '../../components/email/EmailForm';
 import type { EmailFormData } from '../../types/email';
-import { useToast } from '../../hooks/toast';
+import { useToast } from '../../hooks/useToast';
 
 export function EmailPage() {
   const { toast } = useToast();

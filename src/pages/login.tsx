@@ -7,7 +7,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { auth } from '../lib/api';
 import { LoginFormData, loginSchema } from '../validators/auth';
-import { useToast } from '../hooks/toast';
+import { useToast } from '../hooks/useToast';
 
 export function LoginPage() {
   const navigate = useNavigate();
