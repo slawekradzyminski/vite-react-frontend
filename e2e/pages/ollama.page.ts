@@ -10,6 +10,7 @@ export class OllamaPage {
   readonly promptInput: Locator;
   readonly generateButton: Locator;
   readonly generateContent: Locator;
+  readonly temperatureSlider: Locator;
 
   // Chat tab elements
   readonly chatTab: Locator;
@@ -27,6 +28,7 @@ export class OllamaPage {
     this.promptInput = page.getByRole('textbox', { name: 'Prompt' });
     this.generateButton = page.getByRole('button', { name: /generate/i });
     this.generateContent = page.getByTestId('generate-content');
+    this.temperatureSlider = page.getByRole('slider', { name: /Temperature/ });
 
     // Chat tab elements
     this.chatTab = page.getByTestId('chat-tab');
@@ -54,6 +56,10 @@ export class OllamaPage {
     }
     await this.promptInput.fill(prompt);
     await this.generateButton.click();
+  }
+
+  async setTemperature(value: number) {
+    await this.temperatureSlider.fill(value.toString());
   }
 
   async sendChatMessage(message: string, model?: string) {

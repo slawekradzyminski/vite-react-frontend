@@ -54,4 +54,22 @@ test.describe('Ollama Generate', () => {
     await expect(ollamaPage.errorMessage).toBeVisible();
     await expect(ollamaPage.generateButton).toBeEnabled();
   });
+
+  test('should initialize with default temperature and allow adjustment', async ({ authenticatedPage }) => {
+    // given
+    let requestBody: any;
+    await ollamaMocks.mockSuccess(authenticatedPage.page, async (route) => {
+      requestBody = JSON.parse(route.request().postData() || '{}');
+    });
+    await ollamaPage.goto();
+    await ollamaPage.openGenerateTab();
+
+    // when
+    await expect(ollamaPage.temperatureSlider).toHaveValue('0.8');
+    await ollamaPage.setTemperature(0.3);
+    await ollamaPage.generate('Test prompt');
+
+    // then
+    expect(requestBody.options.temperature).toBe(0.3);
+  });
 });

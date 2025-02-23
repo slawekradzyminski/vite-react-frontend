@@ -1,13 +1,8 @@
 import { Page, Route } from '@playwright/test';
 
 export const ollamaChatMocks = {
-  async mockSuccess(page: Page, onRequest?: (route: Route) => void) {
+  async mockSuccess(page: Page) {
     await page.route('**/api/ollama/chat', async route => {
-      // Allow inspection of the request payload if callback provided
-      if (onRequest) {
-        onRequest(route);
-      }
-
       const chunks = [
         {
           model: 'llama3.2:1b',

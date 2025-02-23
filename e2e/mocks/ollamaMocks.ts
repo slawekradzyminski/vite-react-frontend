@@ -1,40 +1,37 @@
-import { Page } from "@playwright/test";
+import { Page, Route } from '@playwright/test';
 
 export const ollamaMocks = {
-    mockSuccess: async (page: Page) => {
-        const chunks = [
-            { model: 'gemma:2b', response: '# Heading\n\n', done: false },
-            { model: 'gemma:2b', response: '- List item 1\n', done: false },
-            { model: 'gemma:2b', response: '- List item 2\n\n', done: false },
-            { model: 'gemma:2b', response: '**Bold text**\n\n', done: false },
-            { model: 'gemma:2b', response: '`code block`', done: true }
-          ];
-      
+    async mockSuccess(page: Page, onRequest?: (route: Route) => void) {
         await page.route('**/api/ollama/generate', async route => {
-            const allChunks = chunks.map(chunk => {
-              const lines = JSON.stringify(chunk, null, 2)
-                .split('\n')
-                .map(line => `data:${line}`);
-              return lines.join('\n') + '\n\n';
-            }).join('');
-      
-            route.fulfill({
-              status: 200,
-              headers: {
-                'Content-Type': 'text/event-stream',
-                'Cache-Control': 'no-cache',
-                'Connection': 'keep-alive'
-              },
-              body: allChunks
+            if (onRequest) {
+                await onRequest(route);
+            }
+
+            const chunks = [
+                { model: 'llama3.2:1b', response: '# Heading\n\n', done: false },
+                { model: 'llama3.2:1b', response: '* List item 1\n* List item 2\n\n', done: false },
+                { model: 'llama3.2:1b', response: '**Bold text**\n\n`code block`', done: true }
+            ];
+
+            const response = chunks.map(chunk => `data: ${JSON.stringify(chunk)}\n\n`).join('');
+            await route.fulfill({
+                status: 200,
+                headers: {
+                    'Content-Type': 'text/event-stream',
+                    'Cache-Control': 'no-cache',
+                    'Connection': 'keep-alive'
+                },
+                body: response
             });
         });
     },
     
-    mockError: async (page: Page) => {
+    async mockError(page: Page) {
         await page.route('**/api/ollama/generate', route => {
             route.fulfill({
-              status: 500,
-              body: 'Internal Server Error'
+                status: 500,
+                contentType: 'application/json',
+                body: JSON.stringify({ error: 'Failed to fetch stream' })
             });
         });
     }

@@ -44,7 +44,9 @@ describe('LlmPage', () => {
       isGenerating: false,
       generate: vi.fn(),
       model: 'llama3.2:1b',
-      setModel: vi.fn()
+      setModel: vi.fn(),
+      temperature: 0.8,
+      setTemperature: vi.fn()
     });
   });
 

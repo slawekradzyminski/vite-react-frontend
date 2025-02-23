@@ -86,8 +86,7 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
        */
       const requestBody: ChatRequestDto = {
         model,
-        messages: newMessages as ChatMessageDto[], // We do NOT include the placeholder in the request body, 
-                               // unless you want the AI to see an "assistant" line that's empty.
+        messages: newMessages as ChatMessageDto[], 
         options: { temperature: 0.7 }
       };
 

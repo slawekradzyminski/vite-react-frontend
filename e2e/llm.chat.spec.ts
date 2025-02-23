@@ -56,16 +56,10 @@ test.describe('Ollama Chat', () => {
 
   test('should include full conversation history in subsequent requests', async ({ authenticatedPage }) => {
     // given
-    let firstRequest: any;
     let secondRequest: any;
 
     await ollamaChatMocks.mockConversation(authenticatedPage.page, async (route) => {
-      const request = JSON.parse(route.request().postData() || '{}');
-      if (!firstRequest) {
-        firstRequest = request;
-      } else {
-        secondRequest = request;
-      }
+      secondRequest = JSON.parse(route.request().postData() || '{}');
     });
 
     await ollamaPage.goto();
