@@ -82,7 +82,8 @@ describe('Navigation', () => {
 
     // then
     await waitFor(() => {
-      expect(screen.getByText('LLM')).toBeInTheDocument();
+      expect(screen.getByText('Generate')).toBeInTheDocument();
+      expect(screen.getByText('Chat')).toBeInTheDocument();
     });
   });
 
@@ -174,7 +175,8 @@ describe('Navigation', () => {
     expect(mobileMenu).toHaveTextContent('Cart');
     expect(mobileMenu).toHaveTextContent('Send Email');
     expect(mobileMenu).toHaveTextContent('Profile');
-    expect(mobileMenu).toHaveTextContent('LLM');
+    expect(mobileMenu).toHaveTextContent('Generate');
+    expect(mobileMenu).toHaveTextContent('Chat');
 
     // when
     await user.click(menuButton);
