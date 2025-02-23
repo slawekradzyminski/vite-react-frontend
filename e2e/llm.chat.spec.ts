@@ -90,4 +90,22 @@ test.describe('Ollama Chat', () => {
       }
     ]);
   });
+
+  test('should initialize with default temperature and allow adjustment', async ({ authenticatedPage }) => {
+    // given
+    let requestBody: any;
+    await ollamaChatMocks.mockSuccess(authenticatedPage.page, async (route) => {
+      requestBody = JSON.parse(route.request().postData() || '{}');
+    });
+    await ollamaPage.goto();
+    await ollamaPage.openChatTab();
+
+    // when
+    await expect(ollamaPage.temperatureSlider).toHaveValue('0.8');
+    await ollamaPage.setTemperature(0.3);
+    await ollamaPage.sendChatMessage('Test message');
+
+    // then
+    expect(requestBody.options.temperature).toBe(0.3);
+  });
 }); 

@@ -10,25 +10,16 @@ interface UseOllamaChatOptions {
 
 export function useOllamaChat(options?: UseOllamaChatOptions) {
   const { toast } = useToast();
-
-  // Hold entire conversation, including system instructions
   const [messages, setMessages] = useState<ChatMessageDto[]>([
     {
       role: 'system',
       content: 'You are a helpful AI assistant. You must use the conversation history to answer questions.'
     }
   ]);
-
-  // Model name
   const [model, setModel] = useState('llama3.2:1b');
-
-  // Are we currently streaming from the backend?
+  const [temperature, setTemperature] = useState(0.8);
   const [isChatting, setIsChatting] = useState(false);
-
-  /**
-   * The function that sends a user message, then streams the assistant response into
-   * the conversation array in real time.
-   */
+  
   const chat = useCallback(
     async (userMessage: string) => {
       if (!userMessage.trim()) {
@@ -36,7 +27,6 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
         return;
       }
 
-      // If you want to prevent overlapping calls, check isChatting
       if (isChatting) {
         toast({
           variant: 'error',
@@ -47,68 +37,40 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
 
       setIsChatting(true);
 
-      /**
-       * 1) Build new message array for local use
-       *    (Old conversation + user’s new message).
-       */
       const newMessages = [
         ...messages,
         { role: 'user', content: userMessage }
       ];
 
-      /**
-       * 2) Immediately update state so the UI shows the user’s message.
-       *    If you do not do this first, the UI won't display the user message instantly.
-       */
       setMessages(newMessages as ChatMessageDto[]);
 
-      /**
-       * 3) Also append a placeholder assistant message with empty content.
-       *    We'll fill it in chunk by chunk from SSE. This ensures your conversation
-       *    array always has a "current" assistant message to append to.
-       *
-       *    We'll store the index of that new assistant message so we can update it.
-       */
       const assistantPlaceholder = {
         role: 'assistant',
         content: ''
       };
-      const assistantIndex = newMessages.length; // position where assistant message goes
+      const assistantIndex = newMessages.length;
 
       const newMessagesWithAssistant = [...newMessages, assistantPlaceholder];
       setMessages(newMessagesWithAssistant as ChatMessageDto[]);
 
-      /**
-       * This final array includes:
-       *  - All old messages
-       *  - New user message
-       *  - Assistant placeholder
-       */
       const requestBody: ChatRequestDto = {
         model,
         messages: newMessages as ChatMessageDto[], 
-        options: { temperature: 0.7 }
+        options: { temperature }
       };
 
       try {
-        // 4) Send the request
         const response = await ollama.chat(requestBody);
 
-        // 5) Process the SSE stream
         let accumulatedContent = '';
         await processSSEResponse<ChatResponseDto>(response, {
           onMessage: (data) => {
             if (data.message?.content) {
-              // Append chunk to accumulatedContent
               accumulatedContent += data.message.content;
 
-              // Update the assistant's content in real-time via functional setState
               setMessages((prev) => {
-                // Make a copy of the current conversation
                 const updated = [...prev];
-                // updated[assistantIndex] is the placeholder assistant message
                 const oldAssistantMsg = updated[assistantIndex];
-                // Overwrite with new content
                 updated[assistantIndex] = {
                   ...oldAssistantMsg,
                   content: accumulatedContent
@@ -118,7 +80,6 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
             }
 
             if (data.done) {
-              // SSE indicates final chunk
               setIsChatting(false);
             }
           },
@@ -140,7 +101,7 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
         setIsChatting(false);
       }
     },
-    [messages, model, isChatting, toast, options]
+    [messages, model, temperature, isChatting, toast, options]
   );
 
   return {
@@ -149,7 +110,8 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
     chat,
     model,
     setModel,
-    // If needed externally
+    temperature,
+    setTemperature,
     setMessages
   };
 }

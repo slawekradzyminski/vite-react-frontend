@@ -32,6 +32,7 @@ describe('useOllamaChat', () => {
       { role: 'system', content: 'You are a helpful AI assistant. You must use the conversation history to answer questions.' }
     ]);
     expect(result.current.model).toBe('llama3.2:1b');
+    expect(result.current.temperature).toBe(0.8);
   });
 
   it('handles empty message', async () => {
@@ -221,5 +222,70 @@ describe('useOllamaChat', () => {
       { role: 'user', content: 'Third message' },
       { role: 'assistant', content: 'Third response' }
     ]);
+  });
+
+  it('should initialize with default temperature of 0.8', () => {
+    // when
+    const { result } = renderHook(() => useOllamaChat());
+
+    // then
+    expect(result.current.temperature).toBe(0.8);
+  });
+
+  it('should allow temperature adjustment', () => {
+    // given
+    const { result } = renderHook(() => useOllamaChat());
+
+    // when
+    act(() => {
+      result.current.setTemperature(0.3);
+    });
+
+    // then
+    expect(result.current.temperature).toBe(0.3);
+  });
+
+  it('should include temperature in chat request', async () => {
+    // given
+    const mockResponse = new Response(
+      'data: {"model":"llama3.2:1b","message":{"role":"assistant","content":"Hello"},"done":true}\n\n',
+      { headers: { 'Content-Type': 'text/event-stream' } }
+    );
+    vi.mocked(ollama.chat).mockResolvedValue(mockResponse);
+    const { result } = renderHook(() => useOllamaChat());
+    const customTemperature = 0.5;
+
+    // when
+    act(() => {
+      result.current.setTemperature(customTemperature);
+    });
+    await act(async () => {
+      await result.current.chat('test message');
+    });
+
+    // then
+    expect(ollama.chat).toHaveBeenCalledWith(expect.objectContaining({
+      options: { temperature: customTemperature }
+    }));
+  });
+
+  it('should use default temperature in chat request if not changed', async () => {
+    // given
+    const mockResponse = new Response(
+      'data: {"model":"llama3.2:1b","message":{"role":"assistant","content":"Hello"},"done":true}\n\n',
+      { headers: { 'Content-Type': 'text/event-stream' } }
+    );
+    vi.mocked(ollama.chat).mockResolvedValue(mockResponse);
+    const { result } = renderHook(() => useOllamaChat());
+
+    // when
+    await act(async () => {
+      await result.current.chat('test message');
+    });
+
+    // then
+    expect(ollama.chat).toHaveBeenCalledWith(expect.objectContaining({
+      options: { temperature: 0.8 }
+    }));
   });
 }); 

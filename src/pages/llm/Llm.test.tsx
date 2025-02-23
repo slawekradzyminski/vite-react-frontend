@@ -36,7 +36,9 @@ describe('LlmPage', () => {
       chat: vi.fn(),
       model: 'llama3.2:1b',
       setModel: vi.fn(),
-      setMessages: vi.fn()
+      setMessages: vi.fn(),
+      temperature: 0.8,
+      setTemperature: vi.fn()
     });
 
     vi.mocked(useOllama).mockReturnValue({

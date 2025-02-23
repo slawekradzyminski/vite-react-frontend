@@ -16,7 +16,9 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
     isChatting,
     chat,
     model,
-    setModel
+    setModel,
+    temperature,
+    setTemperature
   } = useOllamaChat();
 
   const handleSend = () => {
@@ -71,6 +73,26 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
           onChange={(e) => setModel(e.target.value)}
           placeholder="Enter model name"
         />
+      </div>
+
+      <div className="mb-4">
+        <label htmlFor="temperature" className="block font-medium mb-2">
+          Temperature: {temperature.toFixed(2)}
+        </label>
+        <input
+          id="temperature"
+          type="range"
+          min="0"
+          max="1"
+          step="0.1"
+          className="w-full"
+          value={temperature}
+          onChange={(e) => setTemperature(parseFloat(e.target.value))}
+        />
+        <div className="flex justify-between text-sm text-gray-500">
+          <span>More Focused</span>
+          <span>More Creative</span>
+        </div>
       </div>
 
       <div className={styles.conversationContainer}>

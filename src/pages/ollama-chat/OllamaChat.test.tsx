@@ -29,7 +29,9 @@ describe('OllamaChatPage', () => {
       chat: mockChat,
       model: 'llama3.2:1b',
       setModel: mockSetModel,
-      setMessages: vi.fn()
+      setMessages: vi.fn(),
+      temperature: 0.8,
+      setTemperature: vi.fn()
     });
   });
 
@@ -81,7 +83,9 @@ describe('OllamaChatPage', () => {
       chat: mockChat,
       model: 'llama3.2:1b',
       setModel: mockSetModel,
-      setMessages: vi.fn()
+      setMessages: vi.fn(),
+      temperature: 0.8,
+      setTemperature: vi.fn()
     });
 
     // when
@@ -106,7 +110,9 @@ describe('OllamaChatPage', () => {
       chat: mockChat,
       model: 'llama3.2:1b',
       setModel: mockSetModel,
-      setMessages: vi.fn()
+      setMessages: vi.fn(),
+      temperature: 0.8,
+      setTemperature: vi.fn()
     });
 
     // when
