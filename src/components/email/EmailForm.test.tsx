@@ -39,7 +39,7 @@ describe('EmailForm', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(auth.getUsers).mockResolvedValue(mockUsers);
+    vi.mocked(auth.getUsers).mockResolvedValue(mockUsers as any);
   });
 
   // given
