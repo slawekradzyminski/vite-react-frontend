@@ -5,7 +5,11 @@ import ReactMarkdown from 'react-markdown';
 import { ChatMessageDto } from '../../types/ollama';
 import styles from './OllamaChat.module.css';
 
-export function OllamaChatPage() {
+interface OllamaChatPageProps {
+  hideTitle?: boolean;
+}
+
+export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
   const [userInput, setUserInput] = useState('');
   const {
     messages,
@@ -52,8 +56,8 @@ export function OllamaChatPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 flex flex-col">
-      <h1 className="text-2xl font-bold mb-4">Chat with Ollama</h1>
+    <div className="flex flex-col">
+      {!hideTitle && <h1 className="text-2xl font-bold mb-4">Chat with Ollama</h1>}
 
       <div className="mb-4">
         <label htmlFor="model" className="block font-medium mb-2">
@@ -70,8 +74,6 @@ export function OllamaChatPage() {
       </div>
 
       <div className={styles.conversationContainer}>
-        {/* Display all messages. 
-           If you don’t want the system message visible, do messages.slice(1).map(...). */}
         {messages.map((msg, idx) => (
           <div key={idx}>{renderMessage(msg)}</div>
         ))}

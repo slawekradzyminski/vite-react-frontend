@@ -13,6 +13,7 @@ test.describe('Ollama Generate', () => {
     // given
     await ollamaMocks.mockSuccess(authenticatedPage.page);
     await ollamaPage.goto();
+    await ollamaPage.openGenerateTab();
 
     // when
     await ollamaPage.generate('Test prompt');
@@ -31,6 +32,7 @@ test.describe('Ollama Generate', () => {
     // given
     await ollamaMocks.mockSuccess(authenticatedPage.page);
     await ollamaPage.goto();
+    await ollamaPage.openGenerateTab();
     await expect(ollamaPage.modelInput).toHaveValue('llama3.2:1b');
 
     // when
@@ -44,7 +46,7 @@ test.describe('Ollama Generate', () => {
     // given
     await ollamaMocks.mockError(authenticatedPage.page);
     await ollamaPage.goto();
-
+    await ollamaPage.openGenerateTab();
     // when
     await ollamaPage.generate('Test prompt');
 

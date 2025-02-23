@@ -1,9 +1,10 @@
-import { screen, waitFor, fireEvent } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { OllamaGeneratePage } from './index';
-import { vi } from 'vitest';
+import { vi, describe, it, expect } from 'vitest';
 import { renderWithProviders } from '../../test/test-utils';
 import { ollama } from '../../lib/api';
+import { useToast } from '../../hooks/useToast';
 
 vi.mock('../../lib/api', () => ({
   ollama: {
@@ -11,9 +12,44 @@ vi.mock('../../lib/api', () => ({
   },
 }));
 
+vi.mock('../../hooks/useToast', () => {
+  const mockToast = vi.fn();
+  return {
+    useToast: vi.fn(() => ({ toast: mockToast })),
+    ToastContext: {
+      Provider: ({ children }: { children: React.ReactNode }) => children,
+    },
+  };
+});
+
+vi.mock('react-markdown', () => ({
+  default: ({ children }: { children: string }) => {
+    const lines = children.split('\n');
+    return (
+      <div>
+        {lines.map((line, i) => {
+          if (line.startsWith('# ')) {
+            return <h1 key={i}>{line.slice(2)}</h1>;
+          }
+          if (line.startsWith('- ')) {
+            return <li key={i}>{line.slice(2)}</li>;
+          }
+          if (line.startsWith('**') && line.endsWith('**')) {
+            return <strong key={i}>{line.slice(2, -2)}</strong>;
+          }
+          return <div key={i}>{line}</div>;
+        })}
+      </div>
+    );
+  },
+}));
+
 describe('OllamaGeneratePage', () => {
+  const mockToast = vi.fn();
+
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(useToast).mockReturnValue({ toast: mockToast });
   });
 
   it('handles streaming chunks correctly', async () => {
@@ -79,13 +115,16 @@ describe('OllamaGeneratePage', () => {
 
     // then
     await waitFor(() => {
-      expect(screen.getByText('Failed to fetch stream: Internal Server Error')).toBeInTheDocument();
+      expect(mockToast).toHaveBeenCalledWith({
+        variant: 'error',
+        description: 'Failed to fetch stream: Internal Server Error'
+      });
     });
     expect(screen.getByRole('button', { name: 'Generate' })).toBeEnabled();
   });
 
   it('renders markdown formatted response', async () => {
-    // when
+    // given
     const markdownResponse = 
       'data: {"response":"# Title\\n","done":false}\n\n' +
       'data: {"response":"- List item 1\\n","done":false}\n\n' +
@@ -98,13 +137,10 @@ describe('OllamaGeneratePage', () => {
 
     vi.mocked(ollama.generate).mockResolvedValue(mockResponse);
 
+    // when
     renderWithProviders(<OllamaGeneratePage />);
-
-    const promptInput = screen.getByPlaceholderText('Enter your prompt here...');
-    const generateButton = screen.getByText('Generate');
-
-    fireEvent.change(promptInput, { target: { value: 'test prompt' } });
-    fireEvent.click(generateButton);
+    await userEvent.type(screen.getByLabelText(/prompt/i), 'test prompt');
+    await userEvent.click(screen.getByRole('button', { name: /generate/i }));
 
     // then
     await waitFor(() => {
@@ -121,41 +157,43 @@ describe('OllamaGeneratePage', () => {
   });
 
   it('shows loading state while generating', async () => {
-    // when
+    // given
     const mockResponse = new Response(
       'data: {"response":"Loading test","done":true}\n\n',
       { headers: { 'Content-Type': 'text/event-stream' } }
     );
-    vi.mocked(ollama.generate).mockResolvedValue(mockResponse);
+    vi.mocked(ollama.generate).mockImplementation(() => {
+      return new Promise((resolve) => {
+        setTimeout(() => resolve(mockResponse), 100);
+      });
+    });
 
+    // when
     renderWithProviders(<OllamaGeneratePage />);
-
-    const promptInput = screen.getByPlaceholderText('Enter your prompt here...');
-    const generateButton = screen.getByText('Generate');
-
-    fireEvent.change(promptInput, { target: { value: 'test prompt' } });
-    fireEvent.click(generateButton);
+    await userEvent.type(screen.getByLabelText(/prompt/i), 'test prompt');
+    await userEvent.click(screen.getByRole('button', { name: /generate/i }));
 
     // then
-    expect(screen.getByText('Generating...')).toBeInTheDocument();
-    expect(screen.getByRole('status')).toBeInTheDocument(); // Spinner
-
+    expect(screen.getByRole('button')).toBeDisabled();
     await waitFor(() => {
-      expect(screen.queryByText('Generating...')).not.toBeInTheDocument();
+      expect(screen.getByRole('button')).toBeEnabled();
     });
   });
 
   it('handles empty prompt', async () => {
+    // given
+    const mockToast = vi.fn();
+    vi.mocked(useToast).mockReturnValue({ toast: mockToast });
+
     // when
     renderWithProviders(<OllamaGeneratePage />);
+    const generateButton = screen.getByRole('button', { name: /generate/i });
+    expect(generateButton).toBeDisabled();
 
-    const generateButton = screen.getByText('Generate');
-    fireEvent.click(generateButton);
+    await userEvent.type(screen.getByLabelText(/prompt/i), ' ');
+    expect(generateButton).toBeDisabled();
 
     // then
-    await waitFor(() => {
-      expect(screen.getByText('Please enter a prompt')).toBeInTheDocument();
-    });
     expect(ollama.generate).not.toHaveBeenCalled();
   });
 

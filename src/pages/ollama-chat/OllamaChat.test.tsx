@@ -143,4 +143,20 @@ describe('OllamaChatPage', () => {
     // then
     expect(mockChat).not.toHaveBeenCalled();
   });
+
+  it('renders title by default', () => {
+    // when
+    render(<OllamaChatPage />);
+
+    // then
+    expect(screen.getByText('Chat with Ollama')).toBeInTheDocument();
+  });
+
+  it('hides title when hideTitle prop is true', () => {
+    // when
+    render(<OllamaChatPage hideTitle />);
+
+    // then
+    expect(screen.queryByText('Chat with Ollama')).not.toBeInTheDocument();
+  });
 }); 

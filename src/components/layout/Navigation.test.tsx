@@ -60,7 +60,7 @@ describe('Navigation', () => {
   });
 
   // given
-  it('shows Ollama Generate link when authenticated', async () => {
+  it('shows LLM link when authenticated', async () => {
     // when
     localStorage.setItem('token', 'fake-token');
     vi.mocked(auth.me).mockResolvedValue({
@@ -82,8 +82,7 @@ describe('Navigation', () => {
 
     // then
     await waitFor(() => {
-      expect(screen.getByText('Generate')).toBeInTheDocument();
-      expect(screen.getByText('Chat')).toBeInTheDocument();
+      expect(screen.getByText('LLM')).toBeInTheDocument();
     });
   });
 
@@ -175,8 +174,7 @@ describe('Navigation', () => {
     expect(mobileMenu).toHaveTextContent('Cart');
     expect(mobileMenu).toHaveTextContent('Send Email');
     expect(mobileMenu).toHaveTextContent('Profile');
-    expect(mobileMenu).toHaveTextContent('Generate');
-    expect(mobileMenu).toHaveTextContent('Chat');
+    expect(mobileMenu).toHaveTextContent('LLM');
 
     // when
     await user.click(menuButton);

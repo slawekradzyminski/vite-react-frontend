@@ -6,17 +6,23 @@ export class OllamaPage {
   readonly generateButton: Locator;
   readonly errorMessage: Locator;
   readonly markdownContainer: Locator;
+  readonly generateTab: Locator;
 
   constructor(private readonly page: Page) {
-    this.promptInput = page.getByLabel(/prompt/i);
-    this.modelInput = page.getByLabel(/model/i);
+    this.promptInput = page.getByRole('textbox', { name: 'Prompt' });
+    this.modelInput = page.getByRole('textbox', { name: 'Model' });
     this.generateButton = page.getByRole('button', { name: /generate/i });
     this.errorMessage = page.locator('text=/failed to fetch stream/i').first();
     this.markdownContainer = page.locator('[class*="markdownContainer"]');
+    this.generateTab = page.getByTestId('generate-tab');
   }
 
   async goto() {
-    await this.page.goto('/ollama-generate');
+    await this.page.goto('/llm');
+  }
+
+  async openGenerateTab() {
+    await this.generateTab.click();
   }
 
   async generate(prompt: string, model?: string) {
