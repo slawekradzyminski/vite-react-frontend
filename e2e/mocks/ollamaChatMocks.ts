@@ -1,8 +1,13 @@
-import { Page } from '@playwright/test';
+import { Page, Route } from '@playwright/test';
 
 export const ollamaChatMocks = {
-  async mockSuccess(page: Page) {
+  async mockSuccess(page: Page, onRequest?: (route: Route) => void) {
     await page.route('**/api/ollama/chat', async route => {
+      // Allow inspection of the request payload if callback provided
+      if (onRequest) {
+        onRequest(route);
+      }
+
       const chunks = [
         {
           model: 'llama3.2:1b',
@@ -16,6 +21,50 @@ export const ollamaChatMocks = {
       ];
 
       const response = chunks.map(chunk => `data: ${JSON.stringify(chunk)}\n\n`).join('');
+      await route.fulfill({
+        status: 200,
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive'
+        },
+        body: response
+      });
+    });
+  },
+
+  async mockConversation(page: Page, onRequest?: (route: Route) => void) {
+    await page.route('**/api/ollama/chat', async route => {
+      // Allow inspection of the request payload if callback provided
+      if (onRequest) {
+        onRequest(route);
+      }
+
+      const firstResponse = {
+        model: 'llama3.2:1b',
+        createdAt: new Date().toISOString(),
+        message: {
+          role: 'assistant',
+          content: 'Love is emotion.'
+        },
+        done: true
+      };
+
+      const secondResponse = {
+        model: 'llama3.2:1b',
+        createdAt: new Date().toISOString(),
+        message: {
+          role: 'assistant',
+          content: 'Let me elaborate on the concept of love...'
+        },
+        done: true
+      };
+
+      // Choose response based on the request content
+      const request = JSON.parse(route.request().postData() || '{}');
+      const isSecondMessage = request.messages?.some(m => m.content.includes('go on'));
+      const response = `data: ${JSON.stringify(isSecondMessage ? secondResponse : firstResponse)}\n\n`;
+
       await route.fulfill({
         status: 200,
         headers: {

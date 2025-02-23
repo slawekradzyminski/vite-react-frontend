@@ -53,4 +53,47 @@ test.describe('Ollama Chat', () => {
     await expect(ollamaPage.errorMessage).toBeVisible();
     await expect(ollamaPage.messageInput).toBeEnabled();
   });
+
+  test('should include full conversation history in subsequent requests', async ({ authenticatedPage }) => {
+    // given
+    let firstRequest: any;
+    let secondRequest: any;
+
+    await ollamaChatMocks.mockConversation(authenticatedPage.page, async (route) => {
+      const request = JSON.parse(route.request().postData() || '{}');
+      if (!firstRequest) {
+        firstRequest = request;
+      } else {
+        secondRequest = request;
+      }
+    });
+
+    await ollamaPage.goto();
+    await ollamaPage.openChatTab();
+
+    // when
+    await ollamaPage.sendChatMessage('What is love? Answer in 1 word');
+    await expect(ollamaPage.getChatMessage('assistant')).toContainText('Love is emotion');
+    await ollamaPage.sendChatMessage('yes, go on');
+
+    // then
+    expect(secondRequest.messages).toEqual([
+      {
+        role: 'system',
+        content: 'You are a helpful AI assistant. You must use the conversation history to answer questions.'
+      },
+      {
+        role: 'user',
+        content: 'What is love? Answer in 1 word'
+      },
+      {
+        role: 'assistant',
+        content: 'Love is emotion.'
+      },
+      {
+        role: 'user',
+        content: 'yes, go on'
+      }
+    ]);
+  });
 }); 
