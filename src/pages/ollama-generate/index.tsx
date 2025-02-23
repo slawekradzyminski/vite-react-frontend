@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useOllama } from '../../hooks/useOllama';
+import { useOllamaGenerate } from '../../hooks/useOllamaGenerate';
 import { Spinner } from '../../components/ui/spinner';
 import ReactMarkdown from 'react-markdown';
 import styles from './OllamaGenerate.module.css';
@@ -18,7 +18,7 @@ export function OllamaGeneratePage({ hideTitle = false }: OllamaGeneratePageProp
     setModel,
     temperature,
     setTemperature
-  } = useOllama();
+  } = useOllamaGenerate();
 
   const handleGenerate = () => {
     generate(prompt);

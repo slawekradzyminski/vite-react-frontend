@@ -1,57 +1,57 @@
 import { test, expect } from './fixtures/auth.fixture';
 import { ollamaChatMocks } from './mocks/ollamaChatMocks';
-import { OllamaPage } from './pages/ollama.page';
+import { ChatPage } from './pages/chat.page';
 
 test.describe('Ollama Chat', () => {
-  let ollamaPage: OllamaPage;
+  let chatPage: ChatPage;
 
   test.beforeEach(async ({ authenticatedPage }) => {
-    ollamaPage = new OllamaPage(authenticatedPage.page);
+    chatPage = new ChatPage(authenticatedPage.page);
   });
 
   test('should display chat messages with markdown formatting', async ({ authenticatedPage }) => {
     // given
     await ollamaChatMocks.mockSuccess(authenticatedPage.page);
-    await ollamaPage.goto();
-    await ollamaPage.openChatTab();
+    await chatPage.goto();
+    await chatPage.openChatTab();
 
     // when
-    await ollamaPage.sendChatMessage('Test message');
+    await chatPage.sendChatMessage('Test message');
 
     // then
-    await expect(ollamaPage.getChatMessage('user')).toContainText('Test message');
-    await expect(ollamaPage.getChatMessage('assistant')).toContainText('Heading');
-    await expect(ollamaPage.getChatMarkdownElement('h1')).toContainText('Heading');
-    await expect(ollamaPage.getChatMarkdownElement('ul > li')).toHaveCount(2);
+    await expect(chatPage.getChatMessage('user')).toContainText('Test message');
+    await expect(chatPage.getChatMessage('assistant')).toContainText('Heading');
+    await expect(chatPage.getChatMarkdownElement('h1')).toContainText('Heading');
+    await expect(chatPage.getChatMarkdownElement('ul > li')).toHaveCount(2);
   });
 
   test('should initialize with default model and allow model change', async ({ authenticatedPage }) => {
     // given
     await ollamaChatMocks.mockSuccess(authenticatedPage.page);
-    await ollamaPage.goto();
-    await ollamaPage.openChatTab();
+    await chatPage.goto();
+    await chatPage.openChatTab();
 
     // when
-    await expect(ollamaPage.modelInput).toHaveValue('llama3.2:1b');
-    await ollamaPage.sendChatMessage('Test message', 'mistral:7b');
+    await expect(chatPage.modelInput).toHaveValue('llama3.2:1b');
+    await chatPage.sendChatMessage('Test message', 'mistral:7b');
 
     // then
-    await expect(ollamaPage.modelInput).toHaveValue('mistral:7b');
-    await expect(ollamaPage.getChatMessage('user')).toContainText('Test message');
+    await expect(chatPage.modelInput).toHaveValue('mistral:7b');
+    await expect(chatPage.getChatMessage('user')).toContainText('Test message');
   });
 
   test('should handle streaming errors gracefully', async ({ authenticatedPage }) => {
     // given
     await ollamaChatMocks.mockError(authenticatedPage.page);
-    await ollamaPage.goto();
-    await ollamaPage.openChatTab();
+    await chatPage.goto();
+    await chatPage.openChatTab();
 
     // when
-    await ollamaPage.sendChatMessage('Test message');
+    await chatPage.sendChatMessage('Test message');
 
     // then
-    await expect(ollamaPage.errorMessage).toBeVisible();
-    await expect(ollamaPage.messageInput).toBeEnabled();
+    await expect(chatPage.errorMessage).toBeVisible();
+    await expect(chatPage.messageInput).toBeEnabled();
   });
 
   test('should include full conversation history in subsequent requests', async ({ authenticatedPage }) => {
@@ -62,13 +62,13 @@ test.describe('Ollama Chat', () => {
       secondRequest = JSON.parse(route.request().postData() || '{}');
     });
 
-    await ollamaPage.goto();
-    await ollamaPage.openChatTab();
+    await chatPage.goto();
+    await chatPage.openChatTab();
 
     // when
-    await ollamaPage.sendChatMessage('What is love? Answer in 1 word');
-    await expect(ollamaPage.getChatMessage('assistant')).toContainText('Love is emotion');
-    await ollamaPage.sendChatMessage('yes, go on');
+    await chatPage.sendChatMessage('What is love? Answer in 1 word');
+    await expect(chatPage.getChatMessage('assistant')).toContainText('Love is emotion');
+    await chatPage.sendChatMessage('yes, go on');
 
     // then
     expect(secondRequest.messages).toEqual([
@@ -97,13 +97,13 @@ test.describe('Ollama Chat', () => {
     await ollamaChatMocks.mockSuccess(authenticatedPage.page, async (route) => {
       requestBody = JSON.parse(route.request().postData() || '{}');
     });
-    await ollamaPage.goto();
-    await ollamaPage.openChatTab();
+    await chatPage.goto();
+    await chatPage.openChatTab();
 
     // when
-    await expect(ollamaPage.temperatureSlider).toHaveValue('0.8');
-    await ollamaPage.setTemperature(0.3);
-    await ollamaPage.sendChatMessage('Test message');
+    await expect(chatPage.temperatureSlider).toHaveValue('0.8');
+    await chatPage.setTemperature(0.3);
+    await chatPage.sendChatMessage('Test message');
 
     // then
     expect(requestBody.options.temperature).toBe(0.3);

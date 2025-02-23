@@ -1,58 +1,59 @@
 import { test, expect } from './fixtures/auth.fixture';
 import { ollamaMocks } from './mocks/ollamaMocks';
-import { OllamaPage } from './pages/ollama.page';
+import { GeneratePage } from './pages/generate.page';
 
 test.describe('Ollama Generate', () => {
-  let ollamaPage: OllamaPage;
+  let generatePage: GeneratePage;
 
   test.beforeEach(async ({ authenticatedPage }) => {
-    ollamaPage = new OllamaPage(authenticatedPage.page);
+    generatePage = new GeneratePage(authenticatedPage.page);
   });
 
   test('should display streaming response chunks with markdown formatting', async ({ authenticatedPage }) => {
     // given
     await ollamaMocks.mockSuccess(authenticatedPage.page);
-    await ollamaPage.goto();
-    await ollamaPage.openGenerateTab();
+    await generatePage.goto();
+    await generatePage.openGenerateTab();
 
     // when
-    await ollamaPage.generate('Test prompt');
+    await generatePage.generate('Test prompt');
 
     // then
-    await expect(ollamaPage.getMarkdownElement('h1')).toHaveText('Heading');
-    await expect(ollamaPage.getMarkdownElement('ul > li')).toHaveCount(2);
-    await expect(ollamaPage.getMarkdownElement('ul > li').nth(0)).toHaveText('List item 1');
-    await expect(ollamaPage.getMarkdownElement('ul > li').nth(1)).toHaveText('List item 2');
-    await expect(ollamaPage.getMarkdownElement('strong')).toHaveText('Bold text');
-    await expect(ollamaPage.getMarkdownElement('code')).toHaveText('code block');
-    await expect(ollamaPage.generateButton).toBeEnabled();
+    await expect(generatePage.getMarkdownElement('h1')).toHaveText('Heading');
+    await expect(generatePage.getMarkdownElement('ul > li')).toHaveCount(2);
+    await expect(generatePage.getMarkdownElement('ul > li').nth(0)).toHaveText('List item 1');
+    await expect(generatePage.getMarkdownElement('ul > li').nth(1)).toHaveText('List item 2');
+    await expect(generatePage.getMarkdownElement('strong')).toHaveText('Bold text');
+    await expect(generatePage.getMarkdownElement('code')).toHaveText('code block');
+    await expect(generatePage.generateButton).toBeEnabled();
   });
 
   test('should initialize with default model and allow model change', async ({ authenticatedPage }) => {
     // given
     await ollamaMocks.mockSuccess(authenticatedPage.page);
-    await ollamaPage.goto();
-    await ollamaPage.openGenerateTab();
-    await expect(ollamaPage.modelInput).toHaveValue('llama3.2:1b');
+    await generatePage.goto();
+    await generatePage.openGenerateTab();
+    await expect(generatePage.modelInput).toHaveValue('llama3.2:1b');
 
     // when
-    await ollamaPage.generate('Test prompt', 'mistral:7b');
+    await generatePage.generate('Test prompt', 'mistral:7b');
 
     // then
-    await expect(ollamaPage.modelInput).toHaveValue('mistral:7b');
+    await expect(generatePage.modelInput).toHaveValue('mistral:7b');
   });
 
   test('should handle streaming errors gracefully', async ({ authenticatedPage }) => {
     // given
     await ollamaMocks.mockError(authenticatedPage.page);
-    await ollamaPage.goto();
-    await ollamaPage.openGenerateTab();
+    await generatePage.goto();
+    await generatePage.openGenerateTab();
+
     // when
-    await ollamaPage.generate('Test prompt');
+    await generatePage.generate('Test prompt');
 
     // then
-    await expect(ollamaPage.errorMessage).toBeVisible();
-    await expect(ollamaPage.generateButton).toBeEnabled();
+    await expect(generatePage.errorMessage).toBeVisible();
+    await expect(generatePage.generateButton).toBeEnabled();
   });
 
   test('should initialize with default temperature and allow adjustment', async ({ authenticatedPage }) => {
@@ -61,13 +62,13 @@ test.describe('Ollama Generate', () => {
     await ollamaMocks.mockSuccess(authenticatedPage.page, async (route) => {
       requestBody = JSON.parse(route.request().postData() || '{}');
     });
-    await ollamaPage.goto();
-    await ollamaPage.openGenerateTab();
+    await generatePage.goto();
+    await generatePage.openGenerateTab();
 
     // when
-    await expect(ollamaPage.temperatureSlider).toHaveValue('0.8');
-    await ollamaPage.setTemperature(0.3);
-    await ollamaPage.generate('Test prompt');
+    await expect(generatePage.temperatureSlider).toHaveValue('0.8');
+    await generatePage.setTemperature(0.3);
+    await generatePage.generate('Test prompt');
 
     // then
     expect(requestBody.options.temperature).toBe(0.3);

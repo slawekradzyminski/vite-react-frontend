@@ -3,13 +3,11 @@ import userEvent from '@testing-library/user-event';
 import { vi, describe, it, expect } from 'vitest';
 import { LlmPage } from '.';
 import { useOllamaChat } from '../../hooks/useOllamaChat';
-import { useOllama } from '../../hooks/useOllama';
+import { useOllamaGenerate } from '../../hooks/useOllamaGenerate';
 
-// Mock the hooks
 vi.mock('../../hooks/useOllamaChat');
-vi.mock('../../hooks/useOllama');
+vi.mock('../../hooks/useOllamaGenerate');
 
-// Mock ReactMarkdown
 vi.mock('react-markdown', () => ({
   default: ({ children }: { children: string }) => <div>{children}</div>
 }));
@@ -41,7 +39,7 @@ describe('LlmPage', () => {
       setTemperature: vi.fn()
     });
 
-    vi.mocked(useOllama).mockReturnValue({
+    vi.mocked(useOllamaGenerate).mockReturnValue({
       response: '',
       isGenerating: false,
       generate: vi.fn(),

@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { useOllama } from './useOllama';
+import { useOllamaGenerate } from './useOllamaGenerate';
 import { ollama } from '../lib/api';
 import { useToast } from './useToast';
 
@@ -24,7 +24,7 @@ describe('useOllama', () => {
 
   it('initializes with default state', () => {
     // when
-    const { result } = renderHook(() => useOllama());
+    const { result } = renderHook(() => useOllamaGenerate());
 
     // then
     expect(result.current.isGenerating).toBe(false);
@@ -35,7 +35,7 @@ describe('useOllama', () => {
 
   it('handles empty prompt', async () => {
     // given
-    const { result } = renderHook(() => useOllama());
+    const { result } = renderHook(() => useOllamaGenerate());
 
     // when
     await act(() => result.current.generate('  '));
@@ -59,7 +59,7 @@ describe('useOllama', () => {
     );
     vi.mocked(ollama.generate).mockResolvedValue(mockResponse);
 
-    const { result } = renderHook(() => useOllama());
+    const { result } = renderHook(() => useOllamaGenerate());
 
     // when
     await act(async () => {
@@ -80,7 +80,7 @@ describe('useOllama', () => {
     // given
     const error = new Error('API Error');
     vi.mocked(ollama.generate).mockRejectedValue(error);
-    const { result } = renderHook(() => useOllama());
+    const { result } = renderHook(() => useOllamaGenerate());
 
     // when
     await act(async () => {
@@ -101,7 +101,7 @@ describe('useOllama', () => {
     vi.mocked(ollama.generate).mockRejectedValue(error);
     const onError = vi.fn();
 
-    const { result } = renderHook(() => useOllama({ onError }));
+    const { result } = renderHook(() => useOllamaGenerate({ onError }));
 
     // when
     await act(async () => {
@@ -122,7 +122,7 @@ describe('useOllama', () => {
     );
     vi.mocked(ollama.generate).mockResolvedValue(mockResponse);
 
-    const { result } = renderHook(() => useOllama());
+    const { result } = renderHook(() => useOllamaGenerate());
 
     // when
     await act(async () => {
@@ -152,7 +152,7 @@ describe('useOllama', () => {
 
   test('should initialize with default temperature of 0.8', () => {
     // when
-    const { result } = renderHook(() => useOllama());
+    const { result } = renderHook(() => useOllamaGenerate());
 
     // then
     expect(result.current.temperature).toBe(0.8);
@@ -160,7 +160,7 @@ describe('useOllama', () => {
 
   test('should allow temperature adjustment', () => {
     // given
-    const { result } = renderHook(() => useOllama());
+    const { result } = renderHook(() => useOllamaGenerate());
 
     // when
     act(() => {
@@ -173,7 +173,7 @@ describe('useOllama', () => {
 
   test('should include temperature in generate request', async () => {
     // given
-    const { result } = renderHook(() => useOllama());
+    const { result } = renderHook(() => useOllamaGenerate());
     const customTemperature = 0.5;
 
     // when
@@ -194,7 +194,7 @@ describe('useOllama', () => {
 
   test('should use default temperature in generate request if not changed', async () => {
     // given
-    const { result } = renderHook(() => useOllama());
+    const { result } = renderHook(() => useOllamaGenerate());
 
     // when
     await act(async () => {

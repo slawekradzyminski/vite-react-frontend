@@ -4,7 +4,7 @@ import { GenerateRequestDto } from '../types/ollama';
 import { processSSEResponse } from '../lib/sse';
 import { ollama } from '../lib/api';
 
-interface OllamaResponse {
+interface OllamaGenerateResponse {
   model: string;
   response: string;
   done: boolean;
@@ -13,11 +13,11 @@ interface OllamaResponse {
   total_duration: number | null;
 }
 
-interface UseOllamaOptions {
+interface UseOllamaGenerateOptions {
   onError?: (error: Error) => void;
 }
 
-export function useOllama(options?: UseOllamaOptions) {
+export function useOllamaGenerate(options?: UseOllamaGenerateOptions) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [response, setResponse] = useState('');
   const [model, setModel] = useState('llama3.2:1b');
@@ -45,7 +45,7 @@ export function useOllama(options?: UseOllamaOptions) {
 
       const res = await ollama.generate(requestBody);
 
-      await processSSEResponse<OllamaResponse>(res, {
+      await processSSEResponse<OllamaGenerateResponse>(res, {
         onMessage: (data) => {
           if (data.response) {
             setResponse(prev => prev + data.response);
