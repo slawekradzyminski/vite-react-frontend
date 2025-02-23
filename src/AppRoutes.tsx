@@ -6,7 +6,7 @@ import { UsersPage } from './pages/users';
 import { EditUserPage } from './pages/edit-user';
 import { EmailPage } from './pages/email';
 import { QrCodePage } from './pages/qr';
-import { OllamaGeneratePage } from './pages/ollama-generate';
+import { LlmPage } from './pages/llm';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 export function AppRoutes() {
@@ -55,10 +55,10 @@ export function AppRoutes() {
         }
       />
       <Route
-        path="/ollama-generate"
+        path="/llm"
         element={
           <ProtectedRoute>
-            <OllamaGeneratePage />
+            <LlmPage />
           </ProtectedRoute>
         }
       />

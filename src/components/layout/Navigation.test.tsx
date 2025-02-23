@@ -60,7 +60,7 @@ describe('Navigation', () => {
   });
 
   // given
-  it('shows Ollama Generate link when authenticated', async () => {
+  it('shows LLM link when authenticated', async () => {
     // when
     localStorage.setItem('token', 'fake-token');
     vi.mocked(auth.me).mockResolvedValue({
