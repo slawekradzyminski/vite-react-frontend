@@ -3,6 +3,8 @@ import type { LoginRequest, LoginResponse, RegisterRequest, User, UserEditDTO } 
 import type { EmailDto, EmailResponse } from '../types/email';
 import type { CreateQrDto, QrCodeResponse } from '../types/qr';
 import type { GenerateRequestDto, ChatRequestDto } from '../types/ollama';
+import type { SystemPromptDto } from '../types/system-prompt';
+import type { PageDtoOrderDto } from '../types/order';
 
 const api = axios.create({
   baseURL: 'http://localhost:4001',
@@ -118,6 +120,21 @@ export const ollama = {
 
     return response;
   },
+};
+
+export const systemPrompt = {
+  get: (username: string) => 
+    api.get<SystemPromptDto>(`/users/${username}/system-prompt`),
+  
+  update: (username: string, systemPrompt: string) =>
+    api.put<SystemPromptDto>(`/users/${username}/system-prompt`, { systemPrompt }),
+};
+
+export const orders = {
+  getUserOrders: (page: number = 0, size: number = 10, status?: string) =>
+    api.get<PageDtoOrderDto>('/api/orders', {
+      params: { page, size, status },
+    }),
 };
 
 export default api; 

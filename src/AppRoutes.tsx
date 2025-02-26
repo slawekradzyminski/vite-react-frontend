@@ -7,6 +7,7 @@ import { EditUserPage } from './pages/edit-user';
 import { EmailPage } from './pages/email';
 import { QrCodePage } from './pages/qr';
 import { LlmPage } from './pages/llm';
+import { Profile } from './pages/profile';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 export function AppRoutes() {
@@ -59,6 +60,14 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <LlmPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         }
       />
