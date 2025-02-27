@@ -14,6 +14,7 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
   const {
     messages,
     isChatting,
+    isLoadingSystemPrompt,
     chat,
     model,
     setModel,
@@ -56,6 +57,15 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
       </div>
     );
   };
+
+  if (isLoadingSystemPrompt) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64">
+        <Spinner size="lg" />
+        <p className="mt-4 text-gray-600">Loading system prompt...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col">
