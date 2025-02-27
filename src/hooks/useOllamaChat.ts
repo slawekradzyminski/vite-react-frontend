@@ -1,24 +1,58 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useToast } from './useToast';
 import { ChatMessageDto, ChatRequestDto, ChatResponseDto } from '../types/ollama';
 import { processSSEResponse } from '../lib/sse';
-import { ollama } from '../lib/api';
+import { auth, ollama, systemPrompt } from '../lib/api';
 
 interface UseOllamaChatOptions {
   onError?: (error: Error) => void;
 }
+
+const DEFAULT_SYSTEM_PROMPT = 'You are a helpful AI assistant. You must use the conversation history to answer questions.';
 
 export function useOllamaChat(options?: UseOllamaChatOptions) {
   const { toast } = useToast();
   const [messages, setMessages] = useState<ChatMessageDto[]>([
     {
       role: 'system',
-      content: 'You are a helpful AI assistant. You must use the conversation history to answer questions.'
+      content: DEFAULT_SYSTEM_PROMPT
     }
   ]);
   const [model, setModel] = useState('llama3.2:1b');
   const [temperature, setTemperature] = useState(0.8);
   const [isChatting, setIsChatting] = useState(false);
+  const [isLoadingSystemPrompt, setIsLoadingSystemPrompt] = useState(true);
+  
+  // Fetch user's system prompt
+  useEffect(() => {
+    const fetchSystemPrompt = async () => {
+      try {
+        setIsLoadingSystemPrompt(true);
+        const userResponse = await auth.me();
+        const username = userResponse.data.username;
+        
+        if (username) {
+          const promptResponse = await systemPrompt.get(username);
+          const userPrompt = promptResponse.data.systemPrompt;
+          
+          if (userPrompt && userPrompt.trim()) {
+            setMessages([
+              {
+                role: 'system',
+                content: userPrompt
+              }
+            ]);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch system prompt:', error);
+      } finally {
+        setIsLoadingSystemPrompt(false);
+      }
+    };
+    
+    fetchSystemPrompt();
+  }, []);
   
   const chat = useCallback(
     async (userMessage: string) => {
@@ -107,6 +141,7 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
   return {
     messages,
     isChatting,
+    isLoadingSystemPrompt,
     chat,
     model,
     setModel,

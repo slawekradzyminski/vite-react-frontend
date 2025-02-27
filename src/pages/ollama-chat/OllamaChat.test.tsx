@@ -26,6 +26,7 @@ describe('OllamaChatPage', () => {
     vi.mocked(useOllamaChat).mockReturnValue({
       messages: defaultMessages as ChatMessageDto[],
       isChatting: false,
+      isLoadingSystemPrompt: false,
       chat: mockChat,
       model: 'llama3.2:1b',
       setModel: mockSetModel,
@@ -80,6 +81,7 @@ describe('OllamaChatPage', () => {
     vi.mocked(useOllamaChat).mockReturnValue({
       messages: defaultMessages as ChatMessageDto[],
       isChatting: true,
+      isLoadingSystemPrompt: false,
       chat: mockChat,
       model: 'llama3.2:1b',
       setModel: mockSetModel,
@@ -107,6 +109,7 @@ describe('OllamaChatPage', () => {
     vi.mocked(useOllamaChat).mockReturnValue({
       messages: messages as ChatMessageDto[],
       isChatting: false,
+      isLoadingSystemPrompt: false,
       chat: mockChat,
       model: 'llama3.2:1b',
       setModel: mockSetModel,
@@ -136,6 +139,28 @@ describe('OllamaChatPage', () => {
 
     // then
     expect(mockSetModel).toHaveBeenCalledWith('llama3.2:7b');
+  });
+
+  it('shows loading state while fetching system prompt', () => {
+    // given
+    vi.mocked(useOllamaChat).mockReturnValue({
+      messages: defaultMessages as ChatMessageDto[],
+      isChatting: false,
+      isLoadingSystemPrompt: true,
+      chat: mockChat,
+      model: 'llama3.2:1b',
+      setModel: mockSetModel,
+      setMessages: vi.fn(),
+      temperature: 0.8,
+      setTemperature: vi.fn()
+    });
+
+    // when
+    render(<OllamaChatPage />);
+
+    // then
+    expect(screen.getByText('Loading system prompt...')).toBeInTheDocument();
+    // Don't check for the input element as it's not rendered during loading
   });
 
   it('prevents sending empty messages', () => {

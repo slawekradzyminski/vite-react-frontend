@@ -4,6 +4,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { Profile } from './index';
 import { auth, systemPrompt, orders } from '../../lib/api';
+import { Role } from '../../types/auth';
+import { ToastProvider } from '../../components/ui/ToastProvider';
 
 // Mock the API modules
 vi.mock('../../lib/api', () => ({
@@ -19,6 +21,15 @@ vi.mock('../../lib/api', () => ({
     getUserOrders: vi.fn(),
   },
 }));
+
+// Mock useLocation for ToastProvider
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useLocation: () => ({ pathname: '/profile' }),
+  };
+});
 
 describe('Profile', () => {
   let queryClient: QueryClient;
@@ -43,8 +54,12 @@ describe('Profile', () => {
         email: 'test@example.com',
         firstName: 'Test',
         lastName: 'User',
-        roles: ['ROLE_CLIENT'],
+        roles: ['ROLE_CLIENT' as Role],
       },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: { headers: {} } as any,
     });
 
     // Mock systemPrompt.get
@@ -53,6 +68,10 @@ describe('Profile', () => {
         username: 'testuser',
         systemPrompt: 'Test system prompt',
       },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: { headers: {} } as any,
     });
 
     // Mock orders.getUserOrders
@@ -74,6 +93,10 @@ describe('Profile', () => {
         totalElements: 1,
         totalPages: 1,
       },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: { headers: {} } as any,
     });
   });
 
@@ -82,7 +105,9 @@ describe('Profile', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <MemoryRouter>
-          <Profile />
+          <ToastProvider>
+            <Profile />
+          </ToastProvider>
         </MemoryRouter>
       </QueryClientProvider>
     );
@@ -126,12 +151,18 @@ describe('Profile', () => {
         username: 'testuser',
         systemPrompt: 'Updated system prompt',
       },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: { headers: {} } as any,
     });
 
     render(
       <QueryClientProvider client={queryClient}>
         <MemoryRouter>
-          <Profile />
+          <ToastProvider>
+            <Profile />
+          </ToastProvider>
         </MemoryRouter>
       </QueryClientProvider>
     );
@@ -160,14 +191,20 @@ describe('Profile', () => {
         email: 'updated@example.com',
         firstName: 'Updated',
         lastName: 'User',
-        roles: ['ROLE_CLIENT'],
+        roles: ['ROLE_CLIENT' as Role],
       },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: { headers: {} } as any,
     });
 
     render(
       <QueryClientProvider client={queryClient}>
         <MemoryRouter>
-          <Profile />
+          <ToastProvider>
+            <Profile />
+          </ToastProvider>
         </MemoryRouter>
       </QueryClientProvider>
     );
@@ -206,12 +243,18 @@ describe('Profile', () => {
         totalElements: 0,
         totalPages: 0,
       },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: { headers: {} } as any,
     });
 
     render(
       <QueryClientProvider client={queryClient}>
         <MemoryRouter>
-          <Profile />
+          <ToastProvider>
+            <Profile />
+          </ToastProvider>
         </MemoryRouter>
       </QueryClientProvider>
     );

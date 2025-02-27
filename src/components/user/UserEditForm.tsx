@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import type { User, UserEditDTO } from '../../types/auth';
+import { userEditSchema, UserEditFormData } from '../../validators/user';
 
 interface UserEditFormProps {
   user: User;
@@ -11,72 +13,68 @@ interface UserEditFormProps {
 }
 
 export function UserEditForm({ user, onSave, isUpdating = false }: UserEditFormProps) {
-  const [email, setEmail] = useState(user.email);
-  const [firstName, setFirstName] = useState(user.firstName);
-  const [lastName, setLastName] = useState(user.lastName);
-  const [error, setError] = useState('');
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<UserEditFormData>({
+    resolver: zodResolver(userEditSchema),
+    defaultValues: {
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    },
+    mode: 'onSubmit',
+  });
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError('');
-    
+  const onSubmit = async (data: UserEditFormData) => {
     try {
-      await onSave({
-        email,
-        firstName,
-        lastName,
-      });
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to update user');
+      await onSave(data);
+    } catch {
+      // Error handling is done in the parent component
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-6 rounded-lg shadow">
       <div>
         <Label htmlFor="email">Email</Label>
         <Input
           id="email"
-          name="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
           className="mt-1"
+          error={errors.email?.message}
+          {...register('email')}
         />
+        {errors.email?.message && (
+          <p className="mt-1 text-sm text-red-600" role="alert">{errors.email.message}</p>
+        )}
       </div>
 
       <div>
         <Label htmlFor="firstName">First Name</Label>
         <Input
           id="firstName"
-          name="firstName"
-          type="text"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          required
           className="mt-1"
+          error={errors.firstName?.message}
+          {...register('firstName')}
         />
+        {errors.firstName?.message && (
+          <p className="mt-1 text-sm text-red-600" role="alert">{errors.firstName.message}</p>
+        )}
       </div>
 
       <div>
         <Label htmlFor="lastName">Last Name</Label>
         <Input
           id="lastName"
-          name="lastName"
-          type="text"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-          required
           className="mt-1"
+          error={errors.lastName?.message}
+          {...register('lastName')}
         />
+        {errors.lastName?.message && (
+          <p className="mt-1 text-sm text-red-600" role="alert">{errors.lastName.message}</p>
+        )}
       </div>
-
-      {error && (
-        <div className="text-sm text-red-600">
-          {error}
-        </div>
-      )}
 
       <div className="flex justify-end">
         <Button

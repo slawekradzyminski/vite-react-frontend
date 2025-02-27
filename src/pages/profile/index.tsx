@@ -1,17 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { auth, systemPrompt, orders } from '../../lib/api';
 import { UserEditForm } from '../../components/user/UserEditForm';
 import { Button } from '../../components/ui/button';
 import { Label } from '../../components/ui/label';
 import { Textarea } from '../../components/ui/textarea';
+import { useToast } from '../../hooks/useToast';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { systemPromptSchema, SystemPromptFormData } from '../../validators/user';
 import type { UserEditDTO } from '../../types/auth';
 import type { OrderDto } from '../../types/order';
 
 export function Profile() {
   const queryClient = useQueryClient();
-  const [promptText, setPromptText] = useState('');
-  const [promptError, setPromptError] = useState('');
+  const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState(0);
   const pageSize = 5;
 
@@ -21,15 +24,43 @@ export function Profile() {
     queryFn: () => auth.me(),
   });
 
-  // Fetch system prompt
-  const { isLoading: isLoadingPrompt } = useQuery({
-    queryKey: ['systemPrompt', currentUser?.data?.username],
-    queryFn: () => systemPrompt.get(currentUser?.data?.username),
-    enabled: !!currentUser?.data?.username,
-    onSuccess: (data) => {
-      setPromptText(data.data.systemPrompt || '');
+  const username = currentUser?.data?.username;
+
+  // Setup form for system prompt
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<SystemPromptFormData>({
+    resolver: zodResolver(systemPromptSchema),
+    defaultValues: {
+      systemPrompt: '',
     },
   });
+
+  // Fetch system prompt
+  const { isLoading: isLoadingPrompt } = useQuery({
+    queryKey: ['systemPrompt', username],
+    queryFn: async () => {
+      if (!username) throw new Error('Username is required');
+      return systemPrompt.get(username);
+    },
+    enabled: !!username,
+  });
+
+  // Effect to set form value when system prompt is loaded
+  useEffect(() => {
+    if (currentUser?.data?.username) {
+      systemPrompt.get(currentUser.data.username)
+        .then(response => {
+          setValue('systemPrompt', response.data.systemPrompt || '');
+        })
+        .catch(error => {
+          console.error('Failed to fetch system prompt:', error);
+        });
+    }
+  }, [currentUser?.data?.username, setValue]);
 
   // Fetch user orders
   const { data: userOrders, isLoading: isLoadingOrders } = useQuery({
@@ -40,29 +71,52 @@ export function Profile() {
 
   // Update system prompt mutation
   const updatePromptMutation = useMutation({
-    mutationFn: (newPrompt: string) => 
-      systemPrompt.update(currentUser?.data?.username, newPrompt),
+    mutationFn: async (newPrompt: string) => {
+      if (!username) throw new Error('Username is required');
+      return systemPrompt.update(username, newPrompt);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['systemPrompt'] });
-      setPromptError('');
+      toast({
+        variant: 'success',
+        title: 'Success',
+        description: 'System prompt updated successfully',
+      });
     },
     onError: (err: any) => {
-      setPromptError(err.response?.data?.message || 'Failed to update system prompt');
+      toast({
+        variant: 'error',
+        title: 'Error',
+        description: err.response?.data?.message || 'Failed to update system prompt',
+      });
     },
   });
 
   // Update user mutation
   const updateUserMutation = useMutation({
-    mutationFn: (data: UserEditDTO) => 
-      auth.updateUser(currentUser?.data?.username, data),
+    mutationFn: async (data: UserEditDTO) => {
+      if (!username) throw new Error('Username is required');
+      return auth.updateUser(username, data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['me'] });
+      toast({
+        variant: 'success',
+        title: 'Success',
+        description: 'User information updated successfully',
+      });
+    },
+    onError: (err: any) => {
+      toast({
+        variant: 'error',
+        title: 'Error',
+        description: err.response?.data?.message || 'Failed to update user information',
+      });
     },
   });
 
-  const handleSystemPromptSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    updatePromptMutation.mutate(promptText);
+  const onSystemPromptSubmit = (data: SystemPromptFormData) => {
+    updatePromptMutation.mutate(data.systemPrompt);
   };
 
   const handleUserUpdate = async (data: UserEditDTO) => {
@@ -103,23 +157,19 @@ export function Profile() {
             {isLoadingPrompt ? (
               <div className="text-center p-4">Loading prompt...</div>
             ) : (
-              <form onSubmit={handleSystemPromptSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow">
+              <form onSubmit={handleSubmit(onSystemPromptSubmit)} className="space-y-4 bg-white p-6 rounded-lg shadow">
                 <div>
                   <Label htmlFor="systemPrompt">Your System Prompt</Label>
                   <Textarea
                     id="systemPrompt"
-                    value={promptText}
-                    onChange={(e) => setPromptText(e.target.value)}
                     className="mt-1 h-32"
                     placeholder="Enter your system prompt here..."
+                    {...register('systemPrompt')}
                   />
+                  {errors.systemPrompt?.message && (
+                    <p className="mt-1 text-sm text-red-600" role="alert">{errors.systemPrompt.message}</p>
+                  )}
                 </div>
-
-                {promptError && (
-                  <div className="text-sm text-red-600">
-                    {promptError}
-                  </div>
-                )}
 
                 <div className="flex justify-end">
                   <Button

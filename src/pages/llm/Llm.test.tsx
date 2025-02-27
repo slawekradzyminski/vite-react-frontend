@@ -31,6 +31,7 @@ describe('LlmPage', () => {
     vi.mocked(useOllamaChat).mockReturnValue({
       messages: [],
       isChatting: false,
+      isLoadingSystemPrompt: false,
       chat: vi.fn(),
       model: 'llama3.2:1b',
       setModel: vi.fn(),
