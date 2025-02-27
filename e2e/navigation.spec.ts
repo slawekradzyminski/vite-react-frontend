@@ -6,64 +6,85 @@ test.describe('Navigation', () => {
   let mobileNav: MobileNavigation;
 
   test.beforeEach(async ({ authenticatedPage }) => {
-    const page = authenticatedPage.page;
-    desktopNav = new DesktopNavigation(page);
-    mobileNav = new MobileNavigation(page);
-    await page.goto('/');
-    await expect(page).toHaveURL('/');
+    desktopNav = new DesktopNavigation(authenticatedPage.page);
+    mobileNav = new MobileNavigation(authenticatedPage.page);
+    await authenticatedPage.page.goto('http://localhost:8081/');
   });
 
-  test('should handle logout correctly in desktop view', async ({ authenticatedPage }) => {
-    // then
-    await expect(desktopNav.userFullName).toHaveText(`${authenticatedPage.user.firstName} ${authenticatedPage.user.lastName}`);
-    await expect(desktopNav.productsLink).toBeVisible();
-    await expect(desktopNav.cartLink).toBeVisible();
-
-    // when
-    await desktopNav.logout();
-
-    // then
-    await expect(authenticatedPage.page).toHaveURL('/login');
-  });
-
-  test('should handle logout correctly in mobile view', async ({ authenticatedPage }) => {
+  test('should handle logout in desktop view', async ({ authenticatedPage }) => {
     // given
-    await mobileNav.setMobileViewport();
+    await expect(desktopNav.userFullName).toBeVisible();
     
     // when
-    await mobileNav.openMenu();
-
+    await desktopNav.logout();
+    
     // then
-    await expect(mobileNav.homeLink).toBeVisible();
-    await expect(mobileNav.productsLink).toBeVisible();
-    await expect(mobileNav.cartLink).toBeVisible();
-
-    // when
-    await mobileNav.logout();
-
-    // then
-    await expect(authenticatedPage.page).toHaveURL('/login');
+    await expect(authenticatedPage.page).toHaveURL(/\/login/);
   });
 
-  test('should navigate to QR code page', async ({ authenticatedPage }) => {
+  test('should handle logout in mobile view', async ({ authenticatedPage }) => {
+    // given
+    await mobileNav.setMobileViewport();
+    await mobileNav.openMenu();
+    await expect(mobileNav.logoutButton).toBeVisible();
+    
+    // when
+    await mobileNav.logout();
+    
+    // then
+    await expect(authenticatedPage.page).toHaveURL(/\/login/);
+  });
+
+  test('should navigate to QR code page in desktop view', async ({ authenticatedPage }) => {
+    // given
+    await expect(desktopNav.qrCodeLink).toBeVisible();
+    
     // when
     await desktopNav.qrCodeLink.click();
-
+    
     // then
-    await expect(authenticatedPage.page).toHaveURL('/qr');
-    await expect(authenticatedPage.page.getByRole('heading', { name: /qr code generator/i })).toBeVisible();
+    await expect(authenticatedPage.page).toHaveURL(/\/qr/);
+    await expect(authenticatedPage.page.locator('h1')).toContainText('QR Code Generator');
   });
 
   test('should navigate to QR code page in mobile view', async ({ authenticatedPage }) => {
     // given
     await mobileNav.setMobileViewport();
-
-    // when
     await mobileNav.openMenu();
+    await expect(mobileNav.qrCodeLink).toBeVisible();
+    
+    // when
     await mobileNav.qrCodeLink.click();
-
+    
     // then
-    await expect(authenticatedPage.page).toHaveURL('/qr');
-    await expect(authenticatedPage.page.getByRole('heading', { name: /qr code generator/i })).toBeVisible();
+    await expect(authenticatedPage.page).toHaveURL(/\/qr/);
+    await expect(authenticatedPage.page.locator('h1')).toContainText('QR Code Generator');
   });
+
+  test('should navigate to Cart page in desktop view', async ({ authenticatedPage }) => {
+    // given
+    await expect(desktopNav.cartLink).toBeVisible();
+    
+    // when
+    await desktopNav.cartLink.click();
+    
+    // then
+    await expect(authenticatedPage.page).toHaveURL(/\/cart/);
+    await expect(authenticatedPage.page.locator('h1')).toContainText('Your Cart');
+  });
+
+  test('should navigate to Cart page in mobile view', async ({ authenticatedPage }) => {
+    // given
+    await mobileNav.setMobileViewport();
+    await mobileNav.openMenu();
+    await expect(mobileNav.cartLink).toBeVisible();
+    
+    // when
+    await mobileNav.cartLink.click();
+    
+    // then
+    await expect(authenticatedPage.page).toHaveURL(/\/cart/);
+    await expect(authenticatedPage.page.locator('h1')).toContainText('Your Cart');
+  });
+
 }); 

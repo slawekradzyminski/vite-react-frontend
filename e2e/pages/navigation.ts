@@ -10,10 +10,10 @@ export class DesktopNavigation {
 
   constructor(protected readonly page: Page) {
     this.nav = page.locator('nav');
-    this.userFullName = page.locator('span.text-gray-500').filter({ hasText: /^[A-Za-z]+ [A-Za-z]+$/ });
-    this.productsLink = page.getByText('Products');
-    this.cartLink = page.getByText('Cart');
-    this.qrCodeLink = page.getByText('QR Code');
+    this.userFullName = page.locator('span.text-sm.text-gray-500');
+    this.productsLink = page.getByTestId('desktop-menu-products');
+    this.cartLink = page.getByTestId('desktop-cart-icon');
+    this.qrCodeLink = page.getByTestId('desktop-menu-qr-code');
     this.logoutButton = this.nav.getByRole('button', { name: 'Logout' });
   }
 
@@ -39,7 +39,7 @@ export class MobileNavigation {
     this.homeLink = page.getByTestId('mobile-menu-home');
     this.productsLink = page.getByTestId('mobile-menu-products');
     this.cartLink = page.getByTestId('mobile-menu-cart');
-    this.qrCodeLink = page.getByTestId('mobile-menu-qr code');
+    this.qrCodeLink = page.getByTestId('mobile-menu-qr-code');
     this.logoutButton = this.nav.getByRole('button', { name: 'Logout' });
   }
 
