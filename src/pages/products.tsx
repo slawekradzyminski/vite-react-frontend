@@ -6,11 +6,12 @@ export function ProductsPage() {
   
   const categories = [
     'Electronics',
-    'Clothing',
-    'Books',
+    'Computers',
+    'Gaming',
     'Home & Kitchen',
-    'Sports',
-    'Toys'
+    'Books',
+    'Wearables',
+    'Audio'
   ];
   
   return (
