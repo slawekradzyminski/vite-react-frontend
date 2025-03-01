@@ -28,11 +28,8 @@ export class OrderDetailsPage {
   }
 
   async cancelOrder() {
-    // Store dialog handler before clicking
-    const dialogPromise = this.page.waitForEvent('dialog');
+    this.page.on('dialog', dialog => dialog.accept());
     await this.cancelButton.click();
-    const dialog = await dialogPromise;
-    await dialog.accept();
   }
 
   async updateOrderStatus(status: string) {

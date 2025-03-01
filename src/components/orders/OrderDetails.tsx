@@ -3,11 +3,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orders, auth } from '../../lib/api';
 import { OrderStatus } from '../../types/order';
 import { Role } from '../../types/auth';
+import { useState } from 'react';
+import { useToast } from '../../hooks/useToast';
 
 export const OrderDetails = () => {
   const { id } = useParams<{ id: string }>();
   const orderId = parseInt(id || '0', 10);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   // Fetch order details
   const { data: orderData, isLoading: isLoadingOrder } = useQuery({
@@ -25,11 +28,26 @@ export const OrderDetails = () => {
   const isAdmin = userData?.data?.roles?.includes(Role.ADMIN);
   const order = orderData?.data;
 
+  // State to track the selected status in the dropdown
+  const [selectedStatus, setSelectedStatus] = useState<OrderStatus | null>(null);
+
   // Cancel order mutation
   const cancelOrderMutation = useMutation({
     mutationFn: (orderId: number) => orders.cancelOrder(orderId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['order', orderId] });
+      toast({
+        title: 'Order Cancelled',
+        description: `Order #${orderId} has been cancelled successfully.`,
+        variant: 'success',
+      });
+    },
+    onError: () => {
+      toast({
+        title: 'Error',
+        description: 'Failed to cancel the order. Please try again.',
+        variant: 'error',
+      });
     },
   });
 
@@ -37,8 +55,21 @@ export const OrderDetails = () => {
   const updateStatusMutation = useMutation({
     mutationFn: ({ orderId, status }: { orderId: number; status: OrderStatus }) => 
       orders.updateOrderStatus(orderId, status),
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['order', orderId] });
+      toast({
+        title: 'Status Updated',
+        description: `Order status has been updated to ${variables.status}.`,
+        variant: 'success',
+      });
+      setSelectedStatus(null);
+    },
+    onError: () => {
+      toast({
+        title: 'Error',
+        description: 'Failed to update order status. Please try again.',
+        variant: 'error',
+      });
     },
   });
 
@@ -50,7 +81,13 @@ export const OrderDetails = () => {
 
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newStatus = e.target.value as OrderStatus;
-    updateStatusMutation.mutate({ orderId, status: newStatus });
+    setSelectedStatus(newStatus);
+  };
+  
+  const handleUpdateStatus = () => {
+    if (selectedStatus && selectedStatus !== order?.status) {
+      updateStatusMutation.mutate({ orderId, status: selectedStatus });
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -76,6 +113,11 @@ export const OrderDetails = () => {
 
   if (!order) {
     return <div className="text-center py-8">Order not found</div>;
+  }
+
+  // Initialize selectedStatus with current order status if it's null
+  if (selectedStatus === null) {
+    setSelectedStatus(order.status);
   }
 
   return (
@@ -129,7 +171,7 @@ export const OrderDetails = () => {
         {isAdmin && (
           <div className="flex items-center space-x-2 ml-auto">
             <select
-              value={order.status}
+              value={selectedStatus || order.status}
               onChange={handleStatusChange}
               className="border rounded p-2"
               disabled={updateStatusMutation.isPending}
@@ -141,8 +183,9 @@ export const OrderDetails = () => {
               <option value="CANCELLED">Cancelled</option>
             </select>
             <button
+              onClick={handleUpdateStatus}
               className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-              disabled={updateStatusMutation.isPending}
+              disabled={updateStatusMutation.isPending || selectedStatus === order.status}
             >
               {updateStatusMutation.isPending ? 'Updating...' : 'Update'}
             </button>

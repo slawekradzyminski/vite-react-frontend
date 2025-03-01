@@ -111,9 +111,11 @@ describe('CartSummary', () => {
   
   it('shows Clearing... text when clearing cart', async () => {
     // given
-    vi.mocked(cart.clearCart).mockImplementation(() => 
-      new Promise(resolve => setTimeout(() => resolve({} as any), 100))
-    );
+    let resolvePromise!: (value: any) => void;
+    const clearCartPromise = new Promise(resolve => {
+      resolvePromise = resolve;
+    });
+    vi.mocked(cart.clearCart).mockImplementation(() => clearCartPromise as Promise<any>);
     renderWithProviders(<CartSummary cartData={mockCartData} onUpdate={mockOnUpdate} />);
     
     // when
@@ -122,8 +124,14 @@ describe('CartSummary', () => {
 
     // then
     expect(screen.getByText("Clearing...")).toBeInTheDocument();
+    resolvePromise({});
+    
+    // Wait for the component to update after the promise resolves
     await waitFor(() => {
+      expect(screen.queryByText("Clearing...")).not.toBeInTheDocument();
+      expect(screen.getByText("Clear Cart")).toBeInTheDocument();
       expect(cart.clearCart).toHaveBeenCalled();
+      expect(mockOnUpdate).toHaveBeenCalled();
     });
   });
 }); 

@@ -1,5 +1,5 @@
 import { test as base, Page } from '@playwright/test';
-import { createAuthenticatedUser, createAdminUser, cleanupUser } from '../utils/auth.utils';
+import { createAuthenticatedUser, createAdminUser, cleanupUser, createClientUser } from '../utils/auth.utils';
 import { User } from '../types/user';
 
 type AuthenticatedPageFixtures = {
@@ -9,6 +9,11 @@ type AuthenticatedPageFixtures = {
         token: string;
     };
     adminPage: {
+        page: Page;
+        user: User;
+        token: string;
+    };
+    clientPage: {
         page: Page;
         user: User;
         token: string;
@@ -34,11 +39,31 @@ export const test = base.extend<AuthenticatedPageFixtures>({
     },
     
     adminPage: async ({ browser }, use) => {
-        // Create a new context for admin user to avoid conflicts with regular user
         const context = await browser.newContext();
         const page = await context.newPage();
         
         const { user, token } = await createAdminUser(context.request);
+        
+        await context.addInitScript(token => {
+            window.localStorage.setItem('token', token);
+        }, token);
+        
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        await use({ 
+            page,
+            user,
+            token
+        });
+
+        await cleanupUser(context.request, user.username, token);
+        await context.close();
+    },
+
+    clientPage: async ({ browser }, use) => {
+        const context = await browser.newContext();
+        const page = await context.newPage();
+        
+        const { user, token } = await createClientUser(context.request);
         
         await context.addInitScript(token => {
             window.localStorage.setItem('token', token);

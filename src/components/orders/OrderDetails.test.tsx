@@ -5,8 +5,8 @@ import { orders, auth } from '../../lib/api';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { OrderStatus } from '../../types/order';
+import { ToastContext } from '../../hooks/useToast';
 
-// Mock the API
 vi.mock('../../lib/api', () => ({
   orders: {
     getOrderById: vi.fn().mockResolvedValue({
@@ -51,7 +51,6 @@ vi.mock('../../lib/api', () => ({
   },
 }));
 
-// Mock react-router-dom hooks
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
@@ -63,6 +62,7 @@ vi.mock('react-router-dom', async () => {
 
 describe('OrderDetails', () => {
   let queryClient: QueryClient;
+  const mockToast = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -78,9 +78,11 @@ describe('OrderDetails', () => {
   const renderWithProviders = () => {
     return render(
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <OrderDetails />
-        </BrowserRouter>
+        <ToastContext.Provider value={{ toast: mockToast }}>
+          <BrowserRouter>
+            <OrderDetails />
+          </BrowserRouter>
+        </ToastContext.Provider>
       </QueryClientProvider>
     );
   };
@@ -121,7 +123,6 @@ describe('OrderDetails', () => {
     // given
     global.confirm = vi.fn().mockReturnValue(true);
     renderWithProviders();
-    
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /cancel order/i })).toBeInTheDocument();
     });
@@ -133,12 +134,16 @@ describe('OrderDetails', () => {
     await waitFor(() => {
       expect(global.confirm).toHaveBeenCalled();
       expect(orders.cancelOrder).toHaveBeenCalledWith(1);
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Order Cancelled',
+        description: 'Order #1 has been cancelled successfully.',
+        variant: 'success',
+      });
     });
   });
 
   it('does not show cancel button for non-pending orders', async () => {
     // given
-    // Mock a different order status
     (orders.getOrderById as jest.Mock).mockResolvedValueOnce({
       data: {
         id: 1,
@@ -167,6 +172,7 @@ describe('OrderDetails', () => {
       }
     });
     
+    // when
     renderWithProviders();
 
     // then
@@ -177,7 +183,27 @@ describe('OrderDetails', () => {
 
   it('shows admin controls for admin users', async () => {
     // given
-    // Mock admin user
+    (auth.me as jest.Mock).mockResolvedValueOnce({
+      data: {
+        id: 1,
+        username: 'admin',
+        email: 'admin@example.com',
+        roles: ['ROLE_ADMIN'],
+      }
+    });
+    
+    // when
+    renderWithProviders();
+
+    // then
+    await waitFor(() => {
+      expect(screen.getByRole('combobox')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /update/i })).toBeInTheDocument();
+    });
+  });
+
+  it('does not update order status when admin changes status without clicking update', async () => {
+    // given
     (auth.me as jest.Mock).mockResolvedValueOnce({
       data: {
         id: 1,
@@ -188,17 +214,22 @@ describe('OrderDetails', () => {
     });
     
     renderWithProviders();
+    
+    await waitFor(() => {
+      expect(screen.getByRole('combobox')).toBeInTheDocument();
+    });
+
+    // when
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'SHIPPED' } });
 
     // then
     await waitFor(() => {
-      expect(screen.getByRole('combobox')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /update/i })).toBeInTheDocument();
+      expect(orders.updateOrderStatus).not.toHaveBeenCalled();
     });
   });
 
-  it('updates order status when admin changes status', async () => {
+  it('updates order status when admin changes status and clicks update', async () => {
     // given
-    // Mock admin user
     (auth.me as jest.Mock).mockResolvedValueOnce({
       data: {
         id: 1,
@@ -221,6 +252,65 @@ describe('OrderDetails', () => {
     // then
     await waitFor(() => {
       expect(orders.updateOrderStatus).toHaveBeenCalledWith(1, 'SHIPPED');
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Status Updated',
+        description: 'Order status has been updated to SHIPPED.',
+        variant: 'success',
+      });
+    });
+  });
+
+  it('disables update button when selected status is the same as current status', async () => {
+    // given
+    (auth.me as jest.Mock).mockResolvedValueOnce({
+      data: {
+        id: 1,
+        username: 'admin',
+        email: 'admin@example.com',
+        roles: ['ROLE_ADMIN'],
+      }
+    });
+    
+    renderWithProviders();
+    
+    // then
+    await waitFor(() => {
+      const updateButton = screen.getByRole('button', { name: /update/i });
+      expect(updateButton).toBeDisabled();
+    });
+  });
+
+  it('shows toast error when update status fails', async () => {
+    // given
+    (auth.me as jest.Mock).mockResolvedValueOnce({
+      data: {
+        id: 1,
+        username: 'admin',
+        email: 'admin@example.com',
+        roles: ['ROLE_ADMIN'],
+      }
+    });
+    
+    (orders.updateOrderStatus as jest.Mock).mockRejectedValueOnce(new Error('Update failed'));
+    
+    renderWithProviders();
+    
+    await waitFor(() => {
+      expect(screen.getByRole('combobox')).toBeInTheDocument();
+    });
+
+    // when
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'SHIPPED' } });
+    fireEvent.click(screen.getByRole('button', { name: /update/i }));
+
+    // then
+    await waitFor(() => {
+      expect(orders.updateOrderStatus).toHaveBeenCalledWith(1, 'SHIPPED');
+      expect(mockToast).toHaveBeenCalledWith({
+        title: 'Error',
+        description: 'Failed to update order status. Please try again.',
+        variant: 'error',
+      });
     });
   });
 }); 
