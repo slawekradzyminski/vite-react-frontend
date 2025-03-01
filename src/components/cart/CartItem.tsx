@@ -9,20 +9,28 @@ interface CartItemProps {
 }
 
 export function CartItem({ item, onUpdate }: CartItemProps) {
+  const safeItem = {
+    productId: item?.productId || 0,
+    quantity: item?.quantity || 1,
+    productName: item?.productName || 'Unknown Product',
+    unitPrice: item?.unitPrice || 0,
+    totalPrice: item?.totalPrice || 0
+  };
+
   const [isUpdating, setIsUpdating] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
-  const [quantity, setQuantity] = useState(item.quantity);
+  const [quantity, setQuantity] = useState(safeItem.quantity);
 
   const handleQuantityChange = async () => {
-    if (quantity === item.quantity) return;
+    if (quantity === safeItem.quantity) return;
     
     setIsUpdating(true);
     try {
-      await cart.updateCartItem(item.productId, { quantity });
+      await cart.updateCartItem(safeItem.productId, { quantity });
       onUpdate();
     } catch (error) {
       console.error('Failed to update cart item:', error);
-      setQuantity(item.quantity); // Reset to original quantity on error
+      setQuantity(safeItem.quantity);   
     } finally {
       setIsUpdating(false);
     }
@@ -31,7 +39,7 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
   const handleRemove = async () => {
     setIsRemoving(true);
     try {
-      await cart.removeFromCart(item.productId);
+      await cart.removeFromCart(safeItem.productId);
       onUpdate();
     } catch (error) {
       console.error('Failed to remove item from cart:', error);
@@ -43,11 +51,11 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 border-b">
       <div className="flex items-center mb-3 sm:mb-0">
-        <Link to={`/products/${item.productId}`} className="text-blue-600 hover:underline font-medium">
-          {item.productName}
+        <Link to={`/products/${safeItem.productId}`} className="text-blue-600 hover:underline font-medium">
+          {safeItem.productName}
         </Link>
         <span className="ml-2 text-gray-500">
-          ${item.unitPrice.toFixed(2)} each
+          ${safeItem.unitPrice.toFixed(2)} each
         </span>
       </div>
       
@@ -70,7 +78,7 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
           </button>
         </div>
         
-        {quantity !== item.quantity && (
+        {quantity !== safeItem.quantity && (
           <button
             className="text-blue-600 hover:text-blue-800 mr-4"
             onClick={handleQuantityChange}
@@ -81,7 +89,7 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
         )}
         
         <div className="text-right min-w-[80px]">
-          ${item.totalPrice.toFixed(2)}
+          ${safeItem.totalPrice.toFixed(2)}
         </div>
         
         <button

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Product } from '../../types/product';
 import { cart } from '../../lib/api';
 import { CartItemDto } from '../../types/cart';
+import { useToast } from '../../hooks/useToast';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ProductCardProps {
   product: Product;
@@ -11,6 +13,8 @@ interface ProductCardProps {
 export function ProductCard({ product, onAddToCart }: ProductCardProps) {
   const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleAddToCart = async () => {
     if (onAddToCart) {
@@ -25,8 +29,22 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
         quantity
       };
       await cart.addToCart(cartItem);
+      
+      // Show success toast
+      toast({
+        variant: 'success',
+        title: 'Added to cart',
+        description: `${quantity} × ${product.name} added to your cart`
+      });
+      
+      // Invalidate cart query to update cart count
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
     } catch (error) {
       console.error('Failed to add item to cart:', error);
+      toast({
+        variant: 'error',
+        description: 'Failed to add item to cart. Please try again.'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -62,7 +80,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
             </button>
           </div>
           <button
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+            className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors disabled:bg-gray-400 flex items-center justify-center min-w-[120px] font-medium shadow-sm"
             onClick={handleAddToCart}
             disabled={isLoading || product.stockQuantity < 1}
           >

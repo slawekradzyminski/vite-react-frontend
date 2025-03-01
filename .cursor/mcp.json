@@ -1,0 +1,20 @@
+{
+  "servers": {
+    "frontend": {
+      "url": "http://localhost:8081",
+      "type": "vite",
+      "hotReload": true,
+      "description": "Frontend Vite server with hot reload"
+    }
+  },
+  "playwright": {
+    "enabled": true,
+    "baseUrl": "http://localhost:8081",
+    "headless": false,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "screenshotOnFailure": true
+  }
+} 

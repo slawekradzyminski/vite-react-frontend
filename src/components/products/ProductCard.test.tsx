@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { ProductCard } from './ProductCard';
 import { Product } from '../../types/product';
 import { cart } from '../../lib/api';
-import { BrowserRouter } from 'react-router-dom';
+import { renderWithProviders } from '../../test/test-utils';
 
 // Mock the cart API
 vi.mock('../../lib/api', () => ({
@@ -31,11 +31,7 @@ describe('ProductCard', () => {
 
   it('renders product information correctly', () => {
     // given
-    render(
-      <BrowserRouter>
-        <ProductCard product={mockProduct} />
-      </BrowserRouter>
-    );
+    renderWithProviders(<ProductCard product={mockProduct} />);
 
     // then
     expect(screen.getByText('Test Product')).toBeInTheDocument();
@@ -50,11 +46,7 @@ describe('ProductCard', () => {
     const outOfStockProduct = { ...mockProduct, stockQuantity: 0 };
     
     // when
-    render(
-      <BrowserRouter>
-        <ProductCard product={outOfStockProduct} />
-      </BrowserRouter>
-    );
+    renderWithProviders(<ProductCard product={outOfStockProduct} />);
 
     // then
     expect(screen.getByText('Out of stock')).toBeInTheDocument();
@@ -63,11 +55,7 @@ describe('ProductCard', () => {
 
   it('adds product to cart when Add to Cart button is clicked', async () => {
     // given
-    render(
-      <BrowserRouter>
-        <ProductCard product={mockProduct} />
-      </BrowserRouter>
-    );
+    renderWithProviders(<ProductCard product={mockProduct} />);
 
     // when
     fireEvent.click(screen.getByRole('button', { name: 'Add to Cart' }));
@@ -83,11 +71,7 @@ describe('ProductCard', () => {
 
   it('disables the Add to Cart button while adding to cart', async () => {
     // given
-    render(
-      <BrowserRouter>
-        <ProductCard product={mockProduct} />
-      </BrowserRouter>
-    );
+    renderWithProviders(<ProductCard product={mockProduct} />);
     
     // when
     fireEvent.click(screen.getByRole('button', { name: 'Add to Cart' }));

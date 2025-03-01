@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Menu, X, ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
-import { auth } from '../../lib/api';
+import { auth, cart } from '../../lib/api';
 import { Button } from '../ui/button';
 import { Role } from '../../types/auth';
 
@@ -17,6 +17,16 @@ export function Navigation() {
     retry: false,
     enabled: !!localStorage.getItem('token'),
   });
+
+  // Fetch cart data to display item count
+  const { data: cartData } = useQuery({
+    queryKey: ['cart'],
+    queryFn: cart.getCart,
+    retry: false,
+    enabled: !!localStorage.getItem('token'),
+  });
+
+  const cartItemCount = cartData?.data?.totalItems || 0;
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -90,9 +100,14 @@ export function Navigation() {
           <div className="flex items-center">
             {user?.data ? (
               <>
-                {/* Cart icon */}
+                {/* Cart icon with item count */}
                 <Link to="/cart" className="mr-4 relative" data-testid="desktop-cart-icon">
                   <ShoppingCart className="h-6 w-6 text-gray-500 hover:text-gray-900" />
+                  {cartItemCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-indigo-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                      {cartItemCount}
+                    </span>
+                  )}
                 </Link>
                 
                 {/* Desktop user info */}
@@ -147,14 +162,19 @@ export function Navigation() {
       {isOpen && user?.data && (
         <div className="sm:hidden" data-testid="mobile-menu">
           <div className="pt-2 pb-3 space-y-1">
-            {/* Cart link */}
+            {/* Cart link with item count */}
             <Link
               to="/cart"
-              className="block pl-3 pr-4 py-2 text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+              className="block pl-3 pr-4 py-2 text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 flex items-center"
               onClick={() => setIsOpen(false)}
               data-testid="mobile-menu-cart"
             >
               Cart
+              {cartItemCount > 0 && (
+                <span className="ml-2 bg-indigo-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {cartItemCount}
+                </span>
+              )}
             </Link>
             
             {/* Authenticated menu items */}

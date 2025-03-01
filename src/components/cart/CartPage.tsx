@@ -1,22 +1,110 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { cart } from '../../lib/api';
+import { cart, products } from '../../lib/api';
 import { CartItem } from './CartItem';
 import { CartSummary } from './CartSummary';
+import { Cart as CartType, CartItem as CartItemType } from '../../types/cart';
+
+interface RawCartResponse {
+  items?: Array<{
+    productId: number;
+    productName?: string;
+    name?: string;
+    quantity: number;
+    unitPrice?: number;
+    price?: number;
+    totalPrice?: number;
+  }>;
+  totalPrice?: number;
+  totalAmount?: number;
+  username?: string;
+  totalItems?: number;
+}
 
 export function CartPage() {
   const [isUpdating, setIsUpdating] = useState(false);
+  const [enrichedItems, setEnrichedItems] = useState<CartItemType[]>([]);
   
-  const { data: cartData, isLoading, error, refetch } = useQuery({
+  const { data: cartResponse, isLoading, error, refetch } = useQuery({
     queryKey: ['cart'],
     queryFn: cart.getCart,
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
+  
+  const rawData = cartResponse?.data as RawCartResponse;
+  
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      if (!rawData?.items) return;
+      
+      const needsEnrichment = rawData.items.some(
+        item => !item.productName && !item.name && !item.unitPrice && !item.price
+      );
+      
+      if (!needsEnrichment) {
+        const normalizedItems: CartItemType[] = (rawData.items || []).map(item => ({
+          productId: item.productId,
+          productName: item.productName || item.name || 'Unknown Product',
+          quantity: item.quantity,
+          unitPrice: item.unitPrice || item.price || 0,
+          totalPrice: item.totalPrice || (item.quantity * (item.unitPrice || item.price || 0)) || 0
+        }));
+        
+        setEnrichedItems(normalizedItems);
+        return;
+      }
+      
+      const enrichedItemsPromises = rawData.items.map(async (item) => {
+        try {
+          if (!item.productName && !item.name && !item.unitPrice && !item.price) {
+            const productResponse = await products.getProductById(item.productId);
+            const productData = productResponse.data;
+            
+            return {
+              productId: item.productId,
+              productName: productData.name || 'Unknown Product',
+              quantity: item.quantity,
+              unitPrice: productData.price || 0,
+              totalPrice: item.quantity * (productData.price || 0)
+            };
+          } else {
+            return {
+              productId: item.productId,
+              productName: item.productName || item.name || 'Unknown Product',
+              quantity: item.quantity,
+              unitPrice: item.unitPrice || item.price || 0,
+              totalPrice: item.totalPrice || (item.quantity * (item.unitPrice || item.price || 0)) || 0
+            };
+          }
+        } catch (error) {
+          console.error(`Error fetching details for product ${item.productId}:`, error);
+          return {
+            productId: item.productId,
+            productName: 'Unknown Product',
+            quantity: item.quantity,
+            unitPrice: 0,
+            totalPrice: 0
+          };
+        }
+      });
+      
+      const resolvedItems = await Promise.all(enrichedItemsPromises);
+      setEnrichedItems(resolvedItems);
+    };
+    
+    if (rawData?.items) {
+      fetchProductDetails();
+    }
+  }, [rawData]);
   
   const handleCartUpdate = async () => {
     setIsUpdating(true);
     try {
       await refetch();
+    } catch (error) {
+      console.error('Error refetching cart:', error);
     } finally {
       setIsUpdating(false);
     }
@@ -40,9 +128,14 @@ export function CartPage() {
     );
   }
   
-  const { items = [], totalPrice = 0 } = cartData?.data || {};
-  const isEmpty = items.length === 0;
-  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+  const safeCartData: CartType = {
+    items: enrichedItems,
+    totalPrice: rawData?.totalPrice || rawData?.totalAmount || 0,
+    username: rawData?.username || '',
+    totalItems: rawData?.totalItems || enrichedItems.reduce((sum, item) => sum + item.quantity, 0)
+  };
+  
+  const isEmpty = safeCartData.items.length === 0;
   
   return (
     <div className="max-w-6xl mx-auto p-4">
@@ -65,7 +158,7 @@ export function CartPage() {
               <h2 className="text-xl font-semibold mb-4">Cart Items</h2>
               
               <div className="space-y-6">
-                {items.map((item) => (
+                {safeCartData.items.map((item) => (
                   <CartItem 
                     key={item.productId} 
                     item={item} 
@@ -78,12 +171,7 @@ export function CartPage() {
           
           <div className="lg:col-span-1">
             <CartSummary 
-              cartData={{ 
-                items, 
-                totalPrice, 
-                username: cartData?.data?.username || '',
-                totalItems
-              }} 
+              cartData={safeCartData} 
               onUpdate={handleCartUpdate} 
             />
             

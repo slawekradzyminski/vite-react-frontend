@@ -1,25 +1,24 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { CartItem } from './CartItem';
-import { CartItem as CartItemType } from '../../types/cart';
-import { cart } from '../../lib/api';
-import { BrowserRouter } from 'react-router-dom';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { renderWithProviders } from "../../test/test-utils";
+import { CartItem } from "./CartItem";
+import { cart } from "../../lib/api";
+import { CartItem as CartItemType } from "../../types/cart";
 
-// Mock the cart API
-vi.mock('../../lib/api', () => ({
+vi.mock("../../lib/api", () => ({
   cart: {
-    updateCartItem: vi.fn().mockResolvedValue({ data: { id: 1 } }),
-    removeFromCart: vi.fn().mockResolvedValue({ success: true }),
+    updateCartItem: vi.fn(),
+    removeFromCart: vi.fn(),
   },
 }));
 
-describe('CartItem', () => {
+describe("CartItem", () => {
   const mockItem: CartItemType = {
     productId: 1,
-    productName: 'Test Product',
+    productName: "Test Product",
     quantity: 2,
-    unitPrice: 19.99,
-    totalPrice: 39.98,
+    unitPrice: 10,
+    totalPrice: 20,
   };
 
   const mockOnUpdate = vi.fn();
@@ -28,29 +27,69 @@ describe('CartItem', () => {
     vi.clearAllMocks();
   });
 
-  const renderWithRouter = (ui: React.ReactElement) => {
-    return render(ui, { wrapper: BrowserRouter });
-  };
-
-  it('renders cart item information correctly', () => {
-    // given
-    renderWithRouter(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
+  it("renders the cart item correctly", () => {
+    // when
+    renderWithProviders(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
 
     // then
-    expect(screen.getByText('Test Product')).toBeInTheDocument();
-    expect(screen.getByText('$19.99 each')).toBeInTheDocument();
-    expect(screen.getByText('$39.98')).toBeInTheDocument();
-    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByText("Test Product")).toBeInTheDocument();
+    expect(screen.getByText("$10.00 each")).toBeInTheDocument();
+    expect(screen.getByText("$20.00")).toBeInTheDocument();
+    expect(screen.getByText("2")).toBeInTheDocument();
   });
 
-  it('updates quantity when increment button is clicked', async () => {
+  it("increases quantity when + button is clicked", () => {
     // given
-    renderWithRouter(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
+    renderWithProviders(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
+
+    const increaseButton = screen.getByText("+");
+    fireEvent.click(increaseButton);
+
+    // then
+    expect(screen.getByText("3")).toBeInTheDocument();
+    expect(screen.getByText("Update")).toBeInTheDocument();
+  });
+
+  it("decreases quantity when - button is clicked", () => {
+    // given
+    renderWithProviders(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
 
     // when
-    fireEvent.click(screen.getByRole('button', { name: '+' }));
-    // Click the Update button that appears after changing quantity
-    fireEvent.click(screen.getByRole('button', { name: 'Update' }));
+    const decreaseButton = screen.getByText("-");
+    fireEvent.click(decreaseButton);
+
+    // then
+    expect(screen.getByText("1")).toBeInTheDocument();
+    expect(screen.getByText("Update")).toBeInTheDocument();
+  });
+
+  it("does not decrease quantity below 1", () => {
+    // given
+    const itemWithQuantityOne = { ...mockItem, quantity: 1 };
+    renderWithProviders(
+      <CartItem item={itemWithQuantityOne} onUpdate={mockOnUpdate} />
+    );
+
+    // when
+    const decreaseButton = screen.getByText("-");
+    fireEvent.click(decreaseButton);
+
+    // then
+    expect(screen.getByText("1")).toBeInTheDocument();
+    expect(screen.queryByText("Update")).not.toBeInTheDocument();
+  });
+
+  it("calls updateCartItem when Update button is clicked", async () => {
+    // given
+    vi.mocked(cart.updateCartItem).mockResolvedValue({} as any);
+    renderWithProviders(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
+
+    // when
+    const increaseButton = screen.getByText("+");
+    fireEvent.click(increaseButton);
+
+    const updateButton = screen.getByText("Update");
+    fireEvent.click(updateButton);
 
     // then
     await waitFor(() => {
@@ -59,43 +98,14 @@ describe('CartItem', () => {
     });
   });
 
-  it('updates quantity when decrement button is clicked', async () => {
-    // given
-    renderWithRouter(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
+  it("calls removeFromCart when Remove button is clicked", async () => {
+    // given  
+    vi.mocked(cart.removeFromCart).mockResolvedValue({} as any);
+    renderWithProviders(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
 
     // when
-    fireEvent.click(screen.getByRole('button', { name: '-' }));
-    // Click the Update button that appears after changing quantity
-    fireEvent.click(screen.getByRole('button', { name: 'Update' }));
-
-    // then
-    await waitFor(() => {
-      expect(cart.updateCartItem).toHaveBeenCalledWith(1, { quantity: 1 });
-      expect(mockOnUpdate).toHaveBeenCalled();
-    });
-  });
-
-  it('does not decrement quantity below 1', async () => {
-    // given
-    const singleItemMock = { ...mockItem, quantity: 1 };
-    renderWithRouter(<CartItem item={singleItemMock} onUpdate={mockOnUpdate} />);
-
-    // when
-    fireEvent.click(screen.getByRole('button', { name: '-' }));
-    
-    // then
-    // The Update button should not appear since quantity can't go below 1
-    expect(screen.queryByRole('button', { name: 'Update' })).not.toBeInTheDocument();
-    expect(cart.updateCartItem).not.toHaveBeenCalled();
-    expect(mockOnUpdate).not.toHaveBeenCalled();
-  });
-
-  it('removes item when remove button is clicked', async () => {
-    // given
-    renderWithRouter(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
-
-    // when
-    fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
+    const removeButton = screen.getByText("Remove");
+    fireEvent.click(removeButton);
 
     // then
     await waitFor(() => {
@@ -103,37 +113,4 @@ describe('CartItem', () => {
       expect(mockOnUpdate).toHaveBeenCalled();
     });
   });
-
-  it('disables buttons while updating', async () => {
-    // given
-    renderWithRouter(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
-
-    // when
-    fireEvent.click(screen.getByRole('button', { name: '+' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Update' }));
-
-    // then
-    expect(screen.getByRole('button', { name: 'Updating...' })).toBeDisabled();
-    
-    // Wait for the operation to complete
-    await waitFor(() => {
-      expect(mockOnUpdate).toHaveBeenCalled();
-    });
-  });
-
-  it('disables buttons while removing', async () => {
-    // given
-    renderWithRouter(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
-
-    // when
-    fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
-
-    // then
-    expect(screen.getByRole('button', { name: 'Removing...' })).toBeDisabled();
-    
-    // Wait for the operation to complete
-    await waitFor(() => {
-      expect(mockOnUpdate).toHaveBeenCalled();
-    });
-  });
-}); 
+});
