@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, Navigate } from 'react-router-dom';
 import { cart } from '../../lib/api';
 import { CheckoutForm } from './CheckoutForm';
-import { CartItem } from '../cart/CartItem';
 
 export function CheckoutPage() {
   const { data: cartData, isLoading, error } = useQuery({
@@ -30,7 +29,7 @@ export function CheckoutPage() {
     return <Navigate to="/cart" />;
   }
 
-  const { items, totalAmount } = cartData.data;
+  const { items, totalPrice } = cartData.data;
 
   return (
     <div className="max-w-6xl mx-auto p-4">
@@ -43,7 +42,7 @@ export function CheckoutPage() {
             
             <div className="space-y-4">
               {items.map((item) => (
-                <div key={item.id} className="flex justify-between items-center border-b pb-4">
+                <div key={item.productId} className="flex justify-between items-center border-b pb-4">
                   <div>
                     <h3 className="font-medium">{item.productName}</h3>
                     <p className="text-gray-600">
@@ -60,7 +59,7 @@ export function CheckoutPage() {
             <div className="mt-4 pt-4 border-t border-gray-200">
               <div className="flex justify-between items-center">
                 <span className="font-semibold">Total:</span>
-                <span className="font-bold text-lg">${totalAmount.toFixed(2)}</span>
+                <span className="font-bold text-lg">${totalPrice.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -73,7 +72,7 @@ export function CheckoutPage() {
         </div>
         
         <div className="lg:col-span-1">
-          <CheckoutForm cartTotal={totalAmount} />
+          <CheckoutForm cartTotal={totalPrice} />
           
           <div className="text-center mt-6 hidden lg:block">
             <Link to="/cart" className="text-blue-600 hover:underline">

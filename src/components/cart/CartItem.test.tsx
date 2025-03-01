@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { CartItem } from './CartItem';
-import { CartItemType } from '../../types/cart';
+import { CartItem as CartItemType } from '../../types/cart';
 import { cart } from '../../lib/api';
 import { BrowserRouter } from 'react-router-dom';
 
@@ -15,13 +15,11 @@ vi.mock('../../lib/api', () => ({
 
 describe('CartItem', () => {
   const mockItem: CartItemType = {
-    id: 1,
     productId: 1,
     productName: 'Test Product',
     quantity: 2,
     unitPrice: 19.99,
     totalPrice: 39.98,
-    imageUrl: 'https://example.com/image.jpg',
   };
 
   const mockOnUpdate = vi.fn();

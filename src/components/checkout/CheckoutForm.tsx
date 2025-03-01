@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { orders, cart } from '../../lib/api';
-import { ShippingAddressDto } from '../../types/order';
+import { orders } from '../../lib/api';
+import { AddressDto } from '../../types/order';
 
 interface CheckoutFormProps {
   cartTotal: number;
@@ -14,7 +14,7 @@ export function CheckoutForm({ cartTotal }: CheckoutFormProps) {
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { register, handleSubmit, formState: { errors } } = useForm<ShippingAddressDto>({
+  const { register, handleSubmit, formState: { errors } } = useForm<AddressDto>({
     defaultValues: {
       street: '',
       city: '',
@@ -25,7 +25,7 @@ export function CheckoutForm({ cartTotal }: CheckoutFormProps) {
   });
   
   const createOrderMutation = useMutation({
-    mutationFn: (shippingAddress: ShippingAddressDto) => orders.createOrder(shippingAddress),
+    mutationFn: (shippingAddress: AddressDto) => orders.createOrder(shippingAddress),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       queryClient.invalidateQueries({ queryKey: ['orders'] });
@@ -38,7 +38,7 @@ export function CheckoutForm({ cartTotal }: CheckoutFormProps) {
     },
   });
   
-  const onSubmit = async (data: ShippingAddressDto) => {
+  const onSubmit = async (data: AddressDto) => {
     if (cartTotal <= 0) {
       alert('Your cart is empty. Please add items to your cart before checking out.');
       return;

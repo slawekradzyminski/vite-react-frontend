@@ -40,8 +40,9 @@ export function CartPage() {
     );
   }
   
-  const { items = [], totalAmount = 0 } = cartData?.data || {};
+  const { items = [], totalPrice = 0 } = cartData?.data || {};
   const isEmpty = items.length === 0;
+  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   
   return (
     <div className="max-w-6xl mx-auto p-4">
@@ -66,7 +67,7 @@ export function CartPage() {
               <div className="space-y-6">
                 {items.map((item) => (
                   <CartItem 
-                    key={item.id} 
+                    key={item.productId} 
                     item={item} 
                     onUpdate={handleCartUpdate} 
                   />
@@ -77,7 +78,12 @@ export function CartPage() {
           
           <div className="lg:col-span-1">
             <CartSummary 
-              cartData={{ items, totalAmount }} 
+              cartData={{ 
+                items, 
+                totalPrice, 
+                username: cartData?.data?.username || '',
+                totalItems
+              }} 
               onUpdate={handleCartUpdate} 
             />
             

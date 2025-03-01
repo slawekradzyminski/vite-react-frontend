@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orders, auth } from '../../lib/api';
 import { OrderStatus } from '../../types/order';
@@ -7,7 +7,6 @@ import { Role } from '../../types/auth';
 export const OrderDetails = () => {
   const { id } = useParams<{ id: string }>();
   const orderId = parseInt(id || '0', 10);
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   // Fetch order details
