@@ -40,6 +40,8 @@ src/
 - Type-safe API calls
 - QR code generator
 - Responsive design
+- Ecommerce features
+- Admin dashboard
 
 ## Development Setup
 

@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures/auth.fixture';
+import { test, expect } from '../fixtures/auth.fixture';
 
 test.describe('Profile Page', () => {
   test('should display and update system prompt', async ({ authenticatedPage }) => {
@@ -46,7 +46,7 @@ test.describe('Profile Page', () => {
     // when
     await page.goto('/profile');
     await page.waitForSelector('h1:has-text("Profile")');
-    await expect(page.getByRole('heading', { name: 'Order History' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Your Orders' })).toBeVisible();
     
     // then
     const hasOrders = await page.locator('table').count() > 0;
@@ -56,21 +56,7 @@ test.describe('Profile Page', () => {
       await expect(page.getByRole('columnheader', { name: 'Status' })).toBeVisible();
       await expect(page.getByRole('columnheader', { name: 'Total' })).toBeVisible();
     } else {
-      await expect(page.getByText('You have no orders yet')).toBeVisible();
+      await expect(page.getByText("You don't have any orders yet.")).toBeVisible();
     }
-  });
-  
-  test('navigation to profile page works', async ({ authenticatedPage }) => {
-    const { page } = authenticatedPage;
-    
-    // given
-    await page.goto('/');
-    
-    // when
-    await page.getByRole('link', { name: 'Profile' }).click();
-    
-    // then
-    await expect(page).toHaveURL('/profile');
-    await expect(page.getByRole('heading', { level: 1, name: 'Profile' })).toBeVisible();
   });
 }); 

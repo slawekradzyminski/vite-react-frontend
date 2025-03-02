@@ -4,7 +4,9 @@ import type { EmailDto, EmailResponse } from '../types/email';
 import type { CreateQrDto, QrCodeResponse } from '../types/qr';
 import type { GenerateRequestDto, ChatRequestDto } from '../types/ollama';
 import type { SystemPromptDto } from '../types/system-prompt';
-import type { PageDtoOrderDto } from '../types/order';
+import type { Order, PageDtoOrderDto, Address, OrderStatus } from '../types/order';
+import type { Product, ProductCreateDto, ProductUpdateDto } from '../types/product';
+import type { Cart, CartItemDto, UpdateCartItemDto } from '../types/cart';
 
 const api = axios.create({
   baseURL: 'http://localhost:4001',
@@ -131,10 +133,65 @@ export const systemPrompt = {
 };
 
 export const orders = {
-  getUserOrders: (page: number = 0, size: number = 10, status?: string) =>
+  getUserOrders: (page: number = 0, size: number = 10, status?: OrderStatus) =>
     api.get<PageDtoOrderDto>('/api/orders', {
       params: { page, size, status },
     }),
+
+  getAllOrders: (page: number = 0, size: number = 10, status?: OrderStatus) =>
+    api.get<PageDtoOrderDto>('/api/orders/admin', {
+      params: { page, size, status },
+    }),
+
+  getOrderById: (id: number) => 
+    api.get<Order>(`/api/orders/${id}`),
+  
+  createOrder: (address: Address) => 
+    api.post<Order>('/api/orders', address),
+  
+  updateOrderStatus: (id: number, status: OrderStatus) => 
+    api.put<Order>(`/api/orders/${id}/status`, JSON.stringify(status), {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }),
+  
+  cancelOrder: (id: number) => 
+    api.post<Order>(`/api/orders/${id}/cancel`),
+};
+
+export const products = {
+  getAllProducts: () => 
+    api.get<Product[]>('/api/products'),
+  
+  getProductById: (id: number) => 
+    api.get<Product>(`/api/products/${id}`),
+  
+  createProduct: (data: ProductCreateDto) => 
+    api.post<Product>('/api/products', data),
+  
+  updateProduct: (id: number, data: ProductUpdateDto) => 
+    api.put<Product>(`/api/products/${id}`, data),
+  
+  deleteProduct: (id: number) => 
+    api.delete(`/api/products/${id}`),
+};
+
+export const cart = {
+  getCart: () => 
+    api.get<Cart>('/api/cart'),
+  
+  addToCart: (data: CartItemDto) => 
+    api.post<Cart>('/api/cart/items', data),
+  
+  updateCartItem: (productId: number, data: UpdateCartItemDto) => 
+    api.put<Cart>(`/api/cart/items/${productId}`, data),
+  
+  removeFromCart: (productId: number) => 
+    api.delete<Cart>(`/api/cart/items/${productId}`),
+  
+  clearCart: () => 
+    api.delete('/api/cart'),
 };
 
 export default api; 
