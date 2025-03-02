@@ -74,6 +74,17 @@ describe('ProductList', () => {
       createdAt: '2023-01-03',
       updatedAt: '2023-01-03',
     },
+    {
+      id: 4,
+      name: 'Phone X',
+      description: 'A smartphone',
+      price: 599.99,
+      stockQuantity: 15,
+      category: 'Electronics',
+      imageUrl: 'phone.jpg',
+      createdAt: '2023-01-04',
+      updatedAt: '2023-01-04',
+    },
   ];
 
   beforeEach(() => {
@@ -117,6 +128,28 @@ describe('ProductList', () => {
     expect(screen.getByTestId('product-card-1')).toBeInTheDocument();
     expect(screen.getByTestId('product-card-2')).toBeInTheDocument();
     expect(screen.getByTestId('product-card-3')).toBeInTheDocument();
+    expect(screen.getByTestId('product-card-4')).toBeInTheDocument();
+  });
+
+  it('filters products by search term', async () => {
+    // given
+    const user = userEvent.setup();
+    renderProductList();
+    
+    // when
+    await waitFor(() => {
+      expect(useQuery).toHaveBeenCalled();
+    });
+    
+    const searchInput = screen.getByTestId('product-search');
+    await user.type(searchInput, 'phone');
+    await user.keyboard('{Enter}');
+    
+    // then
+    expect(screen.queryByTestId('product-card-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('product-card-2')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('product-card-3')).not.toBeInTheDocument();
+    expect(screen.getByTestId('product-card-4')).toBeInTheDocument();
   });
 
   it('filters products by category when category is provided', async () => {
@@ -132,6 +165,7 @@ describe('ProductList', () => {
     expect(screen.getByText(/Electronics Products/i)).toBeInTheDocument();
     expect(screen.getByTestId('product-card-1')).toBeInTheDocument();
     expect(screen.getByTestId('product-card-3')).toBeInTheDocument();
+    expect(screen.getByTestId('product-card-4')).toBeInTheDocument();
     expect(screen.queryByTestId('product-card-2')).not.toBeInTheDocument();
   });
 
@@ -146,9 +180,10 @@ describe('ProductList', () => {
     
     // then
     const productCards = screen.getAllByTestId(/product-card-/);
-    expect(productCards[0]).toHaveTextContent('Product 1');
-    expect(productCards[1]).toHaveTextContent('Product 2');
-    expect(productCards[2]).toHaveTextContent('Product 3');
+    expect(productCards[0]).toHaveTextContent('Phone X');
+    expect(productCards[1]).toHaveTextContent('Product 1');
+    expect(productCards[2]).toHaveTextContent('Product 2');
+    expect(productCards[3]).toHaveTextContent('Product 3');
   });
 
   it('sorts products by price when sort option is changed', async () => {
@@ -166,9 +201,10 @@ describe('ProductList', () => {
     
     // then
     const productCards = screen.getAllByTestId(/product-card-/);
-    expect(productCards[0]).toHaveTextContent('Product 2'); // $20.99
-    expect(productCards[1]).toHaveTextContent('Product 3'); // $15.99
-    expect(productCards[2]).toHaveTextContent('Product 1'); // $10.99
+    expect(productCards[0]).toHaveTextContent('Phone X'); // $599.99
+    expect(productCards[1]).toHaveTextContent('Product 2'); // $20.99
+    expect(productCards[2]).toHaveTextContent('Product 3'); // $15.99
+    expect(productCards[3]).toHaveTextContent('Product 1'); // $10.99
   });
 
   it('displays loading state while fetching products', () => {
@@ -210,5 +246,120 @@ describe('ProductList', () => {
       expect(useQuery).toHaveBeenCalled();
       expect(screen.getByText(/No products found/i)).toBeInTheDocument();
     });
+  });
+
+  it('keeps search bar visible when no products match search term', async () => {
+    // given
+    const user = userEvent.setup();
+    renderProductList();
+    
+    // when
+    await waitFor(() => {
+      expect(useQuery).toHaveBeenCalled();
+    });
+    
+    const searchInput = screen.getByTestId('product-search');
+    await user.type(searchInput, 'nonexistentproduct');
+    await user.keyboard('{Enter}');
+    
+    // then
+    expect(screen.getByText(/No products found/i)).toBeInTheDocument();
+    expect(screen.getByTestId('product-search')).toBeInTheDocument();
+    expect(screen.getByTestId('product-sort')).toBeInTheDocument();
+    expect(screen.getByTestId('reset-search-button')).toBeInTheDocument();
+    expect(screen.getByText(/Try adjusting your search or/i)).toBeInTheDocument();
+  });
+
+  it('clears search when reset search button is clicked', async () => {
+    // given
+    const user = userEvent.setup();
+    renderProductList();
+    
+    // when
+    await waitFor(() => {
+      expect(useQuery).toHaveBeenCalled();
+    });
+    
+    // Search for a non-existent product
+    const searchInput = screen.getByTestId('product-search');
+    await user.type(searchInput, 'nonexistentproduct');
+    await user.keyboard('{Enter}');
+    
+    // Verify no products are found
+    expect(screen.getByText(/No products found/i)).toBeInTheDocument();
+    
+    // Click the reset search button
+    const resetButton = screen.getByTestId('reset-search-button');
+    await user.click(resetButton);
+    
+    // then
+    // Verify all products are shown again
+    await waitFor(() => {
+      expect(screen.getByTestId('product-card-1')).toBeInTheDocument();
+      expect(screen.getByTestId('product-card-2')).toBeInTheDocument();
+      expect(screen.getByTestId('product-card-3')).toBeInTheDocument();
+      expect(screen.getByTestId('product-card-4')).toBeInTheDocument();
+    });
+    
+    // Verify search input is cleared
+    expect(searchInput).toHaveValue('');
+  });
+
+  it('shows clear search button (X) when search has text and clears on click', async () => {
+    // given
+    const user = userEvent.setup();
+    renderProductList();
+    
+    // when
+    await waitFor(() => {
+      expect(useQuery).toHaveBeenCalled();
+    });
+    
+    // Type in the search input
+    const searchInput = screen.getByTestId('product-search');
+    await user.type(searchInput, 'phone');
+    
+    // Verify clear button appears
+    const clearButton = screen.getByTestId('clear-search');
+    expect(clearButton).toBeInTheDocument();
+    
+    // Click the clear button
+    await user.click(clearButton);
+    
+    // then
+    // Verify search input is cleared
+    expect(searchInput).toHaveValue('');
+    
+    // Verify all products are shown again
+    await waitFor(() => {
+      expect(screen.getByTestId('product-card-1')).toBeInTheDocument();
+      expect(screen.getByTestId('product-card-2')).toBeInTheDocument();
+      expect(screen.getByTestId('product-card-3')).toBeInTheDocument();
+      expect(screen.getByTestId('product-card-4')).toBeInTheDocument();
+    });
+    
+    // Verify clear button is no longer visible
+    expect(screen.queryByTestId('clear-search')).not.toBeInTheDocument();
+  });
+
+  it('filters products by search term in description', async () => {
+    // given
+    const user = userEvent.setup();
+    renderProductList();
+    
+    // when
+    await waitFor(() => {
+      expect(useQuery).toHaveBeenCalled();
+    });
+    
+    const searchInput = screen.getByTestId('product-search');
+    await user.type(searchInput, 'smartphone');
+    await user.keyboard('{Enter}');
+    
+    // then
+    expect(screen.queryByTestId('product-card-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('product-card-2')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('product-card-3')).not.toBeInTheDocument();
+    expect(screen.getByTestId('product-card-4')).toBeInTheDocument();
   });
 }); 

@@ -127,6 +127,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
     <div 
       className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col"
       onClick={navigateToProductDetails}
+      data-testid="product-item"
     >
       <div className="h-48 overflow-hidden">
         {product.imageUrl ? (
@@ -142,8 +143,11 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
         )}
       </div>
       <div className="p-4 flex flex-col flex-grow">
-        <h3 className="text-lg font-semibold h-14 line-clamp-2">{product.name}</h3>
-        <p className="text-gray-600 mt-1 font-bold">${product.price.toFixed(2)}</p>
+        <h3 className="text-lg font-semibold h-14 line-clamp-2" data-testid="product-name">{product.name}</h3>
+        <p className="text-gray-600 mt-1 font-bold" data-testid="product-price">${product.price.toFixed(2)}</p>
+        {product.category && (
+          <p className="text-xs text-gray-500 mt-1" data-testid="product-category">{product.category}</p>
+        )}
         <p className="text-sm text-gray-500 mt-2 line-clamp-2 flex-grow">{product.description}</p>
         <div className="mt-4">
           <div className="flex items-center justify-between mb-2">

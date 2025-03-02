@@ -11,6 +11,7 @@ interface ProductListProps {
 export function ProductList({ category }: ProductListProps) {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [sortOption, setSortOption] = useState<string>('name-asc');
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   const { data: allProducts, isLoading, error } = useQuery({
     queryKey: ['products'],
@@ -19,15 +20,19 @@ export function ProductList({ category }: ProductListProps) {
 
   useEffect(() => {
     if (!allProducts?.data) return;
-
     let filtered = [...allProducts.data];
-    
-    // Filter by category if provided
     if (category) {
       filtered = filtered.filter(product => product.category === category);
     }
     
-    // Apply sorting
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(product => 
+        product.name.toLowerCase().includes(term) || 
+        product.description?.toLowerCase().includes(term)
+      );
+    }
+    
     switch (sortOption) {
       case 'name-asc':
         filtered.sort((a, b) => a.name.localeCompare(b.name));
@@ -46,26 +51,43 @@ export function ProductList({ category }: ProductListProps) {
     }
     
     setFilteredProducts(filtered);
-  }, [allProducts, category, sortOption]);
+  }, [allProducts, category, sortOption, searchTerm]);
 
-  if (isLoading) {
-    return <div className="text-center py-8">Loading products...</div>;
-  }
+  const clearSearch = () => {
+    setSearchTerm('');
+  };
 
-  if (error) {
-    return <div className="text-center py-8 text-red-500">Error loading products</div>;
-  }
-
-  if (!filteredProducts.length) {
-    return <div className="text-center py-8">No products found</div>;
-  }
-
-  return (
-    <div>
-      <div className="mb-6 flex justify-between items-center">
-        <h2 className="text-2xl font-bold">
-          {category ? `${category} Products` : 'All Products'}
-        </h2>
+  const renderSearchAndSort = () => (
+    <div className="mb-6 flex justify-between items-center">
+      <h2 className="text-2xl font-bold">
+        {category ? `${category} Products` : 'All Products'}
+      </h2>
+      <div className="flex items-center space-x-4">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search products..."
+            className="border rounded p-2 pr-8"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            data-testid="product-search"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+              }
+            }}
+          />
+          {searchTerm && (
+            <button 
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              onClick={clearSearch}
+              data-testid="clear-search"
+              aria-label="Clear search"
+            >
+              ✕
+            </button>
+          )}
+        </div>
         <div className="flex items-center">
           <label htmlFor="sort" className="mr-2">Sort by:</label>
           <select
@@ -73,6 +95,7 @@ export function ProductList({ category }: ProductListProps) {
             className="border rounded p-2"
             value={sortOption}
             onChange={(e) => setSortOption(e.target.value)}
+            data-testid="product-sort"
           >
             <option value="name-asc">Name (A-Z)</option>
             <option value="name-desc">Name (Z-A)</option>
@@ -81,8 +104,45 @@ export function ProductList({ category }: ProductListProps) {
           </select>
         </div>
       </div>
+    </div>
+  );
+
+  if (isLoading) {
+    return <div className="text-center py-8">Loading products...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-8 text-red-500" data-testid="error-message">Error loading products</div>;
+  }
+
+  if (!filteredProducts.length) {
+    return (
+      <div>
+        {renderSearchAndSort()}
+        <div className="text-center py-8" data-testid="no-products-message">
+          <p className="text-lg mb-2">No products found</p>
+          {searchTerm && (
+            <div className="mt-4">
+              <p className="text-sm text-gray-600 mb-2">Try adjusting your search or</p>
+              <button 
+                onClick={clearSearch}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                data-testid="reset-search-button"
+              >
+                Clear Search
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {renderSearchAndSort()}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="product-list">
         {filteredProducts.map(product => (
           <ProductCard key={product.id} product={product} />
         ))}

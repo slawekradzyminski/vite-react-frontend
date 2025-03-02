@@ -33,26 +33,29 @@ export function ProductsPage() {
             ) : categories.length === 0 ? (
               <p className="text-gray-500">No categories found (Total products: {allProducts.length})</p>
             ) : (
-              <ul className="space-y-2">
-                <li>
-                  <button
-                    className={`w-full text-left px-2 py-1 rounded ${!selectedCategory ? 'bg-blue-100 text-blue-700' : ''}`}
-                    onClick={() => setSelectedCategory(undefined)}
-                  >
-                    All Products
-                  </button>
-                </li>
-                {categories.map(category => (
-                  <li key={category}>
+              <div data-testid="product-filter-category">
+                <ul className="space-y-2">
+                  <li>
                     <button
-                      className={`w-full text-left px-2 py-1 rounded ${selectedCategory === category ? 'bg-blue-100 text-blue-700' : ''}`}
-                      onClick={() => setSelectedCategory(category)}
+                      className={`w-full text-left px-2 py-1 rounded ${!selectedCategory ? 'bg-blue-100 text-blue-700' : ''}`}
+                      onClick={() => setSelectedCategory(undefined)}
                     >
-                      {category}
+                      All Products
                     </button>
                   </li>
-                ))}
-              </ul>
+                  {categories.map(category => (
+                    <li key={category}>
+                      <button
+                        className={`w-full text-left px-2 py-1 rounded ${selectedCategory === category ? 'bg-blue-100 text-blue-700' : ''}`}
+                        onClick={() => setSelectedCategory(category)}
+                        value={category}
+                      >
+                        {category}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
         </div>
