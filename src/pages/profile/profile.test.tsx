@@ -134,7 +134,7 @@ describe('Profile', () => {
     expect(screen.getByText('Profile')).toBeInTheDocument();
     expect(screen.getByText('Personal Information')).toBeInTheDocument();
     expect(screen.getByText('System Prompt')).toBeInTheDocument();
-    expect(screen.getByText('Order History')).toBeInTheDocument();
+    expect(screen.getByText('Your Orders')).toBeInTheDocument();
     
     // Check if user data is displayed
     expect(screen.getByDisplayValue('test@example.com')).toBeInTheDocument();
@@ -146,9 +146,9 @@ describe('Profile', () => {
     expect(promptTextarea).toBeInTheDocument();
     
     // Check if order is displayed
-    expect(screen.getByText('#1')).toBeInTheDocument();
+    expect(screen.getByText(/Order #/)).toBeInTheDocument();
     expect(screen.getByText('DELIVERED')).toBeInTheDocument();
-    expect(screen.getByText('$99.99')).toBeInTheDocument();
+    expect(screen.getByText(/\$99.99/)).toBeInTheDocument();
   });
 
   it('should update system prompt when form is submitted', async () => {
@@ -175,9 +175,14 @@ describe('Profile', () => {
     );
 
     await waitFor(() => expect(systemPrompt.get).toHaveBeenCalled());
+    
+    // Wait for the form to be loaded
+    await waitFor(() => {
+      expect(screen.queryByText('Loading prompt...')).not.toBeInTheDocument();
+    });
 
     // when
-    const promptTextarea = screen.getByLabelText('Your System Prompt');
+    const promptTextarea = screen.getByLabelText(/Your System Prompt/i);
     fireEvent.change(promptTextarea, { target: { value: 'Updated system prompt' } });
     
     const saveButton = screen.getByText('Save Prompt');
@@ -268,6 +273,6 @@ describe('Profile', () => {
     await waitFor(() => expect(orders.getUserOrders).toHaveBeenCalled());
 
     // then
-    expect(screen.getByText('You have no orders yet.')).toBeInTheDocument();
+    expect(screen.getByText("You don't have any orders yet.")).toBeInTheDocument();
   });
 }); 

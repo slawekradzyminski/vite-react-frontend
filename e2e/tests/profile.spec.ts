@@ -46,7 +46,7 @@ test.describe('Profile Page', () => {
     // when
     await page.goto('/profile');
     await page.waitForSelector('h1:has-text("Profile")');
-    await expect(page.getByRole('heading', { name: 'Order History' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Your Orders' })).toBeVisible();
     
     // then
     const hasOrders = await page.locator('table').count() > 0;
@@ -56,7 +56,7 @@ test.describe('Profile Page', () => {
       await expect(page.getByRole('columnheader', { name: 'Status' })).toBeVisible();
       await expect(page.getByRole('columnheader', { name: 'Total' })).toBeVisible();
     } else {
-      await expect(page.getByText('You have no orders yet')).toBeVisible();
+      await expect(page.getByText("You don't have any orders yet.")).toBeVisible();
     }
   });
   

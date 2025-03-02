@@ -78,7 +78,6 @@ describe('OrderList', () => {
     // then
     await waitFor(() => {
       expect(screen.getByText("You don't have any orders yet.")).toBeInTheDocument();
-      expect(screen.getByText('Browse Products')).toBeInTheDocument();
     });
   });
 

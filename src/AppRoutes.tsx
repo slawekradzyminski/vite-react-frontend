@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/login';
 import { RegisterPage } from './pages/register';
 import { HomePage } from './pages/home';
@@ -12,7 +12,6 @@ import { ProductsPage } from './pages/products';
 import { ProductDetailsPage } from './pages/product-details';
 import { CartPage } from './pages/cart';
 import { CheckoutPage } from './pages/checkout';
-import { OrdersPage } from './pages/orders';
 import { OrderDetailsPage } from './pages/order-details';
 import { AdminDashboardPage } from './pages/admin/dashboard';
 import { AdminProductsPage } from './pages/admin/products';
@@ -120,7 +119,7 @@ export function AppRoutes() {
         path="/orders"
         element={
           <ProtectedRoute>
-            <OrdersPage />
+            <Navigate to="/profile" replace />
           </ProtectedRoute>
         }
       />

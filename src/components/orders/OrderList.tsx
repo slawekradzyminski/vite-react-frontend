@@ -23,12 +23,44 @@ export function OrderList() {
     setCurrentPage(newPage);
   };
 
+  const renderOrdersHeader = () => (
+    <div className="mb-6 flex justify-between items-center">
+      <h2 className="text-2xl font-bold">Your Orders</h2>
+      <div>
+        <label htmlFor="status-filter" className="mr-2">Filter by status:</label>
+        <select
+          id="status-filter"
+          className="border rounded p-2"
+          value={selectedStatus || 'ALL'}
+          onChange={handleStatusChange}
+        >
+          <option value="ALL">All Orders</option>
+          <option value="PENDING">Pending</option>
+          <option value="PAID">Paid</option>
+          <option value="SHIPPED">Shipped</option>
+          <option value="DELIVERED">Delivered</option>
+          <option value="CANCELLED">Cancelled</option>
+        </select>
+      </div>
+    </div>
+  );
+
   if (isLoading) {
-    return <div className="text-center py-8">Loading orders...</div>;
+    return (
+      <div>
+        {renderOrdersHeader()}
+        <div className="text-center py-8">Loading orders...</div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="text-center py-8 text-red-500">Error loading orders</div>;
+    return (
+      <div>
+        {renderOrdersHeader()}
+        <div className="text-center py-8 text-red-500">Error loading orders</div>
+      </div>
+    );
   }
 
   const ordersList = data?.data?.content || [];
@@ -36,36 +68,22 @@ export function OrderList() {
 
   if (ordersList.length === 0) {
     return (
-      <div className="text-center py-8">
-        <p className="mb-4">You don't have any orders yet.</p>
-        <Link to="/products" className="text-blue-600 hover:underline">
-          Browse Products
-        </Link>
+      <div>
+        {renderOrdersHeader()}
+        <div className="text-center py-8 border rounded-lg p-6 bg-white">
+          {selectedStatus ? (
+            <p>No orders found with status "{selectedStatus}". Try selecting a different status or view all orders.</p>
+          ) : (
+            <p>You don't have any orders yet.</p>
+          )}
+        </div>
       </div>
     );
   }
 
   return (
     <div>
-      <div className="mb-6 flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Your Orders</h2>
-        <div>
-          <label htmlFor="status-filter" className="mr-2">Filter by status:</label>
-          <select
-            id="status-filter"
-            className="border rounded p-2"
-            value={selectedStatus || 'ALL'}
-            onChange={handleStatusChange}
-          >
-            <option value="ALL">All Orders</option>
-            <option value="PENDING">Pending</option>
-            <option value="PAID">Paid</option>
-            <option value="SHIPPED">Shipped</option>
-            <option value="DELIVERED">Delivered</option>
-            <option value="CANCELLED">Cancelled</option>
-          </select>
-        </div>
-      </div>
+      {renderOrdersHeader()}
       
       <div className="space-y-4">
         {ordersList.map((order: Order) => (

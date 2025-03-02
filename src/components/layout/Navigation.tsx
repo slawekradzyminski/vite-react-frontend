@@ -42,7 +42,6 @@ export function Navigation() {
   const authMenuItems = [
     { label: 'Home', path: '/' },
     { label: 'Products', path: '/products' },
-    { label: 'Orders', path: '/orders' },
     { label: 'Profile', path: '/profile' },
     { label: 'Send Email', path: '/email' },
     { label: 'QR Code', path: '/qr' },
