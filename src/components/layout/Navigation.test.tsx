@@ -29,7 +29,6 @@ describe('Navigation', () => {
     localStorage.clear();
   });
 
-  // given
   it('shows login link when user is not authenticated', () => {
     // when
     renderWithProviders(<Navigation />);
@@ -39,9 +38,8 @@ describe('Navigation', () => {
     expect(screen.queryByText('Logout')).not.toBeInTheDocument();
   });
 
-  // given
   it('shows user info and logout button when authenticated', async () => {
-    // when
+    // given
     localStorage.setItem('token', 'fake-token');
     vi.mocked(auth.me).mockResolvedValue({
       data: {
@@ -58,6 +56,7 @@ describe('Navigation', () => {
       config: {} as any,
     });
 
+    // when
     renderWithProviders(<Navigation />);
 
     // then
@@ -68,9 +67,8 @@ describe('Navigation', () => {
     });
   });
 
-  // given
-  it('shows LLM link when authenticated', async () => {
-    // when
+  it('navigates to profile page when username is clicked', async () => {
+    // given
     localStorage.setItem('token', 'fake-token');
     vi.mocked(auth.me).mockResolvedValue({
       data: {
@@ -87,6 +85,35 @@ describe('Navigation', () => {
       config: {} as any,
     });
 
+    renderWithProviders(<Navigation />);
+
+    // when
+    const usernameLink = await screen.findByText('Test User');
+    await user.click(usernameLink);
+
+    // then
+    expect(window.location.pathname).toBe('/profile');
+  });
+
+  it('shows LLM link when authenticated', async () => {
+    // given
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValue({
+      data: {
+        id: 1,
+        username: 'testuser',
+        email: 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        roles: [Role.CLIENT],
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+
+    // when
     renderWithProviders(<Navigation />);
 
     // then
@@ -95,9 +122,8 @@ describe('Navigation', () => {
     });
   });
 
-  // given
   it('shows QR Code link when authenticated', async () => {
-    // when
+    // given
     localStorage.setItem('token', 'fake-token');
     vi.mocked(auth.me).mockResolvedValue({
       data: {
@@ -114,6 +140,7 @@ describe('Navigation', () => {
       config: {} as any,
     });
 
+    // when
     renderWithProviders(<Navigation />);
 
     // then
@@ -122,9 +149,8 @@ describe('Navigation', () => {
     });
   });
 
-  // given
   it('handles logout correctly', async () => {
-    // when
+    // given
     localStorage.setItem('token', 'fake-token');
     vi.mocked(auth.me).mockResolvedValue({
       data: {
@@ -143,6 +169,7 @@ describe('Navigation', () => {
 
     renderWithProviders(<Navigation />);
     
+    // when
     const logoutButton = await screen.findByText('Logout');
     await user.click(logoutButton);
 
@@ -151,9 +178,8 @@ describe('Navigation', () => {
     expect(window.location.pathname).toBe('/login');
   });
 
-  // given
   it('toggles mobile menu correctly', async () => {
-    // when
+    // given
     localStorage.setItem('token', 'fake-token');
     vi.mocked(auth.me).mockResolvedValue({
       data: {
@@ -172,6 +198,7 @@ describe('Navigation', () => {
 
     renderWithProviders(<Navigation />);
     
+    // when
     const menuButton = screen.getByRole('button', { name: /open main menu/i });
     await user.click(menuButton);
 
@@ -182,8 +209,8 @@ describe('Navigation', () => {
     expect(mobileMenu).toHaveTextContent('Products');
     expect(mobileMenu).toHaveTextContent('Cart');
     expect(mobileMenu).toHaveTextContent('Send Email');
-    expect(mobileMenu).toHaveTextContent('Profile');
     expect(mobileMenu).toHaveTextContent('LLM');
+    expect(mobileMenu).toHaveTextContent('Test User');
 
     // when
     await user.click(menuButton);
@@ -192,9 +219,8 @@ describe('Navigation', () => {
     expect(screen.queryByTestId('mobile-menu')).not.toBeInTheDocument();
   });
 
-  // given
   it('closes mobile menu when a link is clicked', async () => {
-    // when
+    // given
     localStorage.setItem('token', 'fake-token');
     vi.mocked(auth.me).mockResolvedValue({
       data: {
@@ -212,7 +238,7 @@ describe('Navigation', () => {
     });
 
     renderWithProviders(<Navigation />);
-    
+
     const menuButton = screen.getByRole('button', { name: /open main menu/i });
     await user.click(menuButton);
     
@@ -220,6 +246,38 @@ describe('Navigation', () => {
     await user.click(mobileHomeLink);
 
     // then
+    expect(screen.queryByTestId('mobile-menu')).not.toBeInTheDocument();
+  });
+
+  it('navigates to profile page when username is clicked in mobile menu', async () => {
+    // given
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValue({
+      data: {
+        id: 1,
+        username: 'testuser',
+        email: 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        roles: [Role.CLIENT],
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+
+    renderWithProviders(<Navigation />);
+
+    // when
+    const menuButton = screen.getByRole('button', { name: /open main menu/i });
+    await user.click(menuButton);
+    
+    const mobileUsernameLink = screen.getByTestId('mobile-menu-username');
+    await user.click(mobileUsernameLink);
+
+    // then
+    expect(window.location.pathname).toBe('/profile');
     expect(screen.queryByTestId('mobile-menu')).not.toBeInTheDocument();
   });
 }); 

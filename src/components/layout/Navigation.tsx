@@ -42,7 +42,6 @@ export function Navigation() {
   const authMenuItems = [
     { label: 'Home', path: '/' },
     { label: 'Products', path: '/products' },
-    { label: 'Profile', path: '/profile' },
     { label: 'Send Email', path: '/email' },
     { label: 'QR Code', path: '/qr' },
     { label: 'LLM', path: '/llm' },
@@ -100,9 +99,13 @@ export function Navigation() {
                 </Link>
                 
                 <div className="hidden sm:flex sm:items-center sm:ml-6 sm:space-x-4">
-                  <span className="text-sm text-gray-500">
+                  <Link 
+                    to="/profile" 
+                    className="text-sm text-gray-500 hover:text-gray-900 hover:underline"
+                    data-testid="username-profile-link"
+                  >
                     {user.data.firstName} {user.data.lastName}
-                  </span>
+                  </Link>
                   <Button
                     variant="ghost"
                     onClick={handleLogout}
@@ -147,6 +150,14 @@ export function Navigation() {
       {isOpen && user?.data && (
         <div className="sm:hidden" data-testid="mobile-menu">
           <div className="pt-2 pb-3 space-y-1">
+            <Link
+              to="/profile"
+              className="block pl-3 pr-4 py-2 text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+              onClick={() => setIsOpen(false)}
+              data-testid="mobile-menu-username"
+            >
+              {user.data.firstName} {user.data.lastName}
+            </Link>
             <Link
               to="/cart"
               className="block pl-3 pr-4 py-2 text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 items-center"

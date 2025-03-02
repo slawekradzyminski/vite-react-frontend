@@ -35,6 +35,32 @@ test.describe('Navigation', () => {
     await expect(authenticatedPage.page).toHaveURL(/\/login/);
   });
 
+  test('should navigate to profile page when username is clicked in desktop view', async ({ authenticatedPage }) => {
+    // given
+    await expect(desktopNav.userFullName).toBeVisible();
+    
+    // when
+    await desktopNav.navigateToProfile();
+    
+    // then
+    await expect(authenticatedPage.page).toHaveURL(/\/profile/);
+    await expect(authenticatedPage.page.locator('h1')).toContainText('Profile');
+  });
+
+  test('should navigate to profile page when username is clicked in mobile view', async ({ authenticatedPage }) => {
+    // given
+    await mobileNav.setMobileViewport();
+    await mobileNav.openMenu();
+    await expect(mobileNav.userProfileLink).toBeVisible();
+    
+    // when
+    await mobileNav.navigateToProfile();
+    
+    // then
+    await expect(authenticatedPage.page).toHaveURL(/\/profile/);
+    await expect(authenticatedPage.page.locator('h1')).toContainText('Profile');
+  });
+
   test('should navigate to QR code page in desktop view', async ({ authenticatedPage }) => {
     // given
     await expect(desktopNav.qrCodeLink).toBeVisible();
@@ -86,5 +112,4 @@ test.describe('Navigation', () => {
     await expect(authenticatedPage.page).toHaveURL(/\/cart/);
     await expect(authenticatedPage.page.locator('h1')).toContainText('Your Cart');
   });
-
 }); 

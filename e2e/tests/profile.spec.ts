@@ -59,18 +59,4 @@ test.describe('Profile Page', () => {
       await expect(page.getByText("You don't have any orders yet.")).toBeVisible();
     }
   });
-  
-  test('navigation to profile page works', async ({ authenticatedPage }) => {
-    const { page } = authenticatedPage;
-    
-    // given
-    await page.goto('/');
-    
-    // when
-    await page.getByRole('link', { name: 'Profile' }).click();
-    
-    // then
-    await expect(page).toHaveURL('/profile');
-    await expect(page.getByRole('heading', { level: 1, name: 'Profile' })).toBeVisible();
-  });
 }); 
