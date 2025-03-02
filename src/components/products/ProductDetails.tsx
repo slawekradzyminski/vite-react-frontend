@@ -1,14 +1,17 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, Link } from 'react-router-dom';
 import { products, cart } from '../../lib/api';
-import { CartItemDto } from '../../types/cart';
+import { CartItemDto, UpdateCartItemDto } from '../../types/cart';
+import { useToast } from '../../hooks/useToast';
 
 export function ProductDetails() {
   const { id } = useParams<{ id: string }>();
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [addedToCart, setAddedToCart] = useState(false);
+  const [isRemovingFromCart, setIsRemovingFromCart] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: product, isLoading, error } = useQuery({
     queryKey: ['product', id],
@@ -16,22 +19,109 @@ export function ProductDetails() {
     enabled: !!id,
   });
 
+  // Get current cart to check if product is already in cart
+  const { data: cartData } = useQuery({
+    queryKey: ['cart'],
+    queryFn: cart.getCart,
+    retry: false,
+    enabled: !!localStorage.getItem('token'),
+  });
+
+  // Find current quantity in cart for this product
+  const cartItem = cartData?.data?.items?.find(item => item.productId === Number(id));
+  const cartQuantity = cartItem?.quantity || 0;
+
+  // Initialize quantity with cart quantity if product is in cart
+  useEffect(() => {
+    if (cartQuantity > 0) {
+      setQuantity(cartQuantity);
+    } else {
+      setQuantity(1); // Reset to 1 if item is not in cart
+    }
+  }, [cartQuantity]);
+
   const handleAddToCart = async () => {
     if (!product?.data) return;
     
     setIsAddingToCart(true);
     try {
-      const cartItem: CartItemDto = {
-        productId: product.data.id,
-        quantity
-      };
-      await cart.addToCart(cartItem);
-      setAddedToCart(true);
-      setTimeout(() => setAddedToCart(false), 3000);
+      // Determine if we need to add or update based on whether item is already in cart
+      if (cartQuantity > 0) {
+        if (quantity === 0) {
+          // Remove item from cart
+          await cart.removeFromCart(product.data.id);
+          
+          toast({
+            variant: 'success',
+            title: 'Removed from cart',
+            description: `${product.data.name} has been removed from your cart`
+          });
+        } else {
+          // Update existing cart item with exact quantity
+          const updateData: UpdateCartItemDto = {
+            quantity
+          };
+          await cart.updateCartItem(product.data.id, updateData);
+          
+          // Show success toast
+          toast({
+            variant: 'success',
+            title: 'Cart updated',
+            description: `${product.data.name} quantity set to ${quantity}`
+          });
+        }
+      } else {
+        // Add new item to cart
+        const cartItem: CartItemDto = {
+          productId: product.data.id,
+          quantity
+        };
+        await cart.addToCart(cartItem);
+        
+        // Show success toast
+        toast({
+          variant: 'success',
+          title: 'Added to cart',
+          description: `${quantity} × ${product.data.name} added to your cart`
+        });
+      }
+      
+      // Invalidate cart query to update cart count
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
     } catch (error) {
-      console.error('Failed to add item to cart:', error);
+      console.error('Failed to update cart:', error);
+      toast({
+        variant: 'error',
+        description: 'Failed to update cart. Please try again.'
+      });
     } finally {
       setIsAddingToCart(false);
+    }
+  };
+
+  const handleRemoveFromCart = async () => {
+    if (!product?.data) return;
+    
+    setIsRemovingFromCart(true);
+    try {
+      await cart.removeFromCart(product.data.id);
+      
+      toast({
+        variant: 'success',
+        title: 'Removed from cart',
+        description: `${product.data.name} has been removed from your cart`
+      });
+      
+      // Invalidate cart query to update cart count
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+    } catch (error) {
+      console.error('Failed to remove from cart:', error);
+      toast({
+        variant: 'error',
+        description: 'Failed to remove from cart. Please try again.'
+      });
+    } finally {
+      setIsRemovingFromCart(false);
     }
   };
 
@@ -96,6 +186,11 @@ export function ProductDetails() {
                 ? `${productData.stockQuantity} in stock` 
                 : 'Out of stock'}
             </p>
+            {cartQuantity > 0 && (
+              <p className="text-blue-600 mt-1">
+                {cartQuantity} in cart
+              </p>
+            )}
           </div>
           
           {productData.stockQuantity > 0 && (
@@ -104,7 +199,7 @@ export function ProductDetails() {
               <div className="flex items-center">
                 <button 
                   className="px-3 py-2 border rounded-l"
-                  onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                  onClick={() => setQuantity(prev => Math.max(0, prev - 1))}
                 >
                   -
                 </button>
@@ -119,19 +214,32 @@ export function ProductDetails() {
             </div>
           )}
           
-          <button
-            className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
-            onClick={handleAddToCart}
-            disabled={isAddingToCart || productData.stockQuantity < 1}
-          >
-            {isAddingToCart ? 'Adding to Cart...' : 'Add to Cart'}
-          </button>
-          
-          {addedToCart && (
-            <div className="mt-4 p-3 bg-green-100 text-green-700 rounded-lg">
-              Item added to cart successfully!
-            </div>
-          )}
+          <div className="flex gap-3">
+            {cartQuantity > 0 && (
+              <button
+                className="bg-red-600 text-white py-3 px-6 rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400"
+                onClick={handleRemoveFromCart}
+                disabled={isRemovingFromCart || isAddingToCart}
+              >
+                {isRemovingFromCart ? 'Removing...' : 'Remove from Cart'}
+              </button>
+            )}
+            
+            <button
+              className={`${cartQuantity > 0 ? 'flex-1' : 'w-full'} bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400`}
+              onClick={handleAddToCart}
+              disabled={isAddingToCart || isRemovingFromCart || productData.stockQuantity < 1 || (quantity === 0 && !cartQuantity)}
+            >
+              {isAddingToCart 
+                ? 'Adding to Cart...' 
+                : cartQuantity > 0 
+                  ? quantity === 0 
+                    ? 'Remove from Cart' 
+                    : 'Update Cart' 
+                  : 'Add to Cart'
+              }
+            </button>
+          </div>
         </div>
       </div>
     </div>

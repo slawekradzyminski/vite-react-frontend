@@ -31,6 +31,8 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
   useEffect(() => {
     if (cartQuantity > 0) {
       setQuantity(cartQuantity);
+    } else {
+      setQuantity(1); // Reset to 1 if item is not in cart
     }
   }, [cartQuantity]);
 
@@ -45,17 +47,30 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
     setIsLoading(true);
     try {
       if (cartQuantity > 0) {
-        const updateData: UpdateCartItemDto = {
-          quantity
-        };
-        await cart.updateCartItem(product.id, updateData);
-        
-        toast({
-          variant: 'success',
-          title: 'Cart updated',
-          description: `${product.name} quantity set to ${quantity}`
-        });
+        if (quantity === 0) {
+          // Remove item from cart
+          await cart.removeFromCart(product.id);
+          
+          toast({
+            variant: 'success',
+            title: 'Removed from cart',
+            description: `${product.name} has been removed from your cart`
+          });
+        } else {
+          // Update quantity
+          const updateData: UpdateCartItemDto = {
+            quantity
+          };
+          await cart.updateCartItem(product.id, updateData);
+          
+          toast({
+            variant: 'success',
+            title: 'Cart updated',
+            description: `${product.name} quantity set to ${quantity}`
+          });
+        }
       } else {
+        // Add new item to cart
         const cartItem: CartItemDto = {
           productId: product.id,
           quantity
@@ -74,6 +89,30 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
       toast({
         variant: 'error',
         description: 'Failed to update cart. Please try again.'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRemoveFromCart = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent navigation
+    
+    setIsLoading(true);
+    try {
+      await cart.removeFromCart(product.id);
+      
+      toast({
+        variant: 'success',
+        title: 'Removed from cart',
+        description: `${product.name} has been removed from your cart`
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+    } catch {
+      toast({
+        variant: 'error',
+        description: 'Failed to remove from cart. Please try again.'
       });
     } finally {
       setIsLoading(false);
@@ -113,7 +152,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
                 className="px-2 py-1 border rounded-l"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setQuantity(prev => Math.max(1, prev - 1));
+                  setQuantity(prev => Math.max(0, prev - 1));
                 }}
               >
                 -
@@ -136,18 +175,25 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
             )}
           </div>
           <div className="flex justify-between items-center">
-            <p className="text-sm text-gray-500">
-              {product.stockQuantity > 0 
-                ? `${product.stockQuantity} in stock` 
-                : 'Out of stock'}
-            </p>
-            <button
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400 flex items-center justify-center min-w-[120px] font-medium shadow-sm"
-              onClick={handleAddToCart}
-              disabled={isLoading || product.stockQuantity < 1}
-            >
-              {isLoading ? 'Adding...' : cartQuantity > 0 ? 'Update Cart' : 'Add to Cart'}
-            </button>
+            <div className="flex gap-2 w-full justify-end">
+              {cartQuantity > 0 && (
+                <button
+                  className="bg-red-600 text-white px-3 py-2 rounded-md hover:bg-red-700 transition-colors disabled:bg-gray-400 flex items-center justify-center min-w-[80px] font-medium shadow-sm"
+                  onClick={handleRemoveFromCart}
+                  disabled={isLoading}
+                  aria-label="Remove from cart"
+                >
+                  {isLoading ? '...' : 'Remove'}
+                </button>
+              )}
+              <button
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400 flex items-center justify-center min-w-[120px] font-medium shadow-sm"
+                onClick={handleAddToCart}
+                disabled={isLoading || product.stockQuantity < 1 || (quantity === 0 && !cartQuantity)}
+              >
+                {isLoading ? 'Adding...' : cartQuantity > 0 ? (quantity === 0 ? 'Remove' : 'Update Cart') : 'Add to Cart'}
+              </button>
+            </div>
           </div>
         </div>
       </div>

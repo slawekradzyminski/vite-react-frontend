@@ -54,6 +54,11 @@ vi.mock('../../lib/api', () => ({
         setTimeout(() => resolve({ data: { id: 1 } }), 100);
       });
     }),
+    removeFromCart: vi.fn().mockImplementation(() => {
+      return new Promise(resolve => {
+        setTimeout(() => resolve({ data: { id: 1 } }), 100);
+      });
+    }),
     getCart: vi.fn()
   }
 }));
@@ -102,7 +107,6 @@ describe('ProductCard', () => {
     renderWithProviders(<ProductCard product={mockOutOfStockProduct} />);
     
     // then
-    expect(screen.getByText('Out of stock')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /add to cart/i })).toBeDisabled();
   });
 
@@ -118,6 +122,20 @@ describe('ProductCard', () => {
     expect(cart.updateCartItem).toHaveBeenCalledWith(1, {
       quantity: 2
     });
+    expect(cart.addToCart).not.toHaveBeenCalled();
+  });
+
+  it('removes item from cart when Remove button is clicked', async () => {
+    // given
+    const user = userEvent.setup();
+    renderWithProviders(<ProductCard product={mockProduct} />);
+    
+    // when
+    await user.click(screen.getByRole('button', { name: /remove/i }));
+    
+    // then
+    expect(cart.removeFromCart).toHaveBeenCalledWith(1);
+    expect(cart.updateCartItem).not.toHaveBeenCalled();
     expect(cart.addToCart).not.toHaveBeenCalled();
   });
 
@@ -163,6 +181,18 @@ describe('ProductCard', () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
+  it('prevents navigation when Remove button is clicked', async () => {
+    // given
+    const user = userEvent.setup();
+    renderWithProviders(<ProductCard product={mockProduct} />);
+    
+    // when
+    await user.click(screen.getByRole('button', { name: /remove/i }));
+    
+    // then
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
   it('prevents navigation when quantity buttons are clicked', async () => {
     // given
     const user = userEvent.setup();
@@ -196,5 +226,6 @@ describe('ProductCard', () => {
     // then
     expect(screen.getByText('2 in cart')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /update cart/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /remove/i })).toBeInTheDocument();
   });
 }); 
