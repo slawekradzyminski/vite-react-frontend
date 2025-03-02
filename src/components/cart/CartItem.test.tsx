@@ -1,16 +1,30 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { screen, fireEvent, waitFor } from "@testing-library/react";
-import { renderWithProviders } from "../../test/test-utils";
-import { CartItem } from "./CartItem";
-import { cart } from "../../lib/api";
-import { CartItem as CartItemType } from "../../types/cart";
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { CartItem } from './CartItem';
+import { cart } from '../../lib/api';
+import { renderWithProviders } from '../../test/test-utils';
+import { CartItem as CartItemType } from '../../types/cart';
+import { AxiosResponse } from 'axios';
 
-vi.mock("../../lib/api", () => ({
+vi.mock('../../lib/api', () => ({
   cart: {
     updateCartItem: vi.fn(),
-    removeFromCart: vi.fn(),
-  },
+    removeFromCart: vi.fn()
+  }
 }));
+
+vi.mock('react-router-dom', () => {
+  return {
+    Link: ({ to, children }: { to: string; children: React.ReactNode }) => (
+      <a href={to}>{children}</a>
+    ),
+    useLocation: () => ({ pathname: '/cart' }),
+    BrowserRouter: ({ children }: { children: React.ReactNode }) => (
+      <div>{children}</div>
+    )
+  };
+});
+
 
 describe("CartItem", () => {
   const mockItem: CartItemType = {
@@ -18,7 +32,7 @@ describe("CartItem", () => {
     productName: "Test Product",
     quantity: 2,
     unitPrice: 10,
-    totalPrice: 20,
+    totalPrice: 20
   };
 
   const mockOnUpdate = vi.fn();
@@ -28,22 +42,22 @@ describe("CartItem", () => {
   });
 
   it("renders the cart item correctly", () => {
-    // when
+    // given
     renderWithProviders(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
 
     // then
     expect(screen.getByText("Test Product")).toBeInTheDocument();
     expect(screen.getByText("$10.00 each")).toBeInTheDocument();
-    expect(screen.getByText("$20.00")).toBeInTheDocument();
     expect(screen.getByText("2")).toBeInTheDocument();
+    expect(screen.getByText("$20.00")).toBeInTheDocument();
   });
 
   it("increases quantity when + button is clicked", () => {
     // given
     renderWithProviders(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
 
-    const increaseButton = screen.getByText("+");
-    fireEvent.click(increaseButton);
+    // when
+    fireEvent.click(screen.getByText("+"));
 
     // then
     expect(screen.getByText("3")).toBeInTheDocument();
@@ -55,8 +69,7 @@ describe("CartItem", () => {
     renderWithProviders(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
 
     // when
-    const decreaseButton = screen.getByText("-");
-    fireEvent.click(decreaseButton);
+    fireEvent.click(screen.getByText("-"));
 
     // then
     expect(screen.getByText("1")).toBeInTheDocument();
@@ -65,14 +78,11 @@ describe("CartItem", () => {
 
   it("does not decrease quantity below 1", () => {
     // given
-    const itemWithQuantityOne = { ...mockItem, quantity: 1 };
-    renderWithProviders(
-      <CartItem item={itemWithQuantityOne} onUpdate={mockOnUpdate} />
-    );
+    const singleItem = { ...mockItem, quantity: 1 };
+    renderWithProviders(<CartItem item={singleItem} onUpdate={mockOnUpdate} />);
 
     // when
-    const decreaseButton = screen.getByText("-");
-    fireEvent.click(decreaseButton);
+    fireEvent.click(screen.getByText("-"));
 
     // then
     expect(screen.getByText("1")).toBeInTheDocument();
@@ -81,15 +91,20 @@ describe("CartItem", () => {
 
   it("calls updateCartItem when Update button is clicked", async () => {
     // given
-    vi.mocked(cart.updateCartItem).mockResolvedValue({} as any);
+    vi.mocked(cart.updateCartItem).mockImplementation(() => 
+      Promise.resolve({
+        data: { items: [], totalPrice: 0, totalItems: 0, username: 'test' },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {} as any
+      } as AxiosResponse)
+    );
     renderWithProviders(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
 
     // when
-    const increaseButton = screen.getByText("+");
-    fireEvent.click(increaseButton);
-
-    const updateButton = screen.getByText("Update");
-    fireEvent.click(updateButton);
+    fireEvent.click(screen.getByText("+"));
+    fireEvent.click(screen.getByText("Update"));
 
     // then
     await waitFor(() => {
@@ -100,17 +115,63 @@ describe("CartItem", () => {
 
   it("calls removeFromCart when Remove button is clicked", async () => {
     // given  
-    vi.mocked(cart.removeFromCart).mockResolvedValue({} as any);
+    vi.mocked(cart.removeFromCart).mockImplementation(() => 
+      Promise.resolve({
+        data: { items: [], totalPrice: 0, totalItems: 0, username: 'test' },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {} as any
+      } as AxiosResponse)
+    );
     renderWithProviders(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
 
     // when
-    const removeButton = screen.getByText("Remove");
-    fireEvent.click(removeButton);
+    fireEvent.click(screen.getByText("Remove"));
 
     // then
     await waitFor(() => {
       expect(cart.removeFromCart).toHaveBeenCalledWith(1);
       expect(mockOnUpdate).toHaveBeenCalled();
+    });
+  });
+
+  it("resets quantity when item prop changes (simulating parent refresh)", () => {
+    // given
+    const { rerender } = render(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
+    
+    // when - increase quantity
+    fireEvent.click(screen.getByText("+"));
+    
+    // then - quantity should be updated
+    expect(screen.getByText("3")).toBeInTheDocument();
+    expect(screen.getByText("Update")).toBeInTheDocument();
+    
+    // when - parent refreshes with new item data
+    const updatedItem = { ...mockItem, quantity: 3, totalPrice: 30 };
+    rerender(<CartItem item={updatedItem} onUpdate={mockOnUpdate} />);
+    
+    // then - quantity should match new item and Update button should be hidden
+    expect(screen.getByText("3")).toBeInTheDocument();
+    expect(screen.queryByText("Update")).not.toBeInTheDocument();
+  });
+
+  it("resets to original quantity on API error", async () => {
+    // given
+    vi.mocked(cart.updateCartItem).mockImplementation(() => 
+      Promise.reject(new Error("API Error"))
+    );
+    render(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
+    
+    // when - increase quantity and try to update
+    fireEvent.click(screen.getByText("+"));
+    expect(screen.getByText("3")).toBeInTheDocument();
+    
+    fireEvent.click(screen.getByText("Update"));
+    
+    // then - should reset to original quantity after error
+    await waitFor(() => {
+      expect(screen.getByText("2")).toBeInTheDocument();
     });
   });
 });

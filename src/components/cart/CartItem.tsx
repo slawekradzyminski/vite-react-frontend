@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { CartItem as CartItemType } from '../../types/cart';
 import { cart } from '../../lib/api';
@@ -20,6 +20,11 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
   const [quantity, setQuantity] = useState(safeItem.quantity);
+  
+  // Reset quantity when item changes (after parent refresh)
+  useEffect(() => {
+    setQuantity(safeItem.quantity);
+  }, [safeItem.quantity]);
 
   const handleQuantityChange = async () => {
     if (quantity === safeItem.quantity) return;
@@ -27,10 +32,11 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
     setIsUpdating(true);
     try {
       await cart.updateCartItem(safeItem.productId, { quantity });
+      // Refresh cart data from backend
       onUpdate();
     } catch (error) {
       console.error('Failed to update cart item:', error);
-      setQuantity(safeItem.quantity);   
+      setQuantity(safeItem.quantity);
     } finally {
       setIsUpdating(false);
     }
