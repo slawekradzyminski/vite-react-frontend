@@ -57,6 +57,24 @@ export const cartMocks = {
     });
   },
 
+  async mockAddCartItem(page: Page) {
+    await page.route("**/api/cart/items", async (route) => {
+      await route.fulfill({
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      });
+    });
+  },
+
+  async mockUpdateSuccess(page: Page, productId: number) {
+    await page.route(`**/api/cart/items/${productId}`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      });
+    });
+  },
+
   async mockUpdateCartState(page: Page, cartState: any) {
     await page.route("**/api/cart/items/1", async (route) => {
       if (route.request().method() === "PUT") {

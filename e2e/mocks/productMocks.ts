@@ -7,6 +7,7 @@ export interface Product {
   category: string;
   description?: string;
   imageUrl?: string;
+  stockQuantity?: number;
 }
 
 export const productsMocks = {
@@ -35,4 +36,25 @@ export const productsMocks = {
     });
   },
 
+  async mockGetProductDetailsSuccess(page: Page, productId: number, productData: Product) {
+    await page.route(`**/api/products/${productId}`, async (route: Route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(productData)
+      });
+    });
+  },
+
+  async mockGetProductDetailsNotFound(page: Page, productId: number) {
+    await page.route(`**/api/products/${productId}`, async (route: Route) => {
+      await route.fulfill({
+        status: 404,
+        contentType: 'application/json',
+        body: JSON.stringify({ 
+          message: 'Product not found' 
+        })
+      });
+    });
+  },
 };

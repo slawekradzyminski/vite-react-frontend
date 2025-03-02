@@ -1,5 +1,5 @@
-import { test, expect } from './fixtures/auth.fixture';
-import { QrPage } from './pages/qr.page';
+import { test, expect } from '../fixtures/auth.fixture';
+import { QrPage } from '../pages/qr.page';
 
 test.describe('QR Code Page', () => {
   let qrPage: QrPage;

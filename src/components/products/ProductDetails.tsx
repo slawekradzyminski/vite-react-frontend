@@ -17,26 +17,29 @@ export function ProductDetails() {
     queryKey: ['product', id],
     queryFn: () => products.getProductById(Number(id)),
     enabled: !!id,
+    retry: (failureCount, error: any) => {
+      if (error.response?.status === 404) {
+        return false;
+      }
+      return failureCount < 3;
+    },
   });
 
-  // Get current cart to check if product is already in cart
   const { data: cartData } = useQuery({
     queryKey: ['cart'],
     queryFn: cart.getCart,
-    retry: false,
     enabled: !!localStorage.getItem('token'),
+    retry: false
   });
 
-  // Find current quantity in cart for this product
   const cartItem = cartData?.data?.items?.find(item => item.productId === Number(id));
   const cartQuantity = cartItem?.quantity || 0;
 
-  // Initialize quantity with cart quantity if product is in cart
   useEffect(() => {
     if (cartQuantity > 0) {
       setQuantity(cartQuantity);
     } else {
-      setQuantity(1); // Reset to 1 if item is not in cart
+      setQuantity(1);
     }
   }, [cartQuantity]);
 
@@ -45,10 +48,8 @@ export function ProductDetails() {
     
     setIsAddingToCart(true);
     try {
-      // Determine if we need to add or update based on whether item is already in cart
       if (cartQuantity > 0) {
         if (quantity === 0) {
-          // Remove item from cart
           await cart.removeFromCart(product.data.id);
           
           toast({
@@ -57,13 +58,11 @@ export function ProductDetails() {
             description: `${product.data.name} has been removed from your cart`
           });
         } else {
-          // Update existing cart item with exact quantity
           const updateData: UpdateCartItemDto = {
             quantity
           };
           await cart.updateCartItem(product.data.id, updateData);
           
-          // Show success toast
           toast({
             variant: 'success',
             title: 'Cart updated',
@@ -78,7 +77,6 @@ export function ProductDetails() {
         };
         await cart.addToCart(cartItem);
         
-        // Show success toast
         toast({
           variant: 'success',
           title: 'Added to cart',
@@ -86,7 +84,6 @@ export function ProductDetails() {
         });
       }
       
-      // Invalidate cart query to update cart count
       queryClient.invalidateQueries({ queryKey: ['cart'] });
     } catch (error) {
       console.error('Failed to update cart:', error);
@@ -112,7 +109,6 @@ export function ProductDetails() {
         description: `${product.data.name} has been removed from your cart`
       });
       
-      // Invalidate cart query to update cart count
       queryClient.invalidateQueries({ queryKey: ['cart'] });
     } catch (error) {
       console.error('Failed to remove from cart:', error);
@@ -126,12 +122,12 @@ export function ProductDetails() {
   };
 
   if (isLoading) {
-    return <div className="text-center py-8">Loading product details...</div>;
+    return <div className="text-center py-8" data-testid="product-loading">Loading product details...</div>;
   }
 
   if (error || !product?.data) {
     return (
-      <div className="text-center py-8">
+      <div className="text-center py-8" data-testid="product-not-found">
         <p className="text-red-500 mb-4">Error loading product details</p>
         <Link to="/products" className="text-blue-600 hover:underline">
           Back to Products
@@ -143,7 +139,7 @@ export function ProductDetails() {
   const { data: productData } = product;
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
+    <div className="max-w-6xl mx-auto p-4" data-testid="product-details">
       <div className="mb-4">
         <Link to="/products" className="text-blue-600 hover:underline">
           ← Back to Products
@@ -157,37 +153,38 @@ export function ProductDetails() {
               src={productData.imageUrl} 
               alt={productData.name} 
               className="w-full h-auto rounded-lg shadow-md"
+              data-testid="product-image"
             />
           ) : (
-            <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center">
+            <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center" data-testid="product-no-image">
               No image available
             </div>
           )}
         </div>
         
         <div>
-          <h1 className="text-3xl font-bold mb-2">{productData.name}</h1>
-          <p className="text-2xl text-blue-600 mb-4">${productData.price.toFixed(2)}</p>
+          <h1 className="text-3xl font-bold mb-2" data-testid="product-title">{productData.name}</h1>
+          <p className="text-2xl text-blue-600 mb-4" data-testid="product-price">${productData.price.toFixed(2)}</p>
           
           <div className="mb-6">
             <h2 className="text-lg font-semibold mb-2">Description</h2>
-            <p className="text-gray-700">{productData.description}</p>
+            <p className="text-gray-700" data-testid="product-description">{productData.description}</p>
           </div>
           
           <div className="mb-6">
             <h2 className="text-lg font-semibold mb-2">Category</h2>
-            <p className="text-gray-700">{productData.category}</p>
+            <p className="text-gray-700" data-testid="product-category">{productData.category}</p>
           </div>
           
           <div className="mb-6">
             <h2 className="text-lg font-semibold mb-2">Availability</h2>
-            <p className={`${productData.stockQuantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <p className={`${productData.stockQuantity > 0 ? 'text-green-600' : 'text-red-600'}`} data-testid="product-stock">
               {productData.stockQuantity > 0 
                 ? `${productData.stockQuantity} in stock` 
                 : 'Out of stock'}
             </p>
             {cartQuantity > 0 && (
-              <p className="text-blue-600 mt-1">
+              <p className="text-blue-600 mt-1" data-testid="product-cart-quantity">
                 {cartQuantity} in cart
               </p>
             )}
@@ -200,13 +197,15 @@ export function ProductDetails() {
                 <button 
                   className="px-3 py-2 border rounded-l"
                   onClick={() => setQuantity(prev => Math.max(0, prev - 1))}
+                  data-testid="decrease-quantity"
                 >
                   -
                 </button>
-                <span className="px-6 py-2 border-t border-b">{quantity}</span>
+                <span className="px-6 py-2 border-t border-b" data-testid="quantity-value">{quantity}</span>
                 <button 
                   className="px-3 py-2 border rounded-r"
                   onClick={() => setQuantity(prev => Math.min(productData.stockQuantity, prev + 1))}
+                  data-testid="increase-quantity"
                 >
                   +
                 </button>
@@ -220,6 +219,7 @@ export function ProductDetails() {
                 className="bg-red-600 text-white py-3 px-6 rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400"
                 onClick={handleRemoveFromCart}
                 disabled={isRemovingFromCart || isAddingToCart}
+                data-testid="remove-from-cart"
               >
                 {isRemovingFromCart ? 'Removing...' : 'Remove from Cart'}
               </button>
@@ -229,6 +229,7 @@ export function ProductDetails() {
               className={`${cartQuantity > 0 ? 'flex-1' : 'w-full'} bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400`}
               onClick={handleAddToCart}
               disabled={isAddingToCart || isRemovingFromCart || productData.stockQuantity < 1 || (quantity === 0 && !cartQuantity)}
+              data-testid="add-to-cart"
             >
               {isAddingToCart 
                 ? 'Adding to Cart...' 

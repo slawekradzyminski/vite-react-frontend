@@ -1,6 +1,6 @@
-import { test, expect } from './fixtures/auth.fixture';
-import { ProductsPage } from './pages/products.page';
-import { productsMocks } from './mocks/productMocks';
+import { test, expect } from '../fixtures/auth.fixture';
+import { ProductsPage } from '../pages/products.page';
+import { productsMocks } from '../mocks/productMocks';
 
 test.describe('Products Page', () => {
   let productsPage: ProductsPage;
