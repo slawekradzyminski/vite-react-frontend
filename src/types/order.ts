@@ -1,24 +1,45 @@
-export interface OrderDto {
+export interface OrderItem {
   id: number;
-  status: string;
-  totalAmount: number;
-  createdAt: string;
-  items: OrderItemDto[];
+  productId: number;
+  quantity: number;
+  productName: string;
+  unitPrice: number;
+  totalPrice: number;
 }
 
-export interface OrderItemDto {
+export interface Order {
   id: number;
-  productName: string;
-  quantity: number;
-  price: number;
+  username: string;
+  items: OrderItem[];
+  totalAmount: number;
+  status: OrderStatus;
+  shippingAddress: Address;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type OrderStatus = 'PENDING' | 'PAID' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+
+export interface Address {
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+}
+
+export interface AddressDto {
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
 }
 
 export interface PageDtoOrderDto {
-  content: OrderDto[];
-  pageable: {
-    pageNumber: number;
-    pageSize: number;
-  };
+  content: Order[];
+  pageNumber: number;
+  pageSize: number;
   totalElements: number;
   totalPages: number;
 } 

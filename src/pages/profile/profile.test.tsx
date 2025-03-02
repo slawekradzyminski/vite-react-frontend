@@ -80,16 +80,23 @@ describe('Profile', () => {
         content: [
           {
             id: 1,
-            status: 'COMPLETED',
+            username: 'testuser',
+            status: 'DELIVERED',
             totalAmount: 99.99,
             createdAt: '2023-01-01T12:00:00Z',
+            updatedAt: '2023-01-01T12:00:00Z',
             items: [],
+            shippingAddress: {
+              street: '123 Test St',
+              city: 'Test City',
+              state: 'Test State',
+              zipCode: '12345',
+              country: 'Test Country'
+            }
           },
         ],
-        pageable: {
-          pageNumber: 0,
-          pageSize: 5,
-        },
+        pageNumber: 0,
+        pageSize: 5,
         totalElements: 1,
         totalPages: 1,
       },
@@ -140,7 +147,7 @@ describe('Profile', () => {
     
     // Check if order is displayed
     expect(screen.getByText('#1')).toBeInTheDocument();
-    expect(screen.getByText('COMPLETED')).toBeInTheDocument();
+    expect(screen.getByText('DELIVERED')).toBeInTheDocument();
     expect(screen.getByText('$99.99')).toBeInTheDocument();
   });
 
@@ -236,10 +243,8 @@ describe('Profile', () => {
     vi.mocked(orders.getUserOrders).mockResolvedValue({
       data: {
         content: [],
-        pageable: {
-          pageNumber: 0,
-          pageSize: 5,
-        },
+        pageNumber: 0,
+        pageSize: 5,
         totalElements: 0,
         totalPages: 0,
       },

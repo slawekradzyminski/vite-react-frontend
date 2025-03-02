@@ -10,6 +10,15 @@ vi.mock('../../lib/api', () => ({
   auth: {
     me: vi.fn(),
   },
+  cart: {
+    getCart: vi.fn().mockResolvedValue({
+      data: {
+        items: [],
+        totalItems: 0,
+        totalPrice: 0
+      }
+    }),
+  },
 }));
 
 describe('Navigation', () => {

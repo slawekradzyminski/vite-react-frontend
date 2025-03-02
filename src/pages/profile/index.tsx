@@ -10,7 +10,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { systemPromptSchema, SystemPromptFormData } from '../../validators/user';
 import type { UserEditDTO } from '../../types/auth';
-import type { OrderDto } from '../../types/order';
+import type { Order } from '../../types/order';
 
 export function Profile() {
   const queryClient = useQueryClient();
@@ -202,7 +202,7 @@ export function Profile() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {userOrders.data.content.map((order: OrderDto) => (
+                    {userOrders.data.content.map((order: Order) => (
                       <tr key={order.id}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{order.id}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -210,7 +210,7 @@ export function Profile() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            order.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 
+                            order.status === 'DELIVERED' ? 'bg-green-100 text-green-800' : 
                             order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 
                             'bg-gray-100 text-gray-800'
                           }`}>
