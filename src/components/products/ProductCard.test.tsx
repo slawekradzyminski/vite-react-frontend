@@ -7,11 +7,38 @@ import { Product } from '../../types/product';
 import { cart } from '../../lib/api';
 
 const mockNavigate = vi.fn();
+
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
     ...actual,
     useNavigate: () => mockNavigate,
+  };
+});
+
+vi.mock('@tanstack/react-query', async () => {
+  const actual = await vi.importActual('@tanstack/react-query');
+  return {
+    ...actual,
+    useQuery: vi.fn().mockImplementation(({ queryKey }) => {
+      if (queryKey[0] === 'cart') {
+        return {
+          data: {
+            data: {
+              items: [
+                { productId: 1, quantity: 2 }
+              ],
+              totalItems: 2,
+              totalPrice: 39.98
+            }
+          }
+        };
+      }
+      return { data: null };
+    }),
+    useQueryClient: () => ({
+      invalidateQueries: vi.fn()
+    })
   };
 });
 
@@ -21,7 +48,13 @@ vi.mock('../../lib/api', () => ({
       return new Promise(resolve => {
         setTimeout(() => resolve({ data: { id: 1 } }), 100);
       });
-    })
+    }),
+    updateCartItem: vi.fn().mockImplementation(() => {
+      return new Promise(resolve => {
+        setTimeout(() => resolve({ data: { id: 1 } }), 100);
+      });
+    }),
+    getCart: vi.fn()
   }
 }));
 
@@ -73,19 +106,19 @@ describe('ProductCard', () => {
     expect(screen.getByRole('button', { name: /add to cart/i })).toBeDisabled();
   });
 
-  it('adds product to cart when Add to Cart button is clicked', async () => {
+  it('updates cart item when Update Cart button is clicked for product already in cart', async () => {
     // given
     const user = userEvent.setup();
     renderWithProviders(<ProductCard product={mockProduct} />);
     
     // when
-    await user.click(screen.getByRole('button', { name: /add to cart/i }));
+    await user.click(screen.getByRole('button', { name: /update cart/i }));
     
     // then
-    expect(cart.addToCart).toHaveBeenCalledWith({
-      productId: 1,
-      quantity: 1
+    expect(cart.updateCartItem).toHaveBeenCalledWith(1, {
+      quantity: 2
     });
+    expect(cart.addToCart).not.toHaveBeenCalled();
   });
 
   it('disables the Add to Cart button while adding to cart', async () => {
@@ -94,7 +127,7 @@ describe('ProductCard', () => {
     renderWithProviders(<ProductCard product={mockProduct} />);
     
     // when
-    await user.click(screen.getByRole('button', { name: /add to cart/i }));
+    await user.click(screen.getByRole('button', { name: /update cart/i }));
     
     // then
     await waitFor(() => {
@@ -102,7 +135,7 @@ describe('ProductCard', () => {
     });
     
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /add to cart/i })).not.toBeDisabled();
+      expect(screen.getByRole('button', { name: /update cart/i })).not.toBeDisabled();
     });
   });
 
@@ -124,7 +157,7 @@ describe('ProductCard', () => {
     renderWithProviders(<ProductCard product={mockProduct} />);
     
     // when
-    await user.click(screen.getByRole('button', { name: /add to cart/i }));
+    await user.click(screen.getByRole('button', { name: /update cart/i }));
     
     // then
     expect(mockNavigate).not.toHaveBeenCalled();
@@ -154,5 +187,14 @@ describe('ProductCard', () => {
     
     // then
     expect(screen.getByText('No image available')).toBeInTheDocument();
+  });
+
+  it('displays current cart quantity for the product', () => {
+    // given
+    renderWithProviders(<ProductCard product={mockProduct} />);
+    
+    // then
+    expect(screen.getByText('2 in cart')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /update cart/i })).toBeInTheDocument();
   });
 }); 

@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '../../types/product';
 import { cart } from '../../lib/api';
-import { CartItemDto } from '../../types/cart';
+import { CartItemDto, UpdateCartItemDto } from '../../types/cart';
 import { useToast } from '../../hooks/useToast';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 
 interface ProductCardProps {
   product: Product;
@@ -18,6 +18,22 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  const { data: cartData } = useQuery({
+    queryKey: ['cart'],
+    queryFn: cart.getCart,
+    retry: false,
+    enabled: !!localStorage.getItem('token'),
+  });
+
+  const cartItem = cartData?.data?.items?.find(item => item.productId === product.id);
+  const cartQuantity = cartItem?.quantity || 0;
+
+  useEffect(() => {
+    if (cartQuantity > 0) {
+      setQuantity(cartQuantity);
+    }
+  }, [cartQuantity]);
+
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent navigation when clicking the add to cart button
     
@@ -28,26 +44,36 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
 
     setIsLoading(true);
     try {
-      const cartItem: CartItemDto = {
-        productId: product.id,
-        quantity
-      };
-      await cart.addToCart(cartItem);
+      if (cartQuantity > 0) {
+        const updateData: UpdateCartItemDto = {
+          quantity
+        };
+        await cart.updateCartItem(product.id, updateData);
+        
+        toast({
+          variant: 'success',
+          title: 'Cart updated',
+          description: `${product.name} quantity set to ${quantity}`
+        });
+      } else {
+        const cartItem: CartItemDto = {
+          productId: product.id,
+          quantity
+        };
+        await cart.addToCart(cartItem);
+        
+        toast({
+          variant: 'success',
+          title: 'Added to cart',
+          description: `${quantity} × ${product.name} added to your cart`
+        });
+      }
       
-      // Show success toast
-      toast({
-        variant: 'success',
-        title: 'Added to cart',
-        description: `${quantity} × ${product.name} added to your cart`
-      });
-      
-      // Invalidate cart query to update cart count
       queryClient.invalidateQueries({ queryKey: ['cart'] });
-    } catch (error) {
-      console.error('Failed to add item to cart:', error);
+    } catch {
       toast({
         variant: 'error',
-        description: 'Failed to add item to cart. Please try again.'
+        description: 'Failed to update cart. Please try again.'
       });
     } finally {
       setIsLoading(false);
@@ -103,6 +129,11 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
                 +
               </button>
             </div>
+            {cartQuantity > 0 && (
+              <span className="text-sm text-blue-600 font-medium">
+                {cartQuantity} in cart
+              </span>
+            )}
           </div>
           <div className="flex justify-between items-center">
             <p className="text-sm text-gray-500">
@@ -115,7 +146,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
               onClick={handleAddToCart}
               disabled={isLoading || product.stockQuantity < 1}
             >
-              {isLoading ? 'Adding...' : 'Add to Cart'}
+              {isLoading ? 'Adding...' : cartQuantity > 0 ? 'Update Cart' : 'Add to Cart'}
             </button>
           </div>
         </div>
