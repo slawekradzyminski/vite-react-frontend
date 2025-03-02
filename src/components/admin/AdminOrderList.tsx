@@ -10,7 +10,7 @@ export function AdminOrderList() {
   
   const { data, isLoading, error } = useQuery({
     queryKey: ['admin-orders', currentPage, selectedStatus],
-    queryFn: () => orders.getUserOrders(
+    queryFn: () => orders.getAllOrders(
       currentPage,
       10,
       selectedStatus !== 'ALL' ? selectedStatus as OrderStatus : undefined

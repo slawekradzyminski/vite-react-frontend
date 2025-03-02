@@ -11,7 +11,7 @@ export function AdminDashboard() {
   
   const { data: ordersData, isLoading: isLoadingOrders } = useQuery({
     queryKey: ['admin-orders', 0, 50],
-    queryFn: () => orders.getUserOrders(0, 50),
+    queryFn: () => orders.getAllOrders(0, 50),
   });
   
   // Early return with partial data if available

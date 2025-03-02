@@ -137,7 +137,12 @@ export const orders = {
     api.get<PageDtoOrderDto>('/api/orders', {
       params: { page, size, status },
     }),
-  
+
+  getAllOrders: (page: number = 0, size: number = 10, status?: OrderStatus) =>
+    api.get<PageDtoOrderDto>('/api/orders/admin', {
+      params: { page, size, status },
+    }),
+
   getOrderById: (id: number) => 
     api.get<Order>(`/api/orders/${id}`),
   

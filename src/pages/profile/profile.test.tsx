@@ -1,13 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter } from 'react-router-dom';
+import { screen, waitFor, fireEvent } from '@testing-library/react';
 import { Profile } from './index';
 import { auth, systemPrompt, orders } from '../../lib/api';
 import { Role } from '../../types/auth';
-import { ToastProvider } from '../../components/ui/ToastProvider';
+import { renderWithProviders } from '../../test/test-utils';
 
-// Mock the API modules
 vi.mock('../../lib/api', () => ({
   auth: {
     me: vi.fn(),
@@ -22,7 +19,6 @@ vi.mock('../../lib/api', () => ({
   },
 }));
 
-// Mock useLocation for ToastProvider
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
@@ -32,21 +28,9 @@ vi.mock('react-router-dom', async () => {
 });
 
 describe('Profile', () => {
-  let queryClient: QueryClient;
-
   beforeEach(() => {
-    queryClient = new QueryClient({
-      defaultOptions: {
-        queries: {
-          retry: false,
-        },
-      },
-    });
-
-    // Reset mocks
     vi.resetAllMocks();
 
-    // Mock auth.me
     vi.mocked(auth.me).mockResolvedValue({
       data: {
         id: 1,
@@ -62,7 +46,6 @@ describe('Profile', () => {
       config: { headers: {} } as any,
     });
 
-    // Mock systemPrompt.get
     vi.mocked(systemPrompt.get).mockResolvedValue({
       data: {
         username: 'testuser',
@@ -74,7 +57,6 @@ describe('Profile', () => {
       config: { headers: {} } as any,
     });
 
-    // Mock orders.getUserOrders
     vi.mocked(orders.getUserOrders).mockResolvedValue({
       data: {
         content: [
@@ -109,15 +91,7 @@ describe('Profile', () => {
 
   it('should render the profile page with user data', async () => {
     // given
-    render(
-      <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <ToastProvider>
-            <Profile />
-          </ToastProvider>
-        </MemoryRouter>
-      </QueryClientProvider>
-    );
+    renderWithProviders(<Profile />);
 
     // when
     await waitFor(() => expect(auth.me).toHaveBeenCalled());
@@ -164,16 +138,7 @@ describe('Profile', () => {
       config: { headers: {} } as any,
     });
 
-    render(
-      <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <ToastProvider>
-            <Profile />
-          </ToastProvider>
-        </MemoryRouter>
-      </QueryClientProvider>
-    );
-
+    renderWithProviders(<Profile />);
     await waitFor(() => expect(systemPrompt.get).toHaveBeenCalled());
     
     // Wait for the form to be loaded
@@ -211,16 +176,7 @@ describe('Profile', () => {
       config: { headers: {} } as any,
     });
 
-    render(
-      <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <ToastProvider>
-            <Profile />
-          </ToastProvider>
-        </MemoryRouter>
-      </QueryClientProvider>
-    );
-
+    renderWithProviders(<Profile />);
     await waitFor(() => expect(auth.me).toHaveBeenCalled());
 
     // when
@@ -259,15 +215,7 @@ describe('Profile', () => {
       config: { headers: {} } as any,
     });
 
-    render(
-      <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <ToastProvider>
-            <Profile />
-          </ToastProvider>
-        </MemoryRouter>
-      </QueryClientProvider>
-    );
+    renderWithProviders(<Profile />);
 
     // when
     await waitFor(() => expect(orders.getUserOrders).toHaveBeenCalled());
