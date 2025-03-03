@@ -39,36 +39,40 @@ export function CartSummary({ cartData, onUpdate }: CartSummaryProps) {
   };
 
   return (
-    <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
-      <h2 className="text-xl font-bold mb-4">Cart Summary</h2>
-      
-      <div className="space-y-3 mb-6">
-        <div className="flex justify-between">
-          <span>Items:</span>
-          <span>{safeCartData.totalItems}</span>
+    <div className="p-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+        <div className="mb-4 md:mb-0">
+          <h2 className="text-lg font-semibold mb-2">Cart Summary</h2>
+          <div className="flex space-x-6">
+            <div>
+              <span className="text-sm font-medium text-gray-500 uppercase block">Items</span>
+              <span className="text-lg">{safeCartData.totalItems}</span>
+            </div>
+            
+            <div>
+              <span className="text-sm font-medium text-gray-500 uppercase block">Total</span>
+              <span className="text-xl font-bold">${safeCartData.totalPrice.toFixed(2)}</span>
+            </div>
+          </div>
         </div>
-        <div className="flex justify-between font-semibold text-lg">
-          <span>Total:</span>
-          <span>${safeCartData.totalPrice.toFixed(2)}</span>
-        </div>
-      </div>
-      
-      <div className="space-y-3">
-        <button
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors disabled:bg-gray-400"
-          onClick={handleCheckout}
-          disabled={safeCartData.items.length === 0}
-        >
-          Proceed to Checkout
-        </button>
         
-        <button
-          className="w-full bg-white text-red-600 border border-red-600 py-2 px-4 rounded hover:bg-red-50 transition-colors disabled:opacity-50"
-          onClick={handleClearCart}
-          disabled={isClearing || safeCartData.items.length === 0}
-        >
-          {isClearing ? 'Clearing...' : 'Clear Cart'}
-        </button>
+        <div className="flex space-x-3">
+          <button
+            className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            onClick={handleCheckout}
+            disabled={safeCartData.items.length === 0}
+          >
+            Proceed to Checkout
+          </button>
+          
+          <button
+            className="bg-white text-red-600 border border-red-600 py-2 px-4 rounded hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleClearCart}
+            disabled={isClearing || safeCartData.items.length === 0}
+          >
+            {isClearing ? 'Clearing...' : 'Clear Cart'}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -14,7 +14,8 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
     quantity: item?.quantity || 1,
     productName: item?.productName || 'Unknown Product',
     unitPrice: item?.unitPrice || 0,
-    totalPrice: item?.totalPrice || 0
+    totalPrice: item?.totalPrice || 0,
+    imageUrl: item?.imageUrl || ''
   };
 
   const [isUpdating, setIsUpdating] = useState(false);
@@ -55,57 +56,76 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
   };
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 border-b">
-      <div className="flex items-center mb-3 sm:mb-0">
-        <Link to={`/products/${safeItem.productId}`} className="text-blue-600 hover:underline font-medium">
-          {safeItem.productName}
-        </Link>
-        <span className="ml-2 text-gray-500">
-          ${safeItem.unitPrice.toFixed(2)} each
-        </span>
-      </div>
-      
-      <div className="flex items-center">
-        <div className="flex items-center mr-4">
-          <button 
-            className="px-2 py-1 border rounded-l"
-            onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
-            disabled={isUpdating}
-          >
-            -
-          </button>
-          <span className="px-4 py-1 border-t border-b">{quantity}</span>
-          <button 
-            className="px-2 py-1 border rounded-r"
-            onClick={() => setQuantity(prev => prev + 1)}
-            disabled={isUpdating}
-          >
-            +
-          </button>
+    <tr>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="flex items-center">
+          {safeItem.imageUrl && (
+            <div className="flex-shrink-0 h-12 w-12 mr-4">
+              <img
+                className="h-12 w-12 rounded-full object-cover"
+                src={safeItem.imageUrl}
+                alt={safeItem.productName}
+              />
+            </div>
+          )}
+          <div>
+            <Link 
+              to={`/products/${safeItem.productId}`} 
+              className="text-blue-600 hover:text-blue-900 font-medium"
+            >
+              {safeItem.productName}
+            </Link>
+          </div>
         </div>
-        
-        {quantity !== safeItem.quantity && (
-          <button
-            className="text-blue-600 hover:text-blue-800 mr-4"
-            onClick={handleQuantityChange}
-            disabled={isUpdating}
-          >
-            {isUpdating ? 'Updating...' : 'Update'}
-          </button>
-        )}
-        
-        <div className="text-right min-w-[80px]">
-          ${safeItem.totalPrice.toFixed(2)}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        ${safeItem.unitPrice.toFixed(2)}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center">
+          <div className="flex items-center mb-2 sm:mb-0">
+            <button 
+              className="px-2 py-1 border rounded-l bg-gray-50 hover:bg-gray-100"
+              onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+              disabled={isUpdating}
+            >
+              -
+            </button>
+            <span className="px-4 py-1 border-t border-b min-w-[40px] text-center">
+              {quantity}
+            </span>
+            <button 
+              className="px-2 py-1 border rounded-r bg-gray-50 hover:bg-gray-100"
+              onClick={() => setQuantity(prev => prev + 1)}
+              disabled={isUpdating}
+            >
+              +
+            </button>
+          </div>
+          
+          {quantity !== safeItem.quantity && (
+            <button
+              className="ml-0 sm:ml-2 text-blue-600 hover:text-blue-800 text-sm"
+              onClick={handleQuantityChange}
+              disabled={isUpdating}
+            >
+              {isUpdating ? 'Updating...' : 'Update'}
+            </button>
+          )}
         </div>
-        
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+        ${safeItem.totalPrice.toFixed(2)}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
         <button
-          className="ml-4 text-red-600 hover:text-red-800"
+          className="text-red-600 hover:text-red-900"
           onClick={handleRemove}
           disabled={isRemoving}
         >
           {isRemoving ? 'Removing...' : 'Remove'}
         </button>
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 } 

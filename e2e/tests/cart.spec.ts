@@ -41,8 +41,8 @@ test.describe("Cart Page", () => {
 
     // Verify prices
     const itemPrices = await cartPage.getCartItemPrices();
-    expect(itemPrices).toContain("$39.98");
-    expect(itemPrices).toContain("$29.99");
+    expect(itemPrices.some(price => price.includes("$39.98"))).toBeTruthy();
+    expect(itemPrices.some(price => price.includes("$29.99"))).toBeTruthy();
 
     // Verify cart summary
     expect(await cartPage.getCartTotalItems()).toBe("3");
@@ -60,6 +60,7 @@ test.describe("Cart Page", () => {
           quantity: 1,
           unitPrice: 19.99,
           totalPrice: 19.99,
+          imageUrl: "test-image-1.jpg"
         },
       ],
       totalPrice: 19.99,
@@ -93,6 +94,7 @@ test.describe("Cart Page", () => {
           quantity: 1,
           unitPrice: 19.99,
           totalPrice: 19.99,
+          imageUrl: "test-image-1.jpg"
         },
       ],
       totalPrice: 19.99,
@@ -125,6 +127,7 @@ test.describe("Cart Page", () => {
           quantity: 1,
           unitPrice: 19.99,
           totalPrice: 19.99,
+          imageUrl: "test-image-1.jpg"
         },
       ],
       totalPrice: 19.99,

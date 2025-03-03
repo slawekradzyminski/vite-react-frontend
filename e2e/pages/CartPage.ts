@@ -20,54 +20,56 @@ export class CartPage {
   }
 
   async getCartItemNames() {
-    await this.page.waitForSelector('.space-y-6 a', { state: 'attached' });
-    return this.page.locator('.space-y-6 a').allTextContents();
+    await this.page.waitForSelector('table', { state: 'visible' });
+    return this.page.locator('table tbody tr td:first-child a').allTextContents();
   }
 
   async getCartItemPrices() {
-    return this.page.locator('.text-right.min-w-\\[80px\\]').allTextContents();
+    return this.page.locator('table tbody tr td:nth-child(4)').allTextContents();
   }
 
   async getCartTotalPrice() {
-    const priceText = await this.page.locator('.font-semibold.text-lg span:last-child').textContent();
+    const priceText = await this.page.locator('text=Total >> xpath=following-sibling::span').first().textContent();
     return priceText || '';
   }
 
   async getCartTotalItems() {
-    const itemsText = await this.page.locator('.space-y-3.mb-6 div:first-child span:last-child').textContent();
+    const itemsText = await this.page.locator('text=Items >> xpath=following-sibling::span').first().textContent();
     return itemsText || '';
   }
 
   async updateItemQuantity(productName: string, newQuantity: number) {
-    const itemRow = this.page.locator('.space-y-6 > div', {
+    const row = this.page.locator('table tbody tr', {
       has: this.page.locator('a', { hasText: productName })
     });
 
-    const quantityText = await itemRow.locator('.px-4.py-1.border-t.border-b').textContent();
+    const quantityCell = row.locator('td:nth-child(3)');
+    
+    const quantityText = await quantityCell.locator('.px-4.py-1.border-t.border-b').textContent();
     const currentQuantity = quantityText ? parseInt(quantityText, 10) : 0;
 
     if (newQuantity > currentQuantity) {
       for (let i = 0; i < newQuantity - currentQuantity; i++) {
-        await itemRow.locator('button', { hasText: '+' }).click();
+        await quantityCell.locator('button', { hasText: '+' }).click();
       }
     } else if (newQuantity < currentQuantity) {
       for (let i = 0; i < currentQuantity - newQuantity; i++) {
-        await itemRow.locator('button', { hasText: '-' }).click();
+        await quantityCell.locator('button', { hasText: '-' }).click();
       }
     }
 
-    const updateButton = itemRow.locator('button', { hasText: 'Update' });
+    const updateButton = quantityCell.locator('button', { hasText: 'Update' });
     if (await updateButton.isVisible()) {
       await updateButton.click();
     }
   }
 
   async removeItem(productName: string) {
-    const itemRow = this.page.locator('.space-y-6 > div', {
+    const row = this.page.locator('table tbody tr', {
       has: this.page.locator('a', { hasText: productName })
     });
 
-    await itemRow.locator('button', { hasText: 'Remove' }).click();
+    await row.locator('td:last-child button', { hasText: 'Remove' }).click();
   }
 
   async clearCart() {

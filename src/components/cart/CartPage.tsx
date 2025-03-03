@@ -39,53 +39,28 @@ export function CartPage() {
     const fetchProductDetails = async () => {
       if (!rawData?.items) return;
       
-      const needsEnrichment = rawData.items.some(
-        item => !item.productName && !item.name && !item.unitPrice && !item.price
-      );
-      
-      if (!needsEnrichment) {
-        const normalizedItems: CartItemType[] = (rawData.items || []).map(item => ({
-          productId: item.productId,
-          productName: item.productName || item.name || 'Unknown Product',
-          quantity: item.quantity,
-          unitPrice: item.unitPrice || item.price || 0,
-          totalPrice: item.totalPrice || (item.quantity * (item.unitPrice || item.price || 0)) || 0
-        }));
-        
-        setEnrichedItems(normalizedItems);
-        return;
-      }
-      
       const enrichedItemsPromises = rawData.items.map(async (item) => {
         try {
-          if (!item.productName && !item.name && !item.unitPrice && !item.price) {
-            const productResponse = await products.getProductById(item.productId);
-            const productData = productResponse.data;
-            
-            return {
-              productId: item.productId,
-              productName: productData.name || 'Unknown Product',
-              quantity: item.quantity,
-              unitPrice: productData.price || 0,
-              totalPrice: item.quantity * (productData.price || 0)
-            };
-          } else {
-            return {
-              productId: item.productId,
-              productName: item.productName || item.name || 'Unknown Product',
-              quantity: item.quantity,
-              unitPrice: item.unitPrice || item.price || 0,
-              totalPrice: item.totalPrice || (item.quantity * (item.unitPrice || item.price || 0)) || 0
-            };
-          }
+          const productResponse = await products.getProductById(item.productId);
+          const productData = productResponse.data;
+          
+          return {
+            productId: item.productId,
+            productName: item.productName || item.name || productData.name || 'Unknown Product',
+            quantity: item.quantity,
+            unitPrice: item.unitPrice || item.price || productData.price || 0,
+            totalPrice: item.totalPrice || (item.quantity * (item.unitPrice || item.price || productData.price || 0)) || 0,
+            imageUrl: productData.imageUrl || ''
+          };
         } catch (error) {
           console.error(`Error fetching details for product ${item.productId}:`, error);
           return {
             productId: item.productId,
-            productName: 'Unknown Product',
+            productName: item.productName || item.name || 'Unknown Product',
             quantity: item.quantity,
-            unitPrice: 0,
-            totalPrice: 0
+            unitPrice: item.unitPrice || item.price || 0,
+            totalPrice: item.totalPrice || (item.quantity * (item.unitPrice || item.price || 0)) || 0,
+            imageUrl: ''
           };
         }
       });
@@ -139,7 +114,15 @@ export function CartPage() {
   
   return (
     <div className="max-w-6xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Your Cart</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Your Cart</h1>
+        <Link
+          to="/products"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+        >
+          Continue Shopping
+        </Link>
+      </div>
       
       {isEmpty ? (
         <div className="bg-white rounded-lg shadow-sm p-8 text-center">
@@ -152,12 +135,40 @@ export function CartPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-semibold mb-4">Cart Items</h2>
-              
-              <div className="space-y-6">
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <CartSummary 
+              cartData={safeCartData} 
+              onUpdate={handleCartUpdate} 
+            />
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold">Cart Items</h2>
+            </div>
+            
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/5">
+                    Product
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Price
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Quantity
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Total
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200 space-y-0">
                 {safeCartData.items.map((item) => (
                   <CartItem 
                     key={item.productId} 
@@ -165,24 +176,8 @@ export function CartPage() {
                     onUpdate={handleCartUpdate} 
                   />
                 ))}
-              </div>
-            </div>
-          </div>
-          
-          <div className="lg:col-span-1">
-            <CartSummary 
-              cartData={safeCartData} 
-              onUpdate={handleCartUpdate} 
-            />
-            
-            <div className="mt-6">
-              <Link 
-                to="/products" 
-                className="block text-center text-blue-600 hover:underline mb-4"
-              >
-                Continue Shopping
-              </Link>
-            </div>
+              </tbody>
+            </table>
           </div>
         </div>
       )}

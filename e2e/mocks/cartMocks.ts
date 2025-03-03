@@ -31,6 +31,7 @@ export const cartMocks = {
               quantity: 2,
               unitPrice: 19.99,
               totalPrice: 39.98,
+              imageUrl: "https://via.placeholder.com/150"
             },
             {
               productId: 2,
@@ -38,10 +39,44 @@ export const cartMocks = {
               quantity: 1,
               unitPrice: 29.99,
               totalPrice: 29.99,
+              imageUrl: "https://via.placeholder.com/150"
             },
           ],
           totalPrice: 69.97,
           totalItems: 3,
+        }),
+      });
+    });
+
+    // Mock product API calls for image URLs
+    await page.route("**/api/products/1", async (route) => {
+      await route.fulfill({
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: 1,
+          name: "Test Product 1",
+          price: 19.99,
+          imageUrl: "https://via.placeholder.com/150",
+          description: "Test description",
+          stockQuantity: 10,
+          category: "Test Category"
+        }),
+      });
+    });
+
+    await page.route("**/api/products/2", async (route) => {
+      await route.fulfill({
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: 2,
+          name: "Test Product 2",
+          price: 29.99,
+          imageUrl: "https://via.placeholder.com/150",
+          description: "Test description",
+          stockQuantity: 10,
+          category: "Test Category"
         }),
       });
     });
@@ -55,6 +90,25 @@ export const cartMocks = {
         body: JSON.stringify(cartState),
       });
     });
+
+    // Mock product API calls for image URLs
+    for (const item of cartState.items || []) {
+      await page.route(`**/api/products/${item.productId}`, async (route) => {
+        await route.fulfill({
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: item.productId,
+            name: item.productName,
+            price: item.unitPrice,
+            imageUrl: item.imageUrl || "https://via.placeholder.com/150",
+            description: "Test description",
+            stockQuantity: 10,
+            category: "Test Category"
+          }),
+        });
+      });
+    }
   },
 
   async mockAddCartItem(page: Page) {
@@ -145,5 +199,24 @@ export const cartMocks = {
         await route.continue();
       }
     });
+
+    // Mock product API calls for image URLs
+    for (const item of cartState.items || []) {
+      await page.route(`**/api/products/${item.productId}`, async (route) => {
+        await route.fulfill({
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: item.productId,
+            name: item.productName,
+            price: item.unitPrice,
+            imageUrl: item.imageUrl || "https://via.placeholder.com/150",
+            description: "Test description",
+            stockQuantity: 10,
+            category: "Test Category"
+          }),
+        });
+      });
+    }
   },
 };

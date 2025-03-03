@@ -32,7 +32,8 @@ describe("CartItem", () => {
     productName: "Test Product",
     quantity: 2,
     unitPrice: 10,
-    totalPrice: 20
+    totalPrice: 20,
+    imageUrl: 'test-image.jpg'
   };
 
   const mockOnUpdate = vi.fn();
@@ -47,7 +48,7 @@ describe("CartItem", () => {
 
     // then
     expect(screen.getByText("Test Product")).toBeInTheDocument();
-    expect(screen.getByText("$10.00 each")).toBeInTheDocument();
+    expect(screen.getByText("$10.00")).toBeInTheDocument();
     expect(screen.getByText("2")).toBeInTheDocument();
     expect(screen.getByText("$20.00")).toBeInTheDocument();
   });

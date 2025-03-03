@@ -57,9 +57,9 @@ describe('CartSummary', () => {
     
     // then
     expect(screen.getByText('Cart Summary')).toBeInTheDocument();
-    expect(screen.getByText('Items:')).toBeInTheDocument();
+    expect(screen.getByText('Items')).toBeInTheDocument();
     expect(screen.getByText('3')).toBeInTheDocument();
-    expect(screen.getByText('Total:')).toBeInTheDocument();
+    expect(screen.getByText('Total')).toBeInTheDocument();
     expect(screen.getByText('$35.00')).toBeInTheDocument();
   });
   
