@@ -50,7 +50,7 @@ export function EmailForm({ onSubmit, isLoading = false }: EmailFormProps) {
           <p className="mt-1 text-sm text-red-600" role="alert">{errors.to.message}</p>
         )}
         <datalist id="users" data-testid="users-datalist">
-          {users?.data.map((user) => (
+          {users?.data && users?.data.map((user) => (
             <option key={user.email} value={user.email} />
           ))}
         </datalist>

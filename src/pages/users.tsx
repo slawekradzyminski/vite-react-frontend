@@ -29,7 +29,7 @@ export function UsersPage() {
     },
   });
 
-  const isAdmin = currentUser?.data.roles.includes(Role.ADMIN);
+  const isAdmin = !isLoading && !!(currentUser?.data.roles && currentUser.data.roles.includes(Role.ADMIN));
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -49,7 +49,7 @@ export function UsersPage() {
 
         {users && (
           <div className="bg-white shadow-sm rounded-lg divide-y">
-            {users.map((user) => (
+            {users && users.map((user) => (
               <div key={user.id} className="p-6">
                 <div className="flex justify-between items-start">
                   <div>
