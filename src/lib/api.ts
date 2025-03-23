@@ -7,6 +7,7 @@ import type { SystemPromptDto } from '../types/system-prompt';
 import type { Order, PageDtoOrderDto, Address, OrderStatus } from '../types/order';
 import type { Product, ProductCreateDto, ProductUpdateDto } from '../types/product';
 import type { Cart, CartItemDto, UpdateCartItemDto } from '../types/cart';
+import type { TrafficInfoDto } from '../types/traffic';
 
 const api = axios.create({
   baseURL: 'http://localhost:4001',
@@ -192,6 +193,11 @@ export const cart = {
   
   clearCart: () => 
     api.delete('/api/cart'),
+};
+
+export const traffic = {
+  getInfo: () => 
+    api.get<TrafficInfoDto>('/api/traffic/info'),
 };
 
 export default api; 

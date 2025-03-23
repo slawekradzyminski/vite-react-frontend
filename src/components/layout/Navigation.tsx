@@ -45,6 +45,7 @@ export function Navigation() {
     { label: 'Send Email', path: '/email' },
     { label: 'QR Code', path: '/qr' },
     { label: 'LLM', path: '/llm' },
+    { label: 'Traffic Monitor', path: '/traffic' },
   ];
 
   const adminMenuItems = [
@@ -56,11 +57,6 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <Link to="/" className="text-xl font-bold text-gray-800">
-                Awesome
-              </Link>
-            </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               {user?.data && authMenuItems.map((item) => (
                 <Link
