@@ -17,6 +17,7 @@ import { AdminDashboardPage } from './pages/admin/dashboard';
 import { AdminProductsPage } from './pages/admin/products';
 import { AdminProductFormPage } from './pages/admin/product-form';
 import { AdminOrdersPage } from './pages/admin/orders';
+import { TrafficMonitorPage } from './pages/traffic';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 export function AppRoutes() {
@@ -170,6 +171,15 @@ export function AppRoutes() {
         element={
           <ProtectedRoute requiredRole="ADMIN">
             <AdminOrdersPage />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+        path="/traffic"
+        element={
+          <ProtectedRoute>
+            <TrafficMonitorPage />
           </ProtectedRoute>
         }
       />

@@ -25,4 +25,12 @@ export default defineVitestConfig({
       ],
     },
   },
+  resolve: {
+    alias: {
+      // ... existing aliases ...
+    }
+  },
+  define: {
+    global: 'window',
+  },
 })
