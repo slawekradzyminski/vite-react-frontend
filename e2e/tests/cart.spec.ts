@@ -1,6 +1,6 @@
 import { test, expect } from "../fixtures/auth.fixture";
 import { cartMocks } from "../mocks/cartMocks";
-import { CartPage } from "../pages/CartPage";
+import { CartPage } from "../pages/cart.page.object";
 
 test.describe("Cart Page", () => {
   test("should display empty cart message when cart is empty", async ({

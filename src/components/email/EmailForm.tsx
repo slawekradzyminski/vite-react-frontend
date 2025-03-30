@@ -34,8 +34,8 @@ export function EmailForm({ onSubmit, isLoading = false }: EmailFormProps) {
   });
 
   return (
-    <form onSubmit={handleFormSubmit} className="space-y-6" noValidate>
-      <div>
+    <form onSubmit={handleFormSubmit} className="space-y-6" noValidate data-testid="email-form">
+      <div data-testid="email-to-field">
         <Label htmlFor="to">To</Label>
         <Input
           id="to"
@@ -45,9 +45,10 @@ export function EmailForm({ onSubmit, isLoading = false }: EmailFormProps) {
           error={errors.to?.message}
           list="users"
           {...register('to')}
+          data-testid="email-to-input"
         />
         {errors.to?.message && (
-          <p className="mt-1 text-sm text-red-600" role="alert">{errors.to.message}</p>
+          <p className="mt-1 text-sm text-red-600" role="alert" data-testid="email-to-error">{errors.to.message}</p>
         )}
         <datalist id="users" data-testid="users-datalist">
           {users?.data && users?.data.map((user) => (
@@ -56,7 +57,7 @@ export function EmailForm({ onSubmit, isLoading = false }: EmailFormProps) {
         </datalist>
       </div>
 
-      <div>
+      <div data-testid="email-subject-field">
         <Label htmlFor="subject">Subject</Label>
         <Input
           id="subject"
@@ -64,22 +65,24 @@ export function EmailForm({ onSubmit, isLoading = false }: EmailFormProps) {
           placeholder="Email subject"
           error={errors.subject?.message}
           {...register('subject')}
+          data-testid="email-subject-input"
         />
         {errors.subject?.message && (
-          <p className="mt-1 text-sm text-red-600" role="alert">{errors.subject.message}</p>
+          <p className="mt-1 text-sm text-red-600" role="alert" data-testid="email-subject-error">{errors.subject.message}</p>
         )}
       </div>
 
-      <div>
+      <div data-testid="email-message-field">
         <Label htmlFor="message">Message</Label>
         <Textarea
           id="message"
           className="mt-1"
           placeholder="Your message"
           {...register('message')}
+          data-testid="email-message-input"
         />
         {errors.message?.message && (
-          <p className="mt-1 text-sm text-red-600" role="alert">{errors.message.message}</p>
+          <p className="mt-1 text-sm text-red-600" role="alert" data-testid="email-message-error">{errors.message.message}</p>
         )}
       </div>
 
@@ -87,6 +90,7 @@ export function EmailForm({ onSubmit, isLoading = false }: EmailFormProps) {
         type="submit"
         className="w-full"
         disabled={isLoading}
+        data-testid="email-submit-button"
       >
         {isLoading ? 'Sending...' : 'Send Email'}
       </Button>

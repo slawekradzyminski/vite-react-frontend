@@ -108,11 +108,11 @@ export const OrderDetails = () => {
   };
 
   if (isLoadingOrder) {
-    return <div className="text-center py-8">Loading order details...</div>;
+    return <div className="text-center py-8" data-testid="order-details-loading">Loading order details...</div>;
   }
 
   if (!order) {
-    return <div className="text-center py-8">Order not found</div>;
+    return <div className="text-center py-8" data-testid="order-details-not-found">Order not found</div>;
   }
 
   // Initialize selectedStatus with current order status if it's null
@@ -121,60 +121,67 @@ export const OrderDetails = () => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className="bg-white rounded-lg shadow-sm p-6" data-testid="order-details">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Order #{order.id}</h1>
-        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
+        <h1 className="text-2xl font-bold" data-testid="order-details-title">Order #{order.id}</h1>
+        <span 
+          className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}
+          data-testid="order-details-status"
+        >
           {order.status}
         </span>
       </div>
 
-      <div className="border-t border-gray-200 pt-4 mb-6">
-        <h2 className="text-lg font-semibold mb-3">Items</h2>
-        <div className="space-y-4">
+      <div className="border-t border-gray-200 pt-4 mb-6" data-testid="order-details-items-section">
+        <h2 className="text-lg font-semibold mb-3" data-testid="order-details-items-title">Items</h2>
+        <div className="space-y-4" data-testid="order-details-items-list">
           {order.items.map((item) => (
-            <div key={item.id} className="flex justify-between items-center border-b pb-3">
+            <div key={item.id} className="flex justify-between items-center border-b pb-3" data-testid={`order-item-${item.id}`}>
               <div>
-                <p className="font-medium">{item.productName}</p>
-                <p className="text-sm text-gray-500">${item.unitPrice} x {item.quantity}</p>
+                <p className="font-medium" data-testid={`order-item-name-${item.id}`}>{item.productName}</p>
+                <p className="text-sm text-gray-500" data-testid={`order-item-price-details-${item.id}`}>${item.unitPrice} x {item.quantity}</p>
               </div>
-              <p className="font-medium">${item.totalPrice.toFixed(2)}</p>
+              <p className="font-medium" data-testid={`order-item-total-${item.id}`}>${item.totalPrice.toFixed(2)}</p>
             </div>
           ))}
         </div>
-        <div className="flex justify-between items-center mt-4 pt-2 border-t">
+        <div className="flex justify-between items-center mt-4 pt-2 border-t" data-testid="order-details-total">
           <p className="font-semibold">Total</p>
-          <p className="font-bold text-lg">${order.totalAmount.toFixed(2)}</p>
+          <p className="font-bold text-lg" data-testid="order-details-total-amount">${order.totalAmount.toFixed(2)}</p>
         </div>
       </div>
 
-      <div className="border-t border-gray-200 pt-4 mb-6">
-        <h2 className="text-lg font-semibold mb-3">Shipping Address</h2>
-        <div className="text-gray-700">
-          <p>{order.shippingAddress.street}</p>
-          <p>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</p>
-          <p>{order.shippingAddress.country}</p>
+      <div className="border-t border-gray-200 pt-4 mb-6" data-testid="order-details-shipping-section">
+        <h2 className="text-lg font-semibold mb-3" data-testid="order-details-shipping-title">Shipping Address</h2>
+        <div className="text-gray-700" data-testid="order-details-shipping-address">
+          <p data-testid="order-details-address-street">{order.shippingAddress.street}</p>
+          <p data-testid="order-details-address-city-state">
+            {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}
+          </p>
+          <p data-testid="order-details-address-country">{order.shippingAddress.country}</p>
         </div>
       </div>
 
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center" data-testid="order-details-actions">
         {order.status === 'PENDING' && (
           <button
             onClick={handleCancelOrder}
             className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
             disabled={cancelOrderMutation.isPending}
+            data-testid="order-details-cancel-button"
           >
             {cancelOrderMutation.isPending ? 'Cancelling...' : 'Cancel Order'}
           </button>
         )}
 
         {isAdmin && (
-          <div className="flex items-center space-x-2 ml-auto">
+          <div className="flex items-center space-x-2 ml-auto" data-testid="order-details-admin-controls">
             <select
               value={selectedStatus || order.status}
               onChange={handleStatusChange}
               className="border rounded p-2"
               disabled={updateStatusMutation.isPending}
+              data-testid="order-details-status-select"
             >
               <option value="PENDING">Pending</option>
               <option value="PAID">Paid</option>
@@ -186,6 +193,7 @@ export const OrderDetails = () => {
               onClick={handleUpdateStatus}
               className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
               disabled={updateStatusMutation.isPending || selectedStatus === order.status}
+              data-testid="order-details-update-status-button"
             >
               {updateStatusMutation.isPending ? 'Updating...' : 'Update'}
             </button>

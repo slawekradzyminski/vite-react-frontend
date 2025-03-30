@@ -1,6 +1,6 @@
 import { test, expect } from '../fixtures/auth.fixture';
 import { ollamaMocks } from '../mocks/ollamaMocks';
-import { GeneratePage } from '../pages/generate.page';
+import { GeneratePage } from '../pages/generate.page.object';
 
 test.describe('Ollama Generate', () => {
   let generatePage: GeneratePage;

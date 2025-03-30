@@ -3,10 +3,11 @@ import { cn } from '../../lib/utils';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
+  'data-testid'?: string;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, error, ...props }, ref) => {
+  ({ className, type, error, 'data-testid': dataTestId, ...props }, ref) => {
     return (
       <input
         type={type}
@@ -16,6 +17,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           className,
         )}
         ref={ref}
+        data-testid={dataTestId || 'input'}
         {...props}
       />
     );

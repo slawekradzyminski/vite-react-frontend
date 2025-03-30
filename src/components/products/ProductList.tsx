@@ -58,12 +58,12 @@ export function ProductList({ category }: ProductListProps) {
   };
 
   const renderSearchAndSort = () => (
-    <div className="mb-6 flex justify-between items-center">
-      <h2 className="text-2xl font-bold">
+    <div className="mb-6 flex justify-between items-center" data-testid="product-list-controls">
+      <h2 className="text-2xl font-bold" data-testid="product-list-title">
         {category ? `${category} Products` : 'All Products'}
       </h2>
-      <div className="flex items-center space-x-4">
-        <div className="relative">
+      <div className="flex items-center space-x-4" data-testid="product-list-filters">
+        <div className="relative" data-testid="product-search-container">
           <input
             type="text"
             placeholder="Search products..."
@@ -88,8 +88,8 @@ export function ProductList({ category }: ProductListProps) {
             </button>
           )}
         </div>
-        <div className="flex items-center">
-          <label htmlFor="sort" className="mr-2">Sort by:</label>
+        <div className="flex items-center" data-testid="product-sort-container">
+          <label htmlFor="sort" className="mr-2" data-testid="product-sort-label">Sort by:</label>
           <select
             id="sort"
             className="border rounded p-2"
@@ -108,7 +108,7 @@ export function ProductList({ category }: ProductListProps) {
   );
 
   if (isLoading) {
-    return <div className="text-center py-8">Loading products...</div>;
+    return <div className="text-center py-8" data-testid="product-list-loading">Loading products...</div>;
   }
 
   if (error) {
@@ -117,12 +117,12 @@ export function ProductList({ category }: ProductListProps) {
 
   if (!filteredProducts.length) {
     return (
-      <div>
+      <div data-testid="product-list-empty-container">
         {renderSearchAndSort()}
         <div className="text-center py-8" data-testid="no-products-message">
           <p className="text-lg mb-2">No products found</p>
           {searchTerm && (
-            <div className="mt-4">
+            <div className="mt-4" data-testid="empty-search-actions">
               <p className="text-sm text-gray-600 mb-2">Try adjusting your search or</p>
               <button 
                 onClick={clearSearch}
@@ -139,7 +139,7 @@ export function ProductList({ category }: ProductListProps) {
   }
 
   return (
-    <div>
+    <div data-testid="product-list-container">
       {renderSearchAndSort()}
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="product-list">

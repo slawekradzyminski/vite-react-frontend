@@ -1,62 +1,56 @@
 import { test, expect } from '../fixtures/auth.fixture';
+import { ProfilePage } from '../pages/profile.page.object';
 
 test.describe('Profile Page', () => {
-  test('should display and update system prompt', async ({ authenticatedPage }) => {
-    // given
-    const { page } = authenticatedPage;
-    await page.goto('/profile');
-    await page.waitForSelector('h1:has-text("Profile")');
-    await expect(page.getByRole('heading', { name: 'System Prompt' })).toBeVisible();
-    
-    // when
-    const promptTextarea = page.getByLabel('Your System Prompt');
-    await promptTextarea.fill('This is my updated system prompt');
-    await page.getByRole('button', { name: 'Save Prompt' }).click();
-    
-    // then
-    await expect(page.getByRole('button', { name: 'Save Prompt' })).toBeEnabled();
-  });
-  
-  test('should display and update user information', async ({ authenticatedPage }) => {
-    // given
-    const { page, user } = authenticatedPage;
-    await page.goto('/profile');
-    await page.waitForSelector('h1:has-text("Profile")');
-    await expect(page.getByRole('heading', { name: 'Personal Information' })).toBeVisible();
-    const emailInput = page.getByLabel('Email');
-    await expect(emailInput).toHaveValue(user.email);
-    
-    // when
-    const firstNameInput = page.getByLabel('First Name');
-    const updatedName = `Updated${Date.now()}`;
-    await firstNameInput.fill(updatedName);
-    await page.getByRole('button', { name: 'Save Changes' }).click();
-    
-    // then
-    await expect(page.getByRole('button', { name: 'Save Changes' })).toBeEnabled();
-    await page.reload();
-    await page.waitForSelector('h1:has-text("Profile")');
-    await expect(page.getByLabel('First Name')).toHaveValue(updatedName);
-  });
-  
-  test('should display order history', async ({ authenticatedPage }) => {
-    // given
-    const { page } = authenticatedPage;
+  let profilePage: ProfilePage;
 
+  test.beforeEach(async ({ authenticatedPage }) => {
+    profilePage = new ProfilePage(authenticatedPage.page);
+    await profilePage.goto();
+  });
+
+  // given
+  test('should display and update system prompt', async () => {
     // when
-    await page.goto('/profile');
-    await page.waitForSelector('h1:has-text("Profile")');
-    await expect(page.getByRole('heading', { name: 'Your Orders' })).toBeVisible();
+    await expect(profilePage.systemPromptHeading).toBeVisible();
+    await profilePage.updateSystemPrompt('This is my updated system prompt');
     
     // then
-    const hasOrders = await page.locator('table').count() > 0;
+    await expect(profilePage.savePromptButton).toBeEnabled();
+  });
+  
+  // given
+  test('should display and update user information', async ({ authenticatedPage }) => {
+    const { user } = authenticatedPage;
+    
+    // when
+    await expect(profilePage.personalInfoHeading).toBeVisible();
+    await expect(profilePage.emailInput).toHaveValue(user.email);
+    
+    const updatedName = `Updated${Date.now()}`;
+    await profilePage.updateFirstName(updatedName);
+    
+    // then
+    await expect(profilePage.saveChangesButton).toBeEnabled();
+    await authenticatedPage.page.reload();
+    await authenticatedPage.page.waitForSelector('h1:has-text("Profile")');
+    await expect(profilePage.firstNameInput).toHaveValue(updatedName);
+  });
+  
+  // given
+  test('should display order history', async () => {
+    // when
+    await expect(profilePage.ordersHeading).toBeVisible();
+    
+    // then
+    const hasOrders = await profilePage.hasOrders();
     if (hasOrders) {
-      await expect(page.getByRole('columnheader', { name: 'Order ID' })).toBeVisible();
-      await expect(page.getByRole('columnheader', { name: 'Date' })).toBeVisible();
-      await expect(page.getByRole('columnheader', { name: 'Status' })).toBeVisible();
-      await expect(page.getByRole('columnheader', { name: 'Total' })).toBeVisible();
+      await expect(profilePage.orderIdColumnHeader).toBeVisible();
+      await expect(profilePage.dateColumnHeader).toBeVisible();
+      await expect(profilePage.statusColumnHeader).toBeVisible();
+      await expect(profilePage.totalColumnHeader).toBeVisible();
     } else {
-      await expect(page.getByText("You don't have any orders yet.")).toBeVisible();
+      await expect(profilePage.noOrdersMessage).toBeVisible();
     }
   });
 }); 

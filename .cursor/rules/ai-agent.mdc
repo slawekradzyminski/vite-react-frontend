@@ -1,71 +1,47 @@
 ---
-description: AI agent behavior, code style rules, and testing procedures
+description: Code style conventions and testing procedures for this project
 globs: src/**/*.css,src/**/*.tsx,src/**/*.ts,**/*.test.ts,**/*.test.tsx
+alwaysApply: false
 ---
 
-# Code Style Rules
+# Code Style Conventions
 
-## Styling
-- CSS should be kept in separate `.css` files, not in inline Tailwind classes
-- Use CSS modules for component-specific styles
-- Follow BEM naming convention for CSS classes
-- Avoid inline styles unless absolutely necessary for dynamic values
+## CSS Styling
+The project uses CSS modules for component-specific styles following the BEM naming convention. Component styling is kept in separate `.css` files rather than using inline Tailwind classes. Inline styles are used only when necessary for dynamic values.
 
-## JavaScript/TypeScript
-- Use modern syntax (import/export)
-- Avoid unnecessary comments explaining obvious code
-- Place TypeScript types in `/types` folder
-- Follow given/when/then pattern in test comments
+Files: 
+- `src/components/**/*.css` - Component-specific styles
+- `src/styles/` - Global styles and variables
 
-## AI Agent Behavior
+## JavaScript/TypeScript Conventions
+The project employs modern ES6+ syntax with import/export statements. TypeScript types are centralized in the `/types` folder for better organization and reuse. Code organization prioritizes readability and maintainability.
 
-### After Code Changes
-After any batch of code changes, ALWAYS:
-1. Run unit tests: `npm test`
-2. Run E2E tests: `npm run test:e2e:ai`
+Files:
+- `types/` - Shared TypeScript interfaces and types
+- `src/lib/utils.ts` - Common utility functions
 
-### Test Output Processing
-- Use list reporter output to analyze test results
-- Fix any failing tests before proceeding
-- If tests fail, analyze the error messages and fix the issues
+## Testing Approach
+Test files follow the given/when/then pattern in comments for clarity and consistency. This structure helps clearly separate test setup, actions, and assertions.
 
-### Change Validation
-Before completing any task:
-1. Ensure all unit tests pass
-2. Verify E2E tests pass
-3. Fix any test failures before moving to the next task
-4. Report test results to the user
+Testing infrastructure:
+- `package.json` - Contains test commands and dependencies
+- `vitest.config.ts` - Vitest configuration
+- `playwright.config.ts` - Playwright E2E test configuration
 
-### Error Handling
-If tests fail:
-1. Analyze the error messages
-2. Propose fixes for failing tests
-3. Apply fixes
-4. Re-run tests to verify fixes
+## Backend Monitoring and Debugging
+The project includes Docker-based services for the backend. Container logs provide valuable information about request/response details and error messages. The OpenAPI documentation offers comprehensive API reference.
 
-### Test Commands Reference
+Backend resources:
+- OpenAPI documentation at `http://localhost:4001/v3/api-docs`
+- Swagger UI for interactive API testing
+- `docker-compose.yml` - Container configuration
+
+## Testing Commands
+The following commands are available for testing the application:
 ```bash
-# Always run both:
 npm test            # Run unit tests
 npm run test:e2e:ai # Run E2E tests with AI-friendly output
 ```
-Iterate if needed.
 
-### Backend Communication
-- The backend container logs can be accessed using:
-  ```bash
-  docker ps # to get the container ID
-  docker logs <container-id>
-  ```
-- Monitor the logs for request/response details and error messages
-
-### API Documentation
-- Always refer to the OpenAPI documentation at `http://localhost:4001/v3/api-docs`
-- Use Swagger UI for interactive API testing
-- Check the backend source code in `backend.md` for implementation details
-
-### Git Changes
-Test failures may be caused by recent changes since git HEAD is kept stable. To see the changes use:
-```bash
-git --no-pager diff
-``` 
+## Change Validation Process
+Before completing tasks, it's important to validate changes through the test suite. If tests fail, analyzing error messages helps identify and fix issues. The backend container logs (`docker logs <container-id>`) provide additional context for API-related failures. 

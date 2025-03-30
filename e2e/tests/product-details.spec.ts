@@ -1,7 +1,7 @@
 import { test, expect } from '../fixtures/auth.fixture';
 import { cartMocks } from '../mocks/cartMocks';
 import { productsMocks, Product } from '../mocks/productMocks';
-import { ProductDetailsPage } from '../pages/product-details.page';
+import { ProductDetailsPage } from '../pages/product-details.page.object';
 
 test.describe('Product Details Page', () => {
   let productDetailsPage: ProductDetailsPage;

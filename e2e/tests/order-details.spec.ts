@@ -1,7 +1,7 @@
 import { test, expect } from '../fixtures/auth.fixture';
 import { meMocks } from '../mocks/meMocks';
 import { orderMocks } from '../mocks/orderMocks';
-import { OrderDetailsPage } from '../pages/order-details.page';
+import { OrderDetailsPage } from '../pages/order-details.page.object';
 
 test.describe('Order Details', () => {
   test('should display order details for a customer', async ({ authenticatedPage }) => {

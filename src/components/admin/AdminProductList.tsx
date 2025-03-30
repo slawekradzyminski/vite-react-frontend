@@ -35,12 +35,12 @@ export function AdminProductList() {
   };
   
   if (isLoading) {
-    return <div className="text-center py-8">Loading products...</div>;
+    return <div className="text-center py-8" data-testid="admin-product-list-loading">Loading products...</div>;
   }
   
   if (error) {
     return (
-      <div className="text-center py-8">
+      <div className="text-center py-8" data-testid="admin-product-list-error">
         <p className="text-red-500 mb-4">Error loading products</p>
       </div>
     );
@@ -49,30 +49,32 @@ export function AdminProductList() {
   const productList = data?.data || [];
   
   return (
-    <div className="max-w-6xl mx-auto p-4">
+    <div className="max-w-6xl mx-auto p-4" data-testid="admin-product-list">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Manage Products</h1>
+        <h1 className="text-2xl font-bold" data-testid="admin-product-list-title">Manage Products</h1>
         <Link
           to="/admin/products/new"
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+          data-testid="admin-product-list-add-new"
         >
           Add New Product
         </Link>
       </div>
       
       {productList.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+        <div className="bg-white rounded-lg shadow-sm p-8 text-center" data-testid="admin-product-list-empty">
           <p className="text-gray-600 mb-4">No products found</p>
           <Link
             to="/admin/products/new"
             className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+            data-testid="admin-product-list-empty-add"
           >
             Add Your First Product
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden" data-testid="admin-product-list-table-container">
+          <table className="min-w-full divide-y divide-gray-200" data-testid="admin-product-list-table">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -97,7 +99,7 @@ export function AdminProductList() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {productList.map((product: Product) => (
-                <tr key={product.id}>
+                <tr key={product.id} data-testid={`admin-product-row-${product.id}`}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {product.id}
                   </td>
@@ -109,29 +111,31 @@ export function AdminProductList() {
                             className="h-10 w-10 rounded-full object-cover"
                             src={product.imageUrl}
                             alt={product.name}
+                            data-testid={`admin-product-image-${product.id}`}
                           />
                         </div>
                       )}
                       <div>
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900" data-testid={`admin-product-name-${product.id}`}>
                           {product.name}
                         </div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-testid={`admin-product-price-${product.id}`}>
                     ${product.price.toFixed(2)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-testid={`admin-product-stock-${product.id}`}>
                     {product.stockQuantity}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-testid={`admin-product-category-${product.id}`}>
                     {product.category}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <Link
                       to={`/admin/products/edit/${product.id}`}
                       className="text-blue-600 hover:text-blue-900 mr-4"
+                      data-testid={`admin-product-edit-${product.id}`}
                     >
                       Edit
                     </Link>
@@ -139,6 +143,7 @@ export function AdminProductList() {
                       onClick={() => handleDelete(product.id)}
                       className="text-red-600 hover:text-red-900"
                       disabled={isDeleting === product.id}
+                      data-testid={`admin-product-delete-${product.id}`}
                     >
                       {isDeleting === product.id ? 'Deleting...' : 'Delete'}
                     </button>

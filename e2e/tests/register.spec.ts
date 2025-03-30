@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { getRandomUser } from '../generators/userGenerator';
 import { registerUser } from '../http/postSignUp';
-import { RegisterPage } from '../pages/register.page';
+import { RegisterPage } from '../pages/register.page.object';
 
 test.describe('Register Page', () => {
   let registerPage: RegisterPage;

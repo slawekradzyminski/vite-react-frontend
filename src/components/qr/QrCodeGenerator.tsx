@@ -46,10 +46,10 @@ export function QrCodeGenerator() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto p-6">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <Text as="label" size="2" htmlFor="qr-text" weight="medium">
+    <Card className="w-full max-w-md mx-auto p-6" data-testid="qr-generator">
+      <form onSubmit={handleSubmit} className="space-y-6" data-testid="qr-generator-form">
+        <div data-testid="qr-text-field">
+          <Text as="label" size="2" htmlFor="qr-text" weight="medium" data-testid="qr-text-label">
             Text or URL for QR Code
           </Text>
           <TextArea 
@@ -59,13 +59,15 @@ export function QrCodeGenerator() {
             onChange={(e) => setText(e.target.value)}
             disabled={isLoading}
             className="mt-1.5"
+            data-testid="qr-text-input"
           />
         </div>
-        <Flex gap="3">
+        <Flex gap="3" data-testid="qr-generator-actions">
           <Button 
             type="submit" 
             disabled={isLoading}
             className="flex-1"
+            data-testid="qr-generate-button"
           >
             {isLoading ? 'Generating...' : 'Generate QR Code'}
           </Button>
@@ -75,6 +77,7 @@ export function QrCodeGenerator() {
             onClick={handleClear}
             disabled={isLoading || !text}
             className="flex-1"
+            data-testid="qr-clear-button"
           >
             Clear
           </Button>
@@ -82,12 +85,13 @@ export function QrCodeGenerator() {
       </form>
 
       {qrCode && (
-        <div className="mt-8 flex justify-center">
-          <Card className="p-4">
+        <div className="mt-8 flex justify-center" data-testid="qr-code-result">
+          <Card className="p-4" data-testid="qr-code-container">
             <img
               src={qrCode}
               alt="Generated QR Code"
               className="w-64 h-64"
+              data-testid="qr-code-image"
             />
           </Card>
         </div>

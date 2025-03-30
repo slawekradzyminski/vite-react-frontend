@@ -280,4 +280,53 @@ describe('Navigation', () => {
     expect(window.location.pathname).toBe('/profile');
     expect(screen.queryByTestId('mobile-menu')).not.toBeInTheDocument();
   });
+
+  it('shows mobile menu items in correct order (links, cart, username, logout)', async () => {
+    // given
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValue({
+      data: {
+        id: 1,
+        username: 'testuser',
+        email: 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        roles: [Role.CLIENT],
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+
+    renderWithProviders(<Navigation />);
+    
+    // Wait for auth state to be loaded
+    await waitFor(() => {
+      expect(screen.getByTestId('mobile-menu-toggle')).toBeInTheDocument();
+    });
+    
+    // when
+    const menuButton = screen.getByTestId('mobile-menu-toggle');
+    await user.click(menuButton);
+
+    // then
+    const mobileMenu = screen.getByTestId('mobile-menu');
+    const menuItems = mobileMenu.querySelectorAll('a, button');
+    const menuItemsArray = Array.from(menuItems);
+    
+    // First items should be navigation links
+    expect(menuItemsArray[0]).toHaveTextContent('Home');
+    expect(menuItemsArray[1]).toHaveTextContent('Products');
+    
+    // Cart should come after navigation links but before username
+    const cartIndex = menuItemsArray.findIndex(item => item.textContent?.includes('Cart'));
+    const usernameIndex = menuItemsArray.findIndex(item => item.textContent?.includes('Test User'));
+    const logoutIndex = menuItemsArray.findIndex(item => item.textContent?.includes('Logout'));
+    
+    expect(cartIndex).toBeGreaterThan(0);
+    expect(usernameIndex).toBeGreaterThan(cartIndex);
+    expect(logoutIndex).toBeGreaterThan(usernameIndex);
+    expect(logoutIndex).toBe(menuItemsArray.length - 1); // Logout should be last
+  });
 }); 
