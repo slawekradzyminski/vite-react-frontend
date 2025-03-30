@@ -150,28 +150,6 @@ export function Navigation() {
       {isOpen && user?.data && (
         <div className="sm:hidden" data-testid="mobile-menu">
           <div className="pt-2 pb-3 space-y-1">
-            <Link
-              to="/profile"
-              className="block pl-3 pr-4 py-2 text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50"
-              onClick={() => setIsOpen(false)}
-              data-testid="mobile-menu-username"
-            >
-              {user.data.firstName} {user.data.lastName}
-            </Link>
-            <Link
-              to="/cart"
-              className="block pl-3 pr-4 py-2 text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 items-center"
-              onClick={() => setIsOpen(false)}
-              data-testid="mobile-menu-cart"
-            >
-              Cart
-              {cartItemCount > 0 && (
-                <span className="ml-2 bg-indigo-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center" data-testid="mobile-cart-item-count">
-                  {cartItemCount}
-                </span>
-              )}
-            </Link>
-            
             {authMenuItems.map((item) => (
               <Link
                 key={item.path}
@@ -195,6 +173,29 @@ export function Navigation() {
                 {item.label}
               </Link>
             ))}
+            
+            <Link
+              to="/cart"
+              className="block pl-3 pr-4 py-2 text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 items-center"
+              onClick={() => setIsOpen(false)}
+              data-testid="mobile-menu-cart"
+            >
+              Cart
+              {cartItemCount > 0 && (
+                <span className="ml-2 bg-indigo-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center" data-testid="mobile-cart-item-count">
+                  {cartItemCount}
+                </span>
+              )}
+            </Link>
+            
+            <Link
+              to="/profile"
+              className="block pl-3 pr-4 py-2 text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+              onClick={() => setIsOpen(false)}
+              data-testid="mobile-menu-username"
+            >
+              {user.data.firstName} {user.data.lastName}
+            </Link>
             
             <Button
               variant="ghost"

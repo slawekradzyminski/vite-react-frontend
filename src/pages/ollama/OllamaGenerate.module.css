@@ -1,10 +1,15 @@
 .markdownContainer {
-  @apply prose prose-sm max-w-none leading-tight;
+  max-width: none;
+  font-size: 0.875rem;
+  line-height: 1.25;
+  overflow-wrap: break-word;
 }
 
 /* Reset all margins and line heights */
 .markdownContainer :global(*) {
-  @apply my-0 leading-tight;
+  margin-top: 0;
+  margin-bottom: 0;
+  line-height: 1.25;
 }
 
 .markdownContainer :global(h1),
@@ -13,38 +18,45 @@
 .markdownContainer :global(h4),
 .markdownContainer :global(h5),
 .markdownContainer :global(h6) {
-  @apply mt-2 mb-0.5;
+  margin-top: 0.5rem;
+  margin-bottom: 0.125rem;
 }
 
 .markdownContainer :global(p) {
-  @apply my-0.5;
+  margin-top: 0.125rem;
+  margin-bottom: 0.125rem;
 }
 
 .markdownContainer :global(ul),
 .markdownContainer :global(ol) {
-  @apply my-0.5 py-0;
+  margin-top: 0.125rem;
+  margin-bottom: 0.125rem;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .markdownContainer :global(li) {
-  @apply my-0;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .markdownContainer :global(pre),
 .markdownContainer :global(code) {
-  @apply my-0.5;
+  margin-top: 0.125rem;
+  margin-bottom: 0.125rem;
 }
 
 /* Remove spacing from first and last elements */
 .markdownContainer :global(*:first-child) {
-  @apply mt-0;
+  margin-top: 0;
 }
 
 .markdownContainer :global(*:last-child) {
-  @apply mb-0;
+  margin-bottom: 0;
 }
 
 /* Reduce line height for lists */
 .markdownContainer :global(ul),
 .markdownContainer :global(ol) {
-  @apply leading-none;
+  line-height: 1;
 } 
