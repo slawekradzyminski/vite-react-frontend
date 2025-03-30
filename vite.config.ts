@@ -33,4 +33,17 @@ export default defineVitestConfig({
   define: {
     global: 'window',
   },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          ui: ['@radix-ui/react-label', '@radix-ui/react-slot', '@radix-ui/react-tabs', '@radix-ui/react-toast', '@radix-ui/themes'],
+          utils: ['@hookform/resolvers', 'zod', 'clsx', 'tailwind-merge', 'class-variance-authority'],
+          query: ['@tanstack/react-query'],
+        }
+      }
+    }
+  }
 })

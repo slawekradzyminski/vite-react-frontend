@@ -13,7 +13,7 @@ vi.mock('react-markdown', () => ({
 }));
 
 vi.mock('../ollama/chatPage', () => ({
-  OllamaChatPage: ({ hideTitle }: { hideTitle?: boolean }) => (
+  OllamaChatPage: () => (
     <div data-testid="ollama-chat-page" className="flex flex-col">
       <div data-testid="model-selection" className="mb-4">
         <label data-testid="model-label" htmlFor="model" className="block font-medium mb-2">Model</label>
@@ -37,7 +37,7 @@ vi.mock('../ollama/chatPage', () => ({
 }));
 
 vi.mock('../ollama/generatePage', () => ({
-  OllamaGeneratePage: ({ hideTitle }: { hideTitle?: boolean }) => (
+  OllamaGeneratePage: () => (
     <div data-testid="ollama-generate-page" className="flex flex-col">
       <div data-testid="model-selection" className="mb-4">
         <label data-testid="model-label" htmlFor="model" className="block font-medium mb-2">Model</label>
