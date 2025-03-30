@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures/auth.fixture';
-import { DesktopNavigation, MobileNavigation } from '../pages/navigation';
+import { DesktopNavigation, MobileNavigation } from '../pages/navigation.page.object';
 
 test.describe('Navigation', () => {
   let desktopNav: DesktopNavigation;

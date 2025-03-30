@@ -1,57 +1,52 @@
 ---
-description: Environment setup, debugging practices, and development workflow
-globs: docker-compose.yml,package.json,vite.config.js
+description: Development environment configuration and debugging resources
+globs: package.json,vite.config.js
+alwaysApply: false
 ---
 
-# Environment Setup and Debugging
+# Development Environment
 
-### Development Environment
-- Frontend dev server: `http://localhost:8081`
-- Backend service: `http://localhost:4001`
-- Database: H2 in-memory database
+## Service Architecture
+The project consists of frontend and backend services that work together. The frontend runs on a Vite dev server, while the backend runs in a Docker container with an in-memory H2 database.
 
-### Backend Services
-Available endpoints:
-- API Documentation: `http://localhost:4001/v3/api-docs`
-- Swagger UI: `http://localhost:4001/swagger-ui/index.html`
-- H2 Console: `http://localhost:4001/h2-console`
+Key endpoints:
+- Frontend: `http://localhost:8081` - Main application interface
+- Backend API: `http://localhost:4001` - RESTful API services
+- API Documentation: `http://localhost:4001/v3/api-docs` - OpenAPI documentation
+- Swagger UI: `http://localhost:4001/swagger-ui/index.html` - Interactive API explorer
+- H2 Console: `http://localhost:4001/h2-console` - Database interface
 
-### Docker Setup
+## Docker Configuration
+The backend services are containerized using Docker Compose. The configuration is defined in `docker-compose.yml`. Container logs provide valuable debugging information for backend services.
+
+Common Docker commands:
 ```bash
-# Start backend
-docker compose up -d
-
-# View logs
-docker ps
-docker logs <container-id>
+docker compose up -d  # Start backend
+docker ps             # List running containers
+docker logs <id>      # View container logs
 ```
 
-### Common Issues
+## Common Issues and Solutions
 
-#### Authentication Issues (401)
-- Check JWT token validity
-- Verify token is included in requests
-- Check token expiration
+### Authentication Troubleshooting
+Authentication issues (401 responses) typically involve JWT token problems. Possible causes include expired tokens, missing tokens in requests, or invalid token format.
 
-#### API Errors
-- Check backend logs for details
-- Verify request payload
-- Check network tab in browser
+### API Error Resolution
+When encountering API errors, the backend logs provide detailed information. Additional debugging can be done through the browser's network tab or Swagger UI.
 
-### Development Workflow
-- Frontend changes are hot-reloaded
+## Development Workflow Characteristics
+- Frontend changes are hot-reloaded for immediate feedback
 - Backend changes require container restart
-- Database resets on container restart
+- Database state resets when the container restarts
 
-### Available Scripts
+## Project Scripts
+The `package.json` file defines various scripts for development, building, and testing:
+
 ```bash
-# Development
-npm run dev          # Start dev server
-npm run build        # Production build
-npm run preview      # Preview build
-
-# Testing
-npm run test         # Unit tests
-npm run test:e2e     # E2E tests
-npm run test:e2e:ai  # E2E tests (AI friendly)
+npm run dev          # Start development server
+npm run build        # Create production build
+npm run preview      # Preview production build
+npm run test         # Run unit tests
+npm run test:e2e     # Run end-to-end tests
+npm run test:e2e:ai  # Run E2E tests with AI-friendly output
 ``` 

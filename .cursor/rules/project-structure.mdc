@@ -1,11 +1,14 @@
 ---
-description: Project structure, organization, and coding patterns
+description: Project architecture, component organization, and code structure patterns
 globs: **/*.test.tsx,**/*.test.ts,e2e/*.spec.ts
+alwaysApply: false
 ---
 
-# Project Structure and Organization
+# Project Architecture
 
-### Directory Structure
+## Directory Organization
+The codebase follows a structured organization pattern that separates concerns and promotes reusability. The main source code resides in the `src` directory with specialized subdirectories for different aspects of the application.
+
 ```
 src/
 ├── components/         # Reusable UI components
@@ -19,43 +22,40 @@ src/
 └── App.tsx            # Main component
 ```
 
-### Component Guidelines
-- Place reusable UI components in `components/ui/`
-- Feature components go in `components/`
-- Pages go in `pages/`
-- Types go in `types/` directory
+## Component Architecture
+The project separates components into several categories based on their purpose and scope:
 
-### Styling Guidelines
-- Use Tailwind CSS utility classes
-- Follow shadcn/ui component patterns
-- Maintain responsive design
-- Avoid inline styles
+- Base UI components (`components/ui/`) provide foundational elements that follow shadcn/ui component patterns
+- Feature components (`components/`) implement specific application features and business logic
+- Page components (`pages/`) represent complete views or routes in the application
+- Type definitions (`types/`) contain shared TypeScript interfaces and types
 
-### API Integration
-- Use React Query for server state
-- Define types for API responses
-- Handle errors consistently
-- Use axios interceptors for auth
+Key files:
+- `src/App.tsx` - The main application component that handles routing
+- `src/lib/api.ts` - API client configuration and request handling
 
-### Authentication
-- Use `ProtectedRoute` for protected routes
-- Check roles: `currentUser?.data.roles.includes()`
-- Handle 401/403 errors in API interceptor
+## Styling Architecture
+The project uses Tailwind CSS for styling with an emphasis on responsive design. CSS is organized following component boundaries to maintain clear separation of concerns. Inline styles are avoided in favor of utility classes and component-based styling.
 
-### Type Definitions
-- Place shared types in `types/` directory
-- Use TypeScript interfaces over types
-- Export types from feature-specific files
-- Follow naming convention: `IEntityName` or `EntityNameProps`
+## API Integration Pattern
+The application uses React Query for server state management. API types and interfaces are defined to match backend responses. Error handling is implemented consistently throughout the application.
 
-### State Management
-- Use React Query for server state
-- Use React Context for global UI state
-- Prefer local state when possible
-- Implement proper cache invalidation
+Key aspects:
+- API response types in `types/` directory
+- React Query configurations in components
+- Axios interceptors for authentication handling
 
-### Code Style
-- Use modern ES6+ syntax
-- Use named exports
-- Implement proper error handling
-- Add appropriate TypeScript types 
+## Authentication System
+Authentication is handled through a JWT-based system with protected routes. The `ProtectedRoute` component checks user authentication status and roles before rendering protected content.
+
+Implementation files:
+- Role-based access control in components
+- API interceptors for handling authentication errors (401/403)
+
+## State Management Approach
+The application follows a structured approach to state management:
+- Server state managed through React Query
+- Application-wide UI state in React Context
+- Component-local state using React's useState/useReducer
+
+This separation helps maintain clear responsibility boundaries and improves performance. 

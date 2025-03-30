@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures/auth.fixture';
-import { HomePage } from '../pages/home.page';
+import { HomePage } from '../pages/home.page.object';
 
 test.describe('Home Page', () => {
   let homePage: HomePage;

@@ -1,6 +1,6 @@
 import { BACKEND_URL } from '../config/constants';
 import { test, expect } from '../fixtures/auth.fixture';
-import { TrafficPage } from '../pages/traffic.page';
+import { TrafficPage } from '../pages/traffic.page.object';
 
 test.describe('Traffic Monitor Page', () => {
   let trafficPage: TrafficPage;

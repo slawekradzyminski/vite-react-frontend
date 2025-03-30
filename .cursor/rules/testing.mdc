@@ -1,6 +1,7 @@
 ---
 description: Testing patterns and conventions for unit tests (Vitest) and E2E tests (Playwright)
-globs: **/*.test.tsx,**/*.test.ts,e2e/*.spec.ts
+globs: **/*.test.tsx,**/*.spec.ts
+alwaysApply: false
 ---
 # Testing Patterns
 

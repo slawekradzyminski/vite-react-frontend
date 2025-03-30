@@ -1,6 +1,6 @@
 import { test, expect } from '../fixtures/auth.fixture';
 import { ollamaChatMocks } from '../mocks/ollamaChatMocks';
-import { ChatPage } from '../pages/chat.page';
+import { ChatPage } from '../pages/chat.page.object';
 
 test.describe('Ollama Chat', () => {
   let chatPage: ChatPage;

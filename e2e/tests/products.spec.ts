@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures/auth.fixture';
-import { ProductsPage } from '../pages/products.page';
+import { ProductsPage } from '../pages/products.page.object';
 import { productsMocks } from '../mocks/productMocks';
 
 test.describe('Products Page', () => {

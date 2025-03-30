@@ -1,5 +1,5 @@
 import { Locator } from '@playwright/test';
-import { LLMPage } from './llm.page';
+import { LLMPage } from './llm.page.object';
 
 export class GeneratePage extends LLMPage {
   readonly generateTab: Locator;
