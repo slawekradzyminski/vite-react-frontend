@@ -26,10 +26,10 @@ export function EmailPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-2xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">
+    <div className="min-h-screen bg-gray-50" data-testid="email-page">
+      <div className="max-w-2xl mx-auto py-8 px-4 sm:px-6 lg:px-8" data-testid="email-page-container">
+        <div className="bg-white rounded-lg shadow p-6" data-testid="email-card">
+          <h1 className="text-2xl font-bold text-gray-900 mb-6" data-testid="email-page-title">
             Send Email
           </h1>
           <EmailForm onSubmit={mutate} />

@@ -36,43 +36,46 @@ export function UserEditForm({ user, onSave, isUpdating = false }: UserEditFormP
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-6 rounded-lg shadow">
-      <div>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-6 rounded-lg shadow" data-testid="user-edit-form">
+      <div data-testid="user-edit-email-field">
         <Label htmlFor="email">Email</Label>
         <Input
           id="email"
           className="mt-1"
           error={errors.email?.message}
+          data-testid="user-edit-email-input"
           {...register('email')}
         />
         {errors.email?.message && (
-          <p className="mt-1 text-sm text-red-600" role="alert">{errors.email.message}</p>
+          <p className="mt-1 text-sm text-red-600" role="alert" data-testid="user-edit-email-error">{errors.email.message}</p>
         )}
       </div>
 
-      <div>
+      <div data-testid="user-edit-firstName-field">
         <Label htmlFor="firstName">First Name</Label>
         <Input
           id="firstName"
           className="mt-1"
           error={errors.firstName?.message}
+          data-testid="user-edit-firstName-input"
           {...register('firstName')}
         />
         {errors.firstName?.message && (
-          <p className="mt-1 text-sm text-red-600" role="alert">{errors.firstName.message}</p>
+          <p className="mt-1 text-sm text-red-600" role="alert" data-testid="user-edit-firstName-error">{errors.firstName.message}</p>
         )}
       </div>
 
-      <div>
+      <div data-testid="user-edit-lastName-field">
         <Label htmlFor="lastName">Last Name</Label>
         <Input
           id="lastName"
           className="mt-1"
           error={errors.lastName?.message}
+          data-testid="user-edit-lastName-input"
           {...register('lastName')}
         />
         {errors.lastName?.message && (
-          <p className="mt-1 text-sm text-red-600" role="alert">{errors.lastName.message}</p>
+          <p className="mt-1 text-sm text-red-600" role="alert" data-testid="user-edit-lastName-error">{errors.lastName.message}</p>
         )}
       </div>
 
@@ -80,6 +83,7 @@ export function UserEditForm({ user, onSave, isUpdating = false }: UserEditFormP
         <Button
           type="submit"
           disabled={isUpdating}
+          data-testid="user-edit-submit"
         >
           {isUpdating ? 'Saving...' : 'Save Changes'}
         </Button>

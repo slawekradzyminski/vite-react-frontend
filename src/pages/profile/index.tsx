@@ -115,22 +115,22 @@ export function Profile() {
   };
 
   if (isLoadingUser) {
-    return <div className="text-center p-8">Loading user data...</div>;
+    return <div className="text-center p-8" data-testid="profile-loading">Loading user data...</div>;
   }
 
   if (!currentUser?.data) {
-    return <div className="text-center p-8">User not found</div>;
+    return <div className="text-center p-8" data-testid="profile-not-found">User not found</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="mx-auto max-w-4xl">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Profile</h1>
+    <div className="min-h-screen bg-gray-50 p-8" data-testid="profile-page">
+      <div className="mx-auto max-w-4xl" data-testid="profile-container">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8" data-testid="profile-title">Profile</h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8" data-testid="profile-sections">
           {/* User Edit Form */}
-          <div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Personal Information</h2>
+          <div data-testid="profile-user-section">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4" data-testid="profile-user-title">Personal Information</h2>
             <UserEditForm 
               user={currentUser.data} 
               onSave={handleUserUpdate}
@@ -139,29 +139,31 @@ export function Profile() {
           </div>
 
           {/* System Prompt Form */}
-          <div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">System Prompt</h2>
+          <div data-testid="profile-prompt-section">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4" data-testid="profile-prompt-title">System Prompt</h2>
             {isLoadingPrompt ? (
-              <div className="text-center p-4">Loading prompt...</div>
+              <div className="text-center p-4" data-testid="profile-prompt-loading">Loading prompt...</div>
             ) : (
-              <form onSubmit={handleSubmit(onSystemPromptSubmit)} className="space-y-4 bg-white p-6 rounded-lg shadow">
-                <div>
+              <form onSubmit={handleSubmit(onSystemPromptSubmit)} className="space-y-4 bg-white p-6 rounded-lg shadow" data-testid="profile-prompt-form">
+                <div data-testid="profile-prompt-field">
                   <Label htmlFor="systemPrompt">Your System Prompt</Label>
                   <Textarea
                     id="systemPrompt"
                     className="mt-1 h-32"
                     placeholder="Enter your system prompt here..."
                     {...register('systemPrompt')}
+                    data-testid="profile-prompt-input"
                   />
                   {errors.systemPrompt?.message && (
-                    <p className="mt-1 text-sm text-red-600" role="alert">{errors.systemPrompt.message}</p>
+                    <p className="mt-1 text-sm text-red-600" role="alert" data-testid="profile-prompt-error">{errors.systemPrompt.message}</p>
                   )}
                 </div>
 
-                <div className="flex justify-end">
+                <div className="flex justify-end" data-testid="profile-prompt-actions">
                   <Button
                     type="submit"
                     disabled={updatePromptMutation.isPending}
+                    data-testid="profile-prompt-submit"
                   >
                     {updatePromptMutation.isPending ? 'Saving...' : 'Save Prompt'}
                   </Button>
@@ -172,7 +174,7 @@ export function Profile() {
         </div>
 
         {/* Order History */}
-        <div className="mt-12">
+        <div className="mt-12" data-testid="profile-orders-section">
           <OrderList />
         </div>
       </div>

@@ -70,11 +70,11 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
   };
 
   if (isEditMode && isLoadingProduct) {
-    return <div className="text-center py-4">Loading product data...</div>;
+    return <div className="text-center py-4" data-testid="product-form-loading">Loading product data...</div>;
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" data-testid="product-form">
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-gray-700">
           Product Name*
@@ -84,9 +84,10 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
           type="text"
           className={`mt-1 block w-full rounded-md border ${errors.name ? 'border-red-500' : 'border-gray-300'} p-2`}
           {...register('name', { required: 'Product name is required', minLength: 3, maxLength: 100 })}
+          data-testid="product-name-input"
         />
         {errors.name && (
-          <p className="mt-1 text-sm text-red-600">{errors.name.message || 'Name must be between 3 and 100 characters'}</p>
+          <p className="mt-1 text-sm text-red-600" data-testid="product-name-error">{errors.name.message || 'Name must be between 3 and 100 characters'}</p>
         )}
       </div>
 
@@ -99,9 +100,10 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
           rows={4}
           className="mt-1 block w-full rounded-md border border-gray-300 p-2"
           {...register('description', { maxLength: 1000 })}
+          data-testid="product-description-input"
         />
         {errors.description && (
-          <p className="mt-1 text-sm text-red-600">Description must be less than 1000 characters</p>
+          <p className="mt-1 text-sm text-red-600" data-testid="product-description-error">Description must be less than 1000 characters</p>
         )}
       </div>
 
@@ -121,9 +123,10 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
               min: { value: 0.01, message: 'Price must be greater than 0' },
               valueAsNumber: true
             })}
+            data-testid="product-price-input"
           />
           {errors.price && (
-            <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>
+            <p className="mt-1 text-sm text-red-600" data-testid="product-price-error">{errors.price.message}</p>
           )}
         </div>
 
@@ -141,9 +144,10 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
               min: { value: 0, message: 'Stock quantity cannot be negative' },
               valueAsNumber: true
             })}
+            data-testid="product-stock-input"
           />
           {errors.stockQuantity && (
-            <p className="mt-1 text-sm text-red-600">{errors.stockQuantity.message}</p>
+            <p className="mt-1 text-sm text-red-600" data-testid="product-stock-error">{errors.stockQuantity.message}</p>
           )}
         </div>
       </div>
@@ -157,9 +161,10 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
           type="text"
           className={`mt-1 block w-full rounded-md border ${errors.category ? 'border-red-500' : 'border-gray-300'} p-2`}
           {...register('category', { required: 'Category is required' })}
+          data-testid="product-category-input"
         />
         {errors.category && (
-          <p className="mt-1 text-sm text-red-600">{errors.category.message}</p>
+          <p className="mt-1 text-sm text-red-600" data-testid="product-category-error">{errors.category.message}</p>
         )}
       </div>
 
@@ -177,9 +182,10 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
               message: 'Must be a valid URL or empty'
             }
           })}
+          data-testid="product-image-input"
         />
         {errors.imageUrl && (
-          <p className="mt-1 text-sm text-red-600">{errors.imageUrl.message}</p>
+          <p className="mt-1 text-sm text-red-600" data-testid="product-image-error">{errors.imageUrl.message}</p>
         )}
       </div>
 
@@ -188,6 +194,7 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
           type="submit"
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors disabled:bg-gray-400"
           disabled={isSubmitting}
+          data-testid="product-submit-button"
         >
           {isSubmitting ? 'Saving...' : isEditMode ? 'Update Product' : 'Create Product'}
         </button>

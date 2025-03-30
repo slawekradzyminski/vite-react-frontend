@@ -57,38 +57,40 @@ function InternalToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={contextValue}>
       {children}
-      <ToastPrimitive.Provider swipeDirection="right">
+      <ToastPrimitive.Provider swipeDirection="right" data-testid="toast-provider">
         {toasts.map(({ id, title, description, action, variant = 'default', open }) => (
           <ToastPrimitive.Root
             key={id}
             open={open}
             className={`${styles.toast} ${styles[variant]}`}
             onOpenChange={(open) => handleOpenChange(id, open)}
+            data-testid={`toast-${id}`}
           >
-            <div className="flex-1">
+            <div className="flex-1" data-testid="toast-content">
               {title && (
-                <ToastPrimitive.Title className={styles.title}>
+                <ToastPrimitive.Title className={styles.title} data-testid="toast-title">
                   {title}
                 </ToastPrimitive.Title>
               )}
-              <ToastPrimitive.Description className={styles.description}>
+              <ToastPrimitive.Description className={styles.description} data-testid="toast-description">
                 {description}
               </ToastPrimitive.Description>
             </div>
             {action && (
-              <ToastPrimitive.Action altText="toast-action" asChild>
+              <ToastPrimitive.Action altText="toast-action" asChild data-testid="toast-action">
                 {action}
               </ToastPrimitive.Action>
             )}
             <ToastPrimitive.Close
               aria-label="Close"
               className={styles.close}
+              data-testid="toast-close"
             >
-              <span aria-hidden className={styles.closeIcon}>×</span>
+              <span aria-hidden className={styles.closeIcon} data-testid="toast-close-icon">×</span>
             </ToastPrimitive.Close>
           </ToastPrimitive.Root>
         ))}
-        <ToastPrimitive.Viewport />
+        <ToastPrimitive.Viewport data-testid="toast-viewport" />
       </ToastPrimitive.Provider>
     </ToastContext.Provider>
   );

@@ -32,44 +32,45 @@ export function UsersPage() {
   const isAdmin = !isLoading && !!(currentUser?.data.roles && currentUser.data.roles.includes(Role.ADMIN));
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="mx-auto max-w-4xl">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Users</h1>
-          <Button variant="outline" onClick={() => navigate('/')}>Back to Home</Button>
+    <div className="min-h-screen bg-gray-50 p-8" data-testid="users-page">
+      <div className="mx-auto max-w-4xl" data-testid="users-container">
+        <div className="flex justify-between items-center mb-8" data-testid="users-header">
+          <h1 className="text-3xl font-bold text-gray-900" data-testid="users-title">Users</h1>
+          <Button variant="outline" onClick={() => navigate('/')} data-testid="users-back-button">Back to Home</Button>
         </div>
 
         {isLoading && (
-          <div className="text-center">Loading users...</div>
+          <div className="text-center" data-testid="users-loading">Loading users...</div>
         )}
 
         {error && (
-          <div className="text-red-600">Failed to load users</div>
+          <div className="text-red-600" data-testid="users-error">Failed to load users</div>
         )}
 
         {users && (
-          <div className="bg-white shadow-sm rounded-lg divide-y">
+          <div className="bg-white shadow-sm rounded-lg divide-y" data-testid="users-list">
             {users && users.map((user) => (
-              <div key={user.id} className="p-6">
+              <div key={user.id} className="p-6" data-testid={`user-item-${user.id}`}>
                 <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900">
+                  <div data-testid={`user-info-${user.id}`}>
+                    <h3 className="text-lg font-medium text-gray-900" data-testid={`user-name-${user.id}`}>
                       {user.firstName} {user.lastName}
                     </h3>
-                    <p className="mt-1 text-sm text-gray-500">{user.email}</p>
-                    <p className="mt-1 text-sm text-gray-500">
+                    <p className="mt-1 text-sm text-gray-500" data-testid={`user-email-${user.id}`}>{user.email}</p>
+                    <p className="mt-1 text-sm text-gray-500" data-testid={`user-username-${user.id}`}>
                       Username: {user.username}
                     </p>
-                    <div className="mt-1 text-sm text-gray-500">
+                    <div className="mt-1 text-sm text-gray-500" data-testid={`user-roles-${user.id}`}>
                       Roles: {user.roles.join(', ')}
                     </div>
                   </div>
                   {isAdmin && (
-                    <div className="space-x-2">
+                    <div className="space-x-2" data-testid={`user-actions-${user.id}`}>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => navigate(`/users/${user.username}/edit`)}
+                        data-testid={`user-edit-${user.id}`}
                       >
                         Edit
                       </Button>
@@ -82,6 +83,7 @@ export function UsersPage() {
                           }
                         }}
                         disabled={deleteMutation.isPending}
+                        data-testid={`user-delete-${user.id}`}
                       >
                         Delete
                       </Button>

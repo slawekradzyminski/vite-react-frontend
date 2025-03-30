@@ -80,6 +80,7 @@ export function TrafficMonitorPage() {
     <span 
       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
         ${isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+      data-testid="traffic-connection-status"
     >
       {isConnected ? 'Connected' : 'Disconnected'}
     </span>
@@ -102,41 +103,42 @@ export function TrafficMonitorPage() {
   };
 
   if (isLoading) {
-    return <div className="p-8 text-center">Loading traffic monitor...</div>;
+    return <div className="p-8 text-center" data-testid="traffic-loading">Loading traffic monitor...</div>;
   }
 
   if (error) {
-    return <div className="p-8 text-center text-red-600">Error loading traffic monitor: {(error as Error).message}</div>;
+    return <div className="p-8 text-center text-red-600" data-testid="traffic-error">Error loading traffic monitor: {(error as Error).message}</div>;
   }
 
   return (
-    <div className="container mx-auto p-4 max-w-6xl">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Traffic Monitor</h1>
+    <div className="container mx-auto p-4 max-w-6xl" data-testid="traffic-monitor-page">
+      <div className="flex justify-between items-center mb-6" data-testid="traffic-header">
+        <h1 className="text-2xl font-bold" data-testid="traffic-title">Traffic Monitor</h1>
         <StatusPill />
       </div>
       
-      <div className="bg-gray-50 p-4 rounded-md mb-6">
-        <p className="text-gray-700">{statusMessage}</p>
-        <p className="text-sm text-gray-500 mt-1">
+      <div className="bg-gray-50 p-4 rounded-md mb-6" data-testid="traffic-status-container">
+        <p className="text-gray-700" data-testid="traffic-status-message">{statusMessage}</p>
+        <p className="text-sm text-gray-500 mt-1" data-testid="traffic-description">
           {trafficInfo?.data?.description || 'Live HTTP request monitoring'}
         </p>
       </div>
       
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">Recent Traffic Events</h2>
+      <div className="flex justify-between items-center mb-4" data-testid="traffic-events-header">
+        <h2 className="text-lg font-semibold" data-testid="traffic-events-title">Recent Traffic Events</h2>
         <Button 
           variant="outline" 
           onClick={handleClearEvents}
           disabled={trafficEvents.length === 0}
+          data-testid="traffic-clear-button"
         >
           Clear Events
         </Button>
       </div>
       
       {trafficEvents.length > 0 ? (
-        <div className="border rounded-md overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
+        <div className="border rounded-md overflow-hidden" data-testid="traffic-events-table-container">
+          <table className="min-w-full divide-y divide-gray-200" data-testid="traffic-events-table">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
@@ -148,20 +150,20 @@ export function TrafficMonitorPage() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {trafficEvents.map((event, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
+                <tr key={index} className="hover:bg-gray-50" data-testid={`traffic-event-${index}`}>
+                  <td className="px-6 py-4 whitespace-nowrap" data-testid={`traffic-event-method-${index}`}>
                     <span className="font-mono">{event.method}</span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap font-mono text-sm text-gray-900 truncate max-w-xs">
+                  <td className="px-6 py-4 whitespace-nowrap font-mono text-sm text-gray-900 truncate max-w-xs" data-testid={`traffic-event-path-${index}`}>
                     {event.path}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap" data-testid={`traffic-event-status-${index}`}>
                     {formatStatus(event.status)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-testid={`traffic-event-duration-${index}`}>
                     {event.durationMs}ms
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-testid={`traffic-event-time-${index}`}>
                     {new Date(event.timestamp).toLocaleTimeString()}
                   </td>
                 </tr>
@@ -170,7 +172,7 @@ export function TrafficMonitorPage() {
           </table>
         </div>
       ) : (
-        <div className="bg-white border rounded-md p-12 text-center text-gray-500">
+        <div className="bg-white border rounded-md p-12 text-center text-gray-500" data-testid="traffic-empty-state">
           No traffic events recorded yet. Make some API requests to see them appear here.
         </div>
       )}

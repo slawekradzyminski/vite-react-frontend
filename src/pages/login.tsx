@@ -58,16 +58,16 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-6 shadow-lg">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50" data-testid="login-page">
+      <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-6 shadow-lg" data-testid="login-container">
+        <div data-testid="login-header">
+          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900" data-testid="login-title">
             Sign in to your account
           </h2>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate data-testid="login-form">
           <div className="space-y-4 rounded-md shadow-sm">
-            <div>
+            <div data-testid="login-username-field">
               <Label htmlFor="username">Username</Label>
               <Input
                 id="username"
@@ -75,12 +75,13 @@ export function LoginPage() {
                 placeholder="Username"
                 error={errors.username?.message}
                 {...register('username')}
+                data-testid="login-username-input"
               />
               {errors.username?.message && (
-                <p className="mt-1 text-sm text-red-600" role="alert">{errors.username.message}</p>
+                <p className="mt-1 text-sm text-red-600" role="alert" data-testid="login-username-error">{errors.username.message}</p>
               )}
             </div>
-            <div>
+            <div data-testid="login-password-field">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
@@ -89,29 +90,32 @@ export function LoginPage() {
                 placeholder="Password"
                 error={errors.password?.message}
                 {...register('password')}
+                data-testid="login-password-input"
               />
               {errors.password?.message && (
-                <p className="mt-1 text-sm text-red-600" role="alert">{errors.password.message}</p>
+                <p className="mt-1 text-sm text-red-600" role="alert" data-testid="login-password-error">{errors.password.message}</p>
               )}
             </div>
           </div>
 
-          <div>
+          <div data-testid="login-submit-container">
             <Button
               type="submit"
               className="w-full"
               disabled={loading}
+              data-testid="login-submit-button"
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </Button>
           </div>
 
-          <div className="text-center text-sm">
+          <div className="text-center text-sm" data-testid="login-register-link-container">
             <span className="text-gray-600">Don't have an account? </span>
             <Button
               variant="link"
               className="font-medium text-indigo-600 hover:text-indigo-500"
               onClick={() => navigate('/register')}
+              data-testid="login-register-link"
             >
               Register
             </Button>

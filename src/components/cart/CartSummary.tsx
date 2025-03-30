@@ -39,28 +39,29 @@ export function CartSummary({ cartData, onUpdate }: CartSummaryProps) {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6" data-testid="cart-summary">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-        <div className="mb-4 md:mb-0">
-          <h2 className="text-lg font-semibold mb-2">Cart Summary</h2>
+        <div className="mb-4 md:mb-0" data-testid="cart-summary-info">
+          <h2 className="text-lg font-semibold mb-2" data-testid="cart-summary-title">Cart Summary</h2>
           <div className="flex space-x-6">
-            <div>
+            <div data-testid="cart-summary-items">
               <span className="text-sm font-medium text-gray-500 uppercase block">Items</span>
-              <span className="text-lg">{safeCartData.totalItems}</span>
+              <span className="text-lg" data-testid="cart-summary-items-count">{safeCartData.totalItems}</span>
             </div>
             
-            <div>
+            <div data-testid="cart-summary-total">
               <span className="text-sm font-medium text-gray-500 uppercase block">Total</span>
-              <span className="text-xl font-bold">${safeCartData.totalPrice.toFixed(2)}</span>
+              <span className="text-xl font-bold" data-testid="cart-summary-total-price">${safeCartData.totalPrice.toFixed(2)}</span>
             </div>
           </div>
         </div>
         
-        <div className="flex space-x-3">
+        <div className="flex space-x-3" data-testid="cart-summary-actions">
           <button
             className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
             onClick={handleCheckout}
             disabled={safeCartData.items.length === 0}
+            data-testid="cart-checkout-button"
           >
             Proceed to Checkout
           </button>
@@ -69,6 +70,7 @@ export function CartSummary({ cartData, onUpdate }: CartSummaryProps) {
             className="bg-white text-red-600 border border-red-600 py-2 px-4 rounded hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleClearCart}
             disabled={isClearing || safeCartData.items.length === 0}
+            data-testid="cart-clear-button"
           >
             {isClearing ? 'Clearing...' : 'Clear Cart'}
           </button>

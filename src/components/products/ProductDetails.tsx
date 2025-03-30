@@ -140,14 +140,14 @@ export function ProductDetails() {
 
   return (
     <div className="max-w-6xl mx-auto p-4" data-testid="product-details">
-      <div className="mb-4">
-        <Link to="/products" className="text-blue-600 hover:underline">
+      <div className="mb-4" data-testid="product-back-link-container">
+        <Link to="/products" className="text-blue-600 hover:underline" data-testid="product-back-link">
           ← Back to Products
         </Link>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8" data-testid="product-details-content">
+        <div data-testid="product-image-container">
           {productData.imageUrl ? (
             <img 
               src={productData.imageUrl} 
@@ -162,22 +162,22 @@ export function ProductDetails() {
           )}
         </div>
         
-        <div>
+        <div data-testid="product-info-container">
           <h1 className="text-3xl font-bold mb-2" data-testid="product-title">{productData.name}</h1>
           <p className="text-2xl text-blue-600 mb-4" data-testid="product-price">${productData.price.toFixed(2)}</p>
           
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold mb-2">Description</h2>
+          <div className="mb-6" data-testid="product-description-section">
+            <h2 className="text-lg font-semibold mb-2" data-testid="product-description-title">Description</h2>
             <p className="text-gray-700" data-testid="product-description">{productData.description}</p>
           </div>
           
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold mb-2">Category</h2>
+          <div className="mb-6" data-testid="product-category-section">
+            <h2 className="text-lg font-semibold mb-2" data-testid="product-category-title">Category</h2>
             <p className="text-gray-700" data-testid="product-category">{productData.category}</p>
           </div>
           
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold mb-2">Availability</h2>
+          <div className="mb-6" data-testid="product-availability-section">
+            <h2 className="text-lg font-semibold mb-2" data-testid="product-availability-title">Availability</h2>
             <p className={`${productData.stockQuantity > 0 ? 'text-green-600' : 'text-red-600'}`} data-testid="product-stock">
               {productData.stockQuantity > 0 
                 ? `${productData.stockQuantity} in stock` 
@@ -191,9 +191,9 @@ export function ProductDetails() {
           </div>
           
           {productData.stockQuantity > 0 && (
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold mb-2">Quantity</h2>
-              <div className="flex items-center">
+            <div className="mb-6" data-testid="product-quantity-section">
+              <h2 className="text-lg font-semibold mb-2" data-testid="product-quantity-title">Quantity</h2>
+              <div className="flex items-center" data-testid="product-quantity-controls">
                 <button 
                   className="px-3 py-2 border rounded-l"
                   onClick={() => setQuantity(prev => Math.max(0, prev - 1))}
@@ -213,7 +213,7 @@ export function ProductDetails() {
             </div>
           )}
           
-          <div className="flex gap-3">
+          <div className="flex gap-3" data-testid="product-actions">
             {cartQuantity > 0 && (
               <button
                 className="bg-red-600 text-white py-3 px-6 rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400"

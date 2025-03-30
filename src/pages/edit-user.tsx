@@ -54,27 +54,27 @@ export function EditUserPage() {
   };
 
   if (isLoading) {
-    return <div className="text-center p-8">Loading...</div>;
+    return <div className="text-center p-8" data-testid="edit-user-loading">Loading...</div>;
   }
 
   if (!user) {
-    return <div className="text-center p-8">User not found</div>;
+    return <div className="text-center p-8" data-testid="edit-user-not-found">User not found</div>;
   }
 
   if (!currentUser?.data.roles.includes(Role.ADMIN)) {
-    return <div className="text-center p-8">Access denied</div>;
+    return <div className="text-center p-8" data-testid="edit-user-denied">Access denied</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="mx-auto max-w-md">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Edit User</h1>
-          <p className="mt-2 text-gray-600">Editing user: {username}</p>
+    <div className="min-h-screen bg-gray-50 p-8" data-testid="edit-user-page">
+      <div className="mx-auto max-w-md" data-testid="edit-user-container">
+        <div className="mb-8" data-testid="edit-user-header">
+          <h1 className="text-3xl font-bold text-gray-900" data-testid="edit-user-title">Edit User</h1>
+          <p className="mt-2 text-gray-600" data-testid="edit-user-username">Editing user: {username}</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow">
-          <div>
+        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow" data-testid="edit-user-form">
+          <div data-testid="edit-user-email-field">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
@@ -83,10 +83,11 @@ export function EditUserPage() {
               defaultValue={user.email}
               required
               className="mt-1"
+              data-testid="edit-user-email-input"
             />
           </div>
 
-          <div>
+          <div data-testid="edit-user-firstname-field">
             <Label htmlFor="firstName">First Name</Label>
             <Input
               id="firstName"
@@ -95,10 +96,11 @@ export function EditUserPage() {
               defaultValue={user.firstName}
               required
               className="mt-1"
+              data-testid="edit-user-firstname-input"
             />
           </div>
 
-          <div>
+          <div data-testid="edit-user-lastname-field">
             <Label htmlFor="lastName">Last Name</Label>
             <Input
               id="lastName"
@@ -107,26 +109,29 @@ export function EditUserPage() {
               defaultValue={user.lastName}
               required
               className="mt-1"
+              data-testid="edit-user-lastname-input"
             />
           </div>
 
           {error && (
-            <div className="text-sm text-red-600">
+            <div className="text-sm text-red-600" data-testid="edit-user-error">
               {error}
             </div>
           )}
 
-          <div className="flex justify-end space-x-4">
+          <div className="flex justify-end space-x-4" data-testid="edit-user-actions">
             <Button
               type="button"
               variant="outline"
               onClick={() => navigate('/users')}
+              data-testid="edit-user-cancel-button"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={updateMutation.isPending}
+              data-testid="edit-user-submit-button"
             >
               {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
             </Button>

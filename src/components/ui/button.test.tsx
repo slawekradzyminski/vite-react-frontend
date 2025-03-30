@@ -9,7 +9,7 @@ describe('Button', () => {
     render(<Button>Click me</Button>);
     
     // then
-    const button = screen.getByRole('button', { name: /click me/i });
+    const button = screen.getByTestId('button');
     expect(button).toBeInTheDocument();
     expect(button).toHaveClass('bg-primary');
   });
@@ -20,7 +20,7 @@ describe('Button', () => {
     render(<Button variant="outline">Click me</Button>);
     
     // then
-    const button = screen.getByRole('button', { name: /click me/i });
+    const button = screen.getByTestId('button');
     expect(button).toBeInTheDocument();
     expect(button).toHaveClass('border-input');
   });
@@ -31,7 +31,17 @@ describe('Button', () => {
     render(<Button className="custom-class">Click me</Button>);
     
     // then
-    const button = screen.getByRole('button', { name: /click me/i });
+    const button = screen.getByTestId('button');
     expect(button).toHaveClass('custom-class');
+  });
+
+  // given
+  it('renders with custom data-testid', () => {
+    // when
+    render(<Button data-testid="custom-button">Click me</Button>);
+    
+    // then
+    const button = screen.getByTestId('custom-button');
+    expect(button).toBeInTheDocument();
   });
 }); 

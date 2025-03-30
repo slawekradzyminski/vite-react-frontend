@@ -56,8 +56,8 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
   };
 
   return (
-    <tr>
-      <td className="px-6 py-4 whitespace-nowrap">
+    <tr data-testid={`cart-item-${safeItem.productId}`}>
+      <td className="px-6 py-4 whitespace-nowrap" data-testid={`cart-item-product-${safeItem.productId}`}>
         <div className="flex items-center">
           {safeItem.imageUrl && (
             <div className="flex-shrink-0 h-12 w-12 mr-4">
@@ -65,6 +65,7 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
                 className="h-12 w-12 rounded-full object-cover"
                 src={safeItem.imageUrl}
                 alt={safeItem.productName}
+                data-testid={`cart-item-image-${safeItem.productId}`}
               />
             </div>
           )}
@@ -72,32 +73,38 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
             <Link 
               to={`/products/${safeItem.productId}`} 
               className="text-blue-600 hover:text-blue-900 font-medium"
+              data-testid={`cart-item-name-${safeItem.productId}`}
             >
               {safeItem.productName}
             </Link>
           </div>
         </div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-testid={`cart-item-price-${safeItem.productId}`}>
         ${safeItem.unitPrice.toFixed(2)}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="px-6 py-4 whitespace-nowrap" data-testid={`cart-item-quantity-cell-${safeItem.productId}`}>
         <div className="flex flex-col sm:flex-row items-start sm:items-center">
-          <div className="flex items-center mb-2 sm:mb-0">
+          <div className="flex items-center mb-2 sm:mb-0" data-testid={`cart-item-quantity-controls-${safeItem.productId}`}>
             <button 
               className="px-2 py-1 border rounded-l bg-gray-50 hover:bg-gray-100"
               onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
               disabled={isUpdating}
+              data-testid={`cart-item-decrease-${safeItem.productId}`}
             >
               -
             </button>
-            <span className="px-4 py-1 border-t border-b min-w-[40px] text-center">
+            <span 
+              className="px-4 py-1 border-t border-b min-w-[40px] text-center"
+              data-testid={`cart-item-quantity-${safeItem.productId}`}
+            >
               {quantity}
             </span>
             <button 
               className="px-2 py-1 border rounded-r bg-gray-50 hover:bg-gray-100"
               onClick={() => setQuantity(prev => prev + 1)}
               disabled={isUpdating}
+              data-testid={`cart-item-increase-${safeItem.productId}`}
             >
               +
             </button>
@@ -108,13 +115,14 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
               className="ml-0 sm:ml-2 text-blue-600 hover:text-blue-800 text-sm"
               onClick={handleQuantityChange}
               disabled={isUpdating}
+              data-testid={`cart-item-update-${safeItem.productId}`}
             >
               {isUpdating ? 'Updating...' : 'Update'}
             </button>
           )}
         </div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium" data-testid={`cart-item-total-${safeItem.productId}`}>
         ${safeItem.totalPrice.toFixed(2)}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -122,6 +130,7 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
           className="text-red-600 hover:text-red-900"
           onClick={handleRemove}
           disabled={isRemoving}
+          data-testid={`cart-item-remove-${safeItem.productId}`}
         >
           {isRemoving ? 'Removing...' : 'Remove'}
         </button>

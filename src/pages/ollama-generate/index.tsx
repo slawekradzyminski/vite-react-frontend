@@ -32,11 +32,11 @@ export function OllamaGeneratePage({ hideTitle = false }: OllamaGeneratePageProp
   };
 
   return (
-    <div className="flex flex-col">
-      {!hideTitle && <h1 className="text-2xl font-bold mb-4">Generate with Ollama</h1>}
+    <div className="flex flex-col" data-testid="ollama-generate-page">
+      {!hideTitle && <h1 className="text-2xl font-bold mb-4" data-testid="ollama-generate-title">Generate with Ollama</h1>}
 
-      <div className="mb-4">
-        <label htmlFor="model" className="block font-medium mb-2">
+      <div className="mb-4" data-testid="model-selection">
+        <label htmlFor="model" className="block font-medium mb-2" data-testid="model-label">
           Model
         </label>
         <input
@@ -46,11 +46,12 @@ export function OllamaGeneratePage({ hideTitle = false }: OllamaGeneratePageProp
           value={model}
           onChange={(e) => setModel(e.target.value)}
           placeholder="Enter model name"
+          data-testid="model-input"
         />
       </div>
 
-      <div className="mb-4">
-        <label htmlFor="temperature" className="block font-medium mb-2">
+      <div className="mb-4" data-testid="temperature-control">
+        <label htmlFor="temperature" className="block font-medium mb-2" data-testid="temperature-label">
           Temperature: {temperature.toFixed(2)}
         </label>
         <input
@@ -62,15 +63,16 @@ export function OllamaGeneratePage({ hideTitle = false }: OllamaGeneratePageProp
           className="w-full"
           value={temperature}
           onChange={(e) => setTemperature(parseFloat(e.target.value))}
+          data-testid="temperature-slider"
         />
         <div className="flex justify-between text-sm text-gray-500">
-          <span>More Focused</span>
-          <span>More Creative</span>
+          <span data-testid="temperature-focused">More Focused</span>
+          <span data-testid="temperature-creative">More Creative</span>
         </div>
       </div>
 
-      <div className="mb-4">
-        <label htmlFor="prompt" className="block font-medium mb-2">
+      <div className="mb-4" data-testid="prompt-container">
+        <label htmlFor="prompt" className="block font-medium mb-2" data-testid="prompt-label">
           Prompt
         </label>
         <textarea
@@ -82,21 +84,23 @@ export function OllamaGeneratePage({ hideTitle = false }: OllamaGeneratePageProp
           onKeyDown={handleKeyPress}
           placeholder="Enter your prompt..."
           disabled={isGenerating}
+          data-testid="prompt-input"
         />
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4" data-testid="generate-button-container">
         <button
           onClick={handleGenerate}
           disabled={isGenerating || !prompt.trim()}
           className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50 flex items-center justify-center min-w-[100px]"
+          data-testid="generate-button"
         >
           {isGenerating ? <Spinner size="sm" /> : 'Generate'}
         </button>
       </div>
 
       {response && (
-        <div className={styles.markdownContainer}>
+        <div className={styles.markdownContainer} data-testid="generated-response">
           <ReactMarkdown>{response}</ReactMarkdown>
         </div>
       )}

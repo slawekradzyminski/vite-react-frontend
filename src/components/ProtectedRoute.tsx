@@ -5,12 +5,13 @@ import { auth } from '../lib/api';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRole?: string;
+  'data-testid'?: string;
 }
 
 // Define the possible role formats
 type Role = string | { authority: string };
 
-export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
+export function ProtectedRoute({ children, requiredRole, 'data-testid': dataTestId }: ProtectedRouteProps) {
   const token = localStorage.getItem('token');
 
   const { data, isLoading, isError } = useQuery({
@@ -21,13 +22,13 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   });
 
   if (!token || isError) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace data-testid="protected-route-redirect" />;
   }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-lg text-gray-600">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50" data-testid="protected-route-loading">
+        <div className="text-lg text-gray-600" data-testid="protected-route-loading-text">Loading...</div>
       </div>
     );
   }
@@ -42,9 +43,9 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     
     if (!hasRequiredRole) {
       console.log('User does not have the required role, redirecting to home');
-      return <Navigate to="/" replace />;
+      return <Navigate to="/" replace data-testid="protected-route-unauthorized" />;
     }
   }
 
-  return <>{children}</>;
+  return <div data-testid={dataTestId || "protected-route-content"}>{children}</div>;
 } 

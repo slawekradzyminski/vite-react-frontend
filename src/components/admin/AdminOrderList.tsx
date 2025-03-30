@@ -35,12 +35,12 @@ export function AdminOrderList() {
   };
   
   if (isLoading) {
-    return <div className="text-center py-8">Loading orders...</div>;
+    return <div className="text-center py-8" data-testid="admin-order-list-loading">Loading orders...</div>;
   }
   
   if (error) {
     return (
-      <div className="text-center py-8">
+      <div className="text-center py-8" data-testid="admin-order-list-error">
         <p className="text-red-500 mb-4">Error loading orders</p>
       </div>
     );
@@ -51,10 +51,10 @@ export function AdminOrderList() {
   const displayPage = currentPage + 1; // For display purposes (1-indexed)
   
   return (
-    <div className="max-w-6xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Manage Orders</h1>
+    <div className="max-w-6xl mx-auto p-4" data-testid="admin-order-list">
+      <h1 className="text-2xl font-bold mb-6" data-testid="admin-order-list-title">Manage Orders</h1>
       
-      <div className="mb-6 flex justify-between items-center">
+      <div className="mb-6 flex justify-between items-center" data-testid="admin-order-list-filters">
         <div>
           <label htmlFor="status-filter" className="mr-2 text-sm font-medium text-gray-700">
             Filter by Status:
@@ -64,6 +64,7 @@ export function AdminOrderList() {
             className="border rounded p-2"
             value={selectedStatus}
             onChange={handleStatusChange}
+            data-testid="admin-order-list-status-filter"
           >
             <option value="ALL">All Orders</option>
             <option value="PENDING">Pending</option>
@@ -74,18 +75,18 @@ export function AdminOrderList() {
           </select>
         </div>
         
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-gray-600" data-testid="admin-order-list-pagination-info">
           Page {displayPage} of {totalPages}
         </div>
       </div>
       
       {orderList.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+        <div className="bg-white rounded-lg shadow-sm p-8 text-center" data-testid="admin-order-list-empty">
           <p className="text-gray-600">No orders found</p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden" data-testid="admin-order-list-table-container">
+          <table className="min-w-full divide-y divide-gray-200" data-testid="admin-order-list-table">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -110,21 +111,24 @@ export function AdminOrderList() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {orderList.map((order) => (
-                <tr key={order.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <tr key={order.id} data-testid={`admin-order-row-${order.id}`}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-testid={`admin-order-id-${order.id}`}>
                     #{order.id}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-testid={`admin-order-customer-${order.id}`}>
                     {order.username}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-testid={`admin-order-date-${order.id}`}>
                     {new Date(order.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-testid={`admin-order-amount-${order.id}`}>
                     ${order.totalAmount.toFixed(2)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}>
+                  <td className="px-6 py-4 whitespace-nowrap" data-testid={`admin-order-status-cell-${order.id}`}>
+                    <span 
+                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}
+                      data-testid={`admin-order-status-${order.id}`}
+                    >
                       {order.status}
                     </span>
                   </td>
@@ -132,6 +136,7 @@ export function AdminOrderList() {
                     <Link
                       to={`/orders/${order.id}`}
                       className="text-blue-600 hover:text-blue-900"
+                      data-testid={`admin-order-details-${order.id}`}
                     >
                       View Details
                     </Link>
@@ -141,7 +146,7 @@ export function AdminOrderList() {
             </tbody>
           </table>
           
-          <div className="px-6 py-4 flex justify-between items-center border-t border-gray-200">
+          <div className="px-6 py-4 flex justify-between items-center border-t border-gray-200" data-testid="admin-order-list-pagination">
             <button
               onClick={handlePreviousPage}
               disabled={currentPage === 0}
@@ -150,6 +155,7 @@ export function AdminOrderList() {
                   ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                   : 'bg-blue-600 text-white hover:bg-blue-700'
               }`}
+              data-testid="admin-order-list-prev-page"
             >
               Previous
             </button>
@@ -162,6 +168,7 @@ export function AdminOrderList() {
                   ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                   : 'bg-blue-600 text-white hover:bg-blue-700'
               }`}
+              data-testid="admin-order-list-next-page"
             >
               Next
             </button>
