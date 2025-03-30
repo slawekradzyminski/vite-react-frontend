@@ -1,184 +1,180 @@
-import { describe, it, expect, vi, beforeEach, test } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { vi, describe, it, expect } from 'vitest';
 import { HomePage } from './homePage';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-// Mock the API module
-vi.mock('../../lib/api', () => ({
-  auth: {
-    me: vi.fn().mockResolvedValue({
-      data: {
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john.doe@example.com',
-        username: 'johndoe',
-        roles: ['USER']
-      }
-    })
-  }
+// Create mock for navigation
+const mockNavigate = vi.fn();
+
+// Mock dependencies
+vi.mock('react-router-dom', () => ({
+  useNavigate: () => mockNavigate
 }));
 
-// Mock useNavigate
-const mockNavigate = vi.fn();
-vi.mock('react-router-dom', () => ({
-  ...vi.importActual('react-router-dom'),
-  useNavigate: () => mockNavigate,
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: ({ queryKey }) => {
+    if (queryKey[0] === 'me') {
+      return {
+        data: {
+          data: {
+            firstName: 'John',
+            lastName: 'Doe',
+            email: 'john.doe@example.com',
+            roles: ['USER']
+          }
+        },
+        isLoading: false,
+        error: null
+      };
+    }
+    return { data: null, isLoading: false, error: null };
+  },
+}));
+
+vi.mock('../../lib/api', () => ({
+  auth: {
+    me: vi.fn(),
+  },
 }));
 
 describe('HomePage', () => {
-  let queryClient: QueryClient;
-  let user: ReturnType<typeof userEvent.setup>;
-
+  // given
+  let user;
+  
   beforeEach(() => {
-    queryClient = new QueryClient({
-      defaultOptions: {
-        queries: {
-          retry: false,
-        },
-      },
-    });
-    user = userEvent.setup();
+    vi.clearAllMocks();
     mockNavigate.mockClear();
+    user = userEvent.setup();
   });
 
-  // given
-  it('should render the welcome message with user name', async () => {
+  it('renders the welcome section with user data', () => {
     // when
-    render(
-      <QueryClientProvider client={queryClient}>
-        <HomePage />
-      </QueryClientProvider>
-    );
+    render(<HomePage />);
     
     // then
-    await waitFor(() => {
-      expect(screen.getByText(/welcome, john!/i)).toBeInTheDocument();
-      expect(screen.getByText('john.doe@example.com')).toBeInTheDocument();
-    });
+    expect(screen.getByTestId('home-welcome-title')).toBeInTheDocument();
+    expect(screen.getByText('Welcome, John!')).toBeInTheDocument();
+    expect(screen.getByText('john.doe@example.com')).toBeInTheDocument();
   });
 
-  // given
-  it('should render all feature sections', async () => {
+  it('renders all feature sections', () => {
     // when
-    render(
-      <QueryClientProvider client={queryClient}>
-        <HomePage />
-      </QueryClientProvider>
-    );
+    render(<HomePage />);
     
     // then
-    await waitFor(() => {
-      // Main sections
-      expect(screen.getByText('Application Features')).toBeInTheDocument();
-      expect(screen.getByText('Advanced Monitoring')).toBeInTheDocument();
-      expect(screen.getByText('AI Integration')).toBeInTheDocument();
-      expect(screen.getByText('Additional Utilities')).toBeInTheDocument();
-      
-      // Feature details
-      expect(screen.getByText('Product Management')).toBeInTheDocument();
-      expect(screen.getByText('User Management')).toBeInTheDocument();
-      expect(screen.getByText('Order Processing & Profile')).toBeInTheDocument();
-      expect(screen.getByText('Traffic Monitor')).toBeInTheDocument();
-      expect(screen.getByText('LLM Assistant')).toBeInTheDocument();
-      expect(screen.getByText('QR Code Generator')).toBeInTheDocument();
-      expect(screen.getByText('Email Service')).toBeInTheDocument();
-    });
+    expect(screen.getByTestId('home-features-section')).toBeInTheDocument();
+    expect(screen.getByTestId('home-monitoring-section')).toBeInTheDocument();
+    expect(screen.getByTestId('home-ai-section')).toBeInTheDocument();
+    expect(screen.getByTestId('home-utilities-section')).toBeInTheDocument();
   });
 
-  // given
-  it('should render information about WebSockets and SSE', async () => {
+  it('renders all navigation buttons', () => {
     // when
-    render(
-      <QueryClientProvider client={queryClient}>
-        <HomePage />
-      </QueryClientProvider>
-    );
+    render(<HomePage />);
     
     // then
-    await waitFor(() => {
-      expect(screen.getByText(/WebSocket technology/i)).toBeInTheDocument();
-      expect(screen.getByText(/Server-Sent Events \(SSE\)/i)).toBeInTheDocument();
-    });
+    expect(screen.getByTestId('home-products-button')).toBeInTheDocument();
+    expect(screen.getByTestId('home-users-button')).toBeInTheDocument();
+    expect(screen.getByTestId('home-profile-button')).toBeInTheDocument();
+    expect(screen.getByTestId('home-traffic-button')).toBeInTheDocument();
+    expect(screen.getByTestId('home-llm-button')).toBeInTheDocument();
+    expect(screen.getByTestId('home-qr-button')).toBeInTheDocument();
+    expect(screen.getByTestId('home-email-button')).toBeInTheDocument();
   });
-
-  // given
-  test('should render specific information about utilities', async () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <HomePage />
-      </QueryClientProvider>
-    );
+  
+  it('should render information about WebSockets and SSE', () => {
+    // when
+    render(<HomePage />);
     
     // then
-    await waitFor(() => {
-      expect(screen.getByText(/View orders and manage your personal account information/i)).toBeInTheDocument();
-      expect(screen.getByText(/Generate valid and scannable QR codes/i)).toBeInTheDocument();
-      expect(screen.getByText(/Delivery is handled asynchronously with a delay of up to 10 minutes/i)).toBeInTheDocument();
-    });
+    expect(screen.getByText(/WebSocket technology/i)).toBeInTheDocument();
+    expect(screen.getByText(/Server-Sent Events \(SSE\)/i)).toBeInTheDocument();
   });
-
-  // given
-  it('should navigate to products page when View Products is clicked', async () => {
+  
+  it('should render specific information about utilities', () => {
     // when
-    render(
-      <QueryClientProvider client={queryClient}>
-        <HomePage />
-      </QueryClientProvider>
-    );
+    render(<HomePage />);
     
-    await waitFor(() => screen.getByText('View Products'));
-    await user.click(screen.getByText('View Products'));
+    // then
+    expect(screen.getByText(/View orders and manage your personal account information/i)).toBeInTheDocument();
+    expect(screen.getByText(/Generate valid and scannable QR codes/i)).toBeInTheDocument();
+    expect(screen.getByText(/Delivery is handled asynchronously with a delay of up to 10 minutes/i)).toBeInTheDocument();
+  });
+  
+  it('should navigate to products page when View Products button is clicked', async () => {
+    // given
+    render(<HomePage />);
+    
+    // when
+    await user.click(screen.getByTestId('home-products-button'));
     
     // then
     expect(mockNavigate).toHaveBeenCalledWith('/products');
   });
 
-  // given
-  it('should navigate to profile page when View Profile & Orders is clicked', async () => {
-    // when
-    render(
-      <QueryClientProvider client={queryClient}>
-        <HomePage />
-      </QueryClientProvider>
-    );
+  it('should navigate to users page when Manage Users button is clicked', async () => {
+    // given
+    render(<HomePage />);
     
-    await waitFor(() => screen.getByText('View Profile & Orders'));
-    await user.click(screen.getByText('View Profile & Orders'));
+    // when
+    await user.click(screen.getByTestId('home-users-button'));
+    
+    // then
+    expect(mockNavigate).toHaveBeenCalledWith('/users');
+  });
+  
+  it('should navigate to profile page when View Profile & Orders button is clicked', async () => {
+    // given
+    render(<HomePage />);
+    
+    // when
+    await user.click(screen.getByTestId('home-profile-button'));
     
     // then
     expect(mockNavigate).toHaveBeenCalledWith('/profile');
   });
-
-  // given
-  it('should navigate to traffic monitor when Open Traffic Monitor is clicked', async () => {
-    // when
-    render(
-      <QueryClientProvider client={queryClient}>
-        <HomePage />
-      </QueryClientProvider>
-    );
+  
+  it('should navigate to traffic monitor when Open Traffic Monitor button is clicked', async () => {
+    // given
+    render(<HomePage />);
     
-    await waitFor(() => screen.getByText('Open Traffic Monitor'));
-    await user.click(screen.getByText('Open Traffic Monitor'));
+    // when
+    await user.click(screen.getByTestId('home-traffic-button'));
     
     // then
     expect(mockNavigate).toHaveBeenCalledWith('/traffic');
   });
-
-  // given
-  it('should navigate to LLM page when Open AI Assistant is clicked', async () => {
-    // when
-    render(
-      <QueryClientProvider client={queryClient}>
-        <HomePage />
-      </QueryClientProvider>
-    );
+  
+  it('should navigate to LLM page when Open AI Assistant button is clicked', async () => {
+    // given
+    render(<HomePage />);
     
-    await waitFor(() => screen.getByText('Open AI Assistant'));
-    await user.click(screen.getByText('Open AI Assistant'));
+    // when
+    await user.click(screen.getByTestId('home-llm-button'));
     
     // then
     expect(mockNavigate).toHaveBeenCalledWith('/llm');
+  });
+  
+  it('should navigate to QR code page when Generate QR Codes button is clicked', async () => {
+    // given
+    render(<HomePage />);
+    
+    // when
+    await user.click(screen.getByTestId('home-qr-button'));
+    
+    // then
+    expect(mockNavigate).toHaveBeenCalledWith('/qr');
+  });
+  
+  it('should navigate to email page when Send Emails button is clicked', async () => {
+    // given
+    render(<HomePage />);
+    
+    // when
+    await user.click(screen.getByTestId('home-email-button'));
+    
+    // then
+    expect(mockNavigate).toHaveBeenCalledWith('/email');
   });
 });

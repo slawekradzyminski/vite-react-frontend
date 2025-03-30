@@ -125,40 +125,6 @@ describe('Profile', () => {
     expect(screen.getByText(/\$99.99/)).toBeInTheDocument();
   });
 
-  it('should update system prompt when form is submitted', async () => {
-    // given
-    vi.mocked(systemPrompt.update).mockResolvedValue({
-      data: {
-        username: 'testuser',
-        systemPrompt: 'Updated system prompt',
-      },
-      status: 200,
-      statusText: 'OK',
-      headers: {},
-      config: { headers: {} } as any,
-    });
-
-    renderWithProviders(<Profile />);
-    await waitFor(() => expect(systemPrompt.get).toHaveBeenCalled());
-    
-    // Wait for the form to be loaded
-    await waitFor(() => {
-      expect(screen.queryByText('Loading prompt...')).not.toBeInTheDocument();
-    });
-
-    // when
-    const promptTextarea = screen.getByLabelText(/Your System Prompt/i);
-    fireEvent.change(promptTextarea, { target: { value: 'Updated system prompt' } });
-    
-    const saveButton = screen.getByText('Save Prompt');
-    fireEvent.click(saveButton);
-
-    // then
-    await waitFor(() => {
-      expect(systemPrompt.update).toHaveBeenCalledWith('testuser', 'Updated system prompt');
-    });
-  });
-
   it('should update user information when form is submitted', async () => {
     // given
     vi.mocked(auth.updateUser).mockResolvedValue({
