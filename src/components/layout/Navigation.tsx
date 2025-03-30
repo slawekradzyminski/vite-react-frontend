@@ -57,7 +57,7 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8" data-testid="desktop-menu">
+            <div className="hidden lg:ml-6 lg:flex lg:space-x-8" data-testid="desktop-menu">
               {user?.data && authMenuItems.map((item) => (
                 <Link
                   key={item.path}
@@ -94,7 +94,7 @@ export function Navigation() {
                   )}
                 </Link>
                 
-                <div className="hidden sm:flex sm:items-center sm:ml-6 sm:space-x-4" data-testid="user-actions">
+                <div className="hidden lg:flex lg:items-center lg:ml-6 lg:space-x-4" data-testid="user-actions">
                   <Link 
                     to="/profile" 
                     className="text-sm text-gray-500 hover:text-gray-900 hover:underline"
@@ -111,7 +111,7 @@ export function Navigation() {
                     Logout
                   </Button>
                 </div>
-                <div className="sm:hidden flex items-center">
+                <div className="lg:hidden flex items-center">
                   <button
                     onClick={toggleMenu}
                     className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
@@ -148,7 +148,7 @@ export function Navigation() {
         </div>
       </div>
       {isOpen && user?.data && (
-        <div className="sm:hidden" data-testid="mobile-menu">
+        <div className="lg:hidden" data-testid="mobile-menu">
           <div className="pt-2 pb-3 space-y-1">
             {authMenuItems.map((item) => (
               <Link
