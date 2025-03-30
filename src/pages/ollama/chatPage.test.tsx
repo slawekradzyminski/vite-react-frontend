@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { OllamaChatPage } from './index';
+import { OllamaChatPage } from './chatPage';
 import { useOllamaChat } from '../../hooks/useOllamaChat';
 import { ChatMessageDto } from '../../types/ollama';
 

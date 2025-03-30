@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { OllamaChatPage } from '../ollama-chat';
-import { OllamaGeneratePage } from '../ollama-generate';
+import { OllamaChatPage } from '../ollama/chatPage';
+import { OllamaGeneratePage } from '../ollama/generatePage';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/tabs';
 
 type LlmMode = 'chat' | 'generate';

@@ -135,4 +135,4 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
       </div>
     </div>
   );
-}
+} 

@@ -1,5 +1,5 @@
 import { screen } from '@testing-library/react';
-import { QrCodePage } from './index';
+import { QrCodePage } from './qrPage';
 import { renderWithProviders } from '../../test/test-utils';
 
 describe('QrCodePage', () => {

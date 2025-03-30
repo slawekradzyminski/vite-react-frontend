@@ -1,16 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, test } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { HomePage } from './home';
+import { HomePage } from './homePage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-// Mock dependencies
-const mockNavigate = vi.fn();
-vi.mock('react-router-dom', () => ({
-  useNavigate: () => mockNavigate,
-}));
-
-vi.mock('../lib/api', () => ({
+// Mock the API module
+vi.mock('../../lib/api', () => ({
   auth: {
     me: vi.fn().mockResolvedValue({
       data: {
@@ -22,6 +17,13 @@ vi.mock('../lib/api', () => ({
       }
     })
   }
+}));
+
+// Mock useNavigate
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => ({
+  ...vi.importActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
 }));
 
 describe('HomePage', () => {
@@ -179,4 +181,4 @@ describe('HomePage', () => {
     // then
     expect(mockNavigate).toHaveBeenCalledWith('/llm');
   });
-}); 
+});

@@ -106,4 +106,4 @@ export function OllamaGeneratePage({ hideTitle = false }: OllamaGeneratePageProp
       )}
     </div>
   );
-}
+} 

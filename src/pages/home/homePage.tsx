@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Button } from '../components/ui/button';
-import { auth } from '../lib/api';
+import { Button } from '../../components/ui/button';
+import { auth } from '../../lib/api';
 
 export function HomePage() {
   const navigate = useNavigate();

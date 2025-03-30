@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { ProductList } from '../components/products/ProductList';
+import { ProductList } from '../../components/products/ProductList';
 import { useQuery } from '@tanstack/react-query';
-import { products } from '../lib/api';
-import type { Product } from '../types/product';
+import { products } from '../../lib/api';
+import type { Product } from '../../types/product';
 
 export function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);

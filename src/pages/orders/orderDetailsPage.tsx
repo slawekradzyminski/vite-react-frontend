@@ -1,4 +1,4 @@
-import { OrderDetails } from '../components/orders/OrderDetails';
+import { OrderDetails } from '../../components/orders/OrderDetails';
 
 export function OrderDetailsPage() {
   return (

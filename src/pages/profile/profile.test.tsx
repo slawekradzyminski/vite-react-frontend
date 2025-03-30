@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor, fireEvent } from '@testing-library/react';
-import { Profile } from './index';
+import { Profile } from './profilePage';
 import { auth, systemPrompt, orders } from '../../lib/api';
 import { Role } from '../../types/auth';
 import { renderWithProviders } from '../../test/test-utils';

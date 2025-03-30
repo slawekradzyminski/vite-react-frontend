@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import { auth, email } from '../../lib/api';
 import { renderWithProviders } from '../../test/test-utils';
-import { EmailPage } from './index';
+import { EmailPage } from './emailPage';
 import { Role } from '../../types/auth';
 
 vi.mock('../../lib/api', () => ({

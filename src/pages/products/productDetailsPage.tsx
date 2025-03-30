@@ -1,4 +1,4 @@
-import { ProductDetails } from '../components/products/ProductDetails';
+import { ProductDetails } from '../../components/products/ProductDetails';
 
 export function ProductDetailsPage() {
   return (

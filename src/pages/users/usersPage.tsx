@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../components/ui/button';
-import { auth } from '../lib/api';
-import type { User } from '../types/auth';
-import { Role } from '../types/auth';
+import { Button } from '../../components/ui/button';
+import { auth } from '../../lib/api';
+import type { User } from '../../types/auth';
+import { Role } from '../../types/auth';
 
 export function UsersPage() {
   const navigate = useNavigate();

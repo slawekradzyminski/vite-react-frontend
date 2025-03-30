@@ -1,4 +1,4 @@
-import { CartPage as CartPageComponent } from '../components/cart/CartPage';
+import { CartPage as CartPageComponent } from '../../components/cart/CartPage';
 
 export function CartPage() {
   return (
@@ -6,4 +6,4 @@ export function CartPage() {
       <CartPageComponent />
     </div>
   );
-} 
+}
