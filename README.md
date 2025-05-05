@@ -95,9 +95,9 @@ This project follows specific guidelines defined in Cursor rules. These rules ar
 
 ## Backend Integration
 
+Run https://github.com/slawekradzyminski/test-secure-backend
+
 The backend service runs on `http://localhost:4001` and provides:
 - API Documentation: `/v3/api-docs`
 - Swagger UI: `/swagger-ui/index.html`
 - H2 Database Console: `/h2-console`
-
-For detailed implementation, refer to `backend.md`.
