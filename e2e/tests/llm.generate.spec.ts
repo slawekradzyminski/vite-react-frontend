@@ -33,7 +33,7 @@ test.describe('Ollama Generate', () => {
     await ollamaMocks.mockSuccess(authenticatedPage.page);
     await generatePage.goto();
     await generatePage.openGenerateTab();
-    await expect(generatePage.modelInput).toHaveValue('llama3.2:1b');
+    await expect(generatePage.modelInput).toHaveValue('qwen3:0.6b');
 
     // when
     await generatePage.generate('Test prompt', 'mistral:7b');

@@ -9,7 +9,7 @@ export const ollamaChatMocks = {
 
       const chunks = [
         {
-          model: 'llama3.2:1b',
+          model: 'qwen3:0.6b',
           createdAt: new Date().toISOString(),
           message: {
             role: 'assistant',
@@ -39,7 +39,7 @@ export const ollamaChatMocks = {
       }
 
       const firstResponse = {
-        model: 'llama3.2:1b',
+        model: 'qwen3:0.6b',
         createdAt: new Date().toISOString(),
         message: {
           role: 'assistant',
@@ -49,7 +49,7 @@ export const ollamaChatMocks = {
       };
 
       const secondResponse = {
-        model: 'llama3.2:1b',
+        model: 'qwen3:0.6b',
         createdAt: new Date().toISOString(),
         message: {
           role: 'assistant',

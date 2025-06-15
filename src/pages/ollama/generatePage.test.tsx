@@ -55,8 +55,8 @@ describe('OllamaGeneratePage', () => {
   it('handles streaming chunks correctly', async () => {
     // given
     const mockResponse = new Response(
-      'data: {"model":"llama3.2:1b","response":"Hello","done":false}\n\n' +
-      'data: {"model":"llama3.2:1b","response":" World","done":true}\n\n',
+      'data: {"model":"qwen3:0.6b","response":"Hello","done":false}\n\n' +
+      'data: {"model":"qwen3:0.6b","response":" World","done":true}\n\n',
       {
         headers: { 'Content-Type': 'text/event-stream' }
       }
@@ -73,7 +73,7 @@ describe('OllamaGeneratePage', () => {
       expect(screen.getByText('Hello World')).toBeInTheDocument();
     });
     expect(vi.mocked(ollama.generate)).toHaveBeenCalledWith(expect.objectContaining({
-      model: 'llama3.2:1b'
+      model: 'qwen3:0.6b'
     }));
   });
 
@@ -203,6 +203,6 @@ describe('OllamaGeneratePage', () => {
     
     // then
     const modelInput = screen.getByLabelText(/model/i);
-    expect(modelInput).toHaveValue('llama3.2:1b');
+    expect(modelInput).toHaveValue('qwen3:0.6b');
   });
 }); 

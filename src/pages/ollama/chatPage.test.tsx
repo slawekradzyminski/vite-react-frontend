@@ -28,7 +28,7 @@ describe('OllamaChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: mockChat,
-      model: 'llama3.2:1b',
+      model: 'qwen3:0.6b',
       setModel: mockSetModel,
       setMessages: vi.fn(),
       temperature: 0.8,
@@ -44,7 +44,7 @@ describe('OllamaChatPage', () => {
     expect(screen.getByText('Chat with Ollama')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Type your message...')).toBeInTheDocument();
     expect(screen.getByText('Send')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('llama3.2:1b')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('qwen3:0.6b')).toBeInTheDocument();
   });
 
   it('handles user input and sends messages', async () => {
@@ -83,7 +83,7 @@ describe('OllamaChatPage', () => {
       isChatting: true,
       isLoadingSystemPrompt: false,
       chat: mockChat,
-      model: 'llama3.2:1b',
+      model: 'qwen3:0.6b',
       setModel: mockSetModel,
       setMessages: vi.fn(),
       temperature: 0.8,
@@ -111,7 +111,7 @@ describe('OllamaChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: mockChat,
-      model: 'llama3.2:1b',
+      model: 'qwen3:0.6b',
       setModel: mockSetModel,
       setMessages: vi.fn(),
       temperature: 0.8,
@@ -132,7 +132,7 @@ describe('OllamaChatPage', () => {
   it('updates model when input changes', () => {
     // given
     render(<OllamaChatPage />);
-    const modelInput = screen.getByDisplayValue('llama3.2:1b');
+    const modelInput = screen.getByDisplayValue('qwen3:0.6b');
 
     // when
     fireEvent.change(modelInput, { target: { value: 'llama3.2:7b' } });
@@ -148,7 +148,7 @@ describe('OllamaChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: true,
       chat: mockChat,
-      model: 'llama3.2:1b',
+      model: 'qwen3:0.6b',
       setModel: mockSetModel,
       setMessages: vi.fn(),
       temperature: 0.8,

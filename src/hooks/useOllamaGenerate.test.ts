@@ -29,7 +29,7 @@ describe('useOllama', () => {
     // then
     expect(result.current.isGenerating).toBe(false);
     expect(result.current.response).toBe('');
-    expect(result.current.model).toBe('llama3.2:1b');
+    expect(result.current.model).toBe('qwen3:0.6b');
     expect(result.current.temperature).toBe(0.8);
   });
 
@@ -51,8 +51,8 @@ describe('useOllama', () => {
   it('processes successful response', async () => {
     // given
     const mockResponse = new Response(
-      'data: {"model":"llama3.2:1b","response":"Hello","done":false}\n\n' +
-      'data: {"model":"llama3.2:1b","response":" World","done":true}\n\n',
+      'data: {"model":"qwen3:0.6b","response":"Hello","done":false}\n\n' +
+      'data: {"model":"qwen3:0.6b","response":" World","done":true}\n\n',
       {
         headers: { 'Content-Type': 'text/event-stream' }
       }
@@ -70,7 +70,7 @@ describe('useOllama', () => {
     expect(result.current.response).toBe('Hello World');
     expect(result.current.isGenerating).toBe(false);
     expect(ollama.generate).toHaveBeenCalledWith({
-      model: 'llama3.2:1b',
+      model: 'qwen3:0.6b',
       prompt: 'test prompt',
       options: { temperature: 0.8 },
     });
@@ -186,7 +186,7 @@ describe('useOllama', () => {
 
     // then
     expect(ollama.generate).toHaveBeenCalledWith({
-      model: 'llama3.2:1b',
+      model: 'qwen3:0.6b',
       prompt: 'test prompt',
       options: { temperature: customTemperature }
     });
@@ -203,7 +203,7 @@ describe('useOllama', () => {
 
     // then
     expect(ollama.generate).toHaveBeenCalledWith({
-      model: 'llama3.2:1b',
+      model: 'qwen3:0.6b',
       prompt: 'test prompt',
       options: { temperature: 0.8 }
     });

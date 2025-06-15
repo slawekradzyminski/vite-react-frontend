@@ -8,7 +8,7 @@ docker buildx inspect --bootstrap
 # Build and push multi-architecture image
 echo "Building and pushing multi-architecture image..."
 docker buildx build --platform linux/amd64,linux/arm64 \
-  -t slawekradzyminski/frontend:2.5 \
+  -t slawekradzyminski/frontend:2.5.1 \
   --push \
   .
 

@@ -18,7 +18,7 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
       content: DEFAULT_SYSTEM_PROMPT
     }
   ]);
-  const [model, setModel] = useState('llama3.2:1b');
+  const [model, setModel] = useState('qwen3:0.6b');
   const [temperature, setTemperature] = useState(0.8);
   const [isChatting, setIsChatting] = useState(false);
   const [isLoadingSystemPrompt, setIsLoadingSystemPrompt] = useState(true);
