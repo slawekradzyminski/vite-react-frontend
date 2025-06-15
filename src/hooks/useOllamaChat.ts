@@ -79,7 +79,7 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
 
       setMessages(newMessages as ChatMessageDto[]);
 
-      const assistantPlaceholder = {
+      const assistantPlaceholder: ChatMessageDto = {
         role: 'assistant',
         content: ''
       };

@@ -1,5 +1,5 @@
-🛠️ Implementation Plan – Expose “think” Toggle & Visualise Reasoning on LLM pages
-Goal: Give users an opt-in checkbox that passes think=true to the backend and cleanly separates the model’s <think> … </think> chain-of-thought from the final answer in both Chat and Generate flows.
+🛠️ Implementation Plan – Expose "think" Toggle & Visualise Reasoning on LLM pages
+Goal: Give users an opt-in checkbox that passes think=true to the backend and cleanly separates the model's <think> … </think> chain-of-thought from the final answer in both Chat and Generate flows.
 
 0 Clarify anything that blocks you
 Are <think> tags always well-balanced and unique per chunk?
@@ -16,13 +16,13 @@ Current code only sends model, prompt & options
 
 COMMIT POINT – DTO & hook signatures compile, tests still green.
 
-2 UI: “Enable thinking” checkbox
+2 UI: "Enable thinking" checkbox
 File	Action
 src/pages/ollama/chatPage.tsx	Insert a Radix-UI Checkbox (or plain <input type="checkbox">) next to model/temperature controls. Bind to think state via hook setters.
 src/pages/ollama/generatePage.tsx	Same as chat page.
 src/pages/ollama/OllamaChat.module.css & OllamaGenerate.module.css	Tiny spacing/style tweaks if needed.
 
-Label: “Show model reasoning (think)” – tool-tipped: “Adds <think> reasoning to the response.”
+Label: "Show model reasoning (think)" – tool-tipped: "Adds <think> reasoning to the response."
 Default unchecked → matches server default.
 
 COMMIT POINT – Checkbox visible, toggles local state only.
@@ -45,7 +45,7 @@ Update mocks (e2e/mocks/ollamaChatMocks.ts, ollamaMocks.ts) to assert/forward th
 
 COMMIT POINT – SSE still works, unit tests compile but some fail (next step).
 
-4 Utility to split reasoning
+4 Utility to split reasoning (UPDATED APPROACH)
 Create src/lib/llm/parseThinking.ts
 
 ts
@@ -59,54 +59,60 @@ export function splitThinking(raw: string) {
   });
   return { cleaned: cleaned.trim(), thinking: thinkingBlocks.join('\n\n') };
 }
+
+**UPDATED APPROACH**: Keep <think> tags in the response content as-is. The utility is only used for UI display logic, not for processing messages in hooks.
+
 Add unit tests (Vitest) ensuring: nested tags, multiple blocks, malformed tags fall back to raw.
 
 COMMIT POINT – utility & tests green.
 
-5 Hook/message processing
-Generate (useOllamaGenerate):
+5 Hook/message processing (SIMPLIFIED)
+**UPDATED APPROACH**: Hooks don't need to process thinking content. They just pass through the response with <think> tags intact.
 
-ts
-Copy
-Edit
-onMessage: data => {
-  const { cleaned, thinking } = splitThinking(data.response ?? '');
-  setResponse(prev => prev + cleaned);
-  setThinking(prev => prev + thinking);  // new state
-}
-Chat (useOllamaChat): before pushing an assistant message, run splitThinking(message.content) and store:
+Generate (useOllamaGenerate): Keep existing onMessage logic - just accumulate response as-is
+Chat (useOllamaChat): Keep existing message processing - store content with <think> tags intact
 
-ts
-Copy
-Edit
-{ role:'assistant', content: cleaned, thinking }
-Extend ChatMessageDto locally (frontend-only) with optional thinking?: string.
+No need to extend ChatMessageDto or add thinking state to hooks.
 
-COMMIT POINT – messages contain reasoning but UI not yet rendering.
+COMMIT POINT – messages contain <think> tags but UI not yet rendering them specially.
 
 6 UI rendering of reasoning
-Chat bubbles
+Chat bubbles - use parseThinking utility for display only:
 
 tsx
 Copy
 Edit
-{message.thinking && (
-  <details className="mt-2 text-xs text-gray-500" data-testid="thinking-toggle">
-    <summary className="cursor-pointer select-none">Show reasoning</summary>
-    <ReactMarkdown>{message.thinking}</ReactMarkdown>
-  </details>
-)}
+const { cleaned, thinking } = splitThinking(message.content);
+return (
+  <div>
+    <ReactMarkdown>{cleaned}</ReactMarkdown>
+    {thinking && (
+      <details className="mt-2 text-xs text-gray-500" data-testid="thinking-toggle">
+        <summary className="cursor-pointer select-none">Show reasoning</summary>
+        <ReactMarkdown>{thinking}</ReactMarkdown>
+      </details>
+    )}
+  </div>
+);
+
 Generate page – under the answer:
 
 tsx
 Copy
 Edit
-{thinking && (
-  <details className="mt-4" data-testid="thinking-result">
-    <summary className="cursor-pointer font-medium">Show reasoning</summary>
-    <ReactMarkdown>{thinking}</ReactMarkdown>
-  </details>
-)}
+const { cleaned, thinking } = splitThinking(response);
+return (
+  <div>
+    <ReactMarkdown>{cleaned}</ReactMarkdown>
+    {thinking && (
+      <details className="mt-4" data-testid="thinking-result">
+        <summary className="cursor-pointer font-medium">Show reasoning</summary>
+        <ReactMarkdown>{thinking}</ReactMarkdown>
+      </details>
+    )}
+  </div>
+);
+
 Both collapsed by default; no layout shift.
 
 COMMIT POINT – manual test shows expandable reasoning in browser.
@@ -133,7 +139,7 @@ Extend llm.chat.spec.ts and llm.generate.spec.ts:
 
 Tick checkbox, send prompt, route asserts JSON has "think":true.
 
-Verify “Show reasoning” toggle renders and expands.
+Verify "Show reasoning" toggle renders and expands.
 
 Ensure mocks return <think>Reason</think>Final answer chunks.
 
@@ -146,9 +152,9 @@ Add new parameter example: "think": true in API section (already exists server-s
 
 In Frontend Usage section: screenshot/GIF + instructions about the checkbox and expandable reasoning.
 
-src/pages/llm/llmPage.tsx – under title, add small helper text: “Enable ‘Show reasoning’ to view the model’s chain-of-thought.”
+src/pages/llm/llmPage.tsx – under title, add small helper text: "Enable 'Show reasoning' to view the model's chain-of-thought."
 
-CHANGELOG.md: “Feature: optional thinking mode with collapsible reasoning”.
+CHANGELOG.md: "Feature: optional thinking mode with collapsible reasoning".
 
 COMMIT POINT – docs pushed.
 
