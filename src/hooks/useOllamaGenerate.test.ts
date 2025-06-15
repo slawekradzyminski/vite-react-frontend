@@ -72,6 +72,7 @@ describe('useOllama', () => {
     expect(ollama.generate).toHaveBeenCalledWith({
       model: 'qwen3:0.6b',
       prompt: 'test prompt',
+      think: false,
       options: { temperature: 0.8 },
     });
   });
@@ -188,6 +189,7 @@ describe('useOllama', () => {
     expect(ollama.generate).toHaveBeenCalledWith({
       model: 'qwen3:0.6b',
       prompt: 'test prompt',
+      think: false,
       options: { temperature: customTemperature }
     });
   });
@@ -205,6 +207,7 @@ describe('useOllama', () => {
     expect(ollama.generate).toHaveBeenCalledWith({
       model: 'qwen3:0.6b',
       prompt: 'test prompt',
+      think: false,
       options: { temperature: 0.8 }
     });
   });

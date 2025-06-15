@@ -22,6 +22,7 @@ export function useOllamaGenerate(options?: UseOllamaGenerateOptions) {
   const [response, setResponse] = useState('');
   const [model, setModel] = useState('qwen3:0.6b');
   const [temperature, setTemperature] = useState(0.8);
+  const [think, setThink] = useState(false);
   const { toast } = useToast();
 
   const generate = async (prompt: string) => {
@@ -40,6 +41,7 @@ export function useOllamaGenerate(options?: UseOllamaGenerateOptions) {
       const requestBody: GenerateRequestDto = {
         model,
         prompt,
+        think,
         options: { temperature },
       };
 
@@ -87,5 +89,7 @@ export function useOllamaGenerate(options?: UseOllamaGenerateOptions) {
     setModel,
     temperature,
     setTemperature,
+    think,
+    setThink,
   };
 } 

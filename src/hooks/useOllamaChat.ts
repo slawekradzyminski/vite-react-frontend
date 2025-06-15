@@ -20,6 +20,7 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
   ]);
   const [model, setModel] = useState('qwen3:0.6b');
   const [temperature, setTemperature] = useState(0.8);
+  const [think, setThink] = useState(false);
   const [isChatting, setIsChatting] = useState(false);
   const [isLoadingSystemPrompt, setIsLoadingSystemPrompt] = useState(true);
   
@@ -90,6 +91,7 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
       const requestBody: ChatRequestDto = {
         model,
         messages: newMessages as ChatMessageDto[], 
+        think,
         options: { temperature }
       };
 
@@ -135,7 +137,7 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
         setIsChatting(false);
       }
     },
-    [messages, model, temperature, isChatting, toast, options]
+    [messages, model, temperature, think, isChatting, toast, options]
   );
 
   return {
@@ -147,6 +149,8 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
     setModel,
     temperature,
     setTemperature,
+    think,
+    setThink,
     setMessages
   };
 }

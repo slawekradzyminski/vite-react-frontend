@@ -2,6 +2,7 @@
 export interface GenerateRequestDto {
   model: string;
   prompt: string;
+  think?: boolean;
   options?: {
     temperature?: number;
     // add more if needed
@@ -40,6 +41,7 @@ export interface ChatMessageDto {
 export interface ChatRequestDto {
   model: string;
   messages: ChatMessageDto[];
+  think?: boolean;
   options?: {
     temperature?: number;
     // add more if needed
