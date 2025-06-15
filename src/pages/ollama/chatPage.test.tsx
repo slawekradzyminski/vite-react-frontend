@@ -32,7 +32,9 @@ describe('OllamaChatPage', () => {
       setModel: mockSetModel,
       setMessages: vi.fn(),
       temperature: 0.8,
-      setTemperature: vi.fn()
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: vi.fn()
     });
   });
 
@@ -87,7 +89,9 @@ describe('OllamaChatPage', () => {
       setModel: mockSetModel,
       setMessages: vi.fn(),
       temperature: 0.8,
-      setTemperature: vi.fn()
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: vi.fn()
     });
 
     // when
@@ -115,7 +119,9 @@ describe('OllamaChatPage', () => {
       setModel: mockSetModel,
       setMessages: vi.fn(),
       temperature: 0.8,
-      setTemperature: vi.fn()
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: vi.fn()
     });
 
     // when
@@ -152,7 +158,9 @@ describe('OllamaChatPage', () => {
       setModel: mockSetModel,
       setMessages: vi.fn(),
       temperature: 0.8,
-      setTemperature: vi.fn()
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: vi.fn()
     });
 
     // when
@@ -189,5 +197,108 @@ describe('OllamaChatPage', () => {
 
     // then
     expect(screen.queryByText('Chat with Ollama')).not.toBeInTheDocument();
+  });
+
+  it('renders thinking checkbox unchecked by default', () => {
+    // when
+    render(<OllamaChatPage />);
+
+    // then
+    expect(screen.getByTestId('thinking-checkbox')).not.toBeChecked();
+    expect(screen.getByText('Show model reasoning (think)')).toBeInTheDocument();
+  });
+
+  it('toggles thinking checkbox when clicked', () => {
+    // given
+    const mockSetThink = vi.fn();
+    vi.mocked(useOllamaChat).mockReturnValue({
+      messages: defaultMessages as ChatMessageDto[],
+      isChatting: false,
+      isLoadingSystemPrompt: false,
+      chat: mockChat,
+      model: 'qwen3:0.6b',
+      setModel: mockSetModel,
+      setMessages: vi.fn(),
+      temperature: 0.8,
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: mockSetThink
+    });
+
+    render(<OllamaChatPage />);
+    const checkbox = screen.getByTestId('thinking-checkbox');
+
+    // when
+    fireEvent.click(checkbox);
+
+    // then
+    expect(mockSetThink).toHaveBeenCalledWith(true);
+  });
+
+  it('displays thinking content when message contains think tags', () => {
+    // given
+    const messagesWithThinking = [
+      ...defaultMessages,
+      { 
+        role: 'assistant', 
+        content: '<think>Let me think about this carefully...</think>The answer is 42.' 
+      }
+    ];
+    vi.mocked(useOllamaChat).mockReturnValue({
+      messages: messagesWithThinking as ChatMessageDto[],
+      isChatting: false,
+      isLoadingSystemPrompt: false,
+      chat: mockChat,
+      model: 'qwen3:0.6b',
+      setModel: mockSetModel,
+      setMessages: vi.fn(),
+      temperature: 0.8,
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: vi.fn()
+    });
+
+    // when
+    render(<OllamaChatPage />);
+
+    // then
+    expect(screen.getByText('The answer is 42.')).toBeInTheDocument();
+    expect(screen.getByText('Show reasoning')).toBeInTheDocument();
+    // The thinking content should be in the DOM but hidden by the closed details element
+    const thinkingContent = screen.getByText('Let me think about this carefully...');
+    expect(thinkingContent).toBeInTheDocument();
+  });
+
+  it('shows thinking content when reasoning toggle is expanded', () => {
+    // given
+    const messagesWithThinking = [
+      ...defaultMessages,
+      { 
+        role: 'assistant', 
+        content: '<think>Let me think about this carefully...</think>The answer is 42.' 
+      }
+    ];
+    vi.mocked(useOllamaChat).mockReturnValue({
+      messages: messagesWithThinking as ChatMessageDto[],
+      isChatting: false,
+      isLoadingSystemPrompt: false,
+      chat: mockChat,
+      model: 'qwen3:0.6b',
+      setModel: mockSetModel,
+      setMessages: vi.fn(),
+      temperature: 0.8,
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: vi.fn()
+    });
+
+    render(<OllamaChatPage />);
+    const reasoningToggle = screen.getByText('Show reasoning');
+
+    // when
+    fireEvent.click(reasoningToggle);
+
+    // then
+    expect(screen.getByText('Let me think about this carefully...')).toBeInTheDocument();
   });
 }); 

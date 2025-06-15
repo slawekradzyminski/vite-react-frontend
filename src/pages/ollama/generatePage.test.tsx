@@ -205,4 +205,82 @@ describe('OllamaGeneratePage', () => {
     const modelInput = screen.getByTestId('model-input');
     expect(modelInput).toHaveValue('qwen3:0.6b');
   });
+
+  it('renders thinking checkbox unchecked by default', () => {
+    // when
+    renderWithProviders(<OllamaGeneratePage />);
+
+    // then
+    expect(screen.getByTestId('thinking-checkbox')).not.toBeChecked();
+    expect(screen.getByText('Show model reasoning (think)')).toBeInTheDocument();
+  });
+
+  it('includes think flag in request when checkbox is checked', async () => {
+    // given
+    const mockResponse = new Response(
+      'data: {"response":"Response","done":true}\n\n',
+      { headers: { 'Content-Type': 'text/event-stream' } }
+    );
+    vi.mocked(ollama.generate).mockResolvedValue(mockResponse);
+
+    // when
+    renderWithProviders(<OllamaGeneratePage />);
+    await userEvent.click(screen.getByTestId('thinking-checkbox'));
+    await userEvent.type(screen.getByLabelText(/prompt/i), 'test prompt');
+    await userEvent.click(screen.getByRole('button', { name: /generate/i }));
+
+    // then
+    await waitFor(() => {
+      expect(vi.mocked(ollama.generate)).toHaveBeenCalledWith(expect.objectContaining({
+        think: true
+      }));
+    });
+  });
+
+  it('displays thinking content when response contains think tags', async () => {
+    // given
+    const mockResponse = new Response(
+      'data: {"response":"<think>Let me calculate this...</think>The answer is 4.","done":true}\n\n',
+      { headers: { 'Content-Type': 'text/event-stream' } }
+    );
+    vi.mocked(ollama.generate).mockResolvedValue(mockResponse);
+
+    // when
+    renderWithProviders(<OllamaGeneratePage />);
+    await userEvent.type(screen.getByLabelText(/prompt/i), '2+2=');
+    await userEvent.click(screen.getByRole('button', { name: /generate/i }));
+
+    // then
+    await waitFor(() => {
+      expect(screen.getByText('The answer is 4.')).toBeInTheDocument();
+      expect(screen.getByText('Show reasoning')).toBeInTheDocument();
+      // The thinking content should be in the DOM but hidden by the closed details element
+      const thinkingContent = screen.getByText('Let me calculate this...');
+      expect(thinkingContent).toBeInTheDocument();
+    });
+  });
+
+  it('shows thinking content when reasoning toggle is expanded', async () => {
+    // given
+    const mockResponse = new Response(
+      'data: {"response":"<think>Let me calculate this...</think>The answer is 4.","done":true}\n\n',
+      { headers: { 'Content-Type': 'text/event-stream' } }
+    );
+    vi.mocked(ollama.generate).mockResolvedValue(mockResponse);
+
+    // when
+    renderWithProviders(<OllamaGeneratePage />);
+    await userEvent.type(screen.getByLabelText(/prompt/i), '2+2=');
+    await userEvent.click(screen.getByRole('button', { name: /generate/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Show reasoning')).toBeInTheDocument();
+    });
+
+    const reasoningToggle = screen.getByText('Show reasoning');
+    await userEvent.click(reasoningToggle);
+
+    // then
+    expect(screen.getByText('Let me calculate this...')).toBeInTheDocument();
+  });
 }); 
