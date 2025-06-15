@@ -89,7 +89,7 @@ describe('OllamaGeneratePage', () => {
 
     // when
     renderWithProviders(<OllamaGeneratePage />);
-    const modelInput = screen.getByLabelText(/model/i);
+    const modelInput = screen.getByTestId('model-input');
     await userEvent.clear(modelInput);
     await userEvent.type(modelInput, 'mistral:7b');
     await userEvent.type(screen.getByLabelText(/prompt/i), 'test prompt');
@@ -202,7 +202,7 @@ describe('OllamaGeneratePage', () => {
     renderWithProviders(<OllamaGeneratePage />);
     
     // then
-    const modelInput = screen.getByLabelText(/model/i);
+    const modelInput = screen.getByTestId('model-input');
     expect(modelInput).toHaveValue('qwen3:0.6b');
   });
 }); 

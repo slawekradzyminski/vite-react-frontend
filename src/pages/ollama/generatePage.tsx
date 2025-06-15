@@ -17,7 +17,9 @@ export function OllamaGeneratePage({ hideTitle = false }: OllamaGeneratePageProp
     model,
     setModel,
     temperature,
-    setTemperature
+    setTemperature,
+    think,
+    setThink
   } = useOllamaGenerate();
 
   const handleGenerate = () => {
@@ -69,6 +71,20 @@ export function OllamaGeneratePage({ hideTitle = false }: OllamaGeneratePageProp
           <span data-testid="temperature-focused">More Focused</span>
           <span data-testid="temperature-creative">More Creative</span>
         </div>
+      </div>
+
+      <div className="mb-4" data-testid="thinking-control">
+        <label className="flex items-center gap-2 cursor-pointer" data-testid="thinking-label">
+          <input
+            type="checkbox"
+            checked={think}
+            onChange={(e) => setThink(e.target.checked)}
+            className="rounded border-gray-300"
+            data-testid="thinking-checkbox"
+          />
+          <span className="font-medium">Show model reasoning (think)</span>
+        </label>
+        <p className="text-sm text-gray-500 mt-1">Adds &lt;think&gt; reasoning to the response.</p>
       </div>
 
       <div className="mb-4" data-testid="prompt-container">
