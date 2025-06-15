@@ -3,6 +3,7 @@ import { useOllamaChat } from '../../hooks/useOllamaChat';
 import { Spinner } from '../../components/ui/spinner';
 import ReactMarkdown from 'react-markdown';
 import { ChatMessageDto } from '../../types/ollama';
+import { splitThinking } from '../../lib/llm/parseThinking';
 import styles from './OllamaChat.module.css';
 
 interface OllamaChatPageProps {
@@ -46,6 +47,8 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
       : 'bg-green-50';
     const alignment = isUser ? 'items-end' : 'items-start';
 
+    const { cleaned, thinking } = splitThinking(message.content);
+
     return (
       <div className={`flex flex-col ${alignment} w-full mb-4`} data-testid={`chat-message-${message.role}`}>
         <div className={`${bgColor} rounded-lg px-4 py-2 max-w-[80%]`}>
@@ -53,8 +56,16 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
             {message.role.charAt(0).toUpperCase() + message.role.slice(1)}
           </div>
           <div className={styles.markdownContainer} data-testid={`chat-message-content-${message.role}`}>
-            <ReactMarkdown>{message.content}</ReactMarkdown>
+            <ReactMarkdown>{cleaned}</ReactMarkdown>
           </div>
+          {thinking && (
+            <details className="mt-2 text-xs text-gray-500" data-testid="thinking-toggle">
+              <summary className="cursor-pointer select-none">Show reasoning</summary>
+              <div className="mt-2 p-2 bg-gray-50 rounded text-gray-700">
+                <ReactMarkdown>{thinking}</ReactMarkdown>
+              </div>
+            </details>
+          )}
         </div>
       </div>
     );
