@@ -75,17 +75,22 @@ describe('LlmPage', () => {
       setModel: vi.fn(),
       setMessages: vi.fn(),
       temperature: 0.8,
-      setTemperature: vi.fn()
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: vi.fn()
     });
 
     vi.mocked(useOllamaGenerate).mockReturnValue({
       response: '',
+      thinking: '',
       isGenerating: false,
       generate: vi.fn(),
       model: 'qwen3:0.6b',
       setModel: vi.fn(),
       temperature: 0.8,
-      setTemperature: vi.fn()
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: vi.fn()
     });
   });
 

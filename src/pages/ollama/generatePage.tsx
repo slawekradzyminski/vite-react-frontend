@@ -123,7 +123,7 @@ export function OllamaGeneratePage({ hideTitle = false }: OllamaGeneratePageProp
       {(thinking || response) && (
         <div data-testid="generated-response">
           {thinking && (
-            <details className="mb-4" data-testid="thinking-result">
+            <details className="mb-4 text-xs text-gray-500" data-testid="thinking-result">
               <summary className="cursor-pointer font-medium flex items-center gap-1">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-600">
                   <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.86-3.14-7-7-7z"/>
