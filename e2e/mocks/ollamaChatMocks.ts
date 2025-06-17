@@ -1,86 +1,85 @@
 import { Page, Route } from '@playwright/test';
+import { BACKEND_URL } from '../config/constants';
+
+function createMockEventStream(chunks: any[]): string {
+  return chunks.map(chunk => `data: ${JSON.stringify(chunk)}\n\n`).join('');
+}
 
 export const ollamaChatMocks = {
   async mockSuccess(page: Page, onRequest?: (route: Route) => void) {
-    await page.route('**/api/ollama/chat', async route => {
-      if (onRequest) {
-        onRequest(route);
-      }
-
-      const chunks = [
-        {
-          model: 'llama3.2:1b',
-          createdAt: new Date().toISOString(),
-          message: {
-            role: 'assistant',
-            content: '# Heading\n\n* List item 1\n* List item 2\n\n**Bold text**\n\n`code block`'
-          },
-          done: true
-        }
-      ];
-
-      const response = chunks.map(chunk => `data: ${JSON.stringify(chunk)}\n\n`).join('');
+    await page.route(`${BACKEND_URL}/api/ollama/chat`, async (route) => {
+      onRequest?.(route);
       await route.fulfill({
         status: 200,
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive'
-        },
-        body: response
+        headers: { 'content-type': 'text/event-stream' },
+        body: createMockEventStream([
+          {
+            message: { content: "# Heading\n\n1. Item 1\n2. Item 2", role: 'assistant' },
+            done: false
+          },
+          {
+            message: { role: 'assistant' },
+            done: true
+          }
+        ])
       });
     });
   },
 
   async mockConversation(page: Page, onRequest?: (route: Route) => void) {
-    await page.route('**/api/ollama/chat', async route => {
-      if (onRequest) {
-        onRequest(route);
+    let requestCount = 0;
+    await page.route(`${BACKEND_URL}/api/ollama/chat`, async (route) => {
+      if (requestCount === 1) {
+        onRequest?.(route);
       }
-
-      const firstResponse = {
-        model: 'llama3.2:1b',
-        createdAt: new Date().toISOString(),
-        message: {
-          role: 'assistant',
-          content: 'Love is emotion.'
-        },
-        done: true
-      };
-
-      const secondResponse = {
-        model: 'llama3.2:1b',
-        createdAt: new Date().toISOString(),
-        message: {
-          role: 'assistant',
-          content: 'Let me elaborate on the concept of love...'
-        },
-        done: true
-      };
-
-      // Choose response based on the request content
-      const request = JSON.parse(route.request().postData() || '{}');
-      const isSecondMessage = request.messages?.some(m => m.content.includes('go on'));
-      const response = `data: ${JSON.stringify(isSecondMessage ? secondResponse : firstResponse)}\n\n`;
-
+      requestCount++;
       await route.fulfill({
         status: 200,
-        headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive'
-        },
-        body: response
+        headers: { 'content-type': 'text/event-stream' },
+        body: createMockEventStream([
+          {
+            message: { content: "Love is emotion.", role: 'assistant' },
+            done: false
+          },
+          {
+            message: { role: 'assistant' },
+            done: true
+          }
+        ])
+      });
+    });
+  },
+
+  async mockWithThinking(page: Page, onRequest?: (route: Route) => void) {
+    await page.route(`${BACKEND_URL}/api/ollama/chat`, async (route) => {
+      onRequest?.(route);
+      await route.fulfill({
+        status: 200,
+        headers: { 'content-type': 'text/event-stream' },
+        body: createMockEventStream([
+          {
+            message: { 
+              content: "Based on my analysis, here's my response.",
+              thinking: "Let me think about this... I need to analyze the request carefully.",
+              role: 'assistant' 
+            },
+            done: false
+          },
+          {
+            message: { role: 'assistant' },
+            done: true
+          }
+        ])
       });
     });
   },
 
   async mockError(page: Page) {
-    await page.route('**/api/ollama/chat', route => {
-      route.fulfill({
+    await page.route(`${BACKEND_URL}/api/ollama/chat`, async (route) => {
+      await route.fulfill({
         status: 500,
-        contentType: 'application/json',
-        body: JSON.stringify({ error: 'Failed to fetch stream' })
+        headers: { 'content-type': 'text/event-stream' },
+        body: 'event: error\ndata: Failed to fetch stream: Internal Server Error\n\n'
       });
     });
   }

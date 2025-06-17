@@ -17,7 +17,7 @@ vi.mock('../ollama/chatPage', () => ({
     <div data-testid="ollama-chat-page" className="flex flex-col">
       <div data-testid="model-selection" className="mb-4">
         <label data-testid="model-label" htmlFor="model" className="block font-medium mb-2">Model</label>
-        <input data-testid="model-input" id="model" type="text" className="w-full border rounded p-2" placeholder="Enter model name" value="llama3.2:1b" />
+        <input data-testid="model-input" id="model" type="text" className="w-full border rounded p-2" placeholder="Enter model name" value="qwen3:0.6b" />
       </div>
       <div data-testid="temperature-control" className="mb-4">
         <label data-testid="temperature-label" htmlFor="temperature" className="block font-medium mb-2">Temperature: 0.80</label>
@@ -41,7 +41,7 @@ vi.mock('../ollama/generatePage', () => ({
     <div data-testid="ollama-generate-page" className="flex flex-col">
       <div data-testid="model-selection" className="mb-4">
         <label data-testid="model-label" htmlFor="model" className="block font-medium mb-2">Model</label>
-        <input data-testid="model-input" id="model" type="text" className="w-full border rounded p-2" placeholder="Enter model name" value="llama3.2:1b" />
+        <input data-testid="model-input" id="model" type="text" className="w-full border rounded p-2" placeholder="Enter model name" value="qwen3:0.6b" />
       </div>
       <div data-testid="temperature-control" className="mb-4">
         <label data-testid="temperature-label" htmlFor="temperature" className="block font-medium mb-2">Temperature: 0.80</label>
@@ -71,21 +71,26 @@ describe('LlmPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: vi.fn(),
-      model: 'llama3.2:1b',
+      model: 'qwen3:0.6b',
       setModel: vi.fn(),
       setMessages: vi.fn(),
       temperature: 0.8,
-      setTemperature: vi.fn()
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: vi.fn()
     });
 
     vi.mocked(useOllamaGenerate).mockReturnValue({
       response: '',
+      thinking: '',
       isGenerating: false,
       generate: vi.fn(),
-      model: 'llama3.2:1b',
+      model: 'qwen3:0.6b',
       setModel: vi.fn(),
       temperature: 0.8,
-      setTemperature: vi.fn()
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: vi.fn()
     });
   });
 

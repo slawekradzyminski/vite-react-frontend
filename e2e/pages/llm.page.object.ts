@@ -9,9 +9,9 @@ export class LLMPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.modelInput = page.getByLabel('Model');
-    this.temperatureInput = page.getByLabel('Temperature');
-    this.temperatureSlider = page.getByRole('slider', { name: /Temperature/ });
+    this.modelInput = page.getByTestId('model-input');
+    this.temperatureInput = page.getByTestId('temperature-label');
+    this.temperatureSlider = page.getByTestId('temperature-slider');
     this.errorMessage = page.getByText('Failed to fetch stream: Internal Server Error', { exact: true });
   }
 

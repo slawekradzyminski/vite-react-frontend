@@ -28,11 +28,13 @@ describe('OllamaChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: mockChat,
-      model: 'llama3.2:1b',
+      model: 'qwen3:0.6b',
       setModel: mockSetModel,
       setMessages: vi.fn(),
       temperature: 0.8,
-      setTemperature: vi.fn()
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: vi.fn()
     });
   });
 
@@ -44,7 +46,7 @@ describe('OllamaChatPage', () => {
     expect(screen.getByText('Chat with Ollama')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Type your message...')).toBeInTheDocument();
     expect(screen.getByText('Send')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('llama3.2:1b')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('qwen3:0.6b')).toBeInTheDocument();
   });
 
   it('handles user input and sends messages', async () => {
@@ -83,11 +85,13 @@ describe('OllamaChatPage', () => {
       isChatting: true,
       isLoadingSystemPrompt: false,
       chat: mockChat,
-      model: 'llama3.2:1b',
+      model: 'qwen3:0.6b',
       setModel: mockSetModel,
       setMessages: vi.fn(),
       temperature: 0.8,
-      setTemperature: vi.fn()
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: vi.fn()
     });
 
     // when
@@ -111,11 +115,13 @@ describe('OllamaChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: mockChat,
-      model: 'llama3.2:1b',
+      model: 'qwen3:0.6b',
       setModel: mockSetModel,
       setMessages: vi.fn(),
       temperature: 0.8,
-      setTemperature: vi.fn()
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: vi.fn()
     });
 
     // when
@@ -132,7 +138,7 @@ describe('OllamaChatPage', () => {
   it('updates model when input changes', () => {
     // given
     render(<OllamaChatPage />);
-    const modelInput = screen.getByDisplayValue('llama3.2:1b');
+    const modelInput = screen.getByDisplayValue('qwen3:0.6b');
 
     // when
     fireEvent.change(modelInput, { target: { value: 'llama3.2:7b' } });
@@ -148,11 +154,13 @@ describe('OllamaChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: true,
       chat: mockChat,
-      model: 'llama3.2:1b',
+      model: 'qwen3:0.6b',
       setModel: mockSetModel,
       setMessages: vi.fn(),
       temperature: 0.8,
-      setTemperature: vi.fn()
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: vi.fn()
     });
 
     // when
@@ -189,5 +197,128 @@ describe('OllamaChatPage', () => {
 
     // then
     expect(screen.queryByText('Chat with Ollama')).not.toBeInTheDocument();
+  });
+
+  it('renders thinking checkbox unchecked by default', () => {
+    // given
+
+    // when
+    render(<OllamaChatPage />);
+
+    // then
+    expect(screen.getByTestId('thinking-checkbox')).not.toBeChecked();
+    expect(screen.getByText('Thinking')).toBeInTheDocument();
+  });
+
+  it('toggles thinking checkbox when clicked', () => {
+    // given
+    const mockSetThink = vi.fn();
+    vi.mocked(useOllamaChat).mockReturnValue({
+      messages: defaultMessages as ChatMessageDto[],
+      isChatting: false,
+      isLoadingSystemPrompt: false,
+      chat: mockChat,
+      model: 'qwen3:0.6b',
+      setModel: mockSetModel,
+      setMessages: vi.fn(),
+      temperature: 0.8,
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: mockSetThink
+    });
+
+    render(<OllamaChatPage />);
+    const checkbox = screen.getByTestId('thinking-checkbox');
+
+    // when
+    fireEvent.click(checkbox);
+
+    // then
+    expect(mockSetThink).toHaveBeenCalledWith(true);
+  });
+
+  it('displays thinking content when message contains thinking field', () => {
+    // given
+    const messagesWithThinking = [
+      ...defaultMessages,
+      { 
+        role: 'assistant', 
+        content: 'The answer is 42.',
+        thinking: 'Let me think about this carefully...'
+      }
+    ];
+    vi.mocked(useOllamaChat).mockReturnValue({
+      messages: messagesWithThinking as ChatMessageDto[],
+      isChatting: false,
+      isLoadingSystemPrompt: false,
+      chat: mockChat,
+      model: 'qwen3:0.6b',
+      setModel: mockSetModel,
+      setMessages: vi.fn(),
+      temperature: 0.8,
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: vi.fn()
+    });
+
+    // when
+    render(<OllamaChatPage />);
+
+    // then
+    expect(screen.getByText('The answer is 42.')).toBeInTheDocument();
+    expect(screen.getByTestId('thinking-toggle')).toBeInTheDocument();
+    // The thinking content should be in the DOM but hidden by the closed details element
+    const thinkingContent = screen.getByText('Let me think about this carefully...');
+    expect(thinkingContent).toBeInTheDocument();
+  });
+
+  it('shows thinking content when reasoning toggle is expanded', () => {
+    // given
+    const messagesWithThinking = [
+      ...defaultMessages,
+      { 
+        role: 'assistant', 
+        content: 'The answer is 42.',
+        thinking: 'Let me think about this carefully...'
+      }
+    ];
+    vi.mocked(useOllamaChat).mockReturnValue({
+      messages: messagesWithThinking as ChatMessageDto[],
+      isChatting: false,
+      isLoadingSystemPrompt: false,
+      chat: mockChat,
+      model: 'qwen3:0.6b',
+      setModel: mockSetModel,
+      setMessages: vi.fn(),
+      temperature: 0.8,
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: vi.fn()
+    });
+
+    render(<OllamaChatPage />);
+    const reasoningToggle = screen.getByTestId('thinking-toggle').querySelector('summary');
+
+    // when
+    fireEvent.click(reasoningToggle!);
+
+    // then
+    expect(screen.getByText('Let me think about this carefully...')).toBeInTheDocument();
+  });
+
+  it('displays thinking checkbox with bulb icon and correct text', () => {
+    // given
+
+    // when
+    render(<OllamaChatPage />);
+
+    // then
+    const thinkingCheckbox = screen.getByTestId('thinking-checkbox');
+    expect(thinkingCheckbox).toBeInTheDocument();
+    expect(screen.getByText('Thinking')).toBeInTheDocument();
+    
+    // Check that the old text is not present
+    expect(screen.queryByText('Show model reasoning (think)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Adds <think> reasoning to the response.')).not.toBeInTheDocument();
   });
 }); 

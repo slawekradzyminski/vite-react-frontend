@@ -1,6 +1,6 @@
 services:
   backend:
-    image: slawekradzyminski/backend:2.7.0
+    image: slawekradzyminski/backend:2.8.0
     ports:
       - "4001:4001"
     hostname: backend

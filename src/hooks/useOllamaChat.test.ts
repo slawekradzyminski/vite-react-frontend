@@ -37,7 +37,7 @@ describe('useOllamaChat', () => {
     expect(result.current.messages).toEqual([
       { role: 'system', content: 'You are a helpful AI assistant. You must use the conversation history to answer questions.' }
     ]);
-    expect(result.current.model).toBe('llama3.2:1b');
+    expect(result.current.model).toBe('qwen3:0.6b');
     expect(result.current.temperature).toBe(0.8);
   });
 
@@ -59,13 +59,13 @@ describe('useOllamaChat', () => {
   it('maintains conversation history through multiple messages', async () => {
     // given
     const mockResponse1 = new Response(
-      'data: {"model":"llama3.2:1b","message":{"role":"assistant","content":"I\'m doing great"},"done":false}\n\n' +
-      'data: {"model":"llama3.2:1b","message":{"role":"assistant","content":"!"},"done":true}\n\n',
+      'data: {"model":"qwen3:0.6b","message":{"role":"assistant","content":"I\'m doing great"},"done":false}\n\n' +
+      'data: {"model":"qwen3:0.6b","message":{"role":"assistant","content":"!"},"done":true}\n\n',
       { headers: { 'Content-Type': 'text/event-stream' } }
     );
 
     const mockResponse2 = new Response(
-      'data: {"model":"llama3.2:1b","message":{"role":"assistant","content":"Your initial question was: How are you today?"},"done":true}\n\n',
+      'data: {"model":"qwen3:0.6b","message":{"role":"assistant","content":"Your initial question was: How are you today?"},"done":true}\n\n',
       { headers: { 'Content-Type': 'text/event-stream' } }
     );
 
@@ -84,7 +84,7 @@ describe('useOllamaChat', () => {
     expect(result.current.messages).toEqual([
       { role: 'system', content: 'You are a helpful AI assistant. You must use the conversation history to answer questions.' },
       { role: 'user', content: 'How are you today?' },
-      { role: 'assistant', content: 'I\'m doing great!' }
+      { role: 'assistant', content: 'I\'m doing great!', thinking: '' }
     ]);
 
     // when - second message
@@ -96,9 +96,9 @@ describe('useOllamaChat', () => {
     expect(result.current.messages).toEqual([
       { role: 'system', content: 'You are a helpful AI assistant. You must use the conversation history to answer questions.' },
       { role: 'user', content: 'How are you today?' },
-      { role: 'assistant', content: 'I\'m doing great!' },
+      { role: 'assistant', content: 'I\'m doing great!', thinking: '' },
       { role: 'user', content: 'What was my initial question?' },
-      { role: 'assistant', content: 'Your initial question was: How are you today?' }
+      { role: 'assistant', content: 'Your initial question was: How are you today?', thinking: '' }
     ]);
 
     // Verify API calls included full history
@@ -106,7 +106,7 @@ describe('useOllamaChat', () => {
     expect(vi.mocked(ollama.chat).mock.calls[1][0].messages).toEqual([
       { role: 'system', content: 'You are a helpful AI assistant. You must use the conversation history to answer questions.' },
       { role: 'user', content: 'How are you today?' },
-      { role: 'assistant', content: 'I\'m doing great!' },
+      { role: 'assistant', content: 'I\'m doing great!', thinking: '' },
       { role: 'user', content: 'What was my initial question?' }
     ]);
   });
@@ -114,9 +114,9 @@ describe('useOllamaChat', () => {
   it('handles streaming response correctly', async () => {
     // given
     const mockResponse = new Response(
-      'data: {"model":"llama3.2:1b","message":{"role":"assistant","content":"Hello"},"done":false}\n\n' +
-      'data: {"model":"llama3.2:1b","message":{"role":"assistant","content":" World"},"done":false}\n\n' +
-      'data: {"model":"llama3.2:1b","message":{"role":"assistant","content":"!"},"done":true}\n\n',
+      'data: {"model":"qwen3:0.6b","message":{"role":"assistant","content":"Hello"},"done":false}\n\n' +
+      'data: {"model":"qwen3:0.6b","message":{"role":"assistant","content":" World"},"done":false}\n\n' +
+      'data: {"model":"qwen3:0.6b","message":{"role":"assistant","content":"!"},"done":true}\n\n',
       { headers: { 'Content-Type': 'text/event-stream' } }
     );
     vi.mocked(ollama.chat).mockResolvedValue(mockResponse);
@@ -132,7 +132,7 @@ describe('useOllamaChat', () => {
     expect(result.current.messages).toEqual([
       { role: 'system', content: 'You are a helpful AI assistant. You must use the conversation history to answer questions.' },
       { role: 'user', content: 'Hi there' },
-      { role: 'assistant', content: 'Hello World!' }
+      { role: 'assistant', content: 'Hello World!', thinking: '' }
     ]);
   });
 
@@ -158,15 +158,15 @@ describe('useOllamaChat', () => {
     // given
     const responses = [
       new Response(
-        'data: {"model":"llama3.2:1b","message":{"role":"assistant","content":"First response"},"done":true}\n\n',
+        'data: {"model":"qwen3:0.6b","message":{"role":"assistant","content":"First response"},"done":true}\n\n',
         { headers: { 'Content-Type': 'text/event-stream' } }
       ),
       new Response(
-        'data: {"model":"llama3.2:1b","message":{"role":"assistant","content":"Second response"},"done":true}\n\n',
+        'data: {"model":"qwen3:0.6b","message":{"role":"assistant","content":"Second response"},"done":true}\n\n',
         { headers: { 'Content-Type': 'text/event-stream' } }
       ),
       new Response(
-        'data: {"model":"llama3.2:1b","message":{"role":"assistant","content":"Third response"},"done":true}\n\n',
+        'data: {"model":"qwen3:0.6b","message":{"role":"assistant","content":"Third response"},"done":true}\n\n',
         { headers: { 'Content-Type': 'text/event-stream' } }
       )
     ];
@@ -204,7 +204,7 @@ describe('useOllamaChat', () => {
     expect(chatSpy.mock.calls[1][0].messages).toEqual([
       { role: 'system', content: expect.any(String) },
       { role: 'user', content: 'First message' },
-      { role: 'assistant', content: 'First response' },
+      { role: 'assistant', content: 'First response', thinking: '' },
       { role: 'user', content: 'Second message' }
     ]);
 
@@ -212,9 +212,9 @@ describe('useOllamaChat', () => {
     expect(chatSpy.mock.calls[2][0].messages).toEqual([
       { role: 'system', content: expect.any(String) },
       { role: 'user', content: 'First message' },
-      { role: 'assistant', content: 'First response' },
+      { role: 'assistant', content: 'First response', thinking: '' },
       { role: 'user', content: 'Second message' },
-      { role: 'assistant', content: 'Second response' },
+      { role: 'assistant', content: 'Second response', thinking: '' },
       { role: 'user', content: 'Third message' }
     ]);
 
@@ -222,11 +222,11 @@ describe('useOllamaChat', () => {
     expect(result.current.messages).toEqual([
       { role: 'system', content: expect.any(String) },
       { role: 'user', content: 'First message' },
-      { role: 'assistant', content: 'First response' },
+      { role: 'assistant', content: 'First response', thinking: '' },
       { role: 'user', content: 'Second message' },
-      { role: 'assistant', content: 'Second response' },
+      { role: 'assistant', content: 'Second response', thinking: '' },
       { role: 'user', content: 'Third message' },
-      { role: 'assistant', content: 'Third response' }
+      { role: 'assistant', content: 'Third response', thinking: '' }
     ]);
   });
 
@@ -254,7 +254,7 @@ describe('useOllamaChat', () => {
   it('should include temperature in chat request', async () => {
     // given
     const mockResponse = new Response(
-      'data: {"model":"llama3.2:1b","message":{"role":"assistant","content":"Hello"},"done":true}\n\n',
+      'data: {"model":"qwen3:0.6b","message":{"role":"assistant","content":"Hello"},"done":true}\n\n',
       { headers: { 'Content-Type': 'text/event-stream' } }
     );
     vi.mocked(ollama.chat).mockResolvedValue(mockResponse);
@@ -278,7 +278,7 @@ describe('useOllamaChat', () => {
   it('should use default temperature in chat request if not changed', async () => {
     // given
     const mockResponse = new Response(
-      'data: {"model":"llama3.2:1b","message":{"role":"assistant","content":"Hello"},"done":true}\n\n',
+      'data: {"model":"qwen3:0.6b","message":{"role":"assistant","content":"Hello"},"done":true}\n\n',
       { headers: { 'Content-Type': 'text/event-stream' } }
     );
     vi.mocked(ollama.chat).mockResolvedValue(mockResponse);

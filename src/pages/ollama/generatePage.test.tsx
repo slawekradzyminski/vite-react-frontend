@@ -55,8 +55,8 @@ describe('OllamaGeneratePage', () => {
   it('handles streaming chunks correctly', async () => {
     // given
     const mockResponse = new Response(
-      'data: {"model":"llama3.2:1b","response":"Hello","done":false}\n\n' +
-      'data: {"model":"llama3.2:1b","response":" World","done":true}\n\n',
+      'data: {"model":"qwen3:0.6b","response":"Hello","done":false}\n\n' +
+      'data: {"model":"qwen3:0.6b","response":" World","done":true}\n\n',
       {
         headers: { 'Content-Type': 'text/event-stream' }
       }
@@ -73,7 +73,7 @@ describe('OllamaGeneratePage', () => {
       expect(screen.getByText('Hello World')).toBeInTheDocument();
     });
     expect(vi.mocked(ollama.generate)).toHaveBeenCalledWith(expect.objectContaining({
-      model: 'llama3.2:1b'
+      model: 'qwen3:0.6b'
     }));
   });
 
@@ -89,7 +89,7 @@ describe('OllamaGeneratePage', () => {
 
     // when
     renderWithProviders(<OllamaGeneratePage />);
-    const modelInput = screen.getByLabelText(/model/i);
+    const modelInput = screen.getByTestId('model-input');
     await userEvent.clear(modelInput);
     await userEvent.type(modelInput, 'mistral:7b');
     await userEvent.type(screen.getByLabelText(/prompt/i), 'test prompt');
@@ -202,7 +202,129 @@ describe('OllamaGeneratePage', () => {
     renderWithProviders(<OllamaGeneratePage />);
     
     // then
-    const modelInput = screen.getByLabelText(/model/i);
-    expect(modelInput).toHaveValue('llama3.2:1b');
+    const modelInput = screen.getByTestId('model-input');
+    expect(modelInput).toHaveValue('qwen3:0.6b');
+  });
+
+  it('renders thinking checkbox unchecked by default', () => {
+    // when
+    renderWithProviders(<OllamaGeneratePage />);
+
+    // then
+    expect(screen.getByTestId('thinking-checkbox')).not.toBeChecked();
+    expect(screen.getByText('Thinking')).toBeInTheDocument();
+  });
+
+  it('includes think flag in request when checkbox is checked', async () => {
+    // given
+    const mockResponse = new Response(
+      'data: {"response":"Response","done":true}\n\n',
+      { headers: { 'Content-Type': 'text/event-stream' } }
+    );
+    vi.mocked(ollama.generate).mockResolvedValue(mockResponse);
+
+    // when
+    renderWithProviders(<OllamaGeneratePage />);
+    await userEvent.click(screen.getByTestId('thinking-checkbox'));
+    await userEvent.type(screen.getByLabelText(/prompt/i), 'test prompt');
+    await userEvent.click(screen.getByRole('button', { name: /generate/i }));
+
+    // then
+    await waitFor(() => {
+      expect(vi.mocked(ollama.generate)).toHaveBeenCalledWith(expect.objectContaining({
+        think: true
+      }));
+    });
+  });
+
+  it('displays thinking content when response contains thinking field', async () => {
+    // given
+    const mockResponse = new Response(
+      'data: {"response":"","thinking":"Let me calculate this...","done":false}\n\n' +
+      'data: {"response":"The answer is 4.","thinking":"","done":true}\n\n',
+      { headers: { 'Content-Type': 'text/event-stream' } }
+    );
+    vi.mocked(ollama.generate).mockResolvedValue(mockResponse);
+
+    // when
+    renderWithProviders(<OllamaGeneratePage />);
+    await userEvent.type(screen.getByLabelText(/prompt/i), '2+2=');
+    await userEvent.click(screen.getByRole('button', { name: /generate/i }));
+
+    // then
+    await waitFor(() => {
+      expect(screen.getByText('The answer is 4.')).toBeInTheDocument();
+      expect(screen.getByTestId('thinking-result')).toBeInTheDocument();
+      // The thinking content should be in the DOM but hidden by the closed details element
+      const thinkingContent = screen.getByText('Let me calculate this...');
+      expect(thinkingContent).toBeInTheDocument();
+    });
+  });
+
+  it('shows thinking content when reasoning toggle is expanded', async () => {
+    // given
+    const mockResponse = new Response(
+      'data: {"response":"","thinking":"Let me calculate this...","done":false}\n\n' +
+      'data: {"response":"The answer is 4.","thinking":"","done":true}\n\n',
+      { headers: { 'Content-Type': 'text/event-stream' } }
+    );
+    vi.mocked(ollama.generate).mockResolvedValue(mockResponse);
+
+    // when
+    renderWithProviders(<OllamaGeneratePage />);
+    await userEvent.type(screen.getByLabelText(/prompt/i), '2+2=');
+    await userEvent.click(screen.getByRole('button', { name: /generate/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('thinking-result')).toBeInTheDocument();
+    });
+    
+    const reasoningToggle = screen.getByTestId('thinking-result').querySelector('summary');
+    await userEvent.click(reasoningToggle!);
+
+    // then
+    expect(screen.getByText('Let me calculate this...')).toBeInTheDocument();
+  });
+
+  it('displays thinking checkbox with bulb icon and correct text', () => {
+    // given
+
+    // when
+    renderWithProviders(<OllamaGeneratePage />);
+
+    // then
+    const thinkingCheckbox = screen.getByTestId('thinking-checkbox');
+    expect(thinkingCheckbox).toBeInTheDocument();
+    expect(screen.getByText('Thinking')).toBeInTheDocument();
+    
+    // Check that the old text is not present
+    expect(screen.queryByText('Show model reasoning (think)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Adds <think> reasoning to the response.')).not.toBeInTheDocument();
+  });
+
+  it('shows thinking content live during streaming', async () => {
+    // given
+    const mockResponse = new Response(
+      'data: {"response":"","thinking":"Let me ","done":false}\n\n' +
+      'data: {"response":"","thinking":"think about ","done":false}\n\n' +
+      'data: {"response":"","thinking":"this...","done":false}\n\n' +
+      'data: {"response":"The answer is 42.","thinking":"","done":true}\n\n',
+      { headers: { 'Content-Type': 'text/event-stream' } }
+    );
+    vi.mocked(ollama.generate).mockResolvedValue(mockResponse);
+
+    // when
+    renderWithProviders(<OllamaGeneratePage />);
+    await userEvent.type(screen.getByLabelText(/prompt/i), 'What is the meaning of life?');
+    await userEvent.click(screen.getByRole('button', { name: /generate/i }));
+
+    // then
+    await waitFor(() => {
+      expect(screen.getByTestId('thinking-result')).toBeInTheDocument();
+    });
+    
+    await waitFor(() => {
+      expect(screen.getByText('The answer is 42.')).toBeInTheDocument();
+    });
   });
 }); 

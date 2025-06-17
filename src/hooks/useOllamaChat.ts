@@ -18,8 +18,9 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
       content: DEFAULT_SYSTEM_PROMPT
     }
   ]);
-  const [model, setModel] = useState('llama3.2:1b');
+  const [model, setModel] = useState('qwen3:0.6b');
   const [temperature, setTemperature] = useState(0.8);
+  const [think, setThink] = useState(false);
   const [isChatting, setIsChatting] = useState(false);
   const [isLoadingSystemPrompt, setIsLoadingSystemPrompt] = useState(true);
   
@@ -78,9 +79,10 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
 
       setMessages(newMessages as ChatMessageDto[]);
 
-      const assistantPlaceholder = {
+      const assistantPlaceholder: ChatMessageDto = {
         role: 'assistant',
-        content: ''
+        content: '',
+        thinking: ''
       };
       const assistantIndex = newMessages.length;
 
@@ -90,6 +92,7 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
       const requestBody: ChatRequestDto = {
         model,
         messages: newMessages as ChatMessageDto[], 
+        think,
         options: { temperature }
       };
 
@@ -97,21 +100,26 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
         const response = await ollama.chat(requestBody);
 
         let accumulatedContent = '';
+        let accumulatedThinking = '';
         await processSSEResponse<ChatResponseDto>(response, {
           onMessage: (data) => {
             if (data.message?.content) {
               accumulatedContent += data.message.content;
-
-              setMessages((prev) => {
-                const updated = [...prev];
-                const oldAssistantMsg = updated[assistantIndex];
-                updated[assistantIndex] = {
-                  ...oldAssistantMsg,
-                  content: accumulatedContent
-                };
-                return updated;
-              });
             }
+            if (data.message?.thinking) {
+              accumulatedThinking += data.message.thinking;
+            }
+
+            setMessages((prev) => {
+              const updated = [...prev];
+              const oldAssistantMsg = updated[assistantIndex];
+              updated[assistantIndex] = {
+                ...oldAssistantMsg,
+                content: accumulatedContent,
+                thinking: accumulatedThinking
+              };
+              return updated;
+            });
 
             if (data.done) {
               setIsChatting(false);
@@ -135,7 +143,7 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
         setIsChatting(false);
       }
     },
-    [messages, model, temperature, isChatting, toast, options]
+    [messages, model, temperature, think, isChatting, toast, options]
   );
 
   return {
@@ -147,6 +155,8 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
     setModel,
     temperature,
     setTemperature,
+    think,
+    setThink,
     setMessages
   };
 }
