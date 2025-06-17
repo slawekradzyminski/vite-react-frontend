@@ -81,7 +81,8 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
 
       const assistantPlaceholder: ChatMessageDto = {
         role: 'assistant',
-        content: ''
+        content: '',
+        thinking: ''
       };
       const assistantIndex = newMessages.length;
 
@@ -99,21 +100,26 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
         const response = await ollama.chat(requestBody);
 
         let accumulatedContent = '';
+        let accumulatedThinking = '';
         await processSSEResponse<ChatResponseDto>(response, {
           onMessage: (data) => {
             if (data.message?.content) {
               accumulatedContent += data.message.content;
-
-              setMessages((prev) => {
-                const updated = [...prev];
-                const oldAssistantMsg = updated[assistantIndex];
-                updated[assistantIndex] = {
-                  ...oldAssistantMsg,
-                  content: accumulatedContent
-                };
-                return updated;
-              });
             }
+            if (data.message?.thinking) {
+              accumulatedThinking += data.message.thinking;
+            }
+
+            setMessages((prev) => {
+              const updated = [...prev];
+              const oldAssistantMsg = updated[assistantIndex];
+              updated[assistantIndex] = {
+                ...oldAssistantMsg,
+                content: accumulatedContent,
+                thinking: accumulatedThinking
+              };
+              return updated;
+            });
 
             if (data.done) {
               setIsChatting(false);

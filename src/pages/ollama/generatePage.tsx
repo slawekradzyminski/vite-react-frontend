@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useOllamaGenerate } from '../../hooks/useOllamaGenerate';
 import { Spinner } from '../../components/ui/spinner';
 import ReactMarkdown from 'react-markdown';
-import { splitThinking } from '../../lib/llm/parseThinking';
 import styles from './OllamaGenerate.module.css';
 
 interface OllamaGeneratePageProps {
@@ -14,6 +13,7 @@ export function OllamaGeneratePage({ hideTitle = false }: OllamaGeneratePageProp
   const {
     isGenerating,
     response,
+    thinking,
     generate,
     model,
     setModel,
@@ -119,13 +119,13 @@ export function OllamaGeneratePage({ hideTitle = false }: OllamaGeneratePageProp
       {response && (
         <div data-testid="generated-response">
           <div className={styles.markdownContainer}>
-            <ReactMarkdown>{splitThinking(response).cleaned}</ReactMarkdown>
+            <ReactMarkdown>{response}</ReactMarkdown>
           </div>
-          {splitThinking(response).thinking && (
+          {thinking && (
             <details className="mt-4" data-testid="thinking-result">
               <summary className="cursor-pointer font-medium">Show reasoning</summary>
               <div className="mt-2 p-3 bg-gray-50 rounded text-gray-700">
-                <ReactMarkdown>{splitThinking(response).thinking}</ReactMarkdown>
+                <ReactMarkdown>{thinking}</ReactMarkdown>
               </div>
             </details>
           )}

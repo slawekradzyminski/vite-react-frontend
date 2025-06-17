@@ -235,13 +235,14 @@ describe('OllamaChatPage', () => {
     expect(mockSetThink).toHaveBeenCalledWith(true);
   });
 
-  it('displays thinking content when message contains think tags', () => {
+  it('displays thinking content when message contains thinking field', () => {
     // given
     const messagesWithThinking = [
       ...defaultMessages,
       { 
         role: 'assistant', 
-        content: '<think>Let me think about this carefully...</think>The answer is 42.' 
+        content: 'The answer is 42.',
+        thinking: 'Let me think about this carefully...'
       }
     ];
     vi.mocked(useOllamaChat).mockReturnValue({
@@ -275,7 +276,8 @@ describe('OllamaChatPage', () => {
       ...defaultMessages,
       { 
         role: 'assistant', 
-        content: '<think>Let me think about this carefully...</think>The answer is 42.' 
+        content: 'The answer is 42.',
+        thinking: 'Let me think about this carefully...'
       }
     ];
     vi.mocked(useOllamaChat).mockReturnValue({

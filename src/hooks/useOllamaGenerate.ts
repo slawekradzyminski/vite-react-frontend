@@ -7,6 +7,7 @@ import { ollama } from '../lib/api';
 interface OllamaGenerateResponse {
   model: string;
   response: string;
+  thinking?: string;
   done: boolean;
   context: number[] | null;
   created_at: string;
@@ -20,6 +21,7 @@ interface UseOllamaGenerateOptions {
 export function useOllamaGenerate(options?: UseOllamaGenerateOptions) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [response, setResponse] = useState('');
+  const [thinking, setThinking] = useState('');
   const [model, setModel] = useState('qwen3:0.6b');
   const [temperature, setTemperature] = useState(0.8);
   const [think, setThink] = useState(false);
@@ -36,6 +38,7 @@ export function useOllamaGenerate(options?: UseOllamaGenerateOptions) {
 
     setIsGenerating(true);
     setResponse(''); 
+    setThinking('');
 
     try {
       const requestBody: GenerateRequestDto = {
@@ -51,6 +54,9 @@ export function useOllamaGenerate(options?: UseOllamaGenerateOptions) {
         onMessage: (data) => {
           if (data.response) {
             setResponse(prev => prev + data.response);
+          }
+          if (data.thinking) {
+            setThinking(prev => prev + data.thinking);
           }
           if (data.done) {
             setIsGenerating(false);
@@ -84,6 +90,7 @@ export function useOllamaGenerate(options?: UseOllamaGenerateOptions) {
   return {
     isGenerating,
     response,
+    thinking,
     generate,
     model,
     setModel,

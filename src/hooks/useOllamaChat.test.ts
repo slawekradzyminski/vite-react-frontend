@@ -84,7 +84,7 @@ describe('useOllamaChat', () => {
     expect(result.current.messages).toEqual([
       { role: 'system', content: 'You are a helpful AI assistant. You must use the conversation history to answer questions.' },
       { role: 'user', content: 'How are you today?' },
-      { role: 'assistant', content: 'I\'m doing great!' }
+      { role: 'assistant', content: 'I\'m doing great!', thinking: '' }
     ]);
 
     // when - second message
@@ -96,9 +96,9 @@ describe('useOllamaChat', () => {
     expect(result.current.messages).toEqual([
       { role: 'system', content: 'You are a helpful AI assistant. You must use the conversation history to answer questions.' },
       { role: 'user', content: 'How are you today?' },
-      { role: 'assistant', content: 'I\'m doing great!' },
+      { role: 'assistant', content: 'I\'m doing great!', thinking: '' },
       { role: 'user', content: 'What was my initial question?' },
-      { role: 'assistant', content: 'Your initial question was: How are you today?' }
+      { role: 'assistant', content: 'Your initial question was: How are you today?', thinking: '' }
     ]);
 
     // Verify API calls included full history
@@ -106,7 +106,7 @@ describe('useOllamaChat', () => {
     expect(vi.mocked(ollama.chat).mock.calls[1][0].messages).toEqual([
       { role: 'system', content: 'You are a helpful AI assistant. You must use the conversation history to answer questions.' },
       { role: 'user', content: 'How are you today?' },
-      { role: 'assistant', content: 'I\'m doing great!' },
+      { role: 'assistant', content: 'I\'m doing great!', thinking: '' },
       { role: 'user', content: 'What was my initial question?' }
     ]);
   });
@@ -132,7 +132,7 @@ describe('useOllamaChat', () => {
     expect(result.current.messages).toEqual([
       { role: 'system', content: 'You are a helpful AI assistant. You must use the conversation history to answer questions.' },
       { role: 'user', content: 'Hi there' },
-      { role: 'assistant', content: 'Hello World!' }
+      { role: 'assistant', content: 'Hello World!', thinking: '' }
     ]);
   });
 
@@ -204,7 +204,7 @@ describe('useOllamaChat', () => {
     expect(chatSpy.mock.calls[1][0].messages).toEqual([
       { role: 'system', content: expect.any(String) },
       { role: 'user', content: 'First message' },
-      { role: 'assistant', content: 'First response' },
+      { role: 'assistant', content: 'First response', thinking: '' },
       { role: 'user', content: 'Second message' }
     ]);
 
@@ -212,9 +212,9 @@ describe('useOllamaChat', () => {
     expect(chatSpy.mock.calls[2][0].messages).toEqual([
       { role: 'system', content: expect.any(String) },
       { role: 'user', content: 'First message' },
-      { role: 'assistant', content: 'First response' },
+      { role: 'assistant', content: 'First response', thinking: '' },
       { role: 'user', content: 'Second message' },
-      { role: 'assistant', content: 'Second response' },
+      { role: 'assistant', content: 'Second response', thinking: '' },
       { role: 'user', content: 'Third message' }
     ]);
 
@@ -222,11 +222,11 @@ describe('useOllamaChat', () => {
     expect(result.current.messages).toEqual([
       { role: 'system', content: expect.any(String) },
       { role: 'user', content: 'First message' },
-      { role: 'assistant', content: 'First response' },
+      { role: 'assistant', content: 'First response', thinking: '' },
       { role: 'user', content: 'Second message' },
-      { role: 'assistant', content: 'Second response' },
+      { role: 'assistant', content: 'Second response', thinking: '' },
       { role: 'user', content: 'Third message' },
-      { role: 'assistant', content: 'Third response' }
+      { role: 'assistant', content: 'Third response', thinking: '' }
     ]);
   });
 

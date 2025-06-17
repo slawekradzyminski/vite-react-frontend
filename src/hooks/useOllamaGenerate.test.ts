@@ -29,8 +29,10 @@ describe('useOllama', () => {
     // then
     expect(result.current.isGenerating).toBe(false);
     expect(result.current.response).toBe('');
+    expect(result.current.thinking).toBe('');
     expect(result.current.model).toBe('qwen3:0.6b');
     expect(result.current.temperature).toBe(0.8);
+    expect(result.current.think).toBe(false);
   });
 
   it('handles empty prompt', async () => {
@@ -210,5 +212,62 @@ describe('useOllama', () => {
       think: false,
       options: { temperature: 0.8 }
     });
+  });
+
+  it('processes thinking content in response', async () => {
+    // given
+    const mockResponse = new Response(
+      'data: {"model":"qwen3:0.6b","response":"","thinking":"Let me think...","done":false}\n\n' +
+      'data: {"model":"qwen3:0.6b","response":"","thinking":" about this.","done":false}\n\n' +
+      'data: {"model":"qwen3:0.6b","response":"Hello","thinking":"","done":false}\n\n' +
+      'data: {"model":"qwen3:0.6b","response":" World","thinking":"","done":true}\n\n',
+      {
+        headers: { 'Content-Type': 'text/event-stream' }
+      }
+    );
+    vi.mocked(ollama.generate).mockResolvedValue(mockResponse);
+
+    const { result } = renderHook(() => useOllamaGenerate());
+
+    // when
+    await act(async () => {
+      await result.current.generate('test prompt');
+    });
+
+    // then
+    expect(result.current.response).toBe('Hello World');
+    expect(result.current.thinking).toBe('Let me think... about this.');
+    expect(result.current.isGenerating).toBe(false);
+  });
+
+  it('processes response with thinking enabled', async () => {
+    // given
+    const mockResponse = new Response(
+      'data: {"model":"qwen3:0.6b","response":"Answer","thinking":"Reasoning","done":true}\n\n',
+      {
+        headers: { 'Content-Type': 'text/event-stream' }
+      }
+    );
+    vi.mocked(ollama.generate).mockResolvedValue(mockResponse);
+
+    const { result } = renderHook(() => useOllamaGenerate());
+
+    // when
+    await act(() => {
+      result.current.setThink(true);
+    });
+    await act(async () => {
+      await result.current.generate('test prompt');
+    });
+
+    // then
+    expect(ollama.generate).toHaveBeenCalledWith({
+      model: 'qwen3:0.6b',
+      prompt: 'test prompt',
+      think: true,
+      options: { temperature: 0.8 },
+    });
+    expect(result.current.response).toBe('Answer');
+    expect(result.current.thinking).toBe('Reasoning');
   });
 }); 

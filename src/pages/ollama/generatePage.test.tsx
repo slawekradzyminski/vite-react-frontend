@@ -237,10 +237,11 @@ describe('OllamaGeneratePage', () => {
     });
   });
 
-  it('displays thinking content when response contains think tags', async () => {
+  it('displays thinking content when response contains thinking field', async () => {
     // given
     const mockResponse = new Response(
-      'data: {"response":"<think>Let me calculate this...</think>The answer is 4.","done":true}\n\n',
+      'data: {"response":"","thinking":"Let me calculate this...","done":false}\n\n' +
+      'data: {"response":"The answer is 4.","thinking":"","done":true}\n\n',
       { headers: { 'Content-Type': 'text/event-stream' } }
     );
     vi.mocked(ollama.generate).mockResolvedValue(mockResponse);
@@ -263,7 +264,8 @@ describe('OllamaGeneratePage', () => {
   it('shows thinking content when reasoning toggle is expanded', async () => {
     // given
     const mockResponse = new Response(
-      'data: {"response":"<think>Let me calculate this...</think>The answer is 4.","done":true}\n\n',
+      'data: {"response":"","thinking":"Let me calculate this...","done":false}\n\n' +
+      'data: {"response":"The answer is 4.","thinking":"","done":true}\n\n',
       { headers: { 'Content-Type': 'text/event-stream' } }
     );
     vi.mocked(ollama.generate).mockResolvedValue(mockResponse);

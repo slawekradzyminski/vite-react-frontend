@@ -13,6 +13,7 @@ export interface GenerateRequestDto {
 export interface GenerateResponseDto {
   model: string;
   response: string;
+  thinking?: string;
   done: boolean;
   context: number[] | null;
   created_at: string;
@@ -24,6 +25,7 @@ export interface OllamaChunkEvent {
   data: {
     model: string;
     response: string;
+    thinking?: string;
     done: boolean;
     context?: number[] | null;
     created_at: string;
@@ -35,6 +37,7 @@ export interface OllamaChunkEvent {
 export interface ChatMessageDto {
   role: 'system' | 'user' | 'assistant';
   content: string;
+  thinking?: string;
 }
 
 /** Request body for the chat endpoint */
