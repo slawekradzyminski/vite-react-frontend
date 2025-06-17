@@ -200,12 +200,14 @@ describe('OllamaChatPage', () => {
   });
 
   it('renders thinking checkbox unchecked by default', () => {
+    // given
+
     // when
     render(<OllamaChatPage />);
 
     // then
     expect(screen.getByTestId('thinking-checkbox')).not.toBeChecked();
-    expect(screen.getByText('Show model reasoning (think)')).toBeInTheDocument();
+    expect(screen.getByText('Thinking')).toBeInTheDocument();
   });
 
   it('toggles thinking checkbox when clicked', () => {
@@ -264,7 +266,7 @@ describe('OllamaChatPage', () => {
 
     // then
     expect(screen.getByText('The answer is 42.')).toBeInTheDocument();
-    expect(screen.getByText('Show reasoning')).toBeInTheDocument();
+    expect(screen.getByTestId('thinking-toggle')).toBeInTheDocument();
     // The thinking content should be in the DOM but hidden by the closed details element
     const thinkingContent = screen.getByText('Let me think about this carefully...');
     expect(thinkingContent).toBeInTheDocument();
@@ -295,12 +297,28 @@ describe('OllamaChatPage', () => {
     });
 
     render(<OllamaChatPage />);
-    const reasoningToggle = screen.getByText('Show reasoning');
+    const reasoningToggle = screen.getByTestId('thinking-toggle').querySelector('summary');
 
     // when
-    fireEvent.click(reasoningToggle);
+    fireEvent.click(reasoningToggle!);
 
     // then
     expect(screen.getByText('Let me think about this carefully...')).toBeInTheDocument();
+  });
+
+  it('displays thinking checkbox with bulb icon and correct text', () => {
+    // given
+
+    // when
+    render(<OllamaChatPage />);
+
+    // then
+    const thinkingCheckbox = screen.getByTestId('thinking-checkbox');
+    expect(thinkingCheckbox).toBeInTheDocument();
+    expect(screen.getByText('Thinking')).toBeInTheDocument();
+    
+    // Check that the old text is not present
+    expect(screen.queryByText('Show model reasoning (think)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Adds <think> reasoning to the response.')).not.toBeInTheDocument();
   });
 }); 

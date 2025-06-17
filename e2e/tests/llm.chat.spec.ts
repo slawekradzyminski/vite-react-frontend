@@ -22,7 +22,7 @@ test.describe('Ollama Chat', () => {
     await expect(chatPage.getChatMessage('user')).toContainText('Test message');
     await expect(chatPage.getChatMessage('assistant')).toContainText('Heading');
     await expect(chatPage.getChatMarkdownElement('h1')).toContainText('Heading');
-    await expect(chatPage.getChatMarkdownElement('ul > li')).toHaveCount(2);
+    await expect(chatPage.getChatMarkdownElement('ol > li, ul > li')).toHaveCount(2);
   });
 
   test('should initialize with default model and allow model change', async ({ authenticatedPage }) => {
@@ -82,7 +82,8 @@ test.describe('Ollama Chat', () => {
       },
       {
         role: 'assistant',
-        content: 'Love is emotion.'
+        content: 'Love is emotion.',
+        thinking: ''
       },
       {
         role: 'user',
@@ -107,5 +108,62 @@ test.describe('Ollama Chat', () => {
 
     // then
     expect(requestBody.options.temperature).toBe(0.3);
+  });
+
+  test('should display thinking checkbox with bulb icon', async () => {
+    // given
+    await chatPage.goto();
+    await chatPage.openChatTab();
+
+    // when & then
+    await expect(chatPage.thinkingCheckbox).toBeVisible();
+    await expect(chatPage.thinkingCheckbox).not.toBeChecked();
+    await expect(chatPage.page.getByText('Thinking')).toBeVisible();
+  });
+
+  test('should enable thinking mode and include in request', async ({ authenticatedPage }) => {
+    // given
+    let requestBody: any;
+    await ollamaChatMocks.mockSuccess(authenticatedPage.page, async (route) => {
+      requestBody = JSON.parse(route.request().postData() || '{}');
+    });
+    await chatPage.goto();
+    await chatPage.openChatTab();
+
+    // when
+    await chatPage.enableThinking();
+    await chatPage.sendChatMessage('Test thinking message');
+
+    // then
+    expect(requestBody.think).toBe(true);
+  });
+
+  test('should display thinking content when present', async ({ authenticatedPage }) => {
+    // given
+    await ollamaChatMocks.mockWithThinking(authenticatedPage.page);
+    await chatPage.goto();
+    await chatPage.openChatTab();
+
+    // when
+    await chatPage.sendChatMessage('Test thinking message');
+
+    // then
+    await expect(chatPage.thinkingToggle).toBeVisible();
+    await expect(chatPage.thinkingToggle.getByText('Thinking')).toBeVisible();
+  });
+
+  test('should expand thinking content when clicked', async ({ authenticatedPage }) => {
+    // given
+    await ollamaChatMocks.mockWithThinking(authenticatedPage.page);
+    await chatPage.goto();
+    await chatPage.openChatTab();
+    await chatPage.sendChatMessage('Test thinking message');
+
+    // when
+    await chatPage.expandThinking();
+
+    // then
+    await expect(chatPage.thinkingContent).toBeVisible();
+    await expect(chatPage.thinkingContent).toContainText('Let me think about this...');
   });
 }); 

@@ -52,17 +52,22 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
           <div className="text-sm text-gray-500 mb-1" data-testid={`chat-message-role-${message.role}`}>
             {message.role.charAt(0).toUpperCase() + message.role.slice(1)}
           </div>
-          <div className={styles.markdownContainer} data-testid={`chat-message-content-${message.role}`}>
-            <ReactMarkdown>{message.content}</ReactMarkdown>
-          </div>
           {message.thinking && (
-            <details className="mt-2 text-xs text-gray-500" data-testid="thinking-toggle">
-              <summary className="cursor-pointer select-none">Show reasoning</summary>
-              <div className="mt-2 p-2 bg-gray-50 rounded text-gray-700">
+            <details className="mb-3 text-xs text-gray-500" data-testid="thinking-toggle">
+              <summary className="cursor-pointer select-none flex items-center gap-1">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-600">
+                  <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.86-3.14-7-7-7z"/>
+                </svg>
+                Thinking
+              </summary>
+              <div className="mt-2 p-2 bg-gray-50 rounded text-gray-700" data-testid="thinking-content">
                 <ReactMarkdown>{message.thinking}</ReactMarkdown>
               </div>
             </details>
           )}
+          <div className={styles.markdownContainer} data-testid={`chat-message-content-${message.role}`}>
+            <ReactMarkdown>{message.content}</ReactMarkdown>
+          </div>
         </div>
       </div>
     );
@@ -126,9 +131,13 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
             className="rounded border-gray-300"
             data-testid="thinking-checkbox"
           />
-          <span className="font-medium">Show model reasoning (think)</span>
+          <div className="flex items-center gap-1 font-medium">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-600">
+              <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.86-3.14-7-7-7z"/>
+            </svg>
+            Thinking
+          </div>
         </label>
-        <p className="text-sm text-gray-500 mt-1">Adds &lt;think&gt; reasoning to the response.</p>
       </div>
 
       <div className={styles.conversationContainer} data-testid="chat-conversation">

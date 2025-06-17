@@ -1,4 +1,9 @@
 import { Page, Route } from '@playwright/test';
+import { BACKEND_URL } from '../config/constants';
+
+function createMockEventStream(chunks: any[]): string {
+  return chunks.map(chunk => `data: ${JSON.stringify(chunk)}\n\n`).join('');
+}
 
 export const ollamaMocks = {
     async mockSuccess(page: Page, onRequest?: (route: Route) => void) {
@@ -35,5 +40,89 @@ export const ollamaMocks = {
             });
         });
     }
+};
+
+export const ollamaGenerateMocks = {
+  async mockSuccess(page: Page, onRequest?: (route: Route) => void) {
+    await page.route(`${BACKEND_URL}/api/ollama/generate`, async (route) => {
+      onRequest?.(route);
+      await route.fulfill({
+        status: 200,
+        headers: { 'content-type': 'text/event-stream' },
+        body: createMockEventStream([
+          {
+            response: "# Heading\n\n1. Item 1\n2. Item 2",
+            done: false
+          },
+          {
+            response: "",
+            done: true
+          }
+        ])
+      });
+    });
+  },
+
+  async mockWithThinking(page: Page, onRequest?: (route: Route) => void) {
+    await page.route(`${BACKEND_URL}/api/ollama/generate`, async (route) => {
+      onRequest?.(route);
+      await route.fulfill({
+        status: 200,
+        headers: { 'content-type': 'text/event-stream' },
+        body: createMockEventStream([
+          {
+            response: "Based on my analysis, here's my response.",
+            thinking: "Let me think about this... I need to analyze the request carefully.",
+            done: false
+          },
+          {
+            response: "",
+            done: true
+          }
+        ])
+      });
+    });
+  },
+
+  async mockStreamingThinking(page: Page, onRequest?: (route: Route) => void) {
+    await page.route(`${BACKEND_URL}/api/ollama/generate`, async (route) => {
+      onRequest?.(route);
+      await route.fulfill({
+        status: 200,
+        headers: { 'content-type': 'text/event-stream' },
+        body: createMockEventStream([
+          {
+            response: "",
+            thinking: "Let me think...",
+            done: false
+          },
+          {
+            response: "",
+            thinking: " about this carefully...",
+            done: false
+          },
+          {
+            response: "Here's my response",
+            thinking: "",
+            done: false
+          },
+          {
+            response: "",
+            done: true
+          }
+        ])
+      });
+    });
+  },
+
+  async mockError(page: Page) {
+    await page.route(`${BACKEND_URL}/api/ollama/generate`, async (route) => {
+      await route.fulfill({
+        status: 500,
+        headers: { 'content-type': 'text/event-stream' },
+        body: 'event: error\ndata: Failed to fetch stream: Internal Server Error\n\n'
+      });
+    });
+  }
 };
 

@@ -83,9 +83,13 @@ export function OllamaGeneratePage({ hideTitle = false }: OllamaGeneratePageProp
             className="rounded border-gray-300"
             data-testid="thinking-checkbox"
           />
-          <span className="font-medium">Show model reasoning (think)</span>
+          <div className="flex items-center gap-1 font-medium">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-600">
+              <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.86-3.14-7-7-7z"/>
+            </svg>
+            Thinking
+          </div>
         </label>
-        <p className="text-sm text-gray-500 mt-1">Adds &lt;think&gt; reasoning to the response.</p>
       </div>
 
       <div className="mb-4" data-testid="prompt-container">
@@ -116,18 +120,25 @@ export function OllamaGeneratePage({ hideTitle = false }: OllamaGeneratePageProp
         </button>
       </div>
 
-      {response && (
+      {(thinking || response) && (
         <div data-testid="generated-response">
-          <div className={styles.markdownContainer}>
-            <ReactMarkdown>{response}</ReactMarkdown>
-          </div>
           {thinking && (
-            <details className="mt-4" data-testid="thinking-result">
-              <summary className="cursor-pointer font-medium">Show reasoning</summary>
+            <details className="mb-4" data-testid="thinking-result">
+              <summary className="cursor-pointer font-medium flex items-center gap-1">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-600">
+                  <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.86-3.14-7-7-7z"/>
+                </svg>
+                Thinking
+              </summary>
               <div className="mt-2 p-3 bg-gray-50 rounded text-gray-700">
                 <ReactMarkdown>{thinking}</ReactMarkdown>
               </div>
             </details>
+          )}
+          {response && (
+            <div className={styles.markdownContainer}>
+              <ReactMarkdown>{response}</ReactMarkdown>
+            </div>
           )}
         </div>
       )}
