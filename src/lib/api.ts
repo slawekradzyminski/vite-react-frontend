@@ -126,11 +126,11 @@ export const ollama = {
 };
 
 export const systemPrompt = {
-  get: (username: string) => 
-    api.get<SystemPromptDto>(`/users/${username}/system-prompt`),
+  get: () => 
+    api.get<SystemPromptDto>('/users/system-prompt'),
   
-  update: (username: string, systemPrompt: string) =>
-    api.put<SystemPromptDto>(`/users/${username}/system-prompt`, { systemPrompt }),
+  update: (systemPrompt: string) =>
+    api.put<SystemPromptDto>('/users/system-prompt', { systemPrompt }),
 };
 
 export const orders = {

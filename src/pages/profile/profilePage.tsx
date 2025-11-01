@@ -40,17 +40,14 @@ export function Profile() {
   // Fetch system prompt
   const { isLoading: isLoadingPrompt } = useQuery({
     queryKey: ['systemPrompt', username],
-    queryFn: async () => {
-      if (!username) throw new Error('Username is required');
-      return systemPrompt.get(username);
-    },
+    queryFn: async () => systemPrompt.get(),
     enabled: !!username,
   });
 
   // Effect to set form value when system prompt is loaded
   useEffect(() => {
     if (currentUser?.data?.username) {
-      systemPrompt.get(currentUser.data.username)
+      systemPrompt.get()
         .then(response => {
           setValue('systemPrompt', response.data.systemPrompt || '');
         })
@@ -63,8 +60,7 @@ export function Profile() {
   // Update system prompt mutation
   const updatePromptMutation = useMutation({
     mutationFn: async (newPrompt: string) => {
-      if (!username) throw new Error('Username is required');
-      return systemPrompt.update(username, newPrompt);
+      return systemPrompt.update(newPrompt);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['systemPrompt'] });

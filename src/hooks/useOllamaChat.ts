@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useToast } from './useToast';
 import { ChatMessageDto, ChatRequestDto, ChatResponseDto } from '../types/ollama';
 import { processSSEResponse } from '../lib/sse';
-import { auth, ollama, systemPrompt } from '../lib/api';
+import { ollama, systemPrompt } from '../lib/api';
 
 interface UseOllamaChatOptions {
   onError?: (error: Error) => void;
@@ -29,21 +29,16 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
     const fetchSystemPrompt = async () => {
       try {
         setIsLoadingSystemPrompt(true);
-        const userResponse = await auth.me();
-        const username = userResponse.data.username;
+        const promptResponse = await systemPrompt.get();
+        const userPrompt = promptResponse.data.systemPrompt;
         
-        if (username) {
-          const promptResponse = await systemPrompt.get(username);
-          const userPrompt = promptResponse.data.systemPrompt;
-          
-          if (userPrompt && userPrompt.trim()) {
-            setMessages([
-              {
-                role: 'system',
-                content: userPrompt
-              }
-            ]);
-          }
+        if (userPrompt && userPrompt.trim()) {
+          setMessages([
+            {
+              role: 'system',
+              content: userPrompt
+            }
+          ]);
         }
       } catch (error) {
         console.error('Failed to fetch system prompt:', error);
