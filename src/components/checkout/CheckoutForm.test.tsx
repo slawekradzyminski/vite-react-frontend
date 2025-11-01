@@ -114,7 +114,7 @@ describe('CheckoutForm', () => {
   it('disables the submit button while submitting', async () => {
     // given
     const createOrderMock = vi.mocked(orders.createOrder);
-    let resolveMutation: ((value: unknown) => void) | undefined;
+    let resolveMutation: ((value: { data: { id: number } }) => void) | undefined;
     createOrderMock.mockImplementationOnce(
       () =>
         new Promise((resolve) => {
