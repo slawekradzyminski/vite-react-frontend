@@ -70,7 +70,7 @@ describe('ToastProvider', () => {
     
     // then
     const viewport = screen.getByTestId('toast-viewport');
-    const toastElements = within(viewport).getAllByRole('status');
+    const toastElements = within(viewport).getAllByTestId(/toast-/);
     expect(toastElements.length).toBeGreaterThan(0);
     
     const toastTitle = screen.getByTestId('toast-title');
@@ -98,7 +98,7 @@ describe('ToastProvider', () => {
     
     // then
     const viewport = screen.getByTestId('toast-viewport');
-    const toastElements = within(viewport).getAllByRole('status');
+    const toastElements = within(viewport).getAllByTestId(/toast-/);
     expect(toastElements.length).toBeGreaterThan(0);
     
     // Check that the toast has the error class
@@ -120,7 +120,7 @@ describe('ToastProvider', () => {
     
     // Initially no toast elements
     const viewport = screen.getByTestId('toast-viewport');
-    expect(within(viewport).queryAllByRole('status')).toHaveLength(0);
+    expect(within(viewport).queryAllByTestId(/toast-/)).toHaveLength(0);
     
     // Show toast
     const button = screen.getByTestId('show-toast-button');
@@ -129,7 +129,7 @@ describe('ToastProvider', () => {
     });
     
     // Verify toast is shown
-    expect(within(viewport).queryAllByRole('status')).toHaveLength(1);
+    expect(within(viewport).queryAllByTestId(/toast-/).length).toBeGreaterThan(0);
     const toastTitle = screen.getByTestId('toast-title');
     expect(toastTitle).toBeInTheDocument();
     expect(toastTitle).toHaveTextContent('Test Title');

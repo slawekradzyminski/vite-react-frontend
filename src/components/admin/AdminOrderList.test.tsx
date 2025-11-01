@@ -188,7 +188,9 @@ describe('AdminOrderList', () => {
     });
     
     // when - change filter to PENDING
-    fireEvent.change(screen.getByLabelText(/filter by status/i), { target: { value: 'PENDING' } });
+    const statusFilter = await screen.findByLabelText(/filter by status/i);
+
+    fireEvent.change(statusFilter, { target: { value: 'PENDING' } });
     
     // then
     await waitFor(() => {
@@ -196,7 +198,7 @@ describe('AdminOrderList', () => {
     });
     
     // when - change filter back to ALL
-    fireEvent.change(screen.getByLabelText(/filter by status/i), { target: { value: 'ALL' } });
+    fireEvent.change(statusFilter, { target: { value: 'ALL' } });
     
     // then
     await waitFor(() => {
@@ -244,7 +246,9 @@ describe('AdminOrderList', () => {
     });
     
     // when - click next button
-    fireEvent.click(screen.getByText('Next'));
+    const nextButton = await screen.findByText('Next');
+
+    fireEvent.click(nextButton);
     
     // then
     await waitFor(() => {
@@ -292,7 +296,9 @@ describe('AdminOrderList', () => {
     });
     
     // when - click previous button
-    fireEvent.click(screen.getByText('Previous'));
+    const previousButton = await screen.findByText('Previous');
+
+    fireEvent.click(previousButton);
     
     // then
     await waitFor(() => {

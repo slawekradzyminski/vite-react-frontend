@@ -185,8 +185,11 @@ describe('Profile', () => {
 
     // when
     await waitFor(() => expect(orders.getUserOrders).toHaveBeenCalled());
+    await waitFor(() => {
+      expect(screen.queryByText('Loading orders...')).not.toBeInTheDocument();
+    });
 
     // then
-    expect(screen.getByText("You don't have any orders yet.")).toBeInTheDocument();
+    expect(await screen.findByText("You don't have any orders yet.")).toBeInTheDocument();
   });
-}); 
+});

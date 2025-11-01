@@ -175,7 +175,9 @@ describe('OrderList', () => {
     });
     
     // when - change filter to PENDING
-    fireEvent.change(screen.getByLabelText(/filter by status/i), { target: { value: 'PENDING' } });
+    const statusFilter = await screen.findByLabelText(/filter by status/i);
+
+    fireEvent.change(statusFilter, { target: { value: 'PENDING' } });
     
     // then
     await waitFor(() => {
@@ -183,7 +185,7 @@ describe('OrderList', () => {
     });
     
     // when - change filter back to ALL
-    fireEvent.change(screen.getByLabelText(/filter by status/i), { target: { value: 'ALL' } });
+    fireEvent.change(statusFilter, { target: { value: 'ALL' } });
     
     // then
     await waitFor(() => {
@@ -222,7 +224,9 @@ describe('OrderList', () => {
     });
     
     // when - click on page 2
-    fireEvent.click(screen.getByText('2'));
+    const pageTwoButton = await screen.findByText('2');
+
+    fireEvent.click(pageTwoButton);
     
     // then
     await waitFor(() => {
@@ -230,7 +234,9 @@ describe('OrderList', () => {
     });
     
     // when - click on next button
-    fireEvent.click(screen.getByText('Next'));
+    const nextButton = await screen.findByText('Next');
+
+    fireEvent.click(nextButton);
     
     // then
     await waitFor(() => {
@@ -238,7 +244,9 @@ describe('OrderList', () => {
     });
     
     // when - click on previous button
-    fireEvent.click(screen.getByText('Previous'));
+    const previousButton = await screen.findByText('Previous');
+
+    fireEvent.click(previousButton);
     
     // then
     await waitFor(() => {
@@ -272,13 +280,11 @@ describe('OrderList', () => {
     renderWithProviders();
     
     // then
-    await waitFor(() => {
-      const previousButton = screen.getByText('Previous');
-      expect(previousButton).toBeDisabled();
-      
-      const nextButton = screen.getByText('Next');
-      expect(nextButton).not.toBeDisabled();
-    });
+    const previousButton = await screen.findByText('Previous');
+    const nextButton = await screen.findByText('Next');
+
+    expect(previousButton).toBeDisabled();
+    expect(nextButton).not.toBeDisabled();
   });
 
   it('disables next button on last page', async () => {
@@ -308,21 +314,21 @@ describe('OrderList', () => {
     
     // then
     await waitFor(() => {
-      // First API call is with page 0
       expect(orders.getUserOrders).toHaveBeenCalledWith(0, 10, undefined);
-      
-      // Click on page 3 (index 2)
-      fireEvent.click(screen.getByText('3'));
-      
-      // Now we should be on the last page
-      expect(orders.getUserOrders).toHaveBeenCalledWith(2, 10, undefined);
-      
-      const nextButton = screen.getByText('Next');
-      expect(nextButton).toBeDisabled();
-      
-      const previousButton = screen.getByText('Previous');
-      expect(previousButton).not.toBeDisabled();
     });
+
+    const pageThreeButton = await screen.findByText('3');
+    fireEvent.click(pageThreeButton);
+
+    await waitFor(() => {
+      expect(orders.getUserOrders).toHaveBeenCalledWith(2, 10, undefined);
+    });
+
+    const nextButton = await screen.findByText('Next');
+    const previousButton = await screen.findByText('Previous');
+
+    expect(nextButton).toBeDisabled();
+    expect(previousButton).not.toBeDisabled();
   });
 
   it('resets to page 0 when filter changes', async () => {
@@ -356,7 +362,9 @@ describe('OrderList', () => {
     });
     
     // when - go to page 2
-    fireEvent.click(screen.getByText('2'));
+    const pageTwoButton = await screen.findByText('2');
+
+    fireEvent.click(pageTwoButton);
     
     // then
     await waitFor(() => {
@@ -364,7 +372,9 @@ describe('OrderList', () => {
     });
     
     // when - change filter
-    fireEvent.change(screen.getByLabelText(/filter by status/i), { target: { value: 'DELIVERED' } });
+    const statusFilter = await screen.findByLabelText(/filter by status/i);
+
+    fireEvent.change(statusFilter, { target: { value: 'DELIVERED' } });
     
     // then - should reset to page 0
     await waitFor(() => {
