@@ -114,7 +114,8 @@ describe('CheckoutForm', () => {
   it('disables the submit button while submitting', async () => {
     // given
     const createOrderMock = vi.mocked(orders.createOrder);
-    let resolveMutation: ((value: { data: { id: number } }) => void) | undefined;
+    type MutationResult = Awaited<ReturnType<typeof orders.createOrder>>;
+    let resolveMutation: ((value: MutationResult) => void) | undefined;
     createOrderMock.mockImplementationOnce(
       () =>
         new Promise((resolve) => {
@@ -144,7 +145,13 @@ describe('CheckoutForm', () => {
     if (!resolveMutation) {
       throw new Error('Mutation resolver was not set');
     }
-    resolveMutation({ data: { id: 1 } });
+    resolveMutation({
+      data: { id: 1 } as any,
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
     await waitFor(() => {
       expect(createOrderMock).toHaveBeenCalled();
     });
