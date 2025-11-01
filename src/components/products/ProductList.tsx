@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { products } from '../../lib/api';
-import { Product } from '../../types/product';
 import { ProductCard } from './ProductCard';
 
 interface ProductListProps {
@@ -9,7 +8,6 @@ interface ProductListProps {
 }
 
 export function ProductList({ category }: ProductListProps) {
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [sortOption, setSortOption] = useState<string>('name-asc');
   const [searchTerm, setSearchTerm] = useState<string>('');
 
@@ -18,40 +16,36 @@ export function ProductList({ category }: ProductListProps) {
     queryFn: products.getAllProducts,
   });
 
-  useEffect(() => {
-    if (!allProducts?.data) return;
+  const filteredProducts = useMemo(() => {
+    if (!allProducts?.data) return [];
+
     let filtered = [...allProducts.data];
+
     if (category) {
       filtered = filtered.filter(product => product.category === category);
     }
-    
+
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(product => 
-        product.name.toLowerCase().includes(term) || 
+      filtered = filtered.filter(product =>
+        product.name.toLowerCase().includes(term) ||
         product.description?.toLowerCase().includes(term)
       );
     }
-    
+
     switch (sortOption) {
       case 'name-asc':
-        filtered.sort((a, b) => a.name.localeCompare(b.name));
-        break;
+        return filtered.sort((a, b) => a.name.localeCompare(b.name));
       case 'name-desc':
-        filtered.sort((a, b) => b.name.localeCompare(a.name));
-        break;
+        return filtered.sort((a, b) => b.name.localeCompare(a.name));
       case 'price-asc':
-        filtered.sort((a, b) => a.price - b.price);
-        break;
+        return filtered.sort((a, b) => a.price - b.price);
       case 'price-desc':
-        filtered.sort((a, b) => b.price - a.price);
-        break;
+        return filtered.sort((a, b) => b.price - a.price);
       default:
-        break;
+        return filtered;
     }
-    
-    setFilteredProducts(filtered);
-  }, [allProducts, category, sortOption, searchTerm]);
+  }, [allProducts, category, searchTerm, sortOption]);
 
   const clearSearch = () => {
     setSearchTerm('');

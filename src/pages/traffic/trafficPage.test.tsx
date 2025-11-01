@@ -71,8 +71,12 @@ vi.mock('@stomp/stompjs', () => {
     }
   }
   
+  const ClientMock = vi.fn(function Client(this: unknown, config: any) {
+    return new MockClient(config);
+  });
+  
   return {
-    Client: vi.fn().mockImplementation((config) => new MockClient(config)),
+    Client: ClientMock,
     // Helper to simulate messages for testing
     __getClients: () => clientInstances,
     __simulateMessage: (body: any) => {

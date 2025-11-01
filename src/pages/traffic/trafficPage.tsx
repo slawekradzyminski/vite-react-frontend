@@ -9,7 +9,12 @@ import { Button } from '../../components/ui/button';
 export function TrafficMonitorPage() {
   const [trafficEvents, setTrafficEvents] = useState<TrafficEventDto[]>([]);
   const [isConnected, setIsConnected] = useState(false);
-  const [statusMessage, setStatusMessage] = useState('Disconnected');
+  const [statusMessage, setStatusMessage] = useState(() => {
+    if (typeof window !== 'undefined' && !localStorage.getItem('token')) {
+      return 'Authentication required';
+    }
+    return 'Disconnected';
+  });
   const stompClientRef = useRef<Client | null>(null);
 
   // Fetch traffic info (WebSocket endpoint and topic)
@@ -23,11 +28,8 @@ export function TrafficMonitorPage() {
     if (!trafficInfo?.data) return;
 
     const { webSocketEndpoint, topic } = trafficInfo.data;
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setStatusMessage('Authentication required');
-      return;
-    }
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (!token) return;
 
     const fullUrl = `${api.defaults.baseURL}${webSocketEndpoint}`;
     
@@ -75,17 +77,6 @@ export function TrafficMonitorPage() {
     };
   }, [trafficInfo?.data]);
 
-  // Status pill component
-  const StatusPill = () => (
-    <span 
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-        ${isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
-      data-testid="traffic-connection-status"
-    >
-      {isConnected ? 'Connected' : 'Disconnected'}
-    </span>
-  );
-
   // Clear events handler
   const handleClearEvents = () => {
     setTrafficEvents([]);
@@ -114,7 +105,14 @@ export function TrafficMonitorPage() {
     <div className="container mx-auto p-4 max-w-6xl" data-testid="traffic-monitor-page">
       <div className="flex justify-between items-center mb-6" data-testid="traffic-header">
         <h1 className="text-2xl font-bold" data-testid="traffic-title">Traffic Monitor</h1>
-        <StatusPill />
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          }`}
+          data-testid="traffic-connection-status"
+        >
+          {isConnected ? 'Connected' : 'Disconnected'}
+        </span>
       </div>
       
       <div className="bg-gray-50 p-4 rounded-md mb-6" data-testid="traffic-status-container">
