@@ -155,5 +155,9 @@ describe('CheckoutForm', () => {
     await waitFor(() => {
       expect(createOrderMock).toHaveBeenCalled();
     });
+    await waitFor(() => {
+      expect(submitButton).toHaveTextContent(/place order/i);
+      expect(submitButton).not.toBeDisabled();
+    });
   });
 }); 
