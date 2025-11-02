@@ -11,7 +11,7 @@ export function HomePage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-8" data-testid="home-page">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-gray-100 p-8" data-testid="home-page">
       <div className="mx-auto max-w-5xl">
         <div className="mb-8" data-testid="home-welcome-section">
           <h1 className="text-4xl font-bold text-gray-900 mb-2" data-testid="home-welcome-title">

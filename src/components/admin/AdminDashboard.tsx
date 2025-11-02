@@ -125,7 +125,7 @@ export function AdminDashboard() {
                 <div key={product.id} className="flex justify-between items-center border-b pb-3" data-testid={`admin-dashboard-product-${product.id}`}>
                   <div className="flex items-center">
                     {product.imageUrl && (
-                      <div className="flex-shrink-0 h-10 w-10 mr-3">
+                      <div className="shrink-0 h-10 w-10 mr-3">
                         <img
                           className="h-10 w-10 rounded-full object-cover"
                           src={product.imageUrl}

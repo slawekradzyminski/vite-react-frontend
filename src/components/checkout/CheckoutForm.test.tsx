@@ -113,6 +113,16 @@ describe('CheckoutForm', () => {
 
   it('disables the submit button while submitting', async () => {
     // given
+    const createOrderMock = vi.mocked(orders.createOrder);
+    type MutationResult = Awaited<ReturnType<typeof orders.createOrder>>;
+    let resolveMutation: ((value: MutationResult) => void) | undefined;
+    createOrderMock.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveMutation = resolve;
+        })
+    );
+
     renderWithProviders();
 
     // when
@@ -124,15 +134,30 @@ describe('CheckoutForm', () => {
     
     fireEvent.click(screen.getByRole('button', { name: /place order/i }));
 
-    // then
-    // Check that the button text changes to "Processing..." and is disabled
+    // then - intermediate submitting state
+    const submitButton = await screen.findByTestId('checkout-submit-button');
     await waitFor(() => {
-      const button = screen.getByRole('button', { name: /processing/i });
-      expect(button).toBeDisabled();
+      expect(submitButton).toHaveTextContent(/processing/i);
+      expect(submitButton).toBeDisabled();
     });
-    
+
+    // resolve mutation
+    if (!resolveMutation) {
+      throw new Error('Mutation resolver was not set');
+    }
+    resolveMutation({
+      data: { id: 1 } as any,
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
     await waitFor(() => {
-      expect(orders.createOrder).toHaveBeenCalled();
+      expect(createOrderMock).toHaveBeenCalled();
+    });
+    await waitFor(() => {
+      expect(submitButton).toHaveTextContent(/place order/i);
+      expect(submitButton).not.toBeDisabled();
     });
   });
 }); 

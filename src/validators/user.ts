@@ -1,14 +1,14 @@
 import { z } from 'zod';
 
 export const userEditSchema = z.object({
-  email: z.string({ required_error: 'Email is required' })
+  email: z.string()
     .min(1, 'Email is required')
     .email('Invalid email format'),
-  firstName: z.string({ required_error: 'First name is required' })
+  firstName: z.string()
     .min(1, 'First name is required')
     .min(4, 'First name must be at least 4 characters')
     .max(255, 'First name must be at most 255 characters'),
-  lastName: z.string({ required_error: 'Last name is required' })
+  lastName: z.string()
     .min(1, 'Last name is required')
     .min(4, 'Last name must be at least 4 characters')
     .max(255, 'Last name must be at most 255 characters'),

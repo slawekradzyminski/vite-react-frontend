@@ -60,7 +60,7 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
       <td className="px-6 py-4 whitespace-nowrap" data-testid={`cart-item-product-${safeItem.productId}`}>
         <div className="flex items-center">
           {safeItem.imageUrl && (
-            <div className="flex-shrink-0 h-12 w-12 mr-4">
+            <div className="shrink-0 h-12 w-12 mr-4">
               <img
                 className="h-12 w-12 rounded-full object-cover"
                 src={safeItem.imageUrl}

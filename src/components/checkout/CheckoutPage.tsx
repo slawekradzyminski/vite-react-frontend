@@ -162,7 +162,7 @@ export function CheckoutPage() {
                   <td className="px-6 py-4 whitespace-nowrap" data-testid={`checkout-item-product-${item.productId}`}>
                     <div className="flex items-center">
                       {item.imageUrl && (
-                        <div className="flex-shrink-0 h-12 w-12 mr-4">
+                        <div className="shrink-0 h-12 w-12 mr-4">
                           <img
                             className="h-12 w-12 rounded-full object-cover"
                             src={item.imageUrl}
