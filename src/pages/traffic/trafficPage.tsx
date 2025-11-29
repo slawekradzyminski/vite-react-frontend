@@ -5,12 +5,13 @@ import { useQuery } from '@tanstack/react-query';
 import api, { traffic } from '../../lib/api';
 import { TrafficEventDto } from '../../types/traffic';
 import { Button } from '../../components/ui/button';
+import { authStorage } from '../../lib/authStorage';
 
 export function TrafficMonitorPage() {
   const [trafficEvents, setTrafficEvents] = useState<TrafficEventDto[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [statusMessage, setStatusMessage] = useState(() => {
-    if (typeof window !== 'undefined' && !localStorage.getItem('token')) {
+    if (!authStorage.getAccessToken()) {
       return 'Authentication required';
     }
     return 'Disconnected';
@@ -28,7 +29,7 @@ export function TrafficMonitorPage() {
     if (!trafficInfo?.data) return;
 
     const { webSocketEndpoint, topic } = trafficInfo.data;
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const token = authStorage.getAccessToken();
     if (!token) return;
 
     const fullUrl = `${api.defaults.baseURL}${webSocketEndpoint}`;

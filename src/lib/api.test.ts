@@ -3,29 +3,30 @@ import { auth, qr, ollama } from './api';
 import { Role } from '../types/auth';
 
 // Hoist mocks
-const mockAxios = vi.hoisted(() => ({
-  interceptors: {
+const mockAxios = vi.hoisted(() => {
+  const instance: any = vi.fn(() => Promise.resolve({ data: {} }));
+  instance.interceptors = {
     request: { use: vi.fn() },
     response: { use: vi.fn() },
-  },
-  post: vi.fn(),
-  get: vi.fn(),
-  put: vi.fn(),
-  delete: vi.fn(),
-  create: vi.fn(),
-}));
+  };
+  instance.post = vi.fn();
+  instance.get = vi.fn();
+  instance.put = vi.fn();
+  instance.delete = vi.fn();
+  instance.defaults = { baseURL: 'http://localhost:4001' };
+  instance.create = vi.fn(() => instance);
+  return instance;
+});
 
 vi.mock('axios', () => ({
-  default: {
-    ...mockAxios,
-    create: vi.fn(() => mockAxios),
-  },
+  default: mockAxios,
 }));
 
 const originalFetch = global.fetch;
 
 describe('auth API', () => {
-  afterEach(() => {
+afterEach(() => {
+    mockAxios.mockClear();
     mockAxios.post.mockReset();
     mockAxios.get.mockReset();
     mockAxios.put.mockReset();
@@ -88,10 +89,18 @@ describe('auth API', () => {
       expect(mockAxios.delete).toHaveBeenCalledWith(`/users/${username}`);
     });
   });
+
+  describe('logout', () => {
+    it('calls logout endpoint with refresh payload', async () => {
+      await auth.logout({ refreshToken: 'refresh-123' });
+      expect(mockAxios.post).toHaveBeenCalledWith('/users/logout', { refreshToken: 'refresh-123' });
+    });
+  });
 });
 
 describe('API Client', () => {
   beforeEach(() => {
+    mockAxios.mockClear();
     mockAxios.post.mockReset();
     mockAxios.get.mockReset();
     mockAxios.put.mockReset();
@@ -174,9 +183,65 @@ describe('API Client', () => {
       expect(config.headers.Authorization).toBeUndefined();
     });
 
-    it('clears token and redirects on unauthorized response', async () => {
+    it('refreshes token and retries the original request on 401', async () => {
       const errorInterceptor = getErrorInterceptor();
-      localStorage.setItem('token', 'test-token');
+      localStorage.setItem('token', 'expired-token');
+      localStorage.setItem('refreshToken', 'refresh-123');
+      const refreshSpy = vi.spyOn(auth, 'refresh').mockResolvedValue({
+        data: {
+          token: 'new-token',
+          refreshToken: 'new-refresh',
+        },
+      } as any);
+      mockAxios.mockResolvedValueOnce({ data: { ok: true } });
+
+      const response = await errorInterceptor({
+        config: { url: '/api/orders', headers: {}, _retry: false },
+        response: { status: 401 },
+      } as any);
+
+      expect(refreshSpy).toHaveBeenCalledWith({ refreshToken: 'refresh-123' });
+      expect(localStorage.getItem('token')).toBe('new-token');
+      expect(localStorage.getItem('refreshToken')).toBe('new-refresh');
+      expect(mockAxios).toHaveBeenCalledWith(expect.objectContaining({
+        url: '/api/orders',
+        headers: expect.objectContaining({ Authorization: 'Bearer new-token' }),
+      }));
+      expect(response).toEqual({ data: { ok: true } });
+      refreshSpy.mockRestore();
+    });
+
+    it('clears tokens and redirects when refresh fails', async () => {
+      const errorInterceptor = getErrorInterceptor();
+      localStorage.setItem('token', 'expired-token');
+      localStorage.setItem('refreshToken', 'refresh-123');
+      const refreshSpy = vi.spyOn(auth, 'refresh').mockRejectedValue(new Error('Invalid refresh token'));
+      const originalLocation = window.location;
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: { href: 'http://localhost/' } as Location,
+      });
+
+      await expect(
+        errorInterceptor({
+          config: { url: '/api/orders', headers: {}, _retry: false },
+          response: { status: 401 },
+        } as any)
+      ).rejects.toThrow('Invalid refresh token');
+
+      expect(localStorage.getItem('token')).toBeNull();
+      expect(localStorage.getItem('refreshToken')).toBeNull();
+      expect(window.location.href).toBe('/login');
+      refreshSpy.mockRestore();
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    });
+
+    it('redirects immediately when no refresh token is available', async () => {
+      const errorInterceptor = getErrorInterceptor();
+      localStorage.setItem('token', 'expired-token');
       const originalLocation = window.location;
       Object.defineProperty(window, 'location', {
         configurable: true,
@@ -250,6 +315,7 @@ describe('API Client', () => {
       });
       vi.mocked(global.fetch).mockResolvedValue(unauthorizedResponse);
       localStorage.setItem('token', 'abc');
+      localStorage.setItem('refreshToken', 'ref');
       const originalLocation = window.location;
       Object.defineProperty(window, 'location', {
         configurable: true,
@@ -260,6 +326,7 @@ describe('API Client', () => {
         'Failed to fetch stream: Unauthorized'
       );
       expect(localStorage.getItem('token')).toBeNull();
+      expect(localStorage.getItem('refreshToken')).toBeNull();
       expect(window.location.href).toBe('/login');
 
       Object.defineProperty(window, 'location', {

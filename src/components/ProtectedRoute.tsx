@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { auth } from '../lib/api';
+import { authStorage } from '../lib/authStorage';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -12,7 +13,7 @@ interface ProtectedRouteProps {
 type Role = string | { authority: string };
 
 export function ProtectedRoute({ children, requiredRole, 'data-testid': dataTestId }: ProtectedRouteProps) {
-  const token = localStorage.getItem('token');
+  const token = authStorage.getAccessToken();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['me'],

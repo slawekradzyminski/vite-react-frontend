@@ -9,6 +9,7 @@ import { Role } from '../../types/auth';
 vi.mock('../../lib/api', () => ({
   auth: {
     me: vi.fn(),
+    logout: vi.fn().mockResolvedValue({}),
   },
   cart: {
     getCart: vi.fn().mockResolvedValue({
@@ -41,6 +42,7 @@ describe('Navigation', () => {
   it('shows user info and logout button when authenticated', async () => {
     // given
     localStorage.setItem('token', 'fake-token');
+    localStorage.setItem('refreshToken', 'fake-refresh');
     vi.mocked(auth.me).mockResolvedValue({
       data: {
         id: 1,
@@ -70,6 +72,7 @@ describe('Navigation', () => {
   it('navigates to profile page when username is clicked', async () => {
     // given
     localStorage.setItem('token', 'fake-token');
+    localStorage.setItem('refreshToken', 'fake-refresh');
     vi.mocked(auth.me).mockResolvedValue({
       data: {
         id: 1,
@@ -98,6 +101,7 @@ describe('Navigation', () => {
   it('shows LLM link when authenticated', async () => {
     // given
     localStorage.setItem('token', 'fake-token');
+    localStorage.setItem('refreshToken', 'fake-refresh');
     vi.mocked(auth.me).mockResolvedValue({
       data: {
         id: 1,
@@ -125,6 +129,7 @@ describe('Navigation', () => {
   it('shows QR Code link when authenticated', async () => {
     // given
     localStorage.setItem('token', 'fake-token');
+    localStorage.setItem('refreshToken', 'fake-refresh');
     vi.mocked(auth.me).mockResolvedValue({
       data: {
         id: 1,
@@ -152,6 +157,7 @@ describe('Navigation', () => {
   it('handles logout correctly', async () => {
     // given
     localStorage.setItem('token', 'fake-token');
+    localStorage.setItem('refreshToken', 'fake-refresh');
     vi.mocked(auth.me).mockResolvedValue({
       data: {
         id: 1,
@@ -174,7 +180,9 @@ describe('Navigation', () => {
     await user.click(logoutButton);
 
     // then
+    expect(auth.logout).toHaveBeenCalledWith({ refreshToken: 'fake-refresh' });
     expect(localStorage.getItem('token')).toBeNull();
+    expect(localStorage.getItem('refreshToken')).toBeNull();
     expect(window.location.pathname).toBe('/login');
   });
 
@@ -199,7 +207,7 @@ describe('Navigation', () => {
     renderWithProviders(<Navigation />);
     
     // when
-    const menuButton = screen.getByRole('button', { name: /open main menu/i });
+    const menuButton = await screen.findByRole('button', { name: /open main menu/i });
     await user.click(menuButton);
 
     // then

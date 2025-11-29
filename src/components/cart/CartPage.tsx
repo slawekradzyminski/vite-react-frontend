@@ -109,9 +109,9 @@ export function CartPage() {
 
   const safeCartData: CartType = {
     items: enrichedItems,
-    totalPrice: derivedTotalPrice || rawData?.totalPrice || rawData?.totalAmount || 0,
+    totalPrice: rawData?.totalPrice ?? rawData?.totalAmount ?? derivedTotalPrice,
     username: rawData?.username || '',
-    totalItems: derivedTotalItems || rawData?.totalItems || 0,
+    totalItems: rawData?.totalItems ?? derivedTotalItems,
   };
   
   const isEmpty = safeCartData.items.length === 0;
