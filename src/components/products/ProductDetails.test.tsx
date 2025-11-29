@@ -354,7 +354,7 @@ describe('ProductDetails', () => {
 
   it('shows error toast when adding to cart fails', async () => {
     const { cart } = await import('../../lib/api');
-    
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     (cart.addToCart as any).mockRejectedValueOnce(new Error('Failed to add to cart'));
 
     // given
@@ -397,11 +397,12 @@ describe('ProductDetails', () => {
         description: expect.stringContaining('Failed to update cart')
       }));
     });
+    consoleErrorSpy.mockRestore();
   });
 
   it('shows error toast when updating cart fails', async () => {
     const { cart } = await import('../../lib/api');
-    
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     (cart.updateCartItem as any).mockRejectedValueOnce(new Error('Failed to update cart'));
     
     renderWithProviders(<ProductDetails />);
@@ -415,11 +416,13 @@ describe('ProductDetails', () => {
         description: expect.stringContaining('Failed to update cart')
       }));
     });
+    consoleErrorSpy.mockRestore();
   });
 
   it('shows error toast when removing from cart fails', async () => {
     // given
     const { cart } = await import('../../lib/api');
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     (cart.removeFromCart as any).mockRejectedValueOnce(new Error('Failed to remove from cart'));
     renderWithProviders(<ProductDetails />);
     
@@ -437,6 +440,7 @@ describe('ProductDetails', () => {
         description: expect.stringContaining('Failed to remove from cart')
       }));
     });
+    consoleErrorSpy.mockRestore();
   });
 
   it('disables Add to Cart button when product is out of stock', () => {

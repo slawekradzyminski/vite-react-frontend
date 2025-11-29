@@ -5,6 +5,7 @@ import { cart } from '../../lib/api';
 import { CartItemDto, UpdateCartItemDto } from '../../types/cart';
 import { useToast } from '../../hooks/useToast';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { authStorage } from '../../lib/authStorage';
 
 interface ProductCardProps {
   product: Product;
@@ -22,7 +23,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
     queryKey: ['cart'],
     queryFn: cart.getCart,
     retry: false,
-    enabled: !!localStorage.getItem('token'),
+    enabled: !!authStorage.getAccessToken(),
   });
 
   const cartItem = cartData?.data?.items?.find(item => item.productId === product.id);

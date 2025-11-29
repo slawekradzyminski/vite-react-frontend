@@ -4,6 +4,18 @@ import { Profile } from './profilePage';
 import { auth, systemPrompt, orders } from '../../lib/api';
 import { Role } from '../../types/auth';
 import { renderWithProviders } from '../../test/test-utils';
+import type { AxiosResponse } from 'axios';
+import type { User } from '../../types/auth';
+
+const mockToast = vi.fn();
+
+vi.mock('../../hooks/useToast', async () => {
+  const actual = await vi.importActual<typeof import('../../hooks/useToast')>('../../hooks/useToast');
+  return {
+    ...actual,
+    useToast: () => ({ toast: mockToast }),
+  };
+});
 
 vi.mock('../../lib/api', () => ({
   auth: {
@@ -30,6 +42,7 @@ vi.mock('react-router-dom', async () => {
 describe('Profile', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mockToast.mockReset();
 
     vi.mocked(auth.me).mockResolvedValue({
       data: {
@@ -44,7 +57,7 @@ describe('Profile', () => {
       statusText: 'OK',
       headers: {},
       config: { headers: {} } as any,
-    });
+    } as AxiosResponse<User>);
 
     vi.mocked(systemPrompt.get).mockResolvedValue({
       data: {
@@ -140,7 +153,7 @@ describe('Profile', () => {
       statusText: 'OK',
       headers: {},
       config: { headers: {} } as any,
-    });
+    } as AxiosResponse<User>);
 
     renderWithProviders(<Profile />);
     await waitFor(() => expect(auth.me).toHaveBeenCalled());
@@ -191,5 +204,64 @@ describe('Profile', () => {
 
     // then
     expect(await screen.findByText("You don't have any orders yet.")).toBeInTheDocument();
+  });
+
+  it('shows not found message when current user is missing', async () => {
+    vi.mocked(auth.me).mockResolvedValue({
+      data: null as unknown as User,
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    } as AxiosResponse<User>);
+
+    renderWithProviders(<Profile />);
+
+    expect(await screen.findByTestId('profile-not-found')).toBeInTheDocument();
+  });
+
+  it('submits the system prompt form successfully', async () => {
+    vi.mocked(systemPrompt.update).mockResolvedValue({
+      data: { username: 'testuser', systemPrompt: 'New prompt' },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+
+    renderWithProviders(<Profile />);
+
+    const textarea = await screen.findByTestId('profile-prompt-input');
+    fireEvent.change(textarea, { target: { value: 'Fresh prompt' } });
+    fireEvent.click(screen.getByTestId('profile-prompt-submit'));
+
+    await waitFor(() => {
+      expect(systemPrompt.update).toHaveBeenCalledWith('Fresh prompt');
+    });
+    expect(mockToast).toHaveBeenCalledWith({
+      variant: 'success',
+      title: 'Success',
+      description: 'System prompt updated successfully',
+    });
+  });
+
+  it('shows error toast when system prompt update fails', async () => {
+    vi.mocked(systemPrompt.update).mockRejectedValue({
+      response: { data: { message: 'Failed to update system prompt' } },
+    });
+
+    renderWithProviders(<Profile />);
+
+    const textarea = await screen.findByTestId('profile-prompt-input');
+    fireEvent.change(textarea, { target: { value: 'Another prompt' } });
+    fireEvent.click(screen.getByTestId('profile-prompt-submit'));
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith({
+        variant: 'error',
+        title: 'Error',
+        description: 'Failed to update system prompt',
+      });
+    });
   });
 });

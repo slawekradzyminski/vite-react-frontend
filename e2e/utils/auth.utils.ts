@@ -9,6 +9,7 @@ import { Role } from '../../src/types/auth';
 export type AuthenticatedUser = {
     user: User;
     token: string;
+    refreshToken: string;
 };
 
 export async function createAuthenticatedUser(request: APIRequestContext): Promise<AuthenticatedUser> {
@@ -24,7 +25,8 @@ export async function createAuthenticatedUser(request: APIRequestContext): Promi
 
     return {
         user: newUser,
-        token: loginResponse.token
+        token: loginResponse.token,
+        refreshToken: loginResponse.refreshToken,
     };
 }
 
@@ -42,7 +44,8 @@ export async function createAdminUser(request: APIRequestContext): Promise<Authe
 
     return {
         user: newUser,
-        token: loginResponse.token
+        token: loginResponse.token,
+        refreshToken: loginResponse.refreshToken,
     };
 }
 
@@ -60,7 +63,8 @@ export async function createClientUser(request: APIRequestContext): Promise<Auth
 
     return {
         user: newUser,
-        token: loginResponse.token
+        token: loginResponse.token,
+        refreshToken: loginResponse.refreshToken,
     };
 }
 

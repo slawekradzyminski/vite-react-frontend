@@ -1,7 +1,7 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
-import { auth } from '../../lib/api';
+import { auth, cart } from '../../lib/api';
 import { renderWithProviders } from '../../test/test-utils';
 import { Navigation } from './Navigation';
 import { Role } from '../../types/auth';
@@ -9,6 +9,7 @@ import { Role } from '../../types/auth';
 vi.mock('../../lib/api', () => ({
   auth: {
     me: vi.fn(),
+    logout: vi.fn().mockResolvedValue({}),
   },
   cart: {
     getCart: vi.fn().mockResolvedValue({
@@ -41,6 +42,7 @@ describe('Navigation', () => {
   it('shows user info and logout button when authenticated', async () => {
     // given
     localStorage.setItem('token', 'fake-token');
+    localStorage.setItem('refreshToken', 'fake-refresh');
     vi.mocked(auth.me).mockResolvedValue({
       data: {
         id: 1,
@@ -70,6 +72,7 @@ describe('Navigation', () => {
   it('navigates to profile page when username is clicked', async () => {
     // given
     localStorage.setItem('token', 'fake-token');
+    localStorage.setItem('refreshToken', 'fake-refresh');
     vi.mocked(auth.me).mockResolvedValue({
       data: {
         id: 1,
@@ -98,6 +101,7 @@ describe('Navigation', () => {
   it('shows LLM link when authenticated', async () => {
     // given
     localStorage.setItem('token', 'fake-token');
+    localStorage.setItem('refreshToken', 'fake-refresh');
     vi.mocked(auth.me).mockResolvedValue({
       data: {
         id: 1,
@@ -125,6 +129,7 @@ describe('Navigation', () => {
   it('shows QR Code link when authenticated', async () => {
     // given
     localStorage.setItem('token', 'fake-token');
+    localStorage.setItem('refreshToken', 'fake-refresh');
     vi.mocked(auth.me).mockResolvedValue({
       data: {
         id: 1,
@@ -152,6 +157,7 @@ describe('Navigation', () => {
   it('handles logout correctly', async () => {
     // given
     localStorage.setItem('token', 'fake-token');
+    localStorage.setItem('refreshToken', 'fake-refresh');
     vi.mocked(auth.me).mockResolvedValue({
       data: {
         id: 1,
@@ -174,7 +180,9 @@ describe('Navigation', () => {
     await user.click(logoutButton);
 
     // then
+    expect(auth.logout).toHaveBeenCalledWith({ refreshToken: 'fake-refresh' });
     expect(localStorage.getItem('token')).toBeNull();
+    expect(localStorage.getItem('refreshToken')).toBeNull();
     expect(window.location.pathname).toBe('/login');
   });
 
@@ -199,7 +207,7 @@ describe('Navigation', () => {
     renderWithProviders(<Navigation />);
     
     // when
-    const menuButton = screen.getByRole('button', { name: /open main menu/i });
+    const menuButton = await screen.findByRole('button', { name: /open main menu/i });
     await user.click(menuButton);
 
     // then
@@ -328,5 +336,59 @@ describe('Navigation', () => {
     expect(usernameIndex).toBeGreaterThan(cartIndex);
     expect(logoutIndex).toBeGreaterThan(usernameIndex);
     expect(logoutIndex).toBe(menuItemsArray.length - 1); // Logout should be last
+  });
+
+  it('shows admin navigation link when user has admin role', async () => {
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValue({
+      data: {
+        id: 1,
+        username: 'admin',
+        email: 'admin@example.com',
+        firstName: 'Admin',
+        lastName: 'User',
+        roles: [Role.ADMIN],
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+
+    renderWithProviders(<Navigation />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Admin')).toBeInTheDocument();
+    });
+  });
+
+  it('displays cart badge when cart has items', async () => {
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValue({
+      data: {
+        id: 1,
+        username: 'cartuser',
+        email: 'cart@example.com',
+        firstName: 'Cart',
+        lastName: 'User',
+        roles: [Role.CLIENT],
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+    vi.mocked(cart.getCart).mockResolvedValue({
+      data: {
+        items: [],
+        totalItems: 3,
+        totalPrice: 0,
+      },
+    } as any);
+
+    renderWithProviders(<Navigation />);
+
+    const badge = await screen.findByTestId('cart-item-count');
+    expect(badge).toHaveTextContent('3');
   });
 }); 

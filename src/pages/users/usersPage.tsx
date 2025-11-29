@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
@@ -8,6 +9,7 @@ import { Role } from '../../types/auth';
 export function UsersPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const { data: currentUser } = useQuery({
     queryKey: ['me'],
@@ -25,7 +27,12 @@ export function UsersPage() {
   const deleteMutation = useMutation({
     mutationFn: (username: string) => auth.deleteUser(username),
     onSuccess: () => {
+      setDeleteError(null);
       queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+    onError: (err: any) => {
+      const message = err?.response?.data?.message ?? 'Failed to delete user';
+      setDeleteError(message);
     },
   });
 
@@ -45,6 +52,12 @@ export function UsersPage() {
 
         {error && (
           <div className="text-red-600" data-testid="users-error">Failed to load users</div>
+        )}
+
+        {deleteError && (
+          <div className="text-red-600 mb-4" data-testid="users-delete-error">
+            {deleteError}
+          </div>
         )}
 
         {users && (

@@ -110,6 +110,7 @@ describe('LoginPage', () => {
     vi.mocked(auth.login).mockResolvedValue({ 
       data: { 
         token: 'test-token',
+        refreshToken: 'test-refresh',
         username: 'validuser',
         email: 'valid@example.com',
         firstName: 'Valid',
@@ -134,7 +135,8 @@ describe('LoginPage', () => {
         username: 'validuser',
         password: 'validpassword',
       });
-      expect(window.localStorage.setItem).toHaveBeenCalledWith('token', 'test-token');
+      expect(window.localStorage.setItem).toHaveBeenNthCalledWith(1, 'token', 'test-token');
+      expect(window.localStorage.setItem).toHaveBeenNthCalledWith(2, 'refreshToken', 'test-refresh');
       expect(mockNavigate).toHaveBeenCalledWith('/');
     });
   });

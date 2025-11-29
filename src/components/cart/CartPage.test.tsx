@@ -1,9 +1,36 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '../../test/test-utils';
 import { CartPage } from './CartPage';
 import { Cart } from '../../types/cart';
+import type { Product } from '../../types/product';
+import type { AxiosResponse } from 'axios';
 import * as reactQuery from '@tanstack/react-query';
+import { products } from '../../lib/api';
+
+const createAxiosResponse = <T,>(data: T): AxiosResponse<T> => ({
+  data,
+  status: 200,
+  statusText: 'OK',
+  headers: {},
+  config: {} as any,
+});
+
+const defaultProductLookup = (id: number) =>
+  Promise.resolve(
+    createAxiosResponse<Product>({
+      id,
+      name: id === 1 ? 'Test Product 1' : 'Test Product 2',
+      price: id === 1 ? 10 : 15,
+      imageUrl: id === 1 ? 'test-image-1.jpg' : 'test-image-2.jpg',
+      description: 'Test description',
+      stockQuantity: 10,
+      category: 'Test Category',
+      createdAt: '2023-01-01T12:00:00Z',
+      updatedAt: '2023-01-02T12:00:00Z',
+    })
+  );
 
 vi.mock('../../lib/api', () => ({
   cart: {
@@ -14,20 +41,8 @@ vi.mock('../../lib/api', () => ({
     clearCart: vi.fn(),
   },
   products: {
-    getProductById: vi.fn().mockImplementation((id) => {
-      return Promise.resolve({
-        data: {
-          id: id,
-          name: id === 1 ? 'Test Product 1' : 'Test Product 2',
-          price: id === 1 ? 10 : 15,
-          imageUrl: id === 1 ? 'test-image-1.jpg' : 'test-image-2.jpg',
-          description: 'Test description',
-          stockQuantity: 10,
-          category: 'Test Category'
-        }
-      });
-    }),
-  }
+    getProductById: vi.fn().mockImplementation((id) => defaultProductLookup(id)),
+  },
 }));
 
 vi.mock('@tanstack/react-query', async () => {
@@ -65,6 +80,7 @@ describe('CartPage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(products.getProductById).mockImplementation((id) => defaultProductLookup(id));
   });
 
   it('displays loading state initially', () => {
@@ -144,8 +160,10 @@ describe('CartPage', () => {
     renderWithProviders(<CartPage />);
     
     // then
-    expect(screen.getByText('Your cart is empty')).toBeInTheDocument();
-    expect(screen.getByText('Browse Products')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Your cart is empty')).toBeInTheDocument();
+      expect(screen.getByText('Browse Products')).toBeInTheDocument();
+    });
   });
 
   it('displays error message when API call fails', async () => {
@@ -163,5 +181,54 @@ describe('CartPage', () => {
     // then
     expect(screen.getByText('Error loading cart')).toBeInTheDocument();
     expect(screen.getByText('Try again')).toBeInTheDocument();
+  });
+
+  it('retries loading cart when retry button is clicked', async () => {
+    const refetch = vi.fn();
+    vi.mocked(reactQuery.useQuery).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error('API Error'),
+      refetch,
+    } as any);
+
+    const user = userEvent.setup();
+    renderWithProviders(<CartPage />);
+
+    await user.click(screen.getByTestId('cart-retry'));
+    expect(refetch).toHaveBeenCalled();
+  });
+
+  it('falls back to minimal product details when enrichment fails', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(reactQuery.useQuery).mockReturnValue({
+      data: {
+        data: {
+          username: 'testuser',
+          items: [
+            {
+              productId: 99,
+              quantity: 1,
+              unitPrice: 25,
+              totalPrice: 25,
+            } as any,
+          ],
+          totalPrice: 25,
+          totalItems: 1,
+        },
+      },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    } as any);
+    vi.mocked(products.getProductById).mockRejectedValueOnce(new Error('boom'));
+
+    renderWithProviders(<CartPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Unknown Product')).toBeInTheDocument();
+    });
+    expect(screen.getByTestId('cart-item-total-99')).toHaveTextContent('$25.00');
+    consoleErrorSpy.mockRestore();
   });
 }); 

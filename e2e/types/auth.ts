@@ -3,12 +3,13 @@ export interface SignInRequest {
     password: string;
   }
   
-  export interface SignInResponse {
+export interface SignInResponse {
     username: string;
     roles: string[];
     firstName: string;
     lastName: string;
     token: string;
+    refreshToken: string;
     email: string;
   }
   

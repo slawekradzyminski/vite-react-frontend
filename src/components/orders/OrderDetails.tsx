@@ -73,6 +73,10 @@ export const OrderDetails = () => {
     },
   });
 
+  const effectiveSelectedStatus = selectedStatus ?? order?.status ?? null;
+  const isUpdateDisabled =
+    updateStatusMutation.isPending || !order || !effectiveSelectedStatus || effectiveSelectedStatus === order.status;
+
   const handleCancelOrder = () => {
     if (window.confirm('Are you sure you want to cancel this order?')) {
       cancelOrderMutation.mutate(orderId);
@@ -85,8 +89,8 @@ export const OrderDetails = () => {
   };
   
   const handleUpdateStatus = () => {
-    if (selectedStatus && selectedStatus !== order?.status) {
-      updateStatusMutation.mutate({ orderId, status: selectedStatus });
+    if (effectiveSelectedStatus && effectiveSelectedStatus !== order?.status) {
+      updateStatusMutation.mutate({ orderId, status: effectiveSelectedStatus });
     }
   };
 
@@ -113,11 +117,6 @@ export const OrderDetails = () => {
 
   if (!order) {
     return <div className="text-center py-8" data-testid="order-details-not-found">Order not found</div>;
-  }
-
-  // Initialize selectedStatus with current order status if it's null
-  if (selectedStatus === null) {
-    setSelectedStatus(order.status);
   }
 
   return (
@@ -177,7 +176,7 @@ export const OrderDetails = () => {
         {isAdmin && (
           <div className="flex items-center space-x-2 ml-auto" data-testid="order-details-admin-controls">
             <select
-              value={selectedStatus || order.status}
+              value={effectiveSelectedStatus ?? ''}
               onChange={handleStatusChange}
               className="border rounded p-2"
               disabled={updateStatusMutation.isPending}
@@ -192,7 +191,7 @@ export const OrderDetails = () => {
             <button
               onClick={handleUpdateStatus}
               className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-              disabled={updateStatusMutation.isPending || selectedStatus === order.status}
+              disabled={isUpdateDisabled}
               data-testid="order-details-update-status-button"
             >
               {updateStatusMutation.isPending ? 'Updating...' : 'Update'}

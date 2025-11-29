@@ -22,17 +22,19 @@ type AuthenticatedPageFixtures = {
 
 export const test = base.extend<AuthenticatedPageFixtures>({
     authenticatedPage: async ({ page }, use) => {
-        const { user, token } = await createAuthenticatedUser(page.context().request);
-        
-        await page.context().addInitScript(token => {
+        const { user, token, refreshToken } = await createAuthenticatedUser(page.context().request);
+
+        await page.context().addInitScript(({ token, refreshToken }) => {
             window.localStorage.setItem('token', token);
-        }, token);
+            window.localStorage.setItem('refreshToken', refreshToken);
+        }, { token, refreshToken });
         
         // eslint-disable-next-line react-hooks/rules-of-hooks
         await use({ 
             page,
             user,
-            token
+            token,
+            refreshToken,
         });
 
         await cleanupUser(page.context().request, user.username, token);
@@ -42,17 +44,19 @@ export const test = base.extend<AuthenticatedPageFixtures>({
         const context = await browser.newContext();
         const page = await context.newPage();
         
-        const { user, token } = await createAdminUser(context.request);
-        
-        await context.addInitScript(token => {
+        const { user, token, refreshToken } = await createAdminUser(context.request);
+
+        await context.addInitScript(({ token, refreshToken }) => {
             window.localStorage.setItem('token', token);
-        }, token);
+            window.localStorage.setItem('refreshToken', refreshToken);
+        }, { token, refreshToken });
         
         // eslint-disable-next-line react-hooks/rules-of-hooks
         await use({ 
             page,
             user,
-            token
+            token,
+            refreshToken,
         });
 
         await cleanupUser(context.request, user.username, token);
@@ -63,17 +67,19 @@ export const test = base.extend<AuthenticatedPageFixtures>({
         const context = await browser.newContext();
         const page = await context.newPage();
         
-        const { user, token } = await createClientUser(context.request);
-        
-        await context.addInitScript(token => {
+        const { user, token, refreshToken } = await createClientUser(context.request);
+
+        await context.addInitScript(({ token, refreshToken }) => {
             window.localStorage.setItem('token', token);
-        }, token);
+            window.localStorage.setItem('refreshToken', refreshToken);
+        }, { token, refreshToken });
         
         // eslint-disable-next-line react-hooks/rules-of-hooks
         await use({ 
             page,
             user,
-            token
+            token,
+            refreshToken,
         });
 
         await cleanupUser(context.request, user.username, token);

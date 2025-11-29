@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { auth } from '../../lib/api';
+import { authStorage } from '../../lib/authStorage';
 import { LoginFormData, loginSchema } from '../../validators/auth';
 import { useToast } from '../../hooks/useToast';
 
@@ -36,7 +37,10 @@ export function LoginPage() {
 
     try {
       const response = await auth.login(data);
-      localStorage.setItem('token', response.data.token);
+      authStorage.setTokens({
+        token: response.data.token,
+        refreshToken: response.data.refreshToken,
+      });
       navigate('/');
     } catch (err: any) {
       if (err.response?.status === 422) {
@@ -114,6 +118,7 @@ export function LoginPage() {
             <Button
               variant="link"
               className="font-medium text-indigo-600 hover:text-indigo-500"
+              type="button"
               onClick={() => navigate('/register')}
               data-testid="login-register-link"
             >

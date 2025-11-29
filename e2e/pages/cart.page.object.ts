@@ -29,12 +29,12 @@ export class CartPage {
   }
 
   async getCartTotalPrice() {
-    const priceText = await this.page.locator('text=Total >> xpath=following-sibling::span').first().textContent();
+    const priceText = await this.page.getByTestId('cart-summary-total-price').textContent();
     return priceText || '';
   }
 
   async getCartTotalItems() {
-    const itemsText = await this.page.locator('text=Items >> xpath=following-sibling::span').first().textContent();
+    const itemsText = await this.page.getByTestId('cart-summary-items-count').textContent();
     return itemsText || '';
   }
 

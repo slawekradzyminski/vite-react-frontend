@@ -13,11 +13,25 @@ export interface LoginRequest extends LoginFormData {}
 
 export interface LoginResponse {
   token: string;
+  refreshToken: string;
   username: string;
   email: string;
   firstName: string;
   lastName: string;
   roles: Role[];
+}
+
+export interface TokenPair {
+  token: string;
+  refreshToken: string;
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
+export interface LogoutRequest {
+  refreshToken: string;
 }
 
 export interface User {

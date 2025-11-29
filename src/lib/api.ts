@@ -1,5 +1,14 @@
-import axios from 'axios';
-import type { LoginRequest, LoginResponse, RegisterRequest, User, UserEditDTO } from '../types/auth';
+import axios, { type AxiosError, type AxiosRequestConfig } from 'axios';
+import type {
+  LoginRequest,
+  LoginResponse,
+  RegisterRequest,
+  User,
+  UserEditDTO,
+  RefreshTokenRequest,
+  LogoutRequest,
+  TokenPair,
+} from '../types/auth';
 import type { EmailDto, EmailResponse } from '../types/email';
 import type { CreateQrDto, QrCodeResponse } from '../types/qr';
 import type { GenerateRequestDto, ChatRequestDto } from '../types/ollama';
@@ -8,23 +17,49 @@ import type { Order, PageDtoOrderDto, Address, OrderStatus } from '../types/orde
 import type { Product, ProductCreateDto, ProductUpdateDto } from '../types/product';
 import type { Cart, CartItemDto, UpdateCartItemDto } from '../types/cart';
 import type { TrafficInfoDto } from '../types/traffic';
+import { authStorage } from './authStorage';
+
+const getApiBaseUrl = () => {
+  const isDocker = import.meta.env.VITE_DOCKER === 'true';
+  const host = isDocker ? 'host.docker.internal' : 'localhost';
+  return `http://${host}:4001`;
+};
 
 const api = axios.create({
-  baseURL: 'http://localhost:4001',
+  baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-const PUBLIC_ENDPOINTS = ['/users/signin', '/users/signup'];
+const PUBLIC_ENDPOINTS = ['/users/signin', '/users/signup', '/users/refresh'];
+
+interface RefreshableRequestConfig extends AxiosRequestConfig {
+  _retry?: boolean;
+}
+
+let refreshPromise: Promise<TokenPair> | null = null;
+
+const enqueueRefresh = (refreshToken: string) => {
+  if (!refreshPromise) {
+    refreshPromise = auth.refresh({ refreshToken }).then((response) => {
+      const tokens = response.data;
+      authStorage.setTokens(tokens);
+      return tokens;
+    }).finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
+};
 
 api.interceptors.request.use((config) => {
   if (config.url && PUBLIC_ENDPOINTS.includes(config.url)) {
     return config;
   }
 
-  const token = localStorage.getItem('token');
-  if (token) {
+  const token = authStorage.getAccessToken();
+  if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -32,9 +67,31 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      localStorage.removeItem('token');
+  async (error: AxiosError) => {
+    const status = error.response?.status;
+    const originalRequest = error.config as RefreshableRequestConfig | undefined;
+
+    if (status === 401 && originalRequest && !originalRequest._retry) {
+      const refreshToken = authStorage.getRefreshToken();
+      if (refreshToken) {
+        originalRequest._retry = true;
+        try {
+          const tokens = await enqueueRefresh(refreshToken);
+          originalRequest.headers = {
+            ...originalRequest.headers,
+            Authorization: `Bearer ${tokens.token}`,
+          };
+          return api(originalRequest);
+        } catch (refreshError) {
+          authStorage.clearTokens();
+          window.location.href = '/login';
+          return Promise.reject(refreshError);
+        }
+      }
+    }
+
+    if (status === 401 || status === 403) {
+      authStorage.clearTokens();
       window.location.href = '/login';
     }
     return Promise.reject(error);
@@ -48,8 +105,8 @@ export const auth = {
   register: (data: RegisterRequest) =>
     api.post<string>('/users/signup', data),
     
-  refresh: () => 
-    api.get<string>('/users/refresh'),
+  refresh: (data: RefreshTokenRequest) => 
+    api.post<TokenPair>('/users/refresh', data),
     
   me: () => 
     api.get<User>('/users/me'),
@@ -62,6 +119,9 @@ export const auth = {
 
   updateUser: (username: string, data: UserEditDTO) =>
     api.put<User>(`/users/${username}`, data),
+
+  logout: (data: LogoutRequest) =>
+    api.post<void>('/users/logout', data),
 };
 
 export const email = {
@@ -83,18 +143,18 @@ export const qr = {
 
 export const ollama = {
   generate: async (data: GenerateRequestDto) => {
-    const response = await fetch('http://localhost:4001/api/ollama/generate', {
+    const response = await fetch(`${getApiBaseUrl()}/api/ollama/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token') ?? ''}`,
+        Authorization: `Bearer ${authStorage.getAccessToken() ?? ''}`,
       },
       body: JSON.stringify(data),
     });
 
     if (!response.ok) {
       if (response.status === 401) {
-        localStorage.removeItem('token');
+        authStorage.clearTokens();
         window.location.href = '/login';
       }
       throw new Error(`Failed to fetch stream: ${response.statusText}`);
@@ -104,18 +164,18 @@ export const ollama = {
   },
 
   chat: async (data: ChatRequestDto) => {
-    const response = await fetch('http://localhost:4001/api/ollama/chat', {
+    const response = await fetch(`${getApiBaseUrl()}/api/ollama/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token') ?? ''}`,
+        Authorization: `Bearer ${authStorage.getAccessToken() ?? ''}`,
       },
       body: JSON.stringify(data),
     });
 
     if (!response.ok) {
       if (response.status === 401) {
-        localStorage.removeItem('token');
+        authStorage.clearTokens();
         window.location.href = '/login';
       }
       throw new Error(`Failed to fetch stream: ${response.statusText}`);

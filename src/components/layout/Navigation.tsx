@@ -5,32 +5,45 @@ import { useState } from 'react';
 import { auth, cart } from '../../lib/api';
 import { Button } from '../ui/button';
 import { Role } from '../../types/auth';
+import { authStorage } from '../../lib/authStorage';
 
 export function Navigation() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   
+  const hasToken = !!authStorage.getAccessToken();
+
   const { data: user } = useQuery({
     queryKey: ['me'],
     queryFn: () => auth.me(),
     retry: false,
-    enabled: !!localStorage.getItem('token'),
+    enabled: hasToken,
   });
 
   const { data: cartData } = useQuery({
     queryKey: ['cart'],
     queryFn: cart.getCart,
     retry: false,
-    enabled: !!localStorage.getItem('token'),
+    enabled: hasToken,
   });
 
   const cartItemCount = cartData?.data?.totalItems || 0;
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    queryClient.invalidateQueries({ queryKey: ['me'] });
-    navigate('/login');
+  const handleLogout = async () => {
+    const { refreshToken } = authStorage.getTokens();
+    try {
+      if (refreshToken) {
+        await auth.logout({ refreshToken });
+      }
+    } catch (error) {
+      console.error('Failed to logout:', error);
+    } finally {
+      authStorage.clearTokens();
+      queryClient.removeQueries({ queryKey: ['me'], exact: true });
+      queryClient.removeQueries({ queryKey: ['cart'], exact: true });
+      navigate('/login');
+    }
   };
 
   const toggleMenu = () => {

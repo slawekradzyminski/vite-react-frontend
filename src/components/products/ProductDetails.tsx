@@ -4,6 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { products, cart } from '../../lib/api';
 import { CartItemDto, UpdateCartItemDto } from '../../types/cart';
 import { useToast } from '../../hooks/useToast';
+import { authStorage } from '../../lib/authStorage';
 
 export function ProductDetails() {
   const { id } = useParams<{ id: string }>();
@@ -28,7 +29,7 @@ export function ProductDetails() {
   const { data: cartData } = useQuery({
     queryKey: ['cart'],
     queryFn: cart.getCart,
-    enabled: !!localStorage.getItem('token'),
+    enabled: !!authStorage.getAccessToken(),
     retry: false
   });
 

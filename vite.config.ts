@@ -20,9 +20,16 @@ export default defineVitestConfig({
     exclude: ['node_modules/**', 'e2e/**'],
     coverage: {
       reporter: ['text', 'json', 'html'],
+      thresholds: {
+        lines: 85,
+        statements: 85,
+        branches: 75,
+        functions: 80,
+      },
       exclude: [
         'node_modules/',
         'src/test/setup.ts',
+        'src/**/*.module.css',
       ],
     },
   },

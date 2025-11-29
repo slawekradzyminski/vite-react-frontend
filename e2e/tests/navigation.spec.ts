@@ -112,4 +112,19 @@ test.describe('Navigation', () => {
     await expect(authenticatedPage.page).toHaveURL(/\/cart/);
     await expect(authenticatedPage.page.locator('h1')).toContainText('Your Cart');
   });
-}); 
+
+  test('should show logged-out navigation after logout when visiting register page', async ({ authenticatedPage }) => {
+    // given
+    await expect(desktopNav.userFullName).toBeVisible();
+
+    // when
+    await desktopNav.logout();
+    await expect(authenticatedPage.page).toHaveURL(/\/login/);
+    await authenticatedPage.page.getByRole('link', { name: 'Register' }).click();
+
+    // then
+    await expect(authenticatedPage.page).toHaveURL(/\/register/);
+    await expect(authenticatedPage.page.getByTestId('auth-actions')).toBeVisible();
+    await expect(authenticatedPage.page.getByTestId('user-actions')).toHaveCount(0);
+  });
+});

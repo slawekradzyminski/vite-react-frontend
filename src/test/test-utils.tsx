@@ -13,13 +13,15 @@ const queryClient = new QueryClient({
 });
 
 export function renderWithProviders(ui: ReactNode) {
-  return render(
+  const Wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <ToastProvider>
-          {ui}
+          {children}
         </ToastProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );
-} 
+
+  return render(ui, { wrapper: Wrapper });
+}
