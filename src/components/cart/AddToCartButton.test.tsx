@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { AddToCartButton } from './AddToCartButton';
@@ -152,7 +152,9 @@ describe('AddToCartButton', () => {
     expect(screen.getByTestId(`add-to-cart-submit-${mockProductId}`)).toHaveTextContent('Adding...');
     
     // Resolve the promise to clean up
-    resolvePromise({});
+    await act(async () => {
+      resolvePromise({});
+    });
   });
 
   it('disables the button when disabled prop is true', () => {

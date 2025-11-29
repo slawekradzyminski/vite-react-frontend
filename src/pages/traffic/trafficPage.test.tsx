@@ -113,6 +113,7 @@ describe('TrafficMonitorPage', () => {
     
     // Reset mocks
     vi.clearAllMocks();
+    window.localStorage.getItem = vi.fn(() => 'fake-token');
   });
 
   it('should render loading state initially', () => {
@@ -220,5 +221,118 @@ describe('TrafficMonitorPage', () => {
     
     // then
     expect(screen.getByText(/No traffic events recorded yet/)).toBeInTheDocument();
+  });
+
+  it('shows authentication required message when there is no token', async () => {
+    window.localStorage.getItem = vi.fn(() => null);
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <TrafficMonitorPage />
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Authentication required')).toBeInTheDocument();
+    });
+    expect(SockJS).not.toHaveBeenCalled();
+  });
+
+  it('keeps clear button disabled when no events are present', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <TrafficMonitorPage />
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => expect(screen.getByText('Connected to traffic monitor')).toBeInTheDocument());
+
+    let clearButton = screen.getByTestId('traffic-clear-button');
+    expect(clearButton).toBeDisabled();
+
+    await act(async () => {
+      // @ts-expect-error testing helper
+      stompjs.__simulateMessage({
+        method: 'GET',
+        path: '/status',
+        status: 200,
+        durationMs: 10,
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    await waitFor(() => expect(screen.getByTestId('traffic-event-0')).toBeInTheDocument());
+
+    clearButton = screen.getByTestId('traffic-clear-button');
+    expect(clearButton).not.toBeDisabled();
+  });
+
+  it('updates connection badge when STOMP disconnects', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <TrafficMonitorPage />
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('traffic-connection-status')).toHaveTextContent('Connected');
+    });
+
+    const clients =
+      // @ts-expect-error testing helper
+      stompjs.__getClients?.() ?? [];
+    expect(clients.length).toBeGreaterThan(0);
+    const client = clients.at(-1);
+
+    await act(async () => {
+      client?.deactivate?.();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('traffic-connection-status')).toHaveTextContent('Disconnected');
+      expect(screen.getByTestId('traffic-status-message')).toHaveTextContent('Disconnected');
+    });
+  });
+
+  it('applies status color coding for different HTTP codes', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <TrafficMonitorPage />
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => expect(screen.getByText('Connected to traffic monitor')).toBeInTheDocument());
+
+    const events = [
+      { status: 201, className: 'text-green-600' },
+      { status: 302, className: 'text-blue-600' },
+      { status: 404, className: 'text-orange-600' },
+      { status: 503, className: 'text-red-600' },
+    ];
+
+    for (const event of events) {
+      await act(async () => {
+        // @ts-expect-error testing helper
+        stompjs.__simulateMessage({
+          method: 'GET',
+          path: `/events/${event.status}`,
+          status: event.status,
+          durationMs: 5,
+          timestamp: new Date().toISOString(),
+        });
+      });
+    }
+
+    await waitFor(() => {
+      expect(screen.getByTestId('traffic-event-status-3')).toBeInTheDocument();
+    });
+
+    const expectedOrder = [...events].reverse();
+    expectedOrder.forEach((event, index) => {
+      const cell = screen.getByTestId(`traffic-event-status-${index}`);
+      const statusSpan = cell.querySelector('span');
+      expect(cell).toHaveTextContent(String(event.status));
+      expect(statusSpan).toHaveClass(event.className);
+    });
   });
 });

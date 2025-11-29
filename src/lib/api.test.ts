@@ -1,7 +1,6 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { auth } from './api';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
+import { auth, qr, ollama } from './api';
 import { Role } from '../types/auth';
-import { qr } from './api';
 
 // Hoist mocks
 const mockAxios = vi.hoisted(() => ({
@@ -23,9 +22,15 @@ vi.mock('axios', () => ({
   },
 }));
 
+const originalFetch = global.fetch;
+
 describe('auth API', () => {
   afterEach(() => {
-    vi.clearAllMocks();
+    mockAxios.post.mockReset();
+    mockAxios.get.mockReset();
+    mockAxios.put.mockReset();
+    mockAxios.delete.mockReset();
+    localStorage.clear();
   });
 
   // given
@@ -87,7 +92,15 @@ describe('auth API', () => {
 
 describe('API Client', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    mockAxios.post.mockReset();
+    mockAxios.get.mockReset();
+    mockAxios.put.mockReset();
+    mockAxios.delete.mockReset();
+    localStorage.clear();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
   });
 
   describe('QR API', () => {
@@ -117,4 +130,161 @@ describe('API Client', () => {
       await expect(promise).rejects.toThrow('API Error');
     });
   });
-}); 
+
+  describe('axios interceptors', () => {
+    const getRequestInterceptor = () => {
+      const call = mockAxios.interceptors.request.use.mock.calls.at(-1);
+      if (!call) {
+        throw new Error('Request interceptor was not registered');
+      }
+      return call[0];
+    };
+
+    const getErrorInterceptor = () => {
+      const call = mockAxios.interceptors.response.use.mock.calls.at(-1);
+      if (!call) {
+        throw new Error('Response interceptor was not registered');
+      }
+      return call[1];
+    };
+
+    it('attaches bearer token for protected requests', () => {
+      const requestInterceptor = getRequestInterceptor();
+      localStorage.setItem('token', 'test-token');
+
+      const config = requestInterceptor({
+        url: '/api/orders',
+        headers: {},
+      });
+
+      expect(config.headers.Authorization).toBe('Bearer test-token');
+    });
+
+    it('skips auth header for public endpoints', () => {
+      const requestInterceptor = getRequestInterceptor();
+      localStorage.setItem('token', 'test-token');
+
+      const config = requestInterceptor({
+        url: '/users/signin',
+        headers: {},
+      });
+
+      expect(config.headers.Authorization).toBeUndefined();
+    });
+
+    it('clears token and redirects on unauthorized response', async () => {
+      const errorInterceptor = getErrorInterceptor();
+      localStorage.setItem('token', 'test-token');
+      const originalLocation = window.location;
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: { href: 'http://localhost/' } as Location,
+      });
+
+      const error = { response: { status: 401 }, message: 'Unauthorized' };
+      await expect(errorInterceptor(error)).rejects.toBe(error);
+
+      expect(localStorage.getItem('token')).toBeNull();
+      expect(window.location.href).toBe('/login');
+
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    });
+
+    it('passes through non-auth errors without redirect', async () => {
+      const errorInterceptor = getErrorInterceptor();
+      localStorage.setItem('token', 'test-token');
+
+      const error = { response: { status: 500 }, message: 'Server Error' };
+      await expect(errorInterceptor(error)).rejects.toBe(error);
+
+      expect(localStorage.getItem('token')).toBe('test-token');
+    });
+  });
+
+  describe('ollama API', () => {
+    const requestBody = {
+      model: 'mistral',
+      prompt: 'hello',
+      think: false,
+      options: { temperature: 0.5 },
+    };
+    const apiBase =
+      import.meta.env.VITE_DOCKER === 'true'
+        ? 'http://host.docker.internal:4001'
+        : 'http://localhost:4001';
+
+    beforeEach(() => {
+      global.fetch = vi.fn();
+    });
+
+    it('sends generate requests with auth header', async () => {
+      const mockResponse = new Response('stream');
+      vi.mocked(global.fetch).mockResolvedValue(mockResponse);
+      localStorage.setItem('token', 'abc');
+
+      const response = await ollama.generate(requestBody);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${apiBase}/api/ollama/generate`,
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer abc',
+          }),
+          body: JSON.stringify(requestBody),
+        })
+      );
+      expect(response).toBe(mockResponse);
+    });
+
+    it('clears auth and redirects when generate receives 401', async () => {
+      const unauthorizedResponse = new Response(null, {
+        status: 401,
+        statusText: 'Unauthorized',
+      });
+      vi.mocked(global.fetch).mockResolvedValue(unauthorizedResponse);
+      localStorage.setItem('token', 'abc');
+      const originalLocation = window.location;
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: { href: 'http://localhost/' } as Location,
+      });
+
+      await expect(ollama.generate(requestBody)).rejects.toThrow(
+        'Failed to fetch stream: Unauthorized'
+      );
+      expect(localStorage.getItem('token')).toBeNull();
+      expect(window.location.href).toBe('/login');
+
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    });
+
+    it('sends chat requests with auth header', async () => {
+      const mockResponse = new Response('stream');
+      vi.mocked(global.fetch).mockResolvedValue(mockResponse);
+      localStorage.setItem('token', 'xyz');
+      const chatBody = { model: 'qwen', messages: [], think: true, options: { temperature: 0.7 } };
+
+      await ollama.chat(chatBody);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${apiBase}/api/ollama/chat`,
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            Authorization: 'Bearer xyz',
+            'Content-Type': 'application/json',
+          }),
+          body: JSON.stringify(chatBody),
+        })
+      );
+    });
+  });
+});

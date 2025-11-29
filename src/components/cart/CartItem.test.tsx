@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { CartItem } from './CartItem';
 import { cart } from '../../lib/api';
@@ -38,13 +38,22 @@ describe("CartItem", () => {
 
   const mockOnUpdate = vi.fn();
 
+  const renderCartItem = (item: CartItemType = mockItem) =>
+    renderWithProviders(
+      <table>
+        <tbody>
+          <CartItem item={item} onUpdate={mockOnUpdate} />
+        </tbody>
+      </table>
+    );
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("renders the cart item correctly", () => {
     // given
-    renderWithProviders(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
+    renderCartItem();
 
     // then
     expect(screen.getByText("Test Product")).toBeInTheDocument();
@@ -55,7 +64,7 @@ describe("CartItem", () => {
 
   it("increases quantity when + button is clicked", () => {
     // given
-    renderWithProviders(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
+    renderCartItem();
 
     // when
     fireEvent.click(screen.getByText("+"));
@@ -67,7 +76,7 @@ describe("CartItem", () => {
 
   it("decreases quantity when - button is clicked", () => {
     // given
-    renderWithProviders(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
+    renderCartItem();
 
     // when
     fireEvent.click(screen.getByText("-"));
@@ -80,7 +89,7 @@ describe("CartItem", () => {
   it("does not decrease quantity below 1", () => {
     // given
     const singleItem = { ...mockItem, quantity: 1 };
-    renderWithProviders(<CartItem item={singleItem} onUpdate={mockOnUpdate} />);
+    renderCartItem(singleItem);
 
     // when
     fireEvent.click(screen.getByText("-"));
@@ -101,7 +110,7 @@ describe("CartItem", () => {
         config: {} as any
       } as AxiosResponse)
     );
-    renderWithProviders(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
+    renderCartItem();
 
     // when
     fireEvent.click(screen.getByText("+"));
@@ -125,7 +134,7 @@ describe("CartItem", () => {
         config: {} as any
       } as AxiosResponse)
     );
-    renderWithProviders(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
+    renderCartItem();
 
     // when
     fireEvent.click(screen.getByText("Remove"));
@@ -139,7 +148,7 @@ describe("CartItem", () => {
 
   it("resets quantity when item prop changes (simulating parent refresh)", () => {
     // given
-    const { rerender } = render(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
+    const { rerender } = renderCartItem();
     
     // when - increase quantity
     fireEvent.click(screen.getByText("+"));
@@ -150,7 +159,13 @@ describe("CartItem", () => {
     
     // when - parent refreshes with new item data
     const updatedItem = { ...mockItem, quantity: 3, totalPrice: 30 };
-    rerender(<CartItem item={updatedItem} onUpdate={mockOnUpdate} />);
+    rerender(
+      <table>
+        <tbody>
+          <CartItem item={updatedItem} onUpdate={mockOnUpdate} />
+        </tbody>
+      </table>
+    );
     
     // then - quantity should match new item and Update button should be hidden
     expect(screen.getByText("3")).toBeInTheDocument();
@@ -159,10 +174,11 @@ describe("CartItem", () => {
 
   it("resets to original quantity on API error", async () => {
     // given
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.mocked(cart.updateCartItem).mockImplementation(() => 
       Promise.reject(new Error("API Error"))
     );
-    render(<CartItem item={mockItem} onUpdate={mockOnUpdate} />);
+    renderCartItem();
     
     // when - increase quantity and try to update
     fireEvent.click(screen.getByText("+"));
@@ -174,5 +190,6 @@ describe("CartItem", () => {
     await waitFor(() => {
       expect(screen.getByText("2")).toBeInTheDocument();
     });
+    consoleErrorSpy.mockRestore();
   });
 });

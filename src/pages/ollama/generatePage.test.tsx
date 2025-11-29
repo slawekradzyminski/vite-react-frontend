@@ -107,6 +107,7 @@ describe('OllamaGeneratePage', () => {
   it('shows error state when fetch fails', async () => {
     // given
     vi.mocked(ollama.generate).mockRejectedValue(new Error('Failed to fetch stream: Internal Server Error'));
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     // when
     renderWithProviders(<OllamaGeneratePage />);
@@ -121,6 +122,7 @@ describe('OllamaGeneratePage', () => {
       });
     });
     expect(screen.getByRole('button', { name: 'Generate' })).toBeEnabled();
+    consoleErrorSpy.mockRestore();
   });
 
   it('renders markdown formatted response', async () => {

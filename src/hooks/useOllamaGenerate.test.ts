@@ -14,12 +14,19 @@ vi.mock('./useToast', () => ({
   useToast: vi.fn(),
 }));
 
+const createSseResponse = (payload: string) =>
+  new Response(payload, {
+    headers: { 'Content-Type': 'text/event-stream' }
+  });
+
 describe('useOllama', () => {
   const mockToast = vi.fn();
+  const defaultSsePayload = 'data: {"response":"test response","done":true}\n\n';
 
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useToast).mockReturnValue({ toast: mockToast });
+    vi.mocked(ollama.generate).mockResolvedValue(createSseResponse(defaultSsePayload));
   });
 
   it('initializes with default state', () => {
@@ -82,6 +89,7 @@ describe('useOllama', () => {
   it('handles API error', async () => {
     // given
     const error = new Error('API Error');
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.mocked(ollama.generate).mockRejectedValue(error);
     const { result } = renderHook(() => useOllamaGenerate());
 
@@ -96,11 +104,13 @@ describe('useOllama', () => {
       variant: 'error',
       description: 'API Error',
     });
+    consoleErrorSpy.mockRestore();
   });
 
   it('calls onError callback when provided', async () => {
     // given
     const error = new Error('API Error');
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.mocked(ollama.generate).mockRejectedValue(error);
     const onError = vi.fn();
 
@@ -113,6 +123,7 @@ describe('useOllama', () => {
 
     // then
     expect(onError).toHaveBeenCalledWith(error);
+    consoleErrorSpy.mockRestore();
   });
 
   it('handles SSE processing error', async () => {
@@ -123,6 +134,7 @@ describe('useOllama', () => {
         headers: { 'Content-Type': 'text/event-stream' }
       }
     );
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.mocked(ollama.generate).mockResolvedValue(mockResponse);
 
     const { result } = renderHook(() => useOllamaGenerate());
@@ -138,19 +150,7 @@ describe('useOllama', () => {
       variant: 'error',
       description: 'Failed to process response',
     });
-  });
-
-  // given
-  const mockGenerateResponse = new ReadableStream({
-    start(controller) {
-      controller.enqueue('data: {"response": "test response", "done": true}\n\n');
-      controller.close();
-    }
-  });
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-    (ollama.generate as any).mockResolvedValue(mockGenerateResponse);
+    consoleErrorSpy.mockRestore();
   });
 
   test('should initialize with default temperature of 0.8', () => {

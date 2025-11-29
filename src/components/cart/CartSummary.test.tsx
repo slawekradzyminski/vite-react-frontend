@@ -91,6 +91,18 @@ describe('CartSummary', () => {
       expect(mockOnUpdate).toHaveBeenCalled();
     });
   });
+
+  it('does not clear cart when user cancels confirmation', async () => {
+    vi.mocked(cart.clearCart).mockResolvedValue({} as any);
+    vi.mocked(window.confirm).mockReturnValueOnce(false);
+    renderWithProviders(<CartSummary cartData={mockCartData} onUpdate={mockOnUpdate} />);
+
+    fireEvent.click(screen.getByText('Clear Cart'));
+    await waitFor(() => {
+      expect(cart.clearCart).not.toHaveBeenCalled();
+      expect(mockOnUpdate).not.toHaveBeenCalled();
+    });
+  });
   
   it('disables buttons when cart is empty', () => {
     // given

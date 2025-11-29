@@ -123,7 +123,7 @@ describe('CheckoutPage', () => {
     expect(screen.getByText('Error loading cart data')).toBeInTheDocument();
   });
 
-  it('should redirect to cart page when cart is empty', () => {
+  it('should redirect to cart page when cart is empty', async () => {
     // given
     const emptyCart: Cart = {
       username: 'testuser',
@@ -142,9 +142,11 @@ describe('CheckoutPage', () => {
     renderWithProviders(<CheckoutPage />);
 
     // then
-    const navigateElement = screen.getByTestId('navigate');
-    expect(navigateElement).toBeInTheDocument();
-    expect(navigateElement.getAttribute('data-to')).toBe('/cart');
+    await waitFor(() => {
+      const navigateElement = screen.getByTestId('navigate');
+      expect(navigateElement).toBeInTheDocument();
+      expect(navigateElement.getAttribute('data-to')).toBe('/cart');
+    });
   });
 
   it('should display cart items and total when cart has items', async () => {
@@ -172,6 +174,7 @@ describe('CheckoutPage', () => {
 
   it('should handle missing product detail gracefully', async () => {
     // given
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.mocked(reactQuery.useQuery).mockReturnValue({
       data: { data: mockCartWithMissingProduct },
       isLoading: false,
@@ -187,5 +190,6 @@ describe('CheckoutPage', () => {
       const priceElements = screen.getAllByText('$25.00');
       expect(priceElements.length).toBeGreaterThan(0);
     });
+    consoleErrorSpy.mockRestore();
   });
 }); 

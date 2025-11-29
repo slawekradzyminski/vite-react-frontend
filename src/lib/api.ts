@@ -9,8 +9,14 @@ import type { Product, ProductCreateDto, ProductUpdateDto } from '../types/produ
 import type { Cart, CartItemDto, UpdateCartItemDto } from '../types/cart';
 import type { TrafficInfoDto } from '../types/traffic';
 
+const getApiBaseUrl = () => {
+  const isDocker = import.meta.env.VITE_DOCKER === 'true';
+  const host = isDocker ? 'host.docker.internal' : 'localhost';
+  return `http://${host}:4001`;
+};
+
 const api = axios.create({
-  baseURL: 'http://localhost:4001',
+  baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
@@ -83,7 +89,7 @@ export const qr = {
 
 export const ollama = {
   generate: async (data: GenerateRequestDto) => {
-    const response = await fetch('http://localhost:4001/api/ollama/generate', {
+    const response = await fetch(`${getApiBaseUrl()}/api/ollama/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -104,7 +110,7 @@ export const ollama = {
   },
 
   chat: async (data: ChatRequestDto) => {
-    const response = await fetch('http://localhost:4001/api/ollama/chat', {
+    const response = await fetch(`${getApiBaseUrl()}/api/ollama/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -1,7 +1,7 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
-import { auth } from '../../lib/api';
+import { auth, cart } from '../../lib/api';
 import { renderWithProviders } from '../../test/test-utils';
 import { Navigation } from './Navigation';
 import { Role } from '../../types/auth';
@@ -328,5 +328,59 @@ describe('Navigation', () => {
     expect(usernameIndex).toBeGreaterThan(cartIndex);
     expect(logoutIndex).toBeGreaterThan(usernameIndex);
     expect(logoutIndex).toBe(menuItemsArray.length - 1); // Logout should be last
+  });
+
+  it('shows admin navigation link when user has admin role', async () => {
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValue({
+      data: {
+        id: 1,
+        username: 'admin',
+        email: 'admin@example.com',
+        firstName: 'Admin',
+        lastName: 'User',
+        roles: [Role.ADMIN],
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+
+    renderWithProviders(<Navigation />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Admin')).toBeInTheDocument();
+    });
+  });
+
+  it('displays cart badge when cart has items', async () => {
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValue({
+      data: {
+        id: 1,
+        username: 'cartuser',
+        email: 'cart@example.com',
+        firstName: 'Cart',
+        lastName: 'User',
+        roles: [Role.CLIENT],
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+    vi.mocked(cart.getCart).mockResolvedValue({
+      data: {
+        items: [],
+        totalItems: 3,
+        totalPrice: 0,
+      },
+    } as any);
+
+    renderWithProviders(<Navigation />);
+
+    const badge = await screen.findByTestId('cart-item-count');
+    expect(badge).toHaveTextContent('3');
   });
 }); 
