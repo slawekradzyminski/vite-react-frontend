@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProtectedRoute } from './ProtectedRoute';
 import { auth } from '../lib/api';
 import { Role } from '../types/auth';
+import type { AxiosResponse } from 'axios';
+import type { User } from '../types/auth';
 
 vi.mock('../lib/api', () => ({
   auth: {
@@ -40,20 +42,22 @@ const renderWithProviders = (
 };
 
 describe('ProtectedRoute', () => {
-  const fulfillAuth = (roles: Role[] | Array<{ authority: string }>) => ({
-    data: {
-      id: 1,
-      username: 'testuser',
-      email: 'test@example.com',
-      firstName: 'Test',
-      lastName: 'User',
-      roles,
-    },
-    status: 200,
-    statusText: 'OK',
-    headers: {},
-    config: {} as any,
-  });
+const fulfillAuth = (
+  roles: Array<Role | { authority: string }>
+): AxiosResponse<User> => ({
+  data: {
+    id: 1,
+    username: 'testuser',
+    email: 'test@example.com',
+    firstName: 'Test',
+    lastName: 'User',
+    roles: roles as unknown as User['roles'],
+  },
+  status: 200,
+  statusText: 'OK',
+  headers: {},
+  config: {} as any,
+});
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -82,20 +86,7 @@ describe('ProtectedRoute', () => {
   it('renders children when token is present and API call succeeds', async () => {
     // when
     localStorage.setItem('token', 'fake-token');
-    vi.mocked(auth.me).mockResolvedValue({
-      data: {
-        id: 1,
-        username: 'testuser',
-        email: 'test@example.com',
-        firstName: 'Test',
-        lastName: 'User',
-        roles: [Role.CLIENT],
-      },
-      status: 200,
-      statusText: 'OK',
-      headers: {},
-      config: {} as any,
-    });
+    vi.mocked(auth.me).mockResolvedValue(fulfillAuth([Role.CLIENT]));
 
     renderWithProviders(
       <ProtectedRoute>
@@ -142,7 +133,7 @@ describe('ProtectedRoute', () => {
 
   it('renders children when requiredRole matches string role', async () => {
     localStorage.setItem('token', 'fake-token');
-    vi.mocked(auth.me).mockResolvedValue(fulfillAuth(['ROLE_ADMIN']));
+    vi.mocked(auth.me).mockResolvedValue(fulfillAuth([Role.ADMIN]));
 
     renderWithProviders(
       <ProtectedRoute requiredRole="ADMIN" data-testid="custom-protected">
@@ -158,7 +149,7 @@ describe('ProtectedRoute', () => {
   it('renders children when roles are provided as authority objects', async () => {
     localStorage.setItem('token', 'fake-token');
     vi.mocked(auth.me).mockResolvedValue(
-      fulfillAuth([{ authority: 'ROLE_MANAGER' } as { authority: string }])
+      fulfillAuth([{ authority: 'ROLE_MANAGER' }])
     );
 
     renderWithProviders(

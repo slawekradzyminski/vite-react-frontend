@@ -4,7 +4,8 @@ import { Profile } from './profilePage';
 import { auth, systemPrompt, orders } from '../../lib/api';
 import { Role } from '../../types/auth';
 import { renderWithProviders } from '../../test/test-utils';
-import { vi } from 'vitest';
+import type { AxiosResponse } from 'axios';
+import type { User } from '../../types/auth';
 
 const mockToast = vi.fn();
 
@@ -56,7 +57,7 @@ describe('Profile', () => {
       statusText: 'OK',
       headers: {},
       config: { headers: {} } as any,
-    });
+    } as AxiosResponse<User>);
 
     vi.mocked(systemPrompt.get).mockResolvedValue({
       data: {
@@ -152,7 +153,7 @@ describe('Profile', () => {
       statusText: 'OK',
       headers: {},
       config: { headers: {} } as any,
-    });
+    } as AxiosResponse<User>);
 
     renderWithProviders(<Profile />);
     await waitFor(() => expect(auth.me).toHaveBeenCalled());
@@ -207,12 +208,12 @@ describe('Profile', () => {
 
   it('shows not found message when current user is missing', async () => {
     vi.mocked(auth.me).mockResolvedValue({
-      data: null,
+      data: null as unknown as User,
       status: 200,
       statusText: 'OK',
       headers: {},
       config: {} as any,
-    });
+    } as AxiosResponse<User>);
 
     renderWithProviders(<Profile />);
 

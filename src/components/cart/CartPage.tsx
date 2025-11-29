@@ -104,11 +104,14 @@ export function CartPage() {
     );
   }
   
+  const derivedTotalItems = enrichedItems.reduce((sum, item) => sum + item.quantity, 0);
+  const derivedTotalPrice = enrichedItems.reduce((sum, item) => sum + item.totalPrice, 0);
+
   const safeCartData: CartType = {
     items: enrichedItems,
-    totalPrice: rawData?.totalPrice || rawData?.totalAmount || 0,
+    totalPrice: derivedTotalPrice || rawData?.totalPrice || rawData?.totalAmount || 0,
     username: rawData?.username || '',
-    totalItems: rawData?.totalItems || enrichedItems.reduce((sum, item) => sum + item.quantity, 0)
+    totalItems: derivedTotalItems || rawData?.totalItems || 0,
   };
   
   const isEmpty = safeCartData.items.length === 0;

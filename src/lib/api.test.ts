@@ -133,7 +133,8 @@ describe('API Client', () => {
 
   describe('axios interceptors', () => {
     const getRequestInterceptor = () => {
-      const call = mockAxios.interceptors.request.use.mock.calls.at(-1);
+      const calls = mockAxios.interceptors.request.use.mock.calls;
+      const call = calls[calls.length - 1];
       if (!call) {
         throw new Error('Request interceptor was not registered');
       }
@@ -141,7 +142,8 @@ describe('API Client', () => {
     };
 
     const getErrorInterceptor = () => {
-      const call = mockAxios.interceptors.response.use.mock.calls.at(-1);
+      const calls = mockAxios.interceptors.response.use.mock.calls;
+      const call = calls[calls.length - 1];
       if (!call) {
         throw new Error('Response interceptor was not registered');
       }

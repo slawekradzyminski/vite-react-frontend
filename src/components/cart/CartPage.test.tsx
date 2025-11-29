@@ -4,12 +4,22 @@ import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '../../test/test-utils';
 import { CartPage } from './CartPage';
 import { Cart } from '../../types/cart';
+import type { Product } from '../../types/product';
+import type { AxiosResponse } from 'axios';
 import * as reactQuery from '@tanstack/react-query';
 import { products } from '../../lib/api';
 
+const createAxiosResponse = <T,>(data: T): AxiosResponse<T> => ({
+  data,
+  status: 200,
+  statusText: 'OK',
+  headers: {},
+  config: {} as any,
+});
+
 const defaultProductLookup = (id: number) =>
-  Promise.resolve({
-    data: {
+  Promise.resolve(
+    createAxiosResponse<Product>({
       id,
       name: id === 1 ? 'Test Product 1' : 'Test Product 2',
       price: id === 1 ? 10 : 15,
@@ -17,8 +27,10 @@ const defaultProductLookup = (id: number) =>
       description: 'Test description',
       stockQuantity: 10,
       category: 'Test Category',
-    },
-  });
+      createdAt: '2023-01-01T12:00:00Z',
+      updatedAt: '2023-01-02T12:00:00Z',
+    })
+  );
 
 vi.mock('../../lib/api', () => ({
   cart: {

@@ -5,13 +5,39 @@ import { orders, auth } from '../../lib/api';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { OrderStatus } from '../../types/order';
+import { Role } from '../../types/auth';
 import { ToastContext } from '../../hooks/useToast';
+import type { AxiosResponse } from 'axios';
+import type { Order } from '../../types/order';
+import type { User } from '../../types/auth';
+
+function createAuthResponse(overrides: Partial<User> = {}): AxiosResponse<User> {
+  const baseUser: User = {
+    id: 1,
+    username: 'testuser',
+    email: 'test@example.com',
+    firstName: 'Test',
+    lastName: 'User',
+    roles: ['ROLE_CLIENT' as Role],
+  };
+
+  return {
+    data: {
+      ...baseUser,
+      ...overrides,
+    },
+    status: 200,
+    statusText: 'OK',
+    headers: {},
+    config: {} as any,
+  };
+}
 
 const createOrderResponse = vi.hoisted(() => {
-  const baseOrder = {
+  const baseOrder: Order = {
     id: 1,
-    userId: 1,
-    status: 'PENDING' as OrderStatus,
+    username: 'testuser',
+    status: 'PENDING',
     totalAmount: 39.98,
     createdAt: '2023-01-01T12:00:00Z',
     updatedAt: '2023-01-01T12:00:00Z',
@@ -34,13 +60,17 @@ const createOrderResponse = vi.hoisted(() => {
     },
   };
 
-  return (overrides: Partial<typeof baseOrder> = {}) => ({
+  return (overrides: Partial<Order> = {}): AxiosResponse<Order> => ({
     data: {
       ...baseOrder,
       ...overrides,
       items: overrides.items ?? baseOrder.items,
       shippingAddress: overrides.shippingAddress ?? baseOrder.shippingAddress,
     },
+    status: 200,
+    statusText: 'OK',
+    headers: {},
+    config: {} as any,
   });
 });
 
@@ -51,14 +81,7 @@ vi.mock('../../lib/api', () => ({
     updateOrderStatus: vi.fn().mockResolvedValue({ success: true }),
   },
   auth: {
-    me: vi.fn().mockResolvedValue({
-      data: {
-        id: 1,
-        username: 'testuser',
-        email: 'test@example.com',
-        roles: ['ROLE_USER'],
-      },
-    }),
+    me: vi.fn().mockResolvedValue(createAuthResponse()),
   },
 }));
 
@@ -155,33 +178,9 @@ describe('OrderDetails', () => {
 
   it('does not show cancel button for non-pending orders', async () => {
     // given
-    vi.mocked(orders.getOrderById).mockResolvedValueOnce({
-      data: {
-        id: 1,
-        userId: 1,
-        status: 'DELIVERED' as OrderStatus,
-        totalAmount: 39.98,
-        createdAt: '2023-01-01T12:00:00Z',
-        updatedAt: '2023-01-01T12:00:00Z',
-        items: [
-          {
-            id: 1,
-            productId: 1,
-            productName: 'Test Product',
-            quantity: 2,
-            unitPrice: 19.99,
-            totalPrice: 39.98,
-          }
-        ],
-        shippingAddress: {
-          street: '123 Test St',
-          city: 'Test City',
-          state: 'Test State',
-          zipCode: '12345',
-          country: 'Test Country',
-        }
-      }
-    });
+    vi.mocked(orders.getOrderById).mockResolvedValueOnce(
+      createOrderResponse({ status: 'DELIVERED' })
+    );
     
     // when
     renderWithProviders();
@@ -194,14 +193,15 @@ describe('OrderDetails', () => {
 
   it('shows admin controls for admin users', async () => {
     // given
-    vi.mocked(auth.me).mockResolvedValueOnce({
-      data: {
-        id: 1,
+    vi.mocked(auth.me).mockResolvedValueOnce(
+      createAuthResponse({
         username: 'admin',
         email: 'admin@example.com',
-        roles: ['ROLE_ADMIN'],
-      }
-    });
+        firstName: 'Admin',
+        lastName: 'User',
+        roles: [Role.ADMIN],
+      })
+    );
     
     // when
     renderWithProviders();
@@ -215,14 +215,15 @@ describe('OrderDetails', () => {
 
   it('does not update order status when admin changes status without clicking update', async () => {
     // given
-    vi.mocked(auth.me).mockResolvedValueOnce({
-      data: {
-        id: 1,
+    vi.mocked(auth.me).mockResolvedValueOnce(
+      createAuthResponse({
         username: 'admin',
         email: 'admin@example.com',
-        roles: ['ROLE_ADMIN'],
-      }
-    });
+        firstName: 'Admin',
+        lastName: 'User',
+        roles: [Role.ADMIN],
+      })
+    );
     
     renderWithProviders();
     
@@ -241,14 +242,15 @@ describe('OrderDetails', () => {
 
   it('updates order status when admin changes status and clicks update', async () => {
     // given
-    vi.mocked(auth.me).mockResolvedValueOnce({
-      data: {
-        id: 1,
+    vi.mocked(auth.me).mockResolvedValueOnce(
+      createAuthResponse({
         username: 'admin',
         email: 'admin@example.com',
-        roles: ['ROLE_ADMIN'],
-      }
-    });
+        firstName: 'Admin',
+        lastName: 'User',
+        roles: [Role.ADMIN],
+      })
+    );
     
     renderWithProviders();
     
@@ -273,14 +275,15 @@ describe('OrderDetails', () => {
 
   it('disables update button when selected status is the same as current status', async () => {
     // given
-    vi.mocked(auth.me).mockResolvedValueOnce({
-      data: {
-        id: 1,
+    vi.mocked(auth.me).mockResolvedValueOnce(
+      createAuthResponse({
         username: 'admin',
         email: 'admin@example.com',
-        roles: ['ROLE_ADMIN'],
-      }
-    });
+        firstName: 'Admin',
+        lastName: 'User',
+        roles: [Role.ADMIN],
+      })
+    );
     
     renderWithProviders();
     
@@ -293,14 +296,15 @@ describe('OrderDetails', () => {
 
   it('shows toast error when update status fails', async () => {
     // given
-    vi.mocked(auth.me).mockResolvedValueOnce({
-      data: {
-        id: 1,
+    vi.mocked(auth.me).mockResolvedValueOnce(
+      createAuthResponse({
         username: 'admin',
         email: 'admin@example.com',
-        roles: ['ROLE_ADMIN'],
-      }
-    });
+        firstName: 'Admin',
+        lastName: 'User',
+        roles: [Role.ADMIN],
+      })
+    );
     
     vi.mocked(orders.updateOrderStatus).mockRejectedValueOnce(new Error('Update failed'));
     
@@ -363,14 +367,15 @@ describe('OrderDetails', () => {
   });
 
   it('initializes admin status select with current order status', async () => {
-    vi.mocked(auth.me).mockResolvedValueOnce({
-      data: {
-        id: 1,
+    vi.mocked(auth.me).mockResolvedValueOnce(
+      createAuthResponse({
         username: 'admin',
         email: 'admin@example.com',
-        roles: ['ROLE_ADMIN'],
-      },
-    });
+        firstName: 'Admin',
+        lastName: 'User',
+        roles: [Role.ADMIN],
+      })
+    );
 
     renderWithProviders();
 
