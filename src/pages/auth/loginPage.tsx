@@ -102,6 +102,18 @@ export function LoginPage() {
             </div>
           </div>
 
+          <div className="flex justify-end text-sm" data-testid="login-forgot-link-container">
+            <Button
+              variant="link"
+              type="button"
+              className="text-indigo-600 hover:text-indigo-500"
+              onClick={() => navigate('/forgot-password')}
+              data-testid="login-forgot-link"
+            >
+              Forgot password?
+            </Button>
+          </div>
+
           <div data-testid="login-submit-container">
             <Button
               type="submit"

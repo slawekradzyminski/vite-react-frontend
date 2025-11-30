@@ -8,6 +8,9 @@ import type {
   RefreshTokenRequest,
   LogoutRequest,
   TokenPair,
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
+  ResetPasswordRequest,
 } from '../types/auth';
 import type { EmailDto, EmailResponse } from '../types/email';
 import type { CreateQrDto, QrCodeResponse } from '../types/qr';
@@ -32,7 +35,13 @@ const api = axios.create({
   },
 });
 
-const PUBLIC_ENDPOINTS = ['/users/signin', '/users/signup', '/users/refresh'];
+const PUBLIC_ENDPOINTS = [
+  '/users/signin',
+  '/users/signup',
+  '/users/refresh',
+  '/users/password/forgot',
+  '/users/password/reset',
+];
 
 interface RefreshableRequestConfig extends AxiosRequestConfig {
   _retry?: boolean;
@@ -122,6 +131,12 @@ export const auth = {
 
   logout: (data: LogoutRequest) =>
     api.post<void>('/users/logout', data),
+
+  requestPasswordReset: (data: ForgotPasswordRequest) =>
+    api.post<ForgotPasswordResponse>('/users/password/forgot', data),
+
+  resetPassword: (data: ResetPasswordRequest) =>
+    api.post<void>('/users/password/reset', data),
 };
 
 export const email = {

@@ -33,5 +33,25 @@ export const loginSchema = z.object({
     .max(255, 'Password must be at most 255 characters'),
 });
 
+export const forgotPasswordSchema = z.object({
+  identifier: z.string()
+    .min(1, 'Username or email is required'),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string()
+    .min(1, 'Token is required'),
+  newPassword: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(255, 'Password must be at most 255 characters'),
+  confirmPassword: z.string()
+    .min(8, 'Password must be at least 8 characters'),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  path: ['confirmPassword'],
+  message: 'Passwords must match',
+});
+
 export type RegisterFormData = z.infer<typeof registerSchema>;
 export type LoginFormData = z.infer<typeof loginSchema>; 
+export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;

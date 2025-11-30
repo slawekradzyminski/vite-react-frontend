@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/auth/loginPage';
 import { RegisterPage } from './pages/auth/registerPage';
+import { ForgotPasswordPage } from './pages/auth/forgotPasswordPage';
+import { ResetPasswordPage } from './pages/auth/resetPasswordPage';
 import { HomePage } from './pages/home/homePage';
 import { UsersPage } from './pages/users/usersPage';
 import { EditUserPage } from './pages/users/editUserPage';
@@ -25,6 +27,8 @@ export function AppRoutes() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset" element={<ResetPasswordPage />} />
       
       {/* Public routes */}
       <Route path="/" element={

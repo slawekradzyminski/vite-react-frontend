@@ -79,8 +79,8 @@ test.describe("Cart Page", () => {
     await cartPage.updateItemQuantity("Test Product 1", 2);
 
     // then
-    expect(await cartPage.getCartTotalItems()).toBe("2");
-    expect(await cartPage.getCartTotalPrice()).toBe("$39.98");
+    await expect.poll(async () => cartPage.getCartTotalItems()).toBe("2");
+    await expect.poll(async () => cartPage.getCartTotalPrice()).toBe("$39.98");
   });
 
   test("should remove item from cart", async ({ authenticatedPage }) => {

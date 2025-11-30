@@ -1,4 +1,4 @@
-import { RegisterFormData, LoginFormData } from '../validators/auth';
+import { RegisterFormData, LoginFormData, ForgotPasswordFormData, ResetPasswordFormData } from '../validators/auth';
 
 export enum Role {
   ADMIN = 'ROLE_ADMIN',
@@ -48,4 +48,15 @@ export interface UserEditDTO {
   firstName?: string;
   lastName?: string;
   roles?: Role[];
-} 
+}
+
+export interface ForgotPasswordRequest extends ForgotPasswordFormData {
+  resetBaseUrl?: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+  token?: string;
+}
+
+export interface ResetPasswordRequest extends ResetPasswordFormData {}

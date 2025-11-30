@@ -101,3 +101,28 @@ The backend service runs on `http://localhost:4001` and provides:
 - API Documentation: `/v3/api-docs`
 - Swagger UI: `/swagger-ui/index.html`
 - H2 Database Console: `/h2-console`
+
+## Password Reset Flow
+
+The frontend now exposes:
+
+- `/forgot-password` – allows anonymous users to request a reset using their username or e-mail. The reset link base URL defaults to `${window.location.origin}/reset` and can be overridden via the optional `VITE_PASSWORD_RESET_BASE_URL` env variable.
+- `/reset` – consumes the token delivered via e-mail and lets the user pick a new password.
+
+For local development you can retrieve reset links in two ways:
+1. **Local Spring profile** – call `DELETE /local/email/outbox` before tests to clear it, then inspect `GET /local/email/outbox` (default: `http://localhost:4001/local/email/outbox`) to grab the latest payload and token.
+2. **Docker/localstack profile** – open Mailhog at [http://localhost:8025](http://localhost:8025) and copy the reset link from the emulated e-mail.
+
+After successfully resetting a password the app redirects back to `/login` and displays a toast confirming the update.
+
+## Testing
+
+Run all checks before submitting changes:
+
+```bash
+npm run build          # Type-check + Vite production build
+npm test               # Vitest suite
+npx playwright test    # E2E tests (requires backend on :4001 and dev server on :8081)
+```
+
+Playwright tests rely on the backend’s local email outbox endpoint, so ensure the backend runs with the `local` Spring profile or adapt the helper to pull tokens from Mailhog when using docker/localstack.
