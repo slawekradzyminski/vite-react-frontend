@@ -34,10 +34,24 @@ export interface OllamaChunkEvent {
 }
 
 /** Chat message format for the chat endpoint */
+export type ChatRole = 'system' | 'user' | 'assistant' | 'tool';
+
+export interface ToolCallFunctionDto {
+  name: string;
+  arguments?: Record<string, unknown>;
+}
+
+export interface ToolCallDto {
+  id?: string;
+  function: ToolCallFunctionDto;
+}
+
 export interface ChatMessageDto {
-  role: 'system' | 'user' | 'assistant';
+  role: ChatRole;
   content: string;
   thinking?: string;
+  tool_calls?: ToolCallDto[];
+  tool_name?: string;
 }
 
 /** Request body for the chat endpoint */
@@ -49,6 +63,7 @@ export interface ChatRequestDto {
     temperature?: number;
     // add more if needed
   };
+  tools?: OllamaToolDefinition[];
 }
 
 /** Response from the chat endpoint */
@@ -57,4 +72,28 @@ export interface ChatResponseDto {
   message: ChatMessageDto;
   done: boolean;
   created_at: string;
-} 
+}
+
+export interface OllamaToolSchemaProperty {
+  type: 'string' | 'integer' | 'number' | 'boolean' | 'object';
+  description?: string;
+  enum?: string[];
+}
+
+export interface OllamaToolParameters {
+  type: 'object';
+  properties: Record<string, OllamaToolSchemaProperty>;
+  oneOf?: Array<{ required: string[] }>;
+  required?: string[];
+}
+
+export interface OllamaToolFunction {
+  name: string;
+  description: string;
+  parameters: OllamaToolParameters;
+}
+
+export interface OllamaToolDefinition {
+  type: 'function';
+  function: OllamaToolFunction;
+}

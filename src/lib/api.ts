@@ -198,6 +198,27 @@ export const ollama = {
 
     return response;
   },
+
+  chatWithTools: async (data: ChatRequestDto) => {
+    const response = await fetch(`${getApiBaseUrl()}/api/ollama/chat/tools`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authStorage.getAccessToken() ?? ''}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        authStorage.clearTokens();
+        window.location.href = '/login';
+      }
+      throw new Error(`Failed to fetch stream: ${response.statusText}`);
+    }
+
+    return response;
+  },
 };
 
 export const systemPrompt = {

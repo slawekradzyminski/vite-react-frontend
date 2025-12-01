@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useOllamaChat } from '../../hooks/useOllamaChat';
+import { useOllamaToolChat } from '../../hooks/useOllamaToolChat';
 import { Spinner } from '../../components/ui/spinner';
 import ReactMarkdown from 'react-markdown';
 import { ChatMessageDto } from '../../types/ollama';
@@ -11,6 +12,10 @@ interface OllamaChatPageProps {
 
 export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
   const [userInput, setUserInput] = useState('');
+  const [useTools, setUseTools] = useState(false);
+  const plainChat = useOllamaChat();
+  const toolChat = useOllamaToolChat();
+  const activeChat = useTools ? toolChat : plainChat;
   const {
     messages,
     isChatting,
@@ -22,7 +27,12 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
     setTemperature,
     think,
     setThink
-  } = useOllamaChat();
+  } = activeChat;
+  const suggestedPrompts = [
+    'How much does the iPhone 13 Pro cost right now?',
+    'What is the current stock level for the Apple Watch Series 7?',
+    'Do we have any information about the PlayStation 5 inventory?',
+  ];
 
   const handleSend = () => {
     chat(userInput);
@@ -37,13 +47,48 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
   };
 
   const renderMessage = (message: ChatMessageDto) => {
+    if (message.role === 'tool') {
+      let formattedContent = message.content ?? '';
+      let parsed: unknown = null;
+      try {
+        parsed = JSON.parse(message.content ?? '');
+        formattedContent = JSON.stringify(parsed, null, 2);
+      } catch {
+        formattedContent = message.content ?? '';
+      }
+      const isError =
+        typeof parsed === 'object' && parsed !== null && Object.prototype.hasOwnProperty.call(parsed, 'error');
+      return (
+        <div className="flex flex-col items-start w-full mb-4" data-testid="tool-message">
+          <div
+            className={`rounded-lg border px-4 py-3 w-full ${
+              isError ? 'border-red-400 bg-red-50' : 'border-emerald-400 bg-emerald-50'
+            }`}
+          >
+            <div className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className={isError ? 'text-red-500' : 'text-emerald-600'}
+              >
+                <path d="M1 21H23L12 2L1 21Z" />
+                <path d="M11 7H13V13H11V7ZM11 15H13V17H11V15Z" fill="#fff" />
+              </svg>
+              Function output · {message.tool_name ?? 'tool'}
+            </div>
+            <pre className="bg-white rounded p-3 text-xs overflow-x-auto whitespace-pre-wrap" data-testid="tool-message-content">
+              {formattedContent}
+            </pre>
+          </div>
+        </div>
+      );
+    }
+
     const isSystem = message.role === 'system';
     const isUser = message.role === 'user';
-    const bgColor = isSystem
-      ? 'bg-gray-100'
-      : isUser
-      ? 'bg-blue-50'
-      : 'bg-green-50';
+    const bgColor = isSystem ? 'bg-gray-100' : isUser ? 'bg-blue-50' : 'bg-green-50';
     const alignment = isUser ? 'items-end' : 'items-start';
 
     return (
@@ -56,7 +101,7 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
             <details className="mb-3 text-xs text-gray-500" data-testid="thinking-toggle">
               <summary className="cursor-pointer select-none flex items-center gap-1">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-600">
-                  <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.86-3.14-7-7-7z"/>
+                  <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.86-3.14-7-7-7z" />
                 </svg>
                 Thinking
               </summary>
@@ -64,6 +109,21 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
                 <ReactMarkdown>{message.thinking}</ReactMarkdown>
               </div>
             </details>
+          )}
+          {message.tool_calls && message.tool_calls.length > 0 && (
+            <div className="mb-3 rounded border border-dashed border-blue-300 bg-blue-50/80 p-3 text-xs text-blue-900" data-testid="tool-call-notice">
+              <div className="font-semibold mb-2">Requesting backend function</div>
+              <ul className="space-y-1">
+                {message.tool_calls.map((toolCall, index) => (
+                  <li key={`${toolCall.function.name}-${index}`}>
+                    <span className="font-mono">{toolCall.function.name}</span>{' '}
+                    <code className="bg-white/70 px-1 rounded">
+                      {JSON.stringify(toolCall.function.arguments ?? {})}
+                    </code>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
           <div className={styles.markdownContainer} data-testid={`chat-message-content-${message.role}`}>
             <ReactMarkdown>{message.content}</ReactMarkdown>
@@ -85,6 +145,43 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
   return (
     <div className="flex flex-col" data-testid="ollama-chat-page">
       {!hideTitle && <h1 className="text-2xl font-bold mb-4" data-testid="ollama-chat-title">Chat with Ollama</h1>}
+
+      <div className="mb-6 flex flex-col gap-3 rounded-lg border border-gray-200 p-4" data-testid="tool-toggle-card">
+        <div>
+          <h2 className="text-lg font-semibold">Live product data</h2>
+          <p className="text-sm text-gray-600">
+            When enabled the assistant can call <code>get_product_snapshot</code> and stream real catalog JSON before responding.
+          </p>
+        </div>
+        <label className="flex items-center gap-3 text-sm font-medium" data-testid="tool-mode-toggle">
+          <input
+            type="checkbox"
+            className="h-4 w-4 rounded border-gray-300"
+            checked={useTools}
+            onChange={(e) => setUseTools(e.target.checked)}
+            data-testid="tool-mode-checkbox"
+          />
+          Use live product data (function calling)
+        </label>
+        {useTools && (
+          <div className="rounded border-l-4 border-blue-400 bg-blue-50 p-3 text-sm text-blue-900" data-testid="tool-mode-info">
+            <p className="mb-2">Ask about specific products to watch the backend stream the tool output. Try a suggested prompt:</p>
+            <div className="flex flex-wrap gap-2">
+              {suggestedPrompts.map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-blue-700 shadow-sm border border-blue-200 hover:bg-blue-100"
+                  onClick={() => setUserInput(prompt)}
+                  data-testid="suggested-prompt"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className="mb-4" data-testid="model-selection">
         <label htmlFor="model" className="block font-medium mb-2" data-testid="model-label">

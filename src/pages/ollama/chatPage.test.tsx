@@ -2,9 +2,11 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { OllamaChatPage } from './chatPage';
 import { useOllamaChat } from '../../hooks/useOllamaChat';
+import { useOllamaToolChat } from '../../hooks/useOllamaToolChat';
 import { ChatMessageDto } from '../../types/ollama';
 
 vi.mock('../../hooks/useOllamaChat');
+vi.mock('../../hooks/useOllamaToolChat');
 
 vi.mock('react-markdown', () => ({
   default: ({ children }: { children: string }) => <div>{children}</div>
@@ -14,6 +16,8 @@ describe('OllamaChatPage', () => {
   // given
   const mockChat = vi.fn();
   const mockSetModel = vi.fn();
+  const mockToolChat = vi.fn();
+  const mockSetToolModel = vi.fn();
   const defaultMessages = [
     {
       role: 'system',
@@ -32,6 +36,20 @@ describe('OllamaChatPage', () => {
       setModel: mockSetModel,
       setMessages: vi.fn(),
       temperature: 0.8,
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: vi.fn()
+    });
+    vi.mocked(useOllamaToolChat).mockReturnValue({
+      messages: defaultMessages as ChatMessageDto[],
+      toolMessages: [],
+      isChatting: false,
+      isLoadingSystemPrompt: false,
+      chat: mockToolChat,
+      model: 'qwen3:8b',
+      setModel: mockSetToolModel,
+      setMessages: vi.fn(),
+      temperature: 0.4,
       setTemperature: vi.fn(),
       think: false,
       setThink: vi.fn()
@@ -62,6 +80,21 @@ describe('OllamaChatPage', () => {
     // then
     expect(mockChat).toHaveBeenCalledWith('Hello AI');
     expect(input).toHaveValue('');
+  });
+
+  it('switches to tool mode and uses tool chat implementation', () => {
+    render(<OllamaChatPage />);
+    const toggle = screen.getByTestId('tool-mode-checkbox');
+    fireEvent.click(toggle);
+
+    const input = screen.getByPlaceholderText('Type your message...');
+    const sendButton = screen.getByText('Send');
+
+    fireEvent.change(input, { target: { value: 'What about iPhone 13 Pro?' } });
+    fireEvent.click(sendButton);
+
+    expect(mockToolChat).toHaveBeenCalledWith('What about iPhone 13 Pro?');
+    expect(mockChat).not.toHaveBeenCalled();
   });
 
   it('handles Enter key press to send message', () => {
@@ -133,6 +166,52 @@ describe('OllamaChatPage', () => {
     expect(screen.getByText('Assistant')).toBeInTheDocument();
     expect(screen.getByText('Hello')).toBeInTheDocument();
     expect(screen.getByText('Hi there!')).toBeInTheDocument();
+  });
+
+  it('renders tool call notices and tool output when in tool mode', () => {
+    const toolMessages = [
+      ...defaultMessages,
+      {
+        role: 'assistant',
+        content: '',
+        tool_calls: [
+          {
+            function: {
+              name: 'get_product_snapshot',
+              arguments: { name: 'iPhone 13 Pro' }
+            }
+          }
+        ]
+      },
+      {
+        role: 'tool',
+        content: '{"name":"iPhone 13 Pro","price":999.99}',
+        tool_name: 'get_product_snapshot'
+      }
+    ];
+
+    vi.mocked(useOllamaToolChat).mockReturnValue({
+      messages: toolMessages as ChatMessageDto[],
+      toolMessages: [],
+      isChatting: false,
+      isLoadingSystemPrompt: false,
+      chat: mockToolChat,
+      model: 'qwen3:8b',
+      setModel: mockSetToolModel,
+      setMessages: vi.fn(),
+      temperature: 0.4,
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: vi.fn()
+    });
+
+    render(<OllamaChatPage />);
+    const toggle = screen.getByTestId('tool-mode-checkbox');
+    fireEvent.click(toggle);
+
+    expect(screen.getByTestId('tool-call-notice')).toBeInTheDocument();
+    expect(screen.getByTestId('tool-message')).toBeInTheDocument();
+    expect(screen.getByTestId('tool-message-content')).toHaveTextContent(/"price":\s*999\.99/);
   });
 
   it('updates model when input changes', () => {
