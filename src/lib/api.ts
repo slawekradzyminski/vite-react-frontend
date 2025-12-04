@@ -14,7 +14,7 @@ import type {
 } from '../types/auth';
 import type { EmailDto, EmailResponse } from '../types/email';
 import type { CreateQrDto, QrCodeResponse } from '../types/qr';
-import type { GenerateRequestDto, ChatRequestDto } from '../types/ollama';
+import type { GenerateRequestDto, ChatRequestDto, OllamaToolDefinition } from '../types/ollama';
 import type { SystemPromptDto } from '../types/system-prompt';
 import type { Order, PageDtoOrderDto, Address, OrderStatus } from '../types/order';
 import type { Product, ProductCreateDto, ProductUpdateDto } from '../types/product';
@@ -218,6 +218,11 @@ export const ollama = {
     }
 
     return response;
+  },
+
+  getToolDefinitions: async () => {
+    const response = await api.get<OllamaToolDefinition[]>('/api/ollama/chat/tools/definitions');
+    return response.data;
   },
 };
 

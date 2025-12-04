@@ -15,6 +15,7 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
   const [useTools, setUseTools] = useState(false);
   const plainChat = useOllamaChat();
   const toolChat = useOllamaToolChat();
+  const toolDefinitions = toolChat.toolDefinitions;
   const activeChat = useTools ? toolChat : plainChat;
   const {
     messages,
@@ -32,6 +33,7 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
     'How much does the iPhone 13 Pro cost right now?',
     'What is the current stock level for the Apple Watch Series 7?',
     'Do we have any information about the PlayStation 5 inventory?',
+    'Search Grokipedia for FC Barcelona stadium updates.',
   ];
 
   const handleSend = () => {
@@ -150,7 +152,7 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
         <div>
           <h2 className="text-lg font-semibold">Live product data</h2>
           <p className="text-sm text-gray-600">
-            When enabled the assistant can call <code>get_product_snapshot</code> and stream real catalog JSON before responding.
+            When enabled the assistant can call backend tools (catalog + Grokipedia) and stream the raw JSON before responding.
           </p>
         </div>
         <label className="flex items-center gap-3 text-sm font-medium" data-testid="tool-mode-toggle">
@@ -165,7 +167,15 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
         </label>
         {useTools && (
           <div className="rounded border-l-4 border-blue-400 bg-blue-50 p-3 text-sm text-blue-900" data-testid="tool-mode-info">
-            <p className="mb-2">Ask about specific products to watch the backend stream the tool output. Try a suggested prompt:</p>
+            <p className="mb-2 font-semibold">Available tools</p>
+            <ul className="mb-3 list-disc pl-5" data-testid="tool-definition-list">
+              {toolDefinitions.map((tool) => (
+                <li key={tool.function.name} data-testid="tool-definition-item">
+                  <code>{tool.function.name}</code> – {tool.function.description}
+                </li>
+              ))}
+            </ul>
+            <p className="mb-2">Ask about specific products or trending sports/news to watch each function stream its output. Try a suggested prompt:</p>
             <div className="flex flex-wrap gap-2">
               {suggestedPrompts.map((prompt) => (
                 <button

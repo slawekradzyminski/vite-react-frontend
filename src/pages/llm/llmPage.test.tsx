@@ -17,7 +17,7 @@ vi.mock('../ollama/chatPage', () => ({
     <div data-testid="ollama-chat-page" className="flex flex-col">
       <div data-testid="model-selection" className="mb-4">
         <label data-testid="model-label" htmlFor="model" className="block font-medium mb-2">Model</label>
-        <input data-testid="model-input" id="model" type="text" className="w-full border rounded p-2" placeholder="Enter model name" value="qwen3:0.6b" readOnly />
+        <input data-testid="model-input" id="model" type="text" className="w-full border rounded p-2" placeholder="Enter model name" value="qwen3:4b-instruct" readOnly />
       </div>
       <div data-testid="temperature-control" className="mb-4">
         <label data-testid="temperature-label" htmlFor="temperature" className="block font-medium mb-2">Temperature: 0.80</label>
@@ -41,7 +41,7 @@ vi.mock('../ollama/generatePage', () => ({
     <div data-testid="ollama-generate-page" className="flex flex-col">
       <div data-testid="model-selection" className="mb-4">
         <label data-testid="model-label" htmlFor="model" className="block font-medium mb-2">Model</label>
-        <input data-testid="model-input" id="model" type="text" className="w-full border rounded p-2" placeholder="Enter model name" value="qwen3:0.6b" readOnly />
+        <input data-testid="model-input" id="model" type="text" className="w-full border rounded p-2" placeholder="Enter model name" value="qwen3:4b-instruct" readOnly />
       </div>
       <div data-testid="temperature-control" className="mb-4">
         <label data-testid="temperature-label" htmlFor="temperature" className="block font-medium mb-2">Temperature: 0.80</label>
@@ -71,7 +71,7 @@ describe('LlmPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: vi.fn(),
-      model: 'qwen3:0.6b',
+      model: 'qwen3:4b-instruct',
       setModel: vi.fn(),
       setMessages: vi.fn(),
       temperature: 0.8,
@@ -85,7 +85,7 @@ describe('LlmPage', () => {
       thinking: '',
       isGenerating: false,
       generate: vi.fn(),
-      model: 'qwen3:0.6b',
+      model: 'qwen3:4b-instruct',
       setModel: vi.fn(),
       temperature: 0.8,
       setTemperature: vi.fn(),

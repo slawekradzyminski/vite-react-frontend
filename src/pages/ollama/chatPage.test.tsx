@@ -24,6 +24,19 @@ describe('OllamaChatPage', () => {
       content: 'You are a helpful AI assistant. You must use the conversation history to answer questions.'
     }
   ];
+  const defaultToolDefinitions = [
+    {
+      type: 'function' as const,
+      function: {
+        name: 'get_product_snapshot',
+        description: 'Return catalog metadata.',
+        parameters: {
+          type: 'object' as const,
+          properties: {},
+        },
+      },
+    },
+  ];
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -32,7 +45,7 @@ describe('OllamaChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: mockChat,
-      model: 'qwen3:0.6b',
+      model: 'qwen3:4b-instruct',
       setModel: mockSetModel,
       setMessages: vi.fn(),
       temperature: 0.8,
@@ -46,13 +59,14 @@ describe('OllamaChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: mockToolChat,
-      model: 'qwen3:8b',
+      model: 'qwen3:4b-instruct',
       setModel: mockSetToolModel,
       setMessages: vi.fn(),
       temperature: 0.4,
       setTemperature: vi.fn(),
       think: false,
-      setThink: vi.fn()
+      setThink: vi.fn(),
+      toolDefinitions: defaultToolDefinitions,
     });
   });
 
@@ -64,7 +78,7 @@ describe('OllamaChatPage', () => {
     expect(screen.getByText('Chat with Ollama')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Type your message...')).toBeInTheDocument();
     expect(screen.getByText('Send')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('qwen3:0.6b')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('qwen3:4b-instruct')).toBeInTheDocument();
   });
 
   it('handles user input and sends messages', async () => {
@@ -118,7 +132,7 @@ describe('OllamaChatPage', () => {
       isChatting: true,
       isLoadingSystemPrompt: false,
       chat: mockChat,
-      model: 'qwen3:0.6b',
+      model: 'qwen3:4b-instruct',
       setModel: mockSetModel,
       setMessages: vi.fn(),
       temperature: 0.8,
@@ -148,7 +162,7 @@ describe('OllamaChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: mockChat,
-      model: 'qwen3:0.6b',
+      model: 'qwen3:4b-instruct',
       setModel: mockSetModel,
       setMessages: vi.fn(),
       temperature: 0.8,
@@ -196,13 +210,27 @@ describe('OllamaChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: mockToolChat,
-      model: 'qwen3:8b',
+      model: 'qwen3:4b-instruct',
       setModel: mockSetToolModel,
       setMessages: vi.fn(),
       temperature: 0.4,
       setTemperature: vi.fn(),
       think: false,
-      setThink: vi.fn()
+      setThink: vi.fn(),
+      toolDefinitions: [
+        ...defaultToolDefinitions,
+        {
+          type: 'function',
+          function: {
+            name: 'search_grokipedia',
+            description: 'Search Grokipedia',
+            parameters: {
+              type: 'object',
+              properties: {},
+            },
+          },
+        },
+      ],
     });
 
     render(<OllamaChatPage />);
@@ -214,10 +242,18 @@ describe('OllamaChatPage', () => {
     expect(screen.getByTestId('tool-message-content')).toHaveTextContent(/"price":\s*999\.99/);
   });
 
+  it('renders tool definitions when live data is enabled', () => {
+    render(<OllamaChatPage />);
+    fireEvent.click(screen.getByTestId('tool-mode-checkbox'));
+
+    expect(screen.getByTestId('tool-definition-list')).toBeInTheDocument();
+    expect(screen.getAllByTestId('tool-definition-item').length).toBeGreaterThan(0);
+  });
+
   it('updates model when input changes', () => {
     // given
     render(<OllamaChatPage />);
-    const modelInput = screen.getByDisplayValue('qwen3:0.6b');
+    const modelInput = screen.getByDisplayValue('qwen3:4b-instruct');
 
     // when
     fireEvent.change(modelInput, { target: { value: 'llama3.2:7b' } });
@@ -233,7 +269,7 @@ describe('OllamaChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: true,
       chat: mockChat,
-      model: 'qwen3:0.6b',
+      model: 'qwen3:4b-instruct',
       setModel: mockSetModel,
       setMessages: vi.fn(),
       temperature: 0.8,
@@ -297,7 +333,7 @@ describe('OllamaChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: mockChat,
-      model: 'qwen3:0.6b',
+      model: 'qwen3:4b-instruct',
       setModel: mockSetModel,
       setMessages: vi.fn(),
       temperature: 0.8,
@@ -331,7 +367,7 @@ describe('OllamaChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: mockChat,
-      model: 'qwen3:0.6b',
+      model: 'qwen3:4b-instruct',
       setModel: mockSetModel,
       setMessages: vi.fn(),
       temperature: 0.8,
@@ -366,7 +402,7 @@ describe('OllamaChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: mockChat,
-      model: 'qwen3:0.6b',
+      model: 'qwen3:4b-instruct',
       setModel: mockSetModel,
       setMessages: vi.fn(),
       temperature: 0.8,

@@ -37,7 +37,7 @@ describe('useOllama', () => {
     expect(result.current.isGenerating).toBe(false);
     expect(result.current.response).toBe('');
     expect(result.current.thinking).toBe('');
-    expect(result.current.model).toBe('qwen3:0.6b');
+    expect(result.current.model).toBe('qwen3:4b-instruct');
     expect(result.current.temperature).toBe(0.8);
     expect(result.current.think).toBe(false);
   });
@@ -60,8 +60,8 @@ describe('useOllama', () => {
   it('processes successful response', async () => {
     // given
     const mockResponse = new Response(
-      'data: {"model":"qwen3:0.6b","response":"Hello","done":false}\n\n' +
-      'data: {"model":"qwen3:0.6b","response":" World","done":true}\n\n',
+      'data: {"model":"qwen3:4b-instruct","response":"Hello","done":false}\n\n' +
+      'data: {"model":"qwen3:4b-instruct","response":" World","done":true}\n\n',
       {
         headers: { 'Content-Type': 'text/event-stream' }
       }
@@ -79,7 +79,7 @@ describe('useOllama', () => {
     expect(result.current.response).toBe('Hello World');
     expect(result.current.isGenerating).toBe(false);
     expect(ollama.generate).toHaveBeenCalledWith({
-      model: 'qwen3:0.6b',
+      model: 'qwen3:4b-instruct',
       prompt: 'test prompt',
       think: false,
       options: { temperature: 0.8 },
@@ -189,7 +189,7 @@ describe('useOllama', () => {
 
     // then
     expect(ollama.generate).toHaveBeenCalledWith({
-      model: 'qwen3:0.6b',
+      model: 'qwen3:4b-instruct',
       prompt: 'test prompt',
       think: false,
       options: { temperature: customTemperature }
@@ -207,7 +207,7 @@ describe('useOllama', () => {
 
     // then
     expect(ollama.generate).toHaveBeenCalledWith({
-      model: 'qwen3:0.6b',
+      model: 'qwen3:4b-instruct',
       prompt: 'test prompt',
       think: false,
       options: { temperature: 0.8 }
@@ -217,10 +217,10 @@ describe('useOllama', () => {
   it('processes thinking content in response', async () => {
     // given
     const mockResponse = new Response(
-      'data: {"model":"qwen3:0.6b","response":"","thinking":"Let me think...","done":false}\n\n' +
-      'data: {"model":"qwen3:0.6b","response":"","thinking":" about this.","done":false}\n\n' +
-      'data: {"model":"qwen3:0.6b","response":"Hello","thinking":"","done":false}\n\n' +
-      'data: {"model":"qwen3:0.6b","response":" World","thinking":"","done":true}\n\n',
+      'data: {"model":"qwen3:4b-instruct","response":"","thinking":"Let me think...","done":false}\n\n' +
+      'data: {"model":"qwen3:4b-instruct","response":"","thinking":" about this.","done":false}\n\n' +
+      'data: {"model":"qwen3:4b-instruct","response":"Hello","thinking":"","done":false}\n\n' +
+      'data: {"model":"qwen3:4b-instruct","response":" World","thinking":"","done":true}\n\n',
       {
         headers: { 'Content-Type': 'text/event-stream' }
       }
@@ -243,7 +243,7 @@ describe('useOllama', () => {
   it('processes response with thinking enabled', async () => {
     // given
     const mockResponse = new Response(
-      'data: {"model":"qwen3:0.6b","response":"Answer","thinking":"Reasoning","done":true}\n\n',
+      'data: {"model":"qwen3:4b-instruct","response":"Answer","thinking":"Reasoning","done":true}\n\n',
       {
         headers: { 'Content-Type': 'text/event-stream' }
       }
@@ -262,7 +262,7 @@ describe('useOllama', () => {
 
     // then
     expect(ollama.generate).toHaveBeenCalledWith({
-      model: 'qwen3:0.6b',
+      model: 'qwen3:4b-instruct',
       prompt: 'test prompt',
       think: true,
       options: { temperature: 0.8 },

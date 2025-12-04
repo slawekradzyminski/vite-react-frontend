@@ -31,7 +31,7 @@ test.describe('Ollama Generate', () => {
     await generatePage.openGenerateTab();
 
     // when
-    await expect(generatePage.modelInput).toHaveValue('qwen3:0.6b');
+    await expect(generatePage.modelInput).toHaveValue('qwen3:4b-instruct');
     await generatePage.generateResponse('Test prompt', 'mistral:7b');
 
     // then

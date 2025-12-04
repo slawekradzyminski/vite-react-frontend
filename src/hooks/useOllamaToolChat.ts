@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ollama, systemPrompt } from '../lib/api';
 import { TOOL_DEFINITIONS } from '../lib/ollamaTools';
-import type { ChatMessageDto, ChatRequestDto, ChatResponseDto } from '../types/ollama';
+import type { ChatMessageDto, ChatRequestDto, ChatResponseDto, OllamaToolDefinition } from '../types/ollama';
 import { processSSEResponse } from '../lib/sse';
 import { useToast } from './useToast';
 
@@ -18,10 +18,11 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
   ]);
   const [toolMessages, setToolMessages] = useState<ChatMessageDto[]>([]);
   const [isChatting, setIsChatting] = useState(false);
-  const [model, setModel] = useState('qwen3:8b');
+  const [model, setModel] = useState('qwen3:4b-instruct');
   const [temperature, setTemperature] = useState(0.4);
   const [think, setThink] = useState(false);
   const [isLoadingSystemPrompt, setIsLoadingSystemPrompt] = useState(true);
+  const [toolDefinitions, setToolDefinitions] = useState<OllamaToolDefinition[]>(TOOL_DEFINITIONS);
 
   useEffect(() => {
     const loadPrompt = async () => {
@@ -41,7 +42,19 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
     loadPrompt();
   }, []);
 
-  const toolDefinitions = useMemo(() => TOOL_DEFINITIONS, []);
+  useEffect(() => {
+    const loadToolDefinitions = async () => {
+      try {
+        const definitions = await ollama.getToolDefinitions();
+        if (Array.isArray(definitions) && definitions.length > 0) {
+          setToolDefinitions(definitions);
+        }
+      } catch (error) {
+        console.warn('Falling back to bundled tool definitions', error);
+      }
+    };
+    loadToolDefinitions();
+  }, []);
 
   const chat = useCallback(
     async (userInput: string) => {
@@ -166,5 +179,6 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
     think,
     setThink,
     setMessages,
+    toolDefinitions,
   };
 }

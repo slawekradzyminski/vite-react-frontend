@@ -22,7 +22,7 @@ export function useOllamaGenerate(options?: UseOllamaGenerateOptions) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [response, setResponse] = useState('');
   const [thinking, setThinking] = useState('');
-  const [model, setModel] = useState('qwen3:0.6b');
+  const [model, setModel] = useState('qwen3:4b-instruct');
   const [temperature, setTemperature] = useState(0.8);
   const [think, setThink] = useState(false);
   const { toast } = useToast();

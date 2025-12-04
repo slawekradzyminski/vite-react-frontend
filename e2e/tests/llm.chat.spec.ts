@@ -32,7 +32,7 @@ test.describe('Ollama Chat', () => {
     await chatPage.openChatTab();
 
     // when
-    await expect(chatPage.modelInput).toHaveValue('qwen3:0.6b');
+    await expect(chatPage.modelInput).toHaveValue('qwen3:4b-instruct');
     await chatPage.sendChatMessage('Test message', 'mistral:7b');
 
     // then
