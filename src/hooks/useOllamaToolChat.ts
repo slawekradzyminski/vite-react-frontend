@@ -24,7 +24,7 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
   const [isLoadingSystemPrompt, setIsLoadingSystemPrompt] = useState(true);
   const [toolDefinitions, setToolDefinitions] = useState<OllamaToolDefinition[]>(TOOL_DEFINITIONS);
 
-  const lastContentAssistantIndexRef = useRef<number>(-1);
+  const isStreamingAssistantRef = useRef<boolean>(false);
   const accumulatedContentRef = useRef<string>('');
   const accumulatedThinkingRef = useRef<string>('');
 
@@ -72,7 +72,7 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
       }
 
       setIsChatting(true);
-      lastContentAssistantIndexRef.current = -1;
+      isStreamingAssistantRef.current = false;
       accumulatedContentRef.current = '';
       accumulatedThinkingRef.current = '';
 
@@ -105,22 +105,33 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
             }
 
             if (incoming.role === 'tool') {
+              isStreamingAssistantRef.current = false;
+              accumulatedContentRef.current = '';
+              accumulatedThinkingRef.current = '';
               setToolMessages((prev) => [...prev, incoming]);
               setMessages((prev) => [...prev, incoming]);
               return;
             }
 
             if (incoming.tool_calls && incoming.tool_calls.length > 0) {
+              const wasStreaming = isStreamingAssistantRef.current;
               const assistantWithToolCall: ChatMessageDto = {
                 role: 'assistant',
-                content: incoming.content || '',
-                thinking: incoming.thinking || '',
+                content: accumulatedContentRef.current || incoming.content || '',
+                thinking: accumulatedThinkingRef.current || incoming.thinking || '',
                 tool_calls: incoming.tool_calls,
               };
-              lastContentAssistantIndexRef.current = -1;
+              isStreamingAssistantRef.current = false;
               accumulatedContentRef.current = '';
               accumulatedThinkingRef.current = '';
-              setMessages((prev) => [...prev, assistantWithToolCall]);
+              setMessages((prev) => {
+                if (wasStreaming) {
+                  const updated = [...prev];
+                  updated[updated.length - 1] = assistantWithToolCall;
+                  return updated;
+                }
+                return [...prev, assistantWithToolCall];
+              });
               return;
             }
 
@@ -132,27 +143,22 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
                 accumulatedThinkingRef.current += incoming.thinking;
               }
 
-              setMessages((prev) => {
-                const updated = [...prev];
-                if (lastContentAssistantIndexRef.current >= 0 && lastContentAssistantIndexRef.current < updated.length) {
-                  const existing = updated[lastContentAssistantIndexRef.current];
-                  if (existing.role === 'assistant' && !existing.tool_calls) {
-                    updated[lastContentAssistantIndexRef.current] = {
-                      ...existing,
-                      content: accumulatedContentRef.current,
-                      thinking: accumulatedThinkingRef.current,
-                    };
-                    return updated;
-                  }
-                }
+              const updatedAssistant: ChatMessageDto = {
+                role: 'assistant',
+                content: accumulatedContentRef.current,
+                thinking: accumulatedThinkingRef.current,
+              };
 
-                const newAssistant: ChatMessageDto = {
-                  role: 'assistant',
-                  content: accumulatedContentRef.current,
-                  thinking: accumulatedThinkingRef.current,
-                };
-                lastContentAssistantIndexRef.current = updated.length;
-                return [...updated, newAssistant];
+              const wasStreaming = isStreamingAssistantRef.current;
+              isStreamingAssistantRef.current = true;
+
+              setMessages((prev) => {
+                if (wasStreaming) {
+                  const updated = [...prev];
+                  updated[updated.length - 1] = updatedAssistant;
+                  return updated;
+                }
+                return [...prev, updatedAssistant];
               });
             }
 
