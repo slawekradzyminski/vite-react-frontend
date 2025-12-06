@@ -88,16 +88,20 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
       );
     }
 
-    const isSystem = message.role === 'system';
-    const isUser = message.role === 'user';
+    const role = message.role ?? 'assistant';
+    const isSystem = role === 'system';
+    const isUser = role === 'user';
     const bgColor = isSystem ? 'bg-gray-100' : isUser ? 'bg-blue-50' : 'bg-green-50';
     const alignment = isUser ? 'items-end' : 'items-start';
+    const roleLabel = typeof role === 'string'
+      ? role.charAt(0).toUpperCase() + role.slice(1)
+      : 'Message';
 
     return (
-      <div className={`flex flex-col ${alignment} w-full mb-4`} data-testid={`chat-message-${message.role}`}>
+      <div className={`flex flex-col ${alignment} w-full mb-4`} data-testid={`chat-message-${role}`}>
         <div className={`${bgColor} rounded-lg px-4 py-2 max-w-[80%]`}>
-          <div className="text-sm text-gray-500 mb-1" data-testid={`chat-message-role-${message.role}`}>
-            {message.role.charAt(0).toUpperCase() + message.role.slice(1)}
+          <div className="text-sm text-gray-500 mb-1" data-testid={`chat-message-role-${role}`}>
+            {roleLabel}
           </div>
           {message.thinking && (
             <details className="mb-3 text-xs text-gray-500" data-testid="thinking-toggle">
@@ -127,7 +131,7 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
               </ul>
             </div>
           )}
-          <div className={styles.markdownContainer} data-testid={`chat-message-content-${message.role}`}>
+          <div className={styles.markdownContainer} data-testid={`chat-message-content-${role}`}>
             <ReactMarkdown>{message.content}</ReactMarkdown>
           </div>
         </div>
@@ -248,9 +252,19 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
       </div>
 
       <div className={styles.conversationContainer} data-testid="chat-conversation">
-        {messages.map((msg, idx) => (
-          <div key={idx} data-testid={`chat-message-container-${idx}`}>{renderMessage(msg)}</div>
-        ))}
+        {messages
+          .filter((msg) => {
+            if (msg.role === 'assistant') {
+              const hasContent = msg.content && msg.content.trim().length > 0;
+              const hasToolCalls = msg.tool_calls && msg.tool_calls.length > 0;
+              const hasThinking = msg.thinking && msg.thinking.trim().length > 0;
+              return hasContent || hasToolCalls || hasThinking;
+            }
+            return true;
+          })
+          .map((msg, idx) => (
+            <div key={idx} data-testid={`chat-message-container-${idx}`}>{renderMessage(msg)}</div>
+          ))}
       </div>
 
       <div className="flex items-end gap-2" data-testid="chat-input-container">

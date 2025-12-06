@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ollama, systemPrompt } from '../lib/api';
 import { TOOL_DEFINITIONS } from '../lib/ollamaTools';
 import type { ChatMessageDto, ChatRequestDto, ChatResponseDto, OllamaToolDefinition } from '../types/ollama';
@@ -23,6 +23,10 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
   const [think, setThink] = useState(false);
   const [isLoadingSystemPrompt, setIsLoadingSystemPrompt] = useState(true);
   const [toolDefinitions, setToolDefinitions] = useState<OllamaToolDefinition[]>(TOOL_DEFINITIONS);
+
+  const lastContentAssistantIndexRef = useRef<number>(-1);
+  const accumulatedContentRef = useRef<string>('');
+  const accumulatedThinkingRef = useRef<string>('');
 
   useEffect(() => {
     const loadPrompt = async () => {
@@ -68,17 +72,16 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
       }
 
       setIsChatting(true);
+      lastContentAssistantIndexRef.current = -1;
+      accumulatedContentRef.current = '';
+      accumulatedThinkingRef.current = '';
+
       const history = [
         ...messages,
         { role: 'user', content: userInput },
       ] as ChatMessageDto[];
-      const assistantPlaceholder: ChatMessageDto = {
-        role: 'assistant',
-        content: '',
-        thinking: '',
-      };
-      const assistantIndex = history.length;
-      setMessages([...history, assistantPlaceholder]);
+
+      setMessages(history);
 
       try {
         const body: ChatRequestDto = {
@@ -90,56 +93,68 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
         };
 
         const response = await ollama.chatWithTools(body);
-        let accumulatedContent = '';
-        let accumulatedThinking = '';
 
         await processSSEResponse<ChatResponseDto>(response, {
           onMessage: (data) => {
             const incoming = data.message;
             if (!incoming) {
+              if (data.done) {
+                setIsChatting(false);
+              }
               return;
             }
 
             if (incoming.role === 'tool') {
               setToolMessages((prev) => [...prev, incoming]);
-              setMessages((prev) => {
-                const updated = [...prev];
-                updated.splice(assistantIndex + 1, 0, incoming);
-                return updated;
-              });
+              setMessages((prev) => [...prev, incoming]);
               return;
             }
 
             if (incoming.tool_calls && incoming.tool_calls.length > 0) {
-              setMessages((prev) => {
-                const updated = [...prev];
-                updated[assistantIndex] = {
-                  ...updated[assistantIndex],
-                  tool_calls: incoming.tool_calls,
-                  content: '',
-                  thinking: '',
-                };
-                return updated;
-              });
+              const assistantWithToolCall: ChatMessageDto = {
+                role: 'assistant',
+                content: incoming.content || '',
+                thinking: incoming.thinking || '',
+                tool_calls: incoming.tool_calls,
+              };
+              lastContentAssistantIndexRef.current = -1;
+              accumulatedContentRef.current = '';
+              accumulatedThinkingRef.current = '';
+              setMessages((prev) => [...prev, assistantWithToolCall]);
               return;
             }
 
-            if (incoming.content) {
-              accumulatedContent += incoming.content;
-            }
-            if (incoming.thinking) {
-              accumulatedThinking += incoming.thinking;
-            }
+            if (incoming.content || incoming.thinking) {
+              if (incoming.content) {
+                accumulatedContentRef.current += incoming.content;
+              }
+              if (incoming.thinking) {
+                accumulatedThinkingRef.current += incoming.thinking;
+              }
 
-            setMessages((prev) => {
-              const updated = [...prev];
-              updated[assistantIndex] = {
-                ...updated[assistantIndex],
-                content: accumulatedContent,
-                thinking: accumulatedThinking,
-              };
-              return updated;
-            });
+              setMessages((prev) => {
+                const updated = [...prev];
+                if (lastContentAssistantIndexRef.current >= 0 && lastContentAssistantIndexRef.current < updated.length) {
+                  const existing = updated[lastContentAssistantIndexRef.current];
+                  if (existing.role === 'assistant' && !existing.tool_calls) {
+                    updated[lastContentAssistantIndexRef.current] = {
+                      ...existing,
+                      content: accumulatedContentRef.current,
+                      thinking: accumulatedThinkingRef.current,
+                    };
+                    return updated;
+                  }
+                }
+
+                const newAssistant: ChatMessageDto = {
+                  role: 'assistant',
+                  content: accumulatedContentRef.current,
+                  thinking: accumulatedThinkingRef.current,
+                };
+                lastContentAssistantIndexRef.current = updated.length;
+                return [...updated, newAssistant];
+              });
+            }
 
             if (data.done) {
               setIsChatting(false);
