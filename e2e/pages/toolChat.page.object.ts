@@ -1,65 +1,51 @@
 import { Locator, Page } from '@playwright/test';
 import { LLMPage } from './llm.page.object';
 
-export class ChatPage extends LLMPage {
-  readonly chatTab: Locator;
+export class ToolChatPage extends LLMPage {
+  readonly toolsTab: Locator;
   readonly container: Locator;
   readonly modelInput: Locator;
   readonly temperatureLabel: Locator;
   readonly temperatureSlider: Locator;
+  readonly infoCard: Locator;
+  readonly toolDefinitionList: Locator;
   readonly messageInput: Locator;
   readonly sendButton: Locator;
   readonly chatContent: Locator;
-  readonly thinkingCheckbox: Locator;
-  readonly thinkingToggle: Locator;
-  readonly thinkingContent: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.chatTab = page.getByTestId('chat-tab');
-    this.container = page.getByTestId('chat-content');
+    this.toolsTab = page.getByTestId('tools-tab');
+    this.container = page.getByTestId('tools-content');
     this.modelInput = this.container.getByTestId('model-input');
     this.temperatureLabel = this.container.getByTestId('temperature-label');
     this.temperatureSlider = this.container.getByTestId('temperature-slider');
+    this.infoCard = this.container.getByTestId('tool-info-card');
+    this.toolDefinitionList = this.container.getByTestId('tool-definition-list');
     this.messageInput = this.container.getByTestId('chat-input');
     this.sendButton = this.container.getByTestId('chat-send-button');
     this.chatContent = this.container.getByTestId('chat-conversation');
-    this.thinkingCheckbox = this.container.getByTestId('thinking-checkbox');
-    this.thinkingToggle = this.chatContent.getByTestId('thinking-toggle');
-    this.thinkingContent = this.chatContent.getByTestId('thinking-content');
   }
 
-  async openChatTab() {
-    await this.chatTab.click();
+  async openToolsTab() {
+    await this.toolsTab.click();
   }
 
-  async sendChatMessage(message: string, model?: string) {
-    if (model) {
-      await this.modelInput.clear();
-      await this.modelInput.fill(model);
-    }
+  async sendChatMessage(message: string) {
     await this.messageInput.fill(message);
     await this.sendButton.click();
   }
 
-  async setTemperature(temperature: number) {
-    await this.temperatureSlider.fill(temperature.toString());
+  async setTemperature(value: number) {
+    await this.temperatureSlider.fill(value.toString());
   }
 
-  async enableThinking() {
-    await this.thinkingCheckbox.check();
+  getToolCallNotices() {
+    return this.chatContent.locator('[data-testid="tool-call-notice"]');
   }
 
-  async disableThinking() {
-    await this.thinkingCheckbox.uncheck();
-  }
-
-  async expandThinking() {
-    await this.thinkingToggle.locator('summary').click();
-  }
-
-  getChatMessage(role: 'user' | 'assistant' | 'system') {
-    return this.chatContent.getByTestId(`chat-message-${role}`);
+  getToolMessages() {
+    return this.chatContent.locator('[data-testid="tool-message"]');
   }
 
   async waitForChatComplete() {

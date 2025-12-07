@@ -1,8 +1,12 @@
-import { Locator } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 import { LLMPage } from './llm.page.object';
 
 export class GeneratePage extends LLMPage {
   readonly generateTab: Locator;
+  readonly container: Locator;
+  readonly modelInput: Locator;
+  readonly temperatureLabel: Locator;
+  readonly temperatureSlider: Locator;
   readonly promptInput: Locator;
   readonly generateButton: Locator;
   readonly responseContent: Locator;
@@ -10,15 +14,19 @@ export class GeneratePage extends LLMPage {
   readonly thinkingResult: Locator;
   readonly thinkingContent: Locator;
 
-  constructor(page: any) {
+  constructor(page: Page) {
     super(page);
     this.generateTab = page.getByTestId('generate-tab');
-    this.promptInput = page.getByTestId('prompt-input');
-    this.generateButton = page.getByTestId('generate-button');
-    this.responseContent = page.getByTestId('generated-response');
-    this.thinkingCheckbox = page.getByTestId('thinking-checkbox');
-    this.thinkingResult = page.getByTestId('thinking-result');
-    this.thinkingContent = this.thinkingResult.locator('div').nth(1); // Content inside the details
+    this.container = page.getByTestId('generate-content');
+    this.modelInput = this.container.getByTestId('model-input');
+    this.temperatureLabel = this.container.getByTestId('temperature-label');
+    this.temperatureSlider = this.container.getByTestId('temperature-slider');
+    this.promptInput = this.container.getByTestId('prompt-input');
+    this.generateButton = this.container.getByTestId('generate-button');
+    this.responseContent = this.container.getByTestId('generated-response');
+    this.thinkingCheckbox = this.container.getByTestId('thinking-checkbox');
+    this.thinkingResult = this.container.getByTestId('thinking-result');
+    this.thinkingContent = this.thinkingResult.locator('div').nth(1);
   }
 
   async openGenerateTab() {
@@ -34,6 +42,14 @@ export class GeneratePage extends LLMPage {
     await this.generateButton.click();
   }
 
+  async waitForGenerationComplete() {
+    await this.generateButton.waitFor({ state: 'visible' });
+    await this.page.waitForFunction(() => {
+      const button = document.querySelector('[data-testid="generate-button"]');
+      return button && (!button.hasAttribute('disabled') || button.textContent === 'Generate');
+    }, { timeout: 30000 });
+  }
+
   async enableThinking() {
     await this.thinkingCheckbox.check();
   }
@@ -46,7 +62,7 @@ export class GeneratePage extends LLMPage {
     await this.thinkingResult.locator('summary').click();
   }
 
-  getResponseMarkdownElement(selector: string) {
-    return this.responseContent.locator(`[class*="markdownContainer"] ${selector}`);
+  async setTemperature(value: number) {
+    await this.temperatureSlider.fill(value.toString());
   }
-} 
+}
