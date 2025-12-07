@@ -176,9 +176,10 @@ describe('OllamaGeneratePage', () => {
     await userEvent.click(screen.getByRole('button', { name: /generate/i }));
 
     // then
-    expect(screen.getByRole('button')).toBeDisabled();
+    const generateButton = screen.getByTestId('generate-button');
+    expect(generateButton).toBeDisabled();
     await waitFor(() => {
-      expect(screen.getByRole('button')).toBeEnabled();
+      expect(generateButton).toBeEnabled();
     });
   });
 

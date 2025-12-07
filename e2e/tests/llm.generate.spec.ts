@@ -9,7 +9,6 @@ test.describe('Ollama Generate', () => {
   test.beforeEach(async ({ authenticatedPage }) => {
     generatePage = new GeneratePage(authenticatedPage.page);
     await generatePage.goto();
-    await generatePage.openGenerateTab();
   });
 
   test('renders deterministic response from the mock', async () => {

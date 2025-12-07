@@ -44,6 +44,16 @@
   margin-bottom: 0.125rem;
   padding-top: 0;
   padding-bottom: 0;
+  padding-left: 1.25rem;
+  list-style-position: outside;
+}
+
+.markdownContainer :global(ul) {
+  list-style-type: disc;
+}
+
+.markdownContainer :global(ol) {
+  list-style-type: decimal;
 }
 
 .markdownContainer :global(li) {

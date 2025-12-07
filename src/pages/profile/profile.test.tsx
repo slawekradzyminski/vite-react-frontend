@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor, fireEvent } from '@testing-library/react';
 import { Profile } from './profilePage';
-import { auth, systemPrompt, orders } from '../../lib/api';
+import { auth, prompts, orders } from '../../lib/api';
 import { Role } from '../../types/auth';
 import { renderWithProviders } from '../../test/test-utils';
 import type { AxiosResponse } from 'axios';
@@ -22,9 +22,15 @@ vi.mock('../../lib/api', () => ({
     me: vi.fn(),
     updateUser: vi.fn(),
   },
-  systemPrompt: {
-    get: vi.fn(),
-    update: vi.fn(),
+  prompts: {
+    chat: {
+      get: vi.fn(),
+      update: vi.fn(),
+    },
+    tool: {
+      get: vi.fn(),
+      update: vi.fn(),
+    },
   },
   orders: {
     getUserOrders: vi.fn(),
@@ -59,10 +65,19 @@ describe('Profile', () => {
       config: { headers: {} } as any,
     } as AxiosResponse<User>);
 
-    vi.mocked(systemPrompt.get).mockResolvedValue({
+    vi.mocked(prompts.chat.get).mockResolvedValue({
       data: {
-        username: 'testuser',
-        systemPrompt: 'Test system prompt',
+        chatSystemPrompt: 'Test system prompt',
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: { headers: {} } as any,
+    });
+
+    vi.mocked(prompts.tool.get).mockResolvedValue({
+      data: {
+        toolSystemPrompt: 'Test tool prompt',
       },
       status: 200,
       statusText: 'OK',
@@ -108,7 +123,8 @@ describe('Profile', () => {
 
     // when
     await waitFor(() => expect(auth.me).toHaveBeenCalled());
-    await waitFor(() => expect(systemPrompt.get).toHaveBeenCalled());
+    await waitFor(() => expect(prompts.chat.get).toHaveBeenCalled());
+    await waitFor(() => expect(prompts.tool.get).toHaveBeenCalled());
     await waitFor(() => expect(orders.getUserOrders).toHaveBeenCalled());
     
     // Wait for loading states to resolve
@@ -120,7 +136,7 @@ describe('Profile', () => {
     // then
     expect(screen.getByText('Profile')).toBeInTheDocument();
     expect(screen.getByText('Personal Information')).toBeInTheDocument();
-    expect(screen.getByText('System Prompt')).toBeInTheDocument();
+    expect(screen.getByText('System Prompts')).toBeInTheDocument();
     expect(screen.getByText('Your Orders')).toBeInTheDocument();
     
     // Check if user data is displayed
@@ -221,8 +237,8 @@ describe('Profile', () => {
   });
 
   it('submits the system prompt form successfully', async () => {
-    vi.mocked(systemPrompt.update).mockResolvedValue({
-      data: { username: 'testuser', systemPrompt: 'New prompt' },
+    vi.mocked(prompts.chat.update).mockResolvedValue({
+      data: { chatSystemPrompt: 'New prompt' },
       status: 200,
       statusText: 'OK',
       headers: {},
@@ -236,17 +252,17 @@ describe('Profile', () => {
     fireEvent.click(screen.getByTestId('profile-prompt-submit'));
 
     await waitFor(() => {
-      expect(systemPrompt.update).toHaveBeenCalledWith('Fresh prompt');
+      expect(prompts.chat.update).toHaveBeenCalledWith('Fresh prompt');
     });
     expect(mockToast).toHaveBeenCalledWith({
       variant: 'success',
       title: 'Success',
-      description: 'System prompt updated successfully',
+      description: 'Chat system prompt updated successfully',
     });
   });
 
   it('shows error toast when system prompt update fails', async () => {
-    vi.mocked(systemPrompt.update).mockRejectedValue({
+    vi.mocked(prompts.chat.update).mockRejectedValue({
       response: { data: { message: 'Failed to update system prompt' } },
     });
 
@@ -261,6 +277,51 @@ describe('Profile', () => {
         variant: 'error',
         title: 'Error',
         description: 'Failed to update system prompt',
+      });
+    });
+  });
+
+  it('submits the tool system prompt form successfully', async () => {
+    vi.mocked(prompts.tool.update).mockResolvedValue({
+      data: { toolSystemPrompt: 'New tool prompt' },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+
+    renderWithProviders(<Profile />);
+
+    const textarea = await screen.findByTestId('profile-tool-prompt-input');
+    fireEvent.change(textarea, { target: { value: 'Updated tool prompt' } });
+    fireEvent.click(screen.getByTestId('profile-tool-prompt-submit'));
+
+    await waitFor(() => {
+      expect(prompts.tool.update).toHaveBeenCalledWith('Updated tool prompt');
+    });
+    expect(mockToast).toHaveBeenCalledWith({
+      variant: 'success',
+      title: 'Success',
+      description: 'Tool system prompt updated successfully',
+    });
+  });
+
+  it('shows error toast when tool system prompt update fails', async () => {
+    vi.mocked(prompts.tool.update).mockRejectedValue({
+      response: { data: { message: 'Failed to update tool system prompt' } },
+    });
+
+    renderWithProviders(<Profile />);
+
+    const textarea = await screen.findByTestId('profile-tool-prompt-input');
+    fireEvent.change(textarea, { target: { value: 'Tool prompt fail' } });
+    fireEvent.click(screen.getByTestId('profile-tool-prompt-submit'));
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith({
+        variant: 'error',
+        title: 'Error',
+        description: 'Failed to update tool system prompt',
       });
     });
   });

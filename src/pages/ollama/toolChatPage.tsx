@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Spinner } from '../../components/ui/spinner';
 import { useOllamaToolChat } from '../../hooks/useOllamaToolChat';
 import { ChatTranscript } from './ChatTranscript';
@@ -7,14 +7,9 @@ interface OllamaToolChatPageProps {
   hideTitle?: boolean;
 }
 
-const suggestedPrompts = [
-  'How much does the iPhone 13 Pro cost right now?',
-  'What is the current stock level for the Apple Watch Series 7?',
-  'Do we have any information about the PlayStation 5 inventory?'
-];
-
 export function OllamaToolChatPage({ hideTitle = false }: OllamaToolChatPageProps) {
   const [userInput, setUserInput] = useState('');
+  const [showToolSchema, setShowToolSchema] = useState(false);
   const {
     messages,
     isChatting,
@@ -27,6 +22,10 @@ export function OllamaToolChatPage({ hideTitle = false }: OllamaToolChatPageProp
     toolDefinitions
   } = useOllamaToolChat();
   const availableTools = toolDefinitions ?? [];
+  const prettyToolDefinitions = useMemo(
+    () => JSON.stringify(availableTools, null, 2),
+    [availableTools]
+  );
 
   const handleSend = () => {
     chat(userInput);
@@ -57,7 +56,7 @@ export function OllamaToolChatPage({ hideTitle = false }: OllamaToolChatPageProp
         <div>
           <h2 className="text-lg font-semibold">Tool calling</h2>
           <p className="text-sm text-gray-600">
-            This mode uses <code>qwen3:4b-instruct</code> and automatically loops through catalog tools before replying.
+            This mode uses <code>qwen3:4b-instruct</code>, loops through catalog tools before replying, and does not emit <code>thinking</code> traces—switch to Chat or Generate for chain-of-thought responses.
           </p>
         </div>
         <div className="rounded border-l-4 border-blue-400 bg-blue-50 p-3 text-sm text-blue-900">
@@ -69,20 +68,22 @@ export function OllamaToolChatPage({ hideTitle = false }: OllamaToolChatPageProp
               </li>
             ))}
           </ul>
-          <p className="mb-2">Try a suggested prompt to watch the raw JSON stream before the assistant summarizes:</p>
-          <div className="flex flex-wrap gap-2">
-            {suggestedPrompts.map((prompt) => (
-              <button
-                key={prompt}
-                type="button"
-                className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-blue-700 shadow-sm border border-blue-200 hover:bg-blue-100"
-                onClick={() => setUserInput(prompt)}
-                data-testid="suggested-prompt"
-              >
-                {prompt}
-              </button>
-            ))}
-          </div>
+          <button
+            type="button"
+            className="mt-3 text-xs font-semibold text-blue-700 hover:underline"
+            onClick={() => setShowToolSchema((prev) => !prev)}
+            data-testid="tool-schema-toggle"
+          >
+            {showToolSchema ? 'Hide tool definition JSON' : 'Show tool definition JSON'}
+          </button>
+          {showToolSchema && (
+            <pre
+              className="mt-3 overflow-auto rounded bg-white p-3 text-xs text-gray-800"
+              data-testid="tool-definition-json"
+            >
+              {prettyToolDefinitions}
+            </pre>
+          )}
         </div>
       </div>
 
@@ -120,13 +121,6 @@ export function OllamaToolChatPage({ hideTitle = false }: OllamaToolChatPageProp
           <span data-testid="temperature-focused">More Focused</span>
           <span data-testid="temperature-creative">More Creative</span>
         </div>
-      </div>
-
-      <div className="mb-4 rounded border border-dashed border-yellow-400 bg-yellow-50 p-4 text-sm text-yellow-900" data-testid="tool-thinking-disabled">
-        <div className="font-semibold mb-1">Thinking is unavailable here</div>
-        <p>
-          Tool calling relies on <code>qwen3:4b-instruct</code>, which does not emit <code>thinking</code> traces. Switch to the Chat or Generate tabs for chain-of-thought responses.
-        </p>
       </div>
 
       <ChatTranscript messages={messages} />

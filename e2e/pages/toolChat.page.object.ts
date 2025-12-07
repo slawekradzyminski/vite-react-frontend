@@ -2,7 +2,6 @@ import { Locator, Page } from '@playwright/test';
 import { LLMPage } from './llm.page.object';
 
 export class ToolChatPage extends LLMPage {
-  readonly toolsTab: Locator;
   readonly container: Locator;
   readonly modelInput: Locator;
   readonly temperatureLabel: Locator;
@@ -15,8 +14,7 @@ export class ToolChatPage extends LLMPage {
 
   constructor(page: Page) {
     super(page);
-    this.toolsTab = page.getByTestId('tools-tab');
-    this.container = page.getByTestId('tools-content');
+    this.container = page.getByTestId('ollama-tool-chat-page');
     this.modelInput = this.container.getByTestId('model-input');
     this.temperatureLabel = this.container.getByTestId('temperature-label');
     this.temperatureSlider = this.container.getByTestId('temperature-slider');
@@ -27,8 +25,8 @@ export class ToolChatPage extends LLMPage {
     this.chatContent = this.container.getByTestId('chat-conversation');
   }
 
-  async openToolsTab() {
-    await this.toolsTab.click();
+  async goto(path: string = '/llm/tools') {
+    await super.goto(path);
   }
 
   async sendChatMessage(message: string) {

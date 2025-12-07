@@ -2,7 +2,6 @@ import { Locator, Page } from '@playwright/test';
 import { LLMPage } from './llm.page.object';
 
 export class GeneratePage extends LLMPage {
-  readonly generateTab: Locator;
   readonly container: Locator;
   readonly modelInput: Locator;
   readonly temperatureLabel: Locator;
@@ -16,8 +15,7 @@ export class GeneratePage extends LLMPage {
 
   constructor(page: Page) {
     super(page);
-    this.generateTab = page.getByTestId('generate-tab');
-    this.container = page.getByTestId('generate-content');
+    this.container = page.getByTestId('ollama-generate-page');
     this.modelInput = this.container.getByTestId('model-input');
     this.temperatureLabel = this.container.getByTestId('temperature-label');
     this.temperatureSlider = this.container.getByTestId('temperature-slider');
@@ -29,8 +27,8 @@ export class GeneratePage extends LLMPage {
     this.thinkingContent = this.thinkingResult.locator('div').last();
   }
 
-  async openGenerateTab() {
-    await this.generateTab.click();
+  async goto(path: string = '/llm/generate') {
+    await super.goto(path);
   }
 
   async generateResponse(prompt: string, model?: string) {

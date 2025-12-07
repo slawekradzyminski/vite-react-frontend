@@ -9,7 +9,7 @@ export class LLMPage {
     this.errorMessage = page.getByText('Failed to fetch stream: Internal Server Error', { exact: true });
   }
 
-  async goto() {
-    await this.page.goto('/llm');
+  async goto(path: string = '/llm') {
+    await this.page.goto(path);
   }
 }

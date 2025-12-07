@@ -53,6 +53,7 @@ describe('OllamaToolChatPage', () => {
     expect(screen.getByText('Live Catalog Assistant')).toBeInTheDocument();
     expect(screen.getByTestId('tool-info-card')).toBeInTheDocument();
     expect(screen.getByTestId('tool-definition-item')).toBeInTheDocument();
+    expect(screen.getByTestId('tool-schema-toggle')).toBeInTheDocument();
     expect(screen.getByDisplayValue('qwen3:4b-instruct')).toBeInTheDocument();
   });
 
@@ -79,10 +80,21 @@ describe('OllamaToolChatPage', () => {
     expect(mockSetTemperature).toHaveBeenCalledWith(0.7);
   });
 
-  it('shows disabled thinking notice', () => {
+  it('communicates that thinking traces are unavailable inside the info card', () => {
     render(<OllamaToolChatPage />);
-    expect(screen.getByTestId('tool-thinking-disabled')).toBeInTheDocument();
-    expect(screen.queryByTestId('thinking-checkbox')).not.toBeInTheDocument();
+    const matches = screen.getAllByText((_, node) =>
+      Boolean(node?.textContent?.toLowerCase().includes('does not emit thinking traces'))
+    );
+    expect(matches.length).toBeGreaterThan(0);
+  });
+
+  it('allows expanding tool definition JSON', () => {
+    render(<OllamaToolChatPage />);
+    const toggle = screen.getByTestId('tool-schema-toggle');
+    fireEvent.click(toggle);
+    expect(screen.getByTestId('tool-definition-json')).toBeInTheDocument();
+    fireEvent.click(toggle);
+    expect(screen.queryByTestId('tool-definition-json')).not.toBeInTheDocument();
   });
 
   it('shows loading state before system prompt loads', () => {

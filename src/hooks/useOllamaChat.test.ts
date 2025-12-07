@@ -9,8 +9,10 @@ vi.mock('../lib/api', () => ({
   ollama: {
     chat: vi.fn(),
   },
-  systemPrompt: {
-    get: vi.fn().mockResolvedValue({ data: { systemPrompt: '' } }),
+  prompts: {
+    chat: {
+      get: vi.fn().mockResolvedValue({ data: { chatSystemPrompt: '' } }),
+    },
   },
 }));
 

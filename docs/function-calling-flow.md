@@ -12,24 +12,24 @@ This project demonstrates Ollama function calling end-to-end: listing products, 
 3) **Tools exposed** (`OllamaToolDefinitionCatalog`):
    - `list_products`: lightweight catalog slice (id + name); supports `offset`, `limit`, `category`, `inStockOnly`.
    - `get_product_snapshot`: full details for a product by `productId` or `name`.
-4) **Default system prompt** (`UserService.DEFAULT_SYSTEM_PROMPT`):
-   - For broad asks: call `list_products` (category, inStockOnly), then call `get_product_snapshot` for *every* product returned/referenced before replying.
-   - For specific asks: call `get_product_snapshot` immediately.
-   - No hallucinations; always ground responses in tool output.
+4) **System prompts**:
+   - `UserService.DEFAULT_CHAT_SYSTEM_PROMPT` keeps general conversations grounded (security, clarity, context).
+   - `UserService.DEFAULT_TOOL_SYSTEM_PROMPT` explains how to call `list_products`/`get_product_snapshot` and forbids offline answers.
+   - The backend now injects both prompts automatically for every chat/tool request.
 
 ## Frontend flow (what trainees should see)
 1) **Auth & setup**
    - Sign in to get a JWT; all LLM calls send `Authorization: Bearer <token>`.
    - Fetch tool definitions from `/api/ollama/chat/tools/definitions` and pass them to the chat request.
-   - Fetch the system prompt from `/users/system-prompt` and seed it as the first `system` message.
+   - Optionally fetch the chat prompt (`/users/chat-system-prompt`) and tool prompt (`/users/tool-system-prompt`) if you want to display/edit them locally—the backend injects them automatically before relaying the request to Ollama.
 2) **Hook & streaming**
    - `useOllamaToolChat` builds the request with `model`, `messages`, `tools`, `options`, `think`.
    - `processSSEResponse` consumes SSE chunks so tokens and tool events render live.
-3) **UI tabs and defaults**
-   - `/llm` exposes three tabs: **Chat** → `/api/ollama/chat` via `useOllamaChat`, **Generate** → `/api/ollama/generate` via `useOllamaGenerate`, and **Tools** → `/api/ollama/chat/tools` via `useOllamaToolChat`.
-   - Chat/Generate default to `qwen3:0.6b` so the mock can emit thinking traces; both tabs expose the thinking toggle.
+3) **UI entry points**
+   - `/llm` is now a landing page that explains the difference between the **Chat**, **Generate**, and **Tools** modes and links directly to `/llm/chat`, `/llm/generate`, and `/llm/tools`.
+   - Chat/Generate default to `qwen3:0.6b` so the mock can emit thinking traces; both routes expose the thinking toggle.
    - Tools pins the model to `qwen3:4b-instruct` (function calling) and disables thinking because that model does not output the `<think>` stream.
-   - All tabs use the shared `ChatTranscript` component so assistant/tool bubbles remain consistent no matter which flow emitted them.
+   - All modes reuse the shared `ChatTranscript` component so assistant/tool bubbles remain consistent no matter which flow emitted them.
 3) **On screen, live**
    - As soon as the model emits `tool_calls`, you see a “Requesting backend function …” line with arguments.
    - When the backend executes the tool, the `role=tool` result appears **immediately under** the tool call (not at the end of the chat).
@@ -48,14 +48,17 @@ TOKEN=$(curl -s -X POST http://localhost:4001/users/signin \
 
 TOOLS=$(curl -s -H "Authorization: Bearer $TOKEN" \
   http://localhost:4001/api/ollama/chat/tools/definitions)
-PROMPT=$(curl -s -H "Authorization: Bearer $TOKEN" \
-  http://localhost:4001/users/system-prompt | jq -r '.systemPrompt')
+CHAT_PROMPT=$(curl -s -H "Authorization: Bearer $TOKEN" \
+  http://localhost:4001/users/chat-system-prompt | jq -r '.chatSystemPrompt')
+TOOL_PROMPT=$(curl -s -H "Authorization: Bearer $TOKEN" \
+  http://localhost:4001/users/tool-system-prompt | jq -r '.toolSystemPrompt')
 
-jq -n --arg prompt "$PROMPT" \
+jq -n --arg chatPrompt "$CHAT_PROMPT" \
+      --arg toolPrompt "$TOOL_PROMPT" \
       --arg user "How many iPhones do you have? Tell me details about them. Please show details for every iPhone you list." \
       --argjson tools "$TOOLS" \
       '{model:"qwen3:4b-instruct",
-        messages:[{role:"system",content:$prompt},{role:"user",content:$user}],
+        messages:[{role:"system",content:$chatPrompt},{role:"system",content:$toolPrompt},{role:"user",content:$user}],
         tools:$tools, think:false, options:{temperature:0}}' \
 | curl -N -X POST http://localhost:4001/api/ollama/chat/tools \
     -H "Authorization: Bearer $TOKEN" \

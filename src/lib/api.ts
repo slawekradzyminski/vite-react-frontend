@@ -15,7 +15,7 @@ import type {
 import type { EmailDto, EmailResponse } from '../types/email';
 import type { CreateQrDto, QrCodeResponse } from '../types/qr';
 import type { GenerateRequestDto, ChatRequestDto, OllamaToolDefinition } from '../types/ollama';
-import type { SystemPromptDto } from '../types/system-prompt';
+import type { ChatSystemPromptDto, ToolSystemPromptDto } from '../types/prompts';
 import type { Order, PageDtoOrderDto, Address, OrderStatus } from '../types/order';
 import type { Product, ProductCreateDto, ProductUpdateDto } from '../types/product';
 import type { Cart, CartItemDto, UpdateCartItemDto } from '../types/cart';
@@ -226,12 +226,21 @@ export const ollama = {
   },
 };
 
-export const systemPrompt = {
-  get: () => 
-    api.get<SystemPromptDto>('/users/system-prompt'),
-  
-  update: (systemPrompt: string) =>
-    api.put<SystemPromptDto>('/users/system-prompt', { systemPrompt }),
+export const prompts = {
+  chat: {
+    get: () =>
+      api.get<ChatSystemPromptDto>('/users/chat-system-prompt'),
+
+    update: (chatSystemPrompt: string) =>
+      api.put<ChatSystemPromptDto>('/users/chat-system-prompt', { chatSystemPrompt }),
+  },
+  tool: {
+    get: () =>
+      api.get<ToolSystemPromptDto>('/users/tool-system-prompt'),
+
+    update: (toolSystemPrompt: string) =>
+      api.put<ToolSystemPromptDto>('/users/tool-system-prompt', { toolSystemPrompt }),
+  },
 };
 
 export const orders = {

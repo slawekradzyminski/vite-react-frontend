@@ -9,7 +9,6 @@ test.describe('Ollama Tool Calling', () => {
   test.beforeEach(async ({ authenticatedPage }) => {
     toolChatPage = new ToolChatPage(authenticatedPage.page);
     await toolChatPage.goto();
-    await toolChatPage.openToolsTab();
   });
 
   test('shows tool info and available functions', async () => {

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ollama, systemPrompt } from '../lib/api';
+import { ollama, prompts } from '../lib/api';
 import { TOOL_DEFINITIONS } from '../lib/ollamaTools';
 import type { ChatMessageDto, ChatRequestDto, ChatResponseDto, OllamaToolDefinition } from '../types/ollama';
 import { processSSEResponse } from '../lib/sse';
@@ -9,12 +9,56 @@ interface UseOllamaToolChatOptions {
   onError?: (error: Error) => void;
 }
 
-const DEFAULT_PROMPT = 'You are a shopping copilot. Call get_product_snapshot before answering catalog questions.';
+const DEFAULT_TOOL_PROMPT = `You are a tool-calling shopping assistant for our training store. Tools available:
+
+- list_products: returns ONLY id and name for a catalog slice. Accepts offset, limit, category (e.g., "electronics"), and inStockOnly.
+- get_product_snapshot: fetch one product by name or productId (id, name, description, price, stockQuantity, category, imageUrl).
+
+Tool rules:
+
+- Never answer from memory; ground every product fact in a tool response.
+- For broad questions, call list_products first, then snapshot every product you mention.
+- For specific SKUs, call get_product_snapshot before replying.
+- For comparisons, retrieve list_products followed by snapshots for each SKU mentioned.
+- If a product is missing, be transparent and ask for another name/id; never fabricate details.`;
+
+const pruneNullishValues = (value: unknown): unknown => {
+  if (value === null || value === undefined) {
+    return undefined;
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => pruneNullishValues(item))
+      .filter((item): item is Exclude<typeof item, undefined> => item !== undefined);
+  }
+
+  if (typeof value === 'object') {
+    const result: Record<string, unknown> = {};
+    Object.entries(value as Record<string, unknown>).forEach(([key, val]) => {
+      const cleaned = pruneNullishValues(val);
+      if (cleaned !== undefined) {
+        result[key] = cleaned;
+      }
+    });
+    return result;
+  }
+
+  return value;
+};
+
+const sanitizeToolDefinitions = (definitions: OllamaToolDefinition[]): OllamaToolDefinition[] => {
+  return definitions
+    .map((definition) => pruneNullishValues(definition))
+    .filter((definition): definition is OllamaToolDefinition => Boolean(definition));
+};
+
+const DEFAULT_TOOL_DEFINITIONS = sanitizeToolDefinitions(TOOL_DEFINITIONS);
 
 export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
   const { toast } = useToast();
   const [messages, setMessages] = useState<ChatMessageDto[]>([
-    { role: 'system', content: DEFAULT_PROMPT },
+    { role: 'system', content: DEFAULT_TOOL_PROMPT },
   ]);
   const [toolMessages, setToolMessages] = useState<ChatMessageDto[]>([]);
   const [isChatting, setIsChatting] = useState(false);
@@ -22,7 +66,7 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
   const [temperature, setTemperature] = useState(0.4);
   const [think, setThink] = useState(false);
   const [isLoadingSystemPrompt, setIsLoadingSystemPrompt] = useState(true);
-  const [toolDefinitions, setToolDefinitions] = useState<OllamaToolDefinition[]>(TOOL_DEFINITIONS);
+  const [toolDefinitions, setToolDefinitions] = useState<OllamaToolDefinition[]>(DEFAULT_TOOL_DEFINITIONS);
 
   const isStreamingAssistantRef = useRef<boolean>(false);
   const accumulatedContentRef = useRef<string>('');
@@ -32,13 +76,13 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
     const loadPrompt = async () => {
       try {
         setIsLoadingSystemPrompt(true);
-        const response = await systemPrompt.get();
-        const prompt = response.data.systemPrompt?.trim();
-        if (prompt) {
-          setMessages([{ role: 'system', content: prompt }]);
+        const response = await prompts.tool.get();
+        const toolPrompt = response.data.toolSystemPrompt?.trim();
+        if (toolPrompt) {
+          setMessages([{ role: 'system', content: toolPrompt }]);
         }
       } catch (error) {
-        console.error('Failed to fetch system prompt', error);
+        console.error('Failed to fetch tool system prompt', error);
       } finally {
         setIsLoadingSystemPrompt(false);
       }
@@ -50,8 +94,9 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
     const loadToolDefinitions = async () => {
       try {
         const definitions = await ollama.getToolDefinitions();
-        if (Array.isArray(definitions) && definitions.length > 0) {
-          setToolDefinitions(definitions);
+        const sanitized = sanitizeToolDefinitions(definitions);
+        if (sanitized.length > 0) {
+          setToolDefinitions(sanitized);
         }
       } catch (error) {
         console.warn('Falling back to bundled tool definitions', error);

@@ -9,7 +9,6 @@ test.describe('Ollama Chat', () => {
   test.beforeEach(async ({ authenticatedPage }) => {
     chatPage = new ChatPage(authenticatedPage.page);
     await chatPage.goto();
-    await chatPage.openChatTab();
   });
 
   test('responds with deterministic mock content', async () => {

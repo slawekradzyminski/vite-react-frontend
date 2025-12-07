@@ -42,15 +42,15 @@ src/
 - Responsive design
 - Ecommerce features
 - Admin dashboard
-- LLM assistant workspace with dedicated **Chat**, **Generate**, and **Tools** tabs
+- LLM assistant workspace with dedicated **Chat**, **Generate**, and **Tools** modes
 
 ### LLM Assistant overview
 
-- `/llm` now surfaces three tabs:
-  - **Chat** streams plain conversations through `qwen3:0.6b` and optionally exposes the model’s thinking traces.
-  - **Generate** also targets `qwen3:0.6b`, providing a single-prompt flow with thinking toggles.
-  - **Tools** is the catalog/Grokipedia playground, pinned to `qwen3:4b-instruct`, showing live tool call notices, tool outputs, and a disabled thinking notice (that model does not emit reasoning).
-- The Tools tab fetches runtime tool schemas from the backend at `/api/ollama/chat/tools/definitions` and renders suggested prompts so the mock/backend scenarios are easy to exercise.
+- `/llm` is a landing page that explains when to use each mode and links to `/llm/chat`, `/llm/generate`, and `/llm/tools`.
+- **Chat** streams conversations through `qwen3:0.6b` and can expose the model’s thinking traces on demand.
+- **Generate** also targets `qwen3:0.6b` but uses a single-prompt workflow with the same temperature + thinking controls.
+- **Tools** is the catalog/Grokipedia playground pinned to `qwen3:4b-instruct`, showing live tool call notices, tool outputs, and a disabled thinking notice (that model does not emit reasoning).
+- The Tools mode fetches runtime tool schemas from the backend at `/api/ollama/chat/tools/definitions` and renders an expandable JSON viewer so you see exactly what’s passed to the LLM.
 
 ## Development Setup
 

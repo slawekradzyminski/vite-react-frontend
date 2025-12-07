@@ -4,14 +4,18 @@ import { useOllamaToolChat } from './useOllamaToolChat';
 import { ollama } from '../lib/api';
 import { useToast } from './useToast';
 import * as sse from '../lib/sse';
+import type { OllamaToolDefinition } from '../types/ollama';
 
 vi.mock('../lib/api', () => ({
   ollama: {
     chatWithTools: vi.fn(),
     getToolDefinitions: vi.fn().mockResolvedValue([]),
   },
-  systemPrompt: {
-    get: vi.fn().mockResolvedValue({ data: { systemPrompt: '' } }),
+  prompts: {
+    tool: {
+      get: vi.fn().mockResolvedValue({ data: { toolSystemPrompt: '' } }),
+      update: vi.fn(),
+    },
   },
 }));
 
@@ -42,10 +46,43 @@ describe('useOllamaToolChat', () => {
     // then
     expect(result.current.isChatting).toBe(false);
     expect(result.current.messages).toEqual([
-      { role: 'system', content: 'You are a shopping copilot. Call get_product_snapshot before answering catalog questions.' }
+      { role: 'system', content: expect.stringContaining('tool-calling shopping assistant') }
     ]);
     expect(result.current.model).toBe('qwen3:4b-instruct');
     expect(result.current.temperature).toBe(0.4);
+  });
+
+  it('sanitizes null fields from tool definitions', async () => {
+    const dirtyDefinitions: OllamaToolDefinition[] = [
+      {
+        type: 'function',
+        function: {
+          name: 'list_products',
+          description: 'desc',
+          parameters: {
+            type: 'object',
+            properties: {
+              offset: {
+                type: 'integer',
+                description: 'offset',
+                enum: null as unknown as string[],
+              },
+            },
+            required: null as unknown as string[],
+            oneOf: null as unknown as Array<{ required: string[] }>,
+          },
+        },
+      },
+    ];
+
+    vi.mocked(ollama.getToolDefinitions).mockResolvedValueOnce(dirtyDefinitions);
+
+    const { result } = await renderToolChatHook();
+
+    expect(result.current.toolDefinitions[0].function.parameters).not.toHaveProperty('required');
+    expect(
+      result.current.toolDefinitions[0].function.parameters.properties?.offset
+    ).not.toHaveProperty('enum');
   });
 
   it('handles empty message', async () => {
@@ -429,4 +466,3 @@ describe('useOllamaToolChat', () => {
     sseSpy.mockRestore();
   });
 });
-
