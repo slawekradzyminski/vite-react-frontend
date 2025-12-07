@@ -26,7 +26,7 @@ export class GeneratePage extends LLMPage {
     this.responseContent = this.container.getByTestId('generated-response');
     this.thinkingCheckbox = this.container.getByTestId('thinking-checkbox');
     this.thinkingResult = this.container.getByTestId('thinking-result');
-    this.thinkingContent = this.thinkingResult.locator('div').nth(1);
+    this.thinkingContent = this.thinkingResult.locator('div').last();
   }
 
   async openGenerateTab() {
