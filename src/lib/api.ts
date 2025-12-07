@@ -14,8 +14,8 @@ import type {
 } from '../types/auth';
 import type { EmailDto, EmailResponse } from '../types/email';
 import type { CreateQrDto, QrCodeResponse } from '../types/qr';
-import type { GenerateRequestDto, ChatRequestDto } from '../types/ollama';
-import type { SystemPromptDto } from '../types/system-prompt';
+import type { GenerateRequestDto, ChatRequestDto, OllamaToolDefinition } from '../types/ollama';
+import type { ChatSystemPromptDto, ToolSystemPromptDto } from '../types/prompts';
 import type { Order, PageDtoOrderDto, Address, OrderStatus } from '../types/order';
 import type { Product, ProductCreateDto, ProductUpdateDto } from '../types/product';
 import type { Cart, CartItemDto, UpdateCartItemDto } from '../types/cart';
@@ -198,14 +198,49 @@ export const ollama = {
 
     return response;
   },
+
+  chatWithTools: async (data: ChatRequestDto) => {
+    const response = await fetch(`${getApiBaseUrl()}/api/ollama/chat/tools`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authStorage.getAccessToken() ?? ''}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        authStorage.clearTokens();
+        window.location.href = '/login';
+      }
+      throw new Error(`Failed to fetch stream: ${response.statusText}`);
+    }
+
+    return response;
+  },
+
+  getToolDefinitions: async () => {
+    const response = await api.get<OllamaToolDefinition[]>('/api/ollama/chat/tools/definitions');
+    return response.data;
+  },
 };
 
-export const systemPrompt = {
-  get: () => 
-    api.get<SystemPromptDto>('/users/system-prompt'),
-  
-  update: (systemPrompt: string) =>
-    api.put<SystemPromptDto>('/users/system-prompt', { systemPrompt }),
+export const prompts = {
+  chat: {
+    get: () =>
+      api.get<ChatSystemPromptDto>('/users/chat-system-prompt'),
+
+    update: (chatSystemPrompt: string) =>
+      api.put<ChatSystemPromptDto>('/users/chat-system-prompt', { chatSystemPrompt }),
+  },
+  tool: {
+    get: () =>
+      api.get<ToolSystemPromptDto>('/users/tool-system-prompt'),
+
+    update: (toolSystemPrompt: string) =>
+      api.put<ToolSystemPromptDto>('/users/tool-system-prompt', { toolSystemPrompt }),
+  },
 };
 
 export const orders = {

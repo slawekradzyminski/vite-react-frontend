@@ -1,0 +1,340 @@
+backend-1   | 15:19:55.732 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received tool_call for chat-tools #1 (qwen3:4b-instruct): function=list_products arguments={category=electronics, inStockOnly=true, limit=50}
+backend-1   | 15:19:55.737 [reactor-http-epoll-2] WARN  o.s.w.s.m.m.a.RequestMappingHandlerAdapter - !!!
+backend-1   | Performing asynchronous handling through the default Spring MVC SimpleAsyncTaskExecutor.
+backend-1   | This executor is not suitable for production use under load.
+backend-1   | Please, configure an AsyncTaskExecutor through the WebMvc config.
+backend-1   | -------------------------------
+backend-1   | !!!
+backend-1   | 15:19:56.933 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - chat-tools completed for model qwen3:4b-instruct in 74 s (2 chunks)
+ollama      | [GIN] 2025/12/06 - 15:19:56 | 200 |         1m13s |      172.19.0.5 | POST     "/api/chat"
+backend-1   | 15:19:56.940 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - chat-tools stream closed for model qwen3:4b-instruct
+backend-1   | 15:19:56.944 [boundedElastic-1] INFO  c.a.t.s.o.OllamaFunctionCallingService - Iteration 1: Ollama responded with 2 chunk(s) in 74182 ms
+backend-1   | 15:19:56.946 [boundedElastic-1] INFO  c.a.t.s.o.OllamaFunctionCallingService - Iteration 1: Ollama requested 1 tool call(s): [list_products]
+backend-1   | 15:19:56.946 [boundedElastic-1] INFO  c.a.t.s.o.OllamaFunctionCallingService - Iteration 1: Executing tool list_products with args {category=electronics, inStockOnly=true, limit=50}
+backend-1   | 15:19:56.946 [boundedElastic-1] INFO  c.a.t.s.o.f.OllamaToolRegistry - Executing tool list_products with args {category=electronics, inStockOnly=true, limit=50}
+backend-1   | 15:19:57.231 [boundedElastic-1] INFO  c.a.t.s.o.OllamaFunctionCallingService - Iteration 1: Tool list_products responded (payload 170 chars)
+backend-1   | 15:19:57.231 [boundedElastic-1] INFO  c.a.t.s.o.OllamaFunctionCallingService - Iteration 2: forwarding 4 historical messages to Ollama (tools=2)
+backend-1   | 15:20:03.659 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #3 (qwen3:4b-instruct): We
+backend-1   | 15:20:04.672 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #4 (qwen3:4b-instruct):  have
+backend-1   | 15:20:04.856 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #5 (qwen3:4b-instruct):  the
+backend-1   | 15:20:05.259 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #6 (qwen3:4b-instruct):  following
+backend-1   | 15:20:05.450 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #7 (qwen3:4b-instruct):  iPhone
+backend-1   | 15:20:05.603 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #8 (qwen3:4b-instruct):  in
+backend-1   | 15:20:05.805 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #9 (qwen3:4b-instruct):  our
+backend-1   | 15:20:06.060 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #10 (qwen3:4b-instruct):  electronics
+backend-1   | 15:20:06.211 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #11 (qwen3:4b-instruct):  catalog
+backend-1   | 15:20:06.439 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #12 (qwen3:4b-instruct): :
+backend-1   | 
+backend-1   | 
+backend-1   | 15:20:06.647 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #13 (qwen3:4b-instruct): -
+backend-1   | 15:20:07.017 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #14 (qwen3:4b-instruct):  **
+backend-1   | 15:20:07.241 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #15 (qwen3:4b-instruct): iPhone
+backend-1   | 15:20:07.921 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #17 (qwen3:4b-instruct): 1
+backend-1   | 15:20:08.332 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #18 (qwen3:4b-instruct): 3
+backend-1   | 15:20:08.571 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #19 (qwen3:4b-instruct):  Pro
+backend-1   | 15:20:08.831 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #20 (qwen3:4b-instruct): **
+backend-1   | 15:20:09.028 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #21 (qwen3:4b-instruct):  (
+backend-1   | 15:20:09.202 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #22 (qwen3:4b-instruct): ID
+backend-1   | 15:20:09.430 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #23 (qwen3:4b-instruct): :
+backend-1   | 15:20:09.772 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #25 (qwen3:4b-instruct): 1
+backend-1   | 15:20:10.159 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #26 (qwen3:4b-instruct): )
+backend-1   | 
+backend-1   | 
+backend-1   | 15:20:10.402 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #27 (qwen3:4b-instruct): Note
+backend-1   | 15:20:10.618 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #28 (qwen3:4b-instruct): :
+backend-1   | 15:20:10.817 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #29 (qwen3:4b-instruct):  The
+backend-1   | 15:20:11.015 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #30 (qwen3:4b-instruct):  result
+backend-1   | 15:20:11.259 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #31 (qwen3:4b-instruct):  list
+backend-1   | 15:20:11.433 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #32 (qwen3:4b-instruct):  includes
+backend-1   | 15:20:11.680 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #33 (qwen3:4b-instruct):  only
+backend-1   | 15:20:11.990 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #34 (qwen3:4b-instruct):  one
+backend-1   | 15:20:12.196 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #35 (qwen3:4b-instruct):  iPhone
+backend-1   | 15:20:12.448 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #36 (qwen3:4b-instruct): .
+backend-1   | 15:20:12.647 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #37 (qwen3:4b-instruct):  The
+backend-1   | 15:20:12.913 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #38 (qwen3:4b-instruct):  Samsung
+backend-1   | 15:20:13.092 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #39 (qwen3:4b-instruct):  Galaxy
+backend-1   | 15:20:13.290 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #40 (qwen3:4b-instruct):  S
+backend-1   | 15:20:13.480 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #41 (qwen3:4b-instruct): 2
+backend-1   | 15:20:13.704 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #42 (qwen3:4b-instruct): 1
+backend-1   | 15:20:13.922 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #43 (qwen3:4b-instruct):  is
+backend-1   | 15:20:14.128 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #44 (qwen3:4b-instruct):  not
+backend-1   | 15:20:14.320 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #45 (qwen3:4b-instruct):  an
+backend-1   | 15:20:14.737 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #46 (qwen3:4b-instruct):  iPhone
+backend-1   | 15:20:14.922 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #47 (qwen3:4b-instruct): .
+backend-1   | 
+backend-1   | 
+backend-1   | 15:20:15.287 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #48 (qwen3:4b-instruct): To
+backend-1   | 15:20:15.511 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #49 (qwen3:4b-instruct):  provide
+backend-1   | 15:20:15.703 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #50 (qwen3:4b-instruct):  full
+backend-1   | 15:20:15.903 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #51 (qwen3:4b-instruct):  details
+backend-1   | 15:20:16.113 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #52 (qwen3:4b-instruct):  about
+backend-1   | 15:20:16.394 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #53 (qwen3:4b-instruct):  the
+backend-1   | 15:20:16.583 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #54 (qwen3:4b-instruct):  iPhone
+backend-1   | 15:20:17.186 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #56 (qwen3:4b-instruct): 1
+backend-1   | 15:20:17.350 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #57 (qwen3:4b-instruct): 3
+backend-1   | 15:20:17.536 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #58 (qwen3:4b-instruct):  Pro
+backend-1   | 15:20:17.976 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #59 (qwen3:4b-instruct): ,
+backend-1   | 15:20:18.270 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #60 (qwen3:4b-instruct):  I
+backend-1   | 15:20:19.140 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #61 (qwen3:4b-instruct):  will
+backend-1   | 15:20:19.495 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #62 (qwen3:4b-instruct):  now
+backend-1   | 15:20:20.299 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #63 (qwen3:4b-instruct):  fetch
+backend-1   | 15:20:20.564 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #64 (qwen3:4b-instruct):  its
+backend-1   | 15:20:20.860 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #65 (qwen3:4b-instruct):  snapshot
+backend-1   | 15:20:21.084 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #66 (qwen3:4b-instruct): .
+backend-1   | 
+backend-1   | 
+backend-1   | 15:20:26.023 [http-nio-4001-exec-4] TRACE org.zalando.logbook.Logbook - {
+backend-1   |   "origin" : "remote",
+backend-1   |   "headers" : {
+backend-1   |     "accept" : [ "application/json, text/plain, */*" ],
+backend-1   |     "accept-encoding" : [ "gzip, deflate, br, zstd" ],
+backend-1   |     "accept-language" : [ "en,en-US;q=0.9" ],
+backend-1   |     "authorization" : [ "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjbGllbnQiLCJhdXRoIjpbeyJhdXRob3JpdHkiOiJST0xFX0NMSUVOVCJ9XSwiaWF0IjoxNzY1MDM0MjcwLCJleHAiOjE3NjUwMzc4NzB9.9bp7I7VCC0b6H13aL0QrvctQXo3pQvjo51V-FuKGGho" ],
+backend-1   |     "connection" : [ "keep-alive" ],
+backend-1   |     "host" : [ "localhost:4001" ],
+backend-1   |     "origin" : [ "http://localhost:8081" ],
+backend-1   |     "referer" : [ "http://localhost:8081/" ],
+backend-1   |     "sec-ch-ua" : [ "\"Chromium\";v=\"142\", \"Google Chrome\";v=\"142\", \"Not_A Brand\";v=\"99\"" ],
+backend-1   |     "sec-ch-ua-mobile" : [ "?0" ],
+backend-1   |     "sec-ch-ua-platform" : [ "\"macOS\"" ],
+backend-1   |     "sec-fetch-dest" : [ "empty" ],
+backend-1   |     "sec-fetch-mode" : [ "cors" ],
+backend-1   |     "sec-fetch-site" : [ "same-site" ],
+backend-1   |     "user-agent" : [ "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36" ]
+backend-1   |   },
+backend-1   |   "protocol" : "HTTP/1.1",
+backend-1   |   "type" : "request",
+backend-1   |   "uri" : "http://localhost:4001/users/me",
+backend-1   |   "method" : "GET",
+backend-1   |   "correlation" : "bb31f1d0f5c393ef",
+backend-1   |   "body" : ""
+backend-1   | }
+backend-1   | 15:20:26.023 [http-nio-4001-exec-5] TRACE org.zalando.logbook.Logbook - {
+backend-1   |   "origin" : "remote",
+backend-1   |   "headers" : {
+backend-1   |     "accept" : [ "application/json, text/plain, */*" ],
+backend-1   |     "accept-encoding" : [ "gzip, deflate, br, zstd" ],
+backend-1   |     "accept-language" : [ "en,en-US;q=0.9" ],
+backend-1   |     "authorization" : [ "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjbGllbnQiLCJhdXRoIjpbeyJhdXRob3JpdHkiOiJST0xFX0NMSUVOVCJ9XSwiaWF0IjoxNzY1MDM0MjcwLCJleHAiOjE3NjUwMzc4NzB9.9bp7I7VCC0b6H13aL0QrvctQXo3pQvjo51V-FuKGGho" ],
+backend-1   |     "connection" : [ "keep-alive" ],
+backend-1   |     "host" : [ "localhost:4001" ],
+backend-1   |     "origin" : [ "http://localhost:8081" ],
+backend-1   |     "referer" : [ "http://localhost:8081/" ],
+backend-1   |     "sec-ch-ua" : [ "\"Chromium\";v=\"142\", \"Google Chrome\";v=\"142\", \"Not_A Brand\";v=\"99\"" ],
+backend-1   |     "sec-ch-ua-mobile" : [ "?0" ],
+backend-1   |     "sec-ch-ua-platform" : [ "\"macOS\"" ],
+backend-1   |     "sec-fetch-dest" : [ "empty" ],
+backend-1   |     "sec-fetch-mode" : [ "cors" ],
+backend-1   |     "sec-fetch-site" : [ "same-site" ],
+backend-1   |     "user-agent" : [ "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36" ]
+backend-1   |   },
+backend-1   |   "protocol" : "HTTP/1.1",
+backend-1   |   "type" : "request",
+backend-1   |   "uri" : "http://localhost:4001/api/cart",
+backend-1   |   "method" : "GET",
+backend-1   |   "correlation" : "adde02c7bccd1703",
+backend-1   |   "body" : ""
+backend-1   | }
+backend-1   | 15:20:26.173 [http-nio-4001-exec-4] TRACE org.zalando.logbook.Logbook - {
+backend-1   |   "duration" : 149,
+backend-1   |   "headers" : {
+backend-1   |     "Access-Control-Allow-Credentials" : [ "true" ],
+backend-1   |     "Access-Control-Allow-Origin" : [ "http://localhost:8081" ],
+backend-1   |     "Access-Control-Expose-Headers" : [ "Content-Type, X-Requested-With, Cache-Control, Last-Event-ID" ],
+backend-1   |     "Cache-Control" : [ "no-cache, no-store, max-age=0, must-revalidate" ],
+backend-1   |     "Connection" : [ "keep-alive" ],
+backend-1   |     "Content-Type" : [ "application/json;charset=UTF-8" ],
+backend-1   |     "Date" : [ "Sat, 06 Dec 2025 15:20:26 GMT" ],
+backend-1   |     "Expires" : [ "0" ],
+backend-1   |     "Keep-Alive" : [ "timeout=60" ],
+backend-1   |     "Pragma" : [ "no-cache" ],
+backend-1   |     "Transfer-Encoding" : [ "chunked" ],
+backend-1   |     "Vary" : [ "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers" ],
+backend-1   |     "X-Content-Type-Options" : [ "nosniff" ],
+backend-1   |     "X-Frame-Options" : [ "DENY" ],
+backend-1   |     "X-XSS-Protection" : [ "0" ]
+backend-1   |   },
+backend-1   |   "protocol" : "HTTP/1.1",
+backend-1   |   "correlation" : "bb31f1d0f5c393ef",
+backend-1   |   "origin" : "local",
+backend-1   |   "body" : {
+backend-1   |     "id" : 3,
+backend-1   |     "username" : "client",
+backend-1   |     "email" : "alice.smith@yahoo.com",
+backend-1   |     "roles" : [ "ROLE_CLIENT" ],
+backend-1   |     "firstName" : "Alice",
+backend-1   |     "lastName" : "Smith"
+backend-1   |   },
+backend-1   |   "type" : "response",
+backend-1   |   "status" : 200
+backend-1   | }
+backend-1   | 15:20:26.217 [http-nio-4001-exec-5] TRACE org.zalando.logbook.Logbook - {
+backend-1   |   "duration" : 193,
+backend-1   |   "headers" : {
+backend-1   |     "Access-Control-Allow-Credentials" : [ "true" ],
+backend-1   |     "Access-Control-Allow-Origin" : [ "http://localhost:8081" ],
+backend-1   |     "Access-Control-Expose-Headers" : [ "Content-Type, X-Requested-With, Cache-Control, Last-Event-ID" ],
+backend-1   |     "Cache-Control" : [ "no-cache, no-store, max-age=0, must-revalidate" ],
+backend-1   |     "Connection" : [ "keep-alive" ],
+backend-1   |     "Content-Type" : [ "application/json;charset=UTF-8" ],
+backend-1   |     "Date" : [ "Sat, 06 Dec 2025 15:20:26 GMT" ],
+backend-1   |     "Expires" : [ "0" ],
+backend-1   |     "Keep-Alive" : [ "timeout=60" ],
+backend-1   |     "Pragma" : [ "no-cache" ],
+backend-1   |     "Transfer-Encoding" : [ "chunked" ],
+backend-1   |     "Vary" : [ "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers" ],
+backend-1   |     "X-Content-Type-Options" : [ "nosniff" ],
+backend-1   |     "X-Frame-Options" : [ "DENY" ],
+backend-1   |     "X-XSS-Protection" : [ "0" ]
+backend-1   |   },
+backend-1   |   "protocol" : "HTTP/1.1",
+backend-1   |   "correlation" : "adde02c7bccd1703",
+backend-1   |   "origin" : "local",
+backend-1   |   "body" : {
+backend-1   |     "username" : "client",
+backend-1   |     "items" : [ ],
+backend-1   |     "totalPrice" : 0,
+backend-1   |     "totalItems" : 0
+backend-1   |   },
+backend-1   |   "type" : "response",
+backend-1   |   "status" : 200
+backend-1   | }
+backend-1   | 15:20:27.881 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received tool_call for chat-tools #67 (qwen3:4b-instruct): function=get_product_snapshot arguments={name=iPhone 13 Pro}
+ollama      | [GIN] 2025/12/06 - 15:20:28 | 200 | 31.169446074s |      172.19.0.5 | POST     "/api/chat"
+backend-1   | 15:20:28.437 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - chat-tools completed for model qwen3:4b-instruct in 105 s (68 chunks)
+backend-1   | 15:20:28.438 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - chat-tools stream closed for model qwen3:4b-instruct
+backend-1   | 15:20:28.439 [boundedElastic-1] INFO  c.a.t.s.o.OllamaFunctionCallingService - Iteration 2: Ollama responded with 66 chunk(s) in 31207 ms
+backend-1   | 15:20:28.439 [boundedElastic-1] INFO  c.a.t.s.o.OllamaFunctionCallingService - Iteration 2: Ollama requested 1 tool call(s): [get_product_snapshot]
+backend-1   | 15:20:28.439 [boundedElastic-1] INFO  c.a.t.s.o.OllamaFunctionCallingService - Iteration 2: Executing tool get_product_snapshot with args {name=iPhone 13 Pro}
+backend-1   | 15:20:28.439 [boundedElastic-1] INFO  c.a.t.s.o.f.OllamaToolRegistry - Executing tool get_product_snapshot with args {name=iPhone 13 Pro}
+backend-1   | 15:20:28.440 [boundedElastic-1] INFO  c.a.t.s.o.f.ProductSnapshotFunctionHandler - Executing get_product_snapshot with arguments: {name=iPhone 13 Pro}
+backend-1   | 15:20:28.442 [boundedElastic-1] INFO  c.a.t.s.o.f.ProductSnapshotFunctionHandler - Fetching product snapshot by name='iPhone 13 Pro'
+backend-1   | 15:20:28.552 [boundedElastic-1] INFO  c.a.t.s.o.f.ProductSnapshotFunctionHandler - Resolved product snapshot for iPhone 13 Pro
+backend-1   | 15:20:28.569 [boundedElastic-1] INFO  c.a.t.s.o.OllamaFunctionCallingService - Iteration 2: Tool get_product_snapshot responded (payload 377 chars)
+backend-1   | 15:20:28.572 [boundedElastic-1] INFO  c.a.t.s.o.OllamaFunctionCallingService - Iteration 3: forwarding 6 historical messages to Ollama (tools=2)
+backend-1   | 15:20:39.814 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #69 (qwen3:4b-instruct): We
+backend-1   | 15:20:40.303 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #70 (qwen3:4b-instruct):  have
+backend-1   | 15:20:40.537 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #71 (qwen3:4b-instruct):  the
+backend-1   | 15:20:41.064 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #72 (qwen3:4b-instruct):  following
+backend-1   | 15:20:41.281 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #73 (qwen3:4b-instruct):  iPhone
+backend-1   | 15:20:41.512 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #74 (qwen3:4b-instruct):  model
+backend-1   | 15:20:41.801 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #75 (qwen3:4b-instruct):  in
+backend-1   | 15:20:42.141 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #76 (qwen3:4b-instruct):  stock
+backend-1   | 15:20:42.429 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #77 (qwen3:4b-instruct): :
+backend-1   | 
+backend-1   | 
+backend-1   | 15:20:42.713 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #78 (qwen3:4b-instruct): -
+backend-1   | 15:20:42.970 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #79 (qwen3:4b-instruct):  **
+backend-1   | 15:20:43.193 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #80 (qwen3:4b-instruct): iPhone
+backend-1   | 15:20:43.644 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #82 (qwen3:4b-instruct): 1
+backend-1   | 15:20:43.951 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #83 (qwen3:4b-instruct): 3
+backend-1   | 15:20:44.216 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #84 (qwen3:4b-instruct):  Pro
+backend-1   | 15:20:45.442 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #85 (qwen3:4b-instruct): **
+backend-1   | 
+backend-1   | 15:20:46.157 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #87 (qwen3:4b-instruct):  -
+backend-1   | 15:20:46.448 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #88 (qwen3:4b-instruct):  Description
+backend-1   | 15:20:46.697 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #89 (qwen3:4b-instruct): :
+backend-1   | 15:20:47.012 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #90 (qwen3:4b-instruct):  Latest
+backend-1   | 15:20:47.258 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #91 (qwen3:4b-instruct):  iPhone
+backend-1   | 15:20:47.485 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #92 (qwen3:4b-instruct):  model
+backend-1   | 15:20:48.030 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #93 (qwen3:4b-instruct):  with
+backend-1   | 15:20:48.241 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #94 (qwen3:4b-instruct):  A
+backend-1   | 15:20:48.433 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #95 (qwen3:4b-instruct): 1
+backend-1   | 15:20:48.672 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #96 (qwen3:4b-instruct): 5
+backend-1   | 15:20:48.885 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #97 (qwen3:4b-instruct):  B
+backend-1   | 15:20:49.148 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #98 (qwen3:4b-instruct): ionic
+backend-1   | 15:20:49.392 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #99 (qwen3:4b-instruct):  chip
+backend-1   | 15:20:49.644 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #100 (qwen3:4b-instruct): ,
+backend-1   | 15:20:49.831 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #101 (qwen3:4b-instruct):  Pro
+backend-1   | 15:20:50.254 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #102 (qwen3:4b-instruct):  camera
+backend-1   | 15:20:50.502 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #103 (qwen3:4b-instruct):  system
+backend-1   | 15:20:50.734 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #104 (qwen3:4b-instruct): ,
+backend-1   | 15:20:51.225 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #105 (qwen3:4b-instruct):  and
+backend-1   | 15:20:51.482 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #106 (qwen3:4b-instruct):  Super
+backend-1   | 15:20:51.665 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #107 (qwen3:4b-instruct):  Ret
+backend-1   | 15:20:51.850 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #108 (qwen3:4b-instruct): ina
+backend-1   | 15:20:52.237 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #109 (qwen3:4b-instruct):  X
+backend-1   | 15:20:52.503 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #110 (qwen3:4b-instruct): DR
+backend-1   | 15:20:52.763 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #111 (qwen3:4b-instruct):  display
+backend-1   | 15:20:53.406 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #114 (qwen3:4b-instruct):  -
+backend-1   | 15:20:53.583 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #115 (qwen3:4b-instruct):  Price
+backend-1   | 15:20:53.845 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #116 (qwen3:4b-instruct): :
+backend-1   | 15:20:54.097 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #117 (qwen3:4b-instruct):  $
+backend-1   | 15:20:54.316 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #118 (qwen3:4b-instruct): 9
+backend-1   | 15:20:54.523 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #119 (qwen3:4b-instruct): 9
+backend-1   | 15:20:54.743 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #120 (qwen3:4b-instruct): 9
+backend-1   | 15:20:55.222 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #121 (qwen3:4b-instruct): .
+backend-1   | 15:20:55.501 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #122 (qwen3:4b-instruct): 9
+backend-1   | 15:20:55.730 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #123 (qwen3:4b-instruct): 9
+backend-1   | 15:20:56.457 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #126 (qwen3:4b-instruct):  -
+backend-1   | 15:20:56.725 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #127 (qwen3:4b-instruct):  Stock
+backend-1   | 15:20:56.928 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #128 (qwen3:4b-instruct):  Quantity
+backend-1   | 15:20:57.233 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #129 (qwen3:4b-instruct): :
+backend-1   | 15:20:57.870 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #131 (qwen3:4b-instruct): 5
+backend-1   | 15:20:58.153 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #132 (qwen3:4b-instruct): 0
+backend-1   | 15:20:58.382 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #133 (qwen3:4b-instruct):  units
+backend-1   | 15:20:59.019 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #136 (qwen3:4b-instruct):  -
+backend-1   | 15:20:59.229 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #137 (qwen3:4b-instruct):  Category
+backend-1   | 15:20:59.451 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #138 (qwen3:4b-instruct): :
+backend-1   | 15:20:59.754 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #139 (qwen3:4b-instruct):  Electronics
+backend-1   | 15:21:00.672 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #142 (qwen3:4b-instruct):  -
+backend-1   | 15:21:00.971 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #143 (qwen3:4b-instruct):  Image
+backend-1   | 15:21:01.251 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #144 (qwen3:4b-instruct):  URL
+backend-1   | 15:21:01.718 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #145 (qwen3:4b-instruct): :
+backend-1   | 15:21:02.002 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #146 (qwen3:4b-instruct):  [
+backend-1   | 15:21:02.226 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #147 (qwen3:4b-instruct): View
+backend-1   | 15:21:02.426 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #148 (qwen3:4b-instruct):  Image
+backend-1   | 15:21:02.666 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #149 (qwen3:4b-instruct): ](
+backend-1   | 15:21:02.992 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #150 (qwen3:4b-instruct): http
+backend-1   | 15:21:03.238 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #151 (qwen3:4b-instruct): ://
+backend-1   | 15:21:03.427 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #152 (qwen3:4b-instruct): localhost
+backend-1   | 15:21:03.902 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #153 (qwen3:4b-instruct): :
+backend-1   | 15:21:04.198 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #154 (qwen3:4b-instruct): 8
+backend-1   | 15:21:04.422 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #155 (qwen3:4b-instruct): 0
+backend-1   | 15:21:04.637 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #156 (qwen3:4b-instruct): 8
+backend-1   | 15:21:04.889 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #157 (qwen3:4b-instruct): 2
+backend-1   | 15:21:05.305 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #158 (qwen3:4b-instruct): /images
+backend-1   | 15:21:05.559 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #159 (qwen3:4b-instruct): /
+backend-1   | 15:21:05.771 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #160 (qwen3:4b-instruct): iphone
+backend-1   | 15:21:06.124 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #161 (qwen3:4b-instruct): .png
+backend-1   | 15:21:06.319 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #162 (qwen3:4b-instruct): )
+backend-1   | 
+backend-1   | 
+backend-1   | 15:21:06.538 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #163 (qwen3:4b-instruct): Note
+backend-1   | 15:21:06.794 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #164 (qwen3:4b-instruct): :
+backend-1   | 15:21:06.982 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #165 (qwen3:4b-instruct):  The
+backend-1   | 15:21:07.166 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #166 (qwen3:4b-instruct):  catalog
+backend-1   | 15:21:07.394 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #167 (qwen3:4b-instruct):  returned
+backend-1   | 15:21:07.633 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #168 (qwen3:4b-instruct):  only
+backend-1   | 15:21:08.000 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #169 (qwen3:4b-instruct):  one
+backend-1   | 15:21:08.280 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #170 (qwen3:4b-instruct):  iPhone
+backend-1   | 15:21:08.537 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #171 (qwen3:4b-instruct):  (
+backend-1   | 15:21:08.742 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #172 (qwen3:4b-instruct): iPhone
+backend-1   | 15:21:09.265 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #174 (qwen3:4b-instruct): 1
+backend-1   | 15:21:09.490 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #175 (qwen3:4b-instruct): 3
+backend-1   | 15:21:09.747 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #176 (qwen3:4b-instruct):  Pro
+backend-1   | 15:21:10.387 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #177 (qwen3:4b-instruct): ),
+backend-1   | 15:21:10.779 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #178 (qwen3:4b-instruct):  as
+backend-1   | 15:21:11.228 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #179 (qwen3:4b-instruct):  the
+backend-1   | 15:21:11.496 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #180 (qwen3:4b-instruct):  other
+backend-1   | 15:21:11.774 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #181 (qwen3:4b-instruct):  product
+backend-1   | 15:21:12.005 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #182 (qwen3:4b-instruct):  listed
+backend-1   | 15:21:12.239 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #183 (qwen3:4b-instruct):  (
+backend-1   | 15:21:12.586 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #184 (qwen3:4b-instruct): Samsung
+backend-1   | 15:21:12.947 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #185 (qwen3:4b-instruct):  Galaxy
+backend-1   | 15:21:13.200 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #186 (qwen3:4b-instruct):  S
+backend-1   | 15:21:13.420 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #187 (qwen3:4b-instruct): 2
+backend-1   | 15:21:13.627 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #188 (qwen3:4b-instruct): 1
+backend-1   | 15:21:13.848 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #189 (qwen3:4b-instruct): )
+backend-1   | 15:21:14.106 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #190 (qwen3:4b-instruct):  is
+backend-1   | 15:21:14.306 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #191 (qwen3:4b-instruct):  not
+backend-1   | 15:21:14.532 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #192 (qwen3:4b-instruct):  an
+backend-1   | 15:21:14.856 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #193 (qwen3:4b-instruct):  iPhone
+backend-1   | 15:21:15.334 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - Received response for chat-tools #194 (qwen3:4b-instruct): .
+ollama      | [GIN] 2025/12/06 - 15:21:15 | 200 | 46.960757117s |      172.19.0.5 | POST     "/api/chat"
+backend-1   | 15:21:15.539 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - chat-tools completed for model qwen3:4b-instruct in 152 s (195 chunks)
+backend-1   | 15:21:15.539 [reactor-http-epoll-2] INFO  c.a.t.s.ollama.OllamaRequestHandler - chat-tools stream closed for model qwen3:4b-instruct
+backend-1   | 15:21:15.540 [boundedElastic-1] INFO  c.a.t.s.o.OllamaFunctionCallingService - Iteration 3: Ollama responded with 127 chunk(s) in 46967 ms
+backend-1   | 15:21:15.540 [boundedElastic-1] INFO  c.a.t.s.o.OllamaFunctionCallingService - Iteration 3: Received assistant completion (0 chars). Ending stream.
+postgres-1  | 2025-12-06 15:21:41.537 UTC [27] LOG:  checkpoint starting: time
+postgres-1  | 2025-12-06 15:21:42.070 UTC [27] LOG:  checkpoint complete: wrote 7 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.512 s, sync=0.007 s, total=0.535 s; sync files=7, longest=0.004 s, average=0.001 s; distance=13 kB, estimate=13 kB; lsn=0/1A0D420, redo lsn=0/1A0D3E8

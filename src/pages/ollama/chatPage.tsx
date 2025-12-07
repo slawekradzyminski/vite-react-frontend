@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { useOllamaChat } from '../../hooks/useOllamaChat';
 import { Spinner } from '../../components/ui/spinner';
-import ReactMarkdown from 'react-markdown';
-import { ChatMessageDto } from '../../types/ollama';
-import styles from './OllamaChat.module.css';
+import { ChatTranscript } from './ChatTranscript';
 
 interface OllamaChatPageProps {
   hideTitle?: boolean;
@@ -34,43 +32,6 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
       e.preventDefault();
       handleSend();
     }
-  };
-
-  const renderMessage = (message: ChatMessageDto) => {
-    const isSystem = message.role === 'system';
-    const isUser = message.role === 'user';
-    const bgColor = isSystem
-      ? 'bg-gray-100'
-      : isUser
-      ? 'bg-blue-50'
-      : 'bg-green-50';
-    const alignment = isUser ? 'items-end' : 'items-start';
-
-    return (
-      <div className={`flex flex-col ${alignment} w-full mb-4`} data-testid={`chat-message-${message.role}`}>
-        <div className={`${bgColor} rounded-lg px-4 py-2 max-w-[80%]`}>
-          <div className="text-sm text-gray-500 mb-1" data-testid={`chat-message-role-${message.role}`}>
-            {message.role.charAt(0).toUpperCase() + message.role.slice(1)}
-          </div>
-          {message.thinking && (
-            <details className="mb-3 text-xs text-gray-500" data-testid="thinking-toggle">
-              <summary className="cursor-pointer select-none flex items-center gap-1">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-600">
-                  <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.86-3.14-7-7-7z"/>
-                </svg>
-                Thinking
-              </summary>
-              <div className="mt-2 p-2 bg-gray-50 rounded text-gray-700" data-testid="thinking-content">
-                <ReactMarkdown>{message.thinking}</ReactMarkdown>
-              </div>
-            </details>
-          )}
-          <div className={styles.markdownContainer} data-testid={`chat-message-content-${message.role}`}>
-            <ReactMarkdown>{message.content}</ReactMarkdown>
-          </div>
-        </div>
-      </div>
-    );
   };
 
   if (isLoadingSystemPrompt) {
@@ -140,11 +101,7 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
         </label>
       </div>
 
-      <div className={styles.conversationContainer} data-testid="chat-conversation">
-        {messages.map((msg, idx) => (
-          <div key={idx} data-testid={`chat-message-container-${idx}`}>{renderMessage(msg)}</div>
-        ))}
-      </div>
+      <ChatTranscript messages={messages} />
 
       <div className="flex items-end gap-2" data-testid="chat-input-container">
         <textarea

@@ -9,6 +9,7 @@ import { EditUserPage } from './pages/users/editUserPage';
 import { EmailPage } from './pages/email/emailPage';
 import { QrCodePage } from './pages/qr/qrPage';
 import { LlmPage } from './pages/llm/llmPage';
+import { LlmChatExperience, LlmGenerateExperience, LlmToolExperience } from './pages/llm/llmModePages';
 import { Profile } from './pages/profile/profilePage';
 import { ProductsPage } from './pages/products/productsPage';
 import { ProductDetailsPage } from './pages/products/productDetailsPage';
@@ -91,6 +92,30 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <LlmPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/llm/chat"
+        element={
+          <ProtectedRoute>
+            <LlmChatExperience />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/llm/generate"
+        element={
+          <ProtectedRoute>
+            <LlmGenerateExperience />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/llm/tools"
+        element={
+          <ProtectedRoute>
+            <LlmToolExperience />
           </ProtectedRoute>
         }
       />

@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useToast } from './useToast';
 import { ChatMessageDto, ChatRequestDto, ChatResponseDto } from '../types/ollama';
 import { processSSEResponse } from '../lib/sse';
-import { ollama, systemPrompt } from '../lib/api';
+import { ollama, prompts } from '../lib/api';
 
 interface UseOllamaChatOptions {
   onError?: (error: Error) => void;
@@ -29,8 +29,8 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
     const fetchSystemPrompt = async () => {
       try {
         setIsLoadingSystemPrompt(true);
-        const promptResponse = await systemPrompt.get();
-        const userPrompt = promptResponse.data.systemPrompt;
+        const promptResponse = await prompts.chat.get();
+        const userPrompt = promptResponse.data.chatSystemPrompt;
         
         if (userPrompt && userPrompt.trim()) {
           setMessages([

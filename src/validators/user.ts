@@ -16,8 +16,14 @@ export const userEditSchema = z.object({
 
 export const systemPromptSchema = z.object({
   systemPrompt: z.string()
-    .max(500, 'System prompt must be at most 500 characters')
+    .max(5000, 'System prompt must be at most 5000 characters')
+});
+
+export const toolSystemPromptSchema = z.object({
+  toolSystemPrompt: z.string()
+    .max(5000, 'Tool prompt must be at most 5000 characters')
 });
 
 export type UserEditFormData = z.infer<typeof userEditSchema>;
-export type SystemPromptFormData = z.infer<typeof systemPromptSchema>; 
+export type SystemPromptFormData = z.infer<typeof systemPromptSchema>;
+export type ToolSystemPromptFormData = z.infer<typeof toolSystemPromptSchema>;

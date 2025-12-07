@@ -13,9 +13,9 @@ export const ollamaMocks = {
             }
 
             const chunks = [
-                { model: 'qwen3:0.6b', response: '# Heading\n\n', done: false },
-                { model: 'qwen3:0.6b', response: '* List item 1\n* List item 2\n\n', done: false },
-                { model: 'qwen3:0.6b', response: '**Bold text**\n\n`code block`', done: true }
+                { model: 'qwen3:4b-instruct', response: '# Heading\n\n', done: false },
+                { model: 'qwen3:4b-instruct', response: '* List item 1\n* List item 2\n\n', done: false },
+                { model: 'qwen3:4b-instruct', response: '**Bold text**\n\n`code block`', done: true }
             ];
 
             const response = chunks.map(chunk => `data: ${JSON.stringify(chunk)}\n\n`).join('');
