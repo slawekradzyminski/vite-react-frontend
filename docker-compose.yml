@@ -8,7 +8,13 @@ services:
       SPRING_PROFILES_ACTIVE: local
     networks:
       - my-private-ntwk
-
+  ollama-mock:
+    image: slawekradzyminski/ollama-mock:1.0.1
+    restart: always
+    ports:
+      - "11434:11434"
+    networks:
+      - my-private-ntwk
 networks:
   my-private-ntwk:
     driver: bridge

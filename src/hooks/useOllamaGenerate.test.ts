@@ -37,7 +37,7 @@ describe('useOllama', () => {
     expect(result.current.isGenerating).toBe(false);
     expect(result.current.response).toBe('');
     expect(result.current.thinking).toBe('');
-    expect(result.current.model).toBe('qwen3:4b-instruct');
+    expect(result.current.model).toBe('qwen3:0.6b');
     expect(result.current.temperature).toBe(0.8);
     expect(result.current.think).toBe(false);
   });
@@ -79,7 +79,7 @@ describe('useOllama', () => {
     expect(result.current.response).toBe('Hello World');
     expect(result.current.isGenerating).toBe(false);
     expect(ollama.generate).toHaveBeenCalledWith({
-      model: 'qwen3:4b-instruct',
+      model: 'qwen3:0.6b',
       prompt: 'test prompt',
       think: false,
       options: { temperature: 0.8 },
@@ -189,7 +189,7 @@ describe('useOllama', () => {
 
     // then
     expect(ollama.generate).toHaveBeenCalledWith({
-      model: 'qwen3:4b-instruct',
+      model: 'qwen3:0.6b',
       prompt: 'test prompt',
       think: false,
       options: { temperature: customTemperature }
@@ -207,7 +207,7 @@ describe('useOllama', () => {
 
     // then
     expect(ollama.generate).toHaveBeenCalledWith({
-      model: 'qwen3:4b-instruct',
+      model: 'qwen3:0.6b',
       prompt: 'test prompt',
       think: false,
       options: { temperature: 0.8 }
@@ -262,7 +262,7 @@ describe('useOllama', () => {
 
     // then
     expect(ollama.generate).toHaveBeenCalledWith({
-      model: 'qwen3:4b-instruct',
+      model: 'qwen3:0.6b',
       prompt: 'test prompt',
       think: true,
       options: { temperature: 0.8 },

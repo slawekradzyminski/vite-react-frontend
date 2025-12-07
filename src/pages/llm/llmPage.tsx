@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { OllamaChatPage } from '../ollama/chatPage';
 import { OllamaGeneratePage } from '../ollama/generatePage';
+import { OllamaToolChatPage } from '../ollama/toolChatPage';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/tabs';
 
-type LlmMode = 'chat' | 'generate';
+type LlmMode = 'chat' | 'generate' | 'tools';
 
 export function LlmPage() {
   const [mode, setMode] = useState<LlmMode>('chat');
@@ -16,6 +17,7 @@ export function LlmPage() {
         <TabsList className="mb-4">
           <TabsTrigger value="chat" data-testid="chat-tab">Chat</TabsTrigger>
           <TabsTrigger value="generate" data-testid="generate-tab">Generate</TabsTrigger>
+          <TabsTrigger value="tools" data-testid="tools-tab">Tools</TabsTrigger>
         </TabsList>
 
         <TabsContent value="chat" className="mt-0" data-testid="chat-content">
@@ -25,7 +27,11 @@ export function LlmPage() {
         <TabsContent value="generate" className="mt-0" data-testid="generate-content">
           <OllamaGeneratePage hideTitle />
         </TabsContent>
+
+        <TabsContent value="tools" className="mt-0" data-testid="tools-content">
+          <OllamaToolChatPage hideTitle />
+        </TabsContent>
       </Tabs>
     </div>
   );
-} 
+}

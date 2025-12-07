@@ -4,9 +4,11 @@ import { vi, describe, it, expect } from 'vitest';
 import { LlmPage } from './llmPage';
 import { useOllamaChat } from '../../hooks/useOllamaChat';
 import { useOllamaGenerate } from '../../hooks/useOllamaGenerate';
+import { useOllamaToolChat } from '../../hooks/useOllamaToolChat';
 
 vi.mock('../../hooks/useOllamaChat');
 vi.mock('../../hooks/useOllamaGenerate');
+vi.mock('../../hooks/useOllamaToolChat');
 
 vi.mock('react-markdown', () => ({
   default: ({ children }: { children: string }) => <div>{children}</div>
@@ -17,7 +19,7 @@ vi.mock('../ollama/chatPage', () => ({
     <div data-testid="ollama-chat-page" className="flex flex-col">
       <div data-testid="model-selection" className="mb-4">
         <label data-testid="model-label" htmlFor="model" className="block font-medium mb-2">Model</label>
-        <input data-testid="model-input" id="model" type="text" className="w-full border rounded p-2" placeholder="Enter model name" value="qwen3:4b-instruct" readOnly />
+        <input data-testid="model-input" id="model" type="text" className="w-full border rounded p-2" placeholder="Enter model name" value="qwen3:0.6b" readOnly />
       </div>
       <div data-testid="temperature-control" className="mb-4">
         <label data-testid="temperature-label" htmlFor="temperature" className="block font-medium mb-2">Temperature: 0.80</label>
@@ -41,7 +43,7 @@ vi.mock('../ollama/generatePage', () => ({
     <div data-testid="ollama-generate-page" className="flex flex-col">
       <div data-testid="model-selection" className="mb-4">
         <label data-testid="model-label" htmlFor="model" className="block font-medium mb-2">Model</label>
-        <input data-testid="model-input" id="model" type="text" className="w-full border rounded p-2" placeholder="Enter model name" value="qwen3:4b-instruct" readOnly />
+        <input data-testid="model-input" id="model" type="text" className="w-full border rounded p-2" placeholder="Enter model name" value="qwen3:0.6b" readOnly />
       </div>
       <div data-testid="temperature-control" className="mb-4">
         <label data-testid="temperature-label" htmlFor="temperature" className="block font-medium mb-2">Temperature: 0.80</label>
@@ -62,6 +64,14 @@ vi.mock('../ollama/generatePage', () => ({
   ),
 }));
 
+vi.mock('../ollama/toolChatPage', () => ({
+  OllamaToolChatPage: () => (
+    <div data-testid="ollama-tool-chat-page" className="flex flex-col">
+      <div data-testid="tool-info-card" className="mb-4">Tools Info</div>
+    </div>
+  )
+}));
+
 describe('LlmPage', () => {
   // given
   beforeEach(() => {
@@ -71,7 +81,7 @@ describe('LlmPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: vi.fn(),
-      model: 'qwen3:4b-instruct',
+      model: 'qwen3:0.6b',
       setModel: vi.fn(),
       setMessages: vi.fn(),
       temperature: 0.8,
@@ -85,12 +95,28 @@ describe('LlmPage', () => {
       thinking: '',
       isGenerating: false,
       generate: vi.fn(),
-      model: 'qwen3:4b-instruct',
+      model: 'qwen3:0.6b',
       setModel: vi.fn(),
       temperature: 0.8,
       setTemperature: vi.fn(),
       think: false,
       setThink: vi.fn()
+    });
+
+    vi.mocked(useOllamaToolChat).mockReturnValue({
+      messages: [],
+      toolMessages: [],
+      isChatting: false,
+      isLoadingSystemPrompt: false,
+      chat: vi.fn(),
+      model: 'qwen3:4b-instruct',
+      setModel: vi.fn(),
+      setMessages: vi.fn(),
+      temperature: 0.4,
+      setTemperature: vi.fn(),
+      think: false,
+      setThink: vi.fn(),
+      toolDefinitions: []
     });
   });
 
@@ -109,6 +135,7 @@ describe('LlmPage', () => {
     // then
     expect(screen.getByTestId('chat-tab')).toHaveAttribute('data-state', 'active');
     expect(screen.getByTestId('generate-tab')).toHaveAttribute('data-state', 'inactive');
+    expect(screen.getByTestId('tools-tab')).toHaveAttribute('data-state', 'inactive');
     expect(screen.getByTestId('chat-content')).toBeVisible();
   });
 
@@ -150,4 +177,16 @@ describe('LlmPage', () => {
       expect(screen.getByTestId('ollama-generate-page')).toBeInTheDocument();
     });
   });
-}); 
+
+  it('switches to tools tab and renders tool chat page', async () => {
+    const user = userEvent.setup();
+    render(<LlmPage />);
+
+    await user.click(screen.getByTestId('tools-tab'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('tools-tab')).toHaveAttribute('data-state', 'active');
+      expect(screen.getByTestId('ollama-tool-chat-page')).toBeInTheDocument();
+    });
+  });
+});

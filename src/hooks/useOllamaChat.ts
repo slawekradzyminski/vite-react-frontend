@@ -18,7 +18,7 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
       content: DEFAULT_SYSTEM_PROMPT
     }
   ]);
-  const [model, setModel] = useState('qwen3:4b-instruct');
+  const [model, setModel] = useState('qwen3:0.6b');
   const [temperature, setTemperature] = useState(0.8);
   const [think, setThink] = useState(false);
   const [isChatting, setIsChatting] = useState(false);

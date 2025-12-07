@@ -55,8 +55,8 @@ describe('OllamaGeneratePage', () => {
   it('handles streaming chunks correctly', async () => {
     // given
     const mockResponse = new Response(
-      'data: {"model":"qwen3:4b-instruct","response":"Hello","done":false}\n\n' +
-      'data: {"model":"qwen3:4b-instruct","response":" World","done":true}\n\n',
+      'data: {"model":"qwen3:0.6b","response":"Hello","done":false}\n\n' +
+      'data: {"model":"qwen3:0.6b","response":" World","done":true}\n\n',
       {
         headers: { 'Content-Type': 'text/event-stream' }
       }
@@ -73,7 +73,7 @@ describe('OllamaGeneratePage', () => {
       expect(screen.getByText('Hello World')).toBeInTheDocument();
     });
     expect(vi.mocked(ollama.generate)).toHaveBeenCalledWith(expect.objectContaining({
-      model: 'qwen3:4b-instruct'
+      model: 'qwen3:0.6b'
     }));
   });
 
@@ -205,7 +205,7 @@ describe('OllamaGeneratePage', () => {
     
     // then
     const modelInput = screen.getByTestId('model-input');
-    expect(modelInput).toHaveValue('qwen3:4b-instruct');
+    expect(modelInput).toHaveValue('qwen3:0.6b');
   });
 
   it('renders thinking checkbox unchecked by default', () => {
