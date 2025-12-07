@@ -42,6 +42,15 @@ src/
 - Responsive design
 - Ecommerce features
 - Admin dashboard
+- LLM assistant workspace with dedicated **Chat**, **Generate**, and **Tools** tabs
+
+### LLM Assistant overview
+
+- `/llm` now surfaces three tabs:
+  - **Chat** streams plain conversations through `qwen3:0.6b` and optionally exposes the model’s thinking traces.
+  - **Generate** also targets `qwen3:0.6b`, providing a single-prompt flow with thinking toggles.
+  - **Tools** is the catalog/Grokipedia playground, pinned to `qwen3:4b-instruct`, showing live tool call notices, tool outputs, and a disabled thinking notice (that model does not emit reasoning).
+- The Tools tab fetches runtime tool schemas from the backend at `/api/ollama/chat/tools/definitions` and renders suggested prompts so the mock/backend scenarios are easy to exercise.
 
 ## Development Setup
 
@@ -122,7 +131,12 @@ Run all checks before submitting changes:
 ```bash
 npm run build          # Type-check + Vite production build
 npm test               # Vitest suite
-npx playwright test    # E2E tests (requires backend on :4001 and dev server on :8081)
+npx playwright test    # E2E tests (requires backend on :4001, dev server on :8081, and ollama-mock on :11434)
 ```
 
-Playwright tests rely on the backend’s local email outbox endpoint, so ensure the backend runs with the `local` Spring profile or adapt the helper to pull tokens from Mailhog when using docker/localstack.
+Before launching Playwright:
+1. Start the Spring backend (`./mvnw spring-boot:run`) so the frontend can authenticate and proxy to Ollama.
+2. Start the deterministic Ollama mock (`cd ../ollama-mock && ./mvnw spring-boot:run`) – it listens on `http://localhost:11434` and the backend is already configured to point at it when the local profile is active.
+3. Run `npm run dev` to serve the Vite app on `http://localhost:8081`.
+
+Playwright exercises the full stack (e.g., the Tools tab triggers real streaming tool calls), so deterministic results come from that mock service. The tests still rely on the backend’s local email outbox endpoint, so run the backend with the `local` Spring profile or adapt helpers to pull tokens from Mailhog when using docker/localstack.

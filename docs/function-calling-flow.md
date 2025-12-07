@@ -25,6 +25,11 @@ This project demonstrates Ollama function calling end-to-end: listing products, 
 2) **Hook & streaming**
    - `useOllamaToolChat` builds the request with `model`, `messages`, `tools`, `options`, `think`.
    - `processSSEResponse` consumes SSE chunks so tokens and tool events render live.
+3) **UI tabs and defaults**
+   - `/llm` exposes three tabs: **Chat** → `/api/ollama/chat` via `useOllamaChat`, **Generate** → `/api/ollama/generate` via `useOllamaGenerate`, and **Tools** → `/api/ollama/chat/tools` via `useOllamaToolChat`.
+   - Chat/Generate default to `qwen3:0.6b` so the mock can emit thinking traces; both tabs expose the thinking toggle.
+   - Tools pins the model to `qwen3:4b-instruct` (function calling) and disables thinking because that model does not output the `<think>` stream.
+   - All tabs use the shared `ChatTranscript` component so assistant/tool bubbles remain consistent no matter which flow emitted them.
 3) **On screen, live**
    - As soon as the model emits `tool_calls`, you see a “Requesting backend function …” line with arguments.
    - When the backend executes the tool, the `role=tool` result appears **immediately under** the tool call (not at the end of the chat).
@@ -62,4 +67,3 @@ jq -n --arg prompt "$PROMPT" \
 - Streaming is SSE; keep `-N` (no-buffer) in curl to see tokens live.
 - Backend runs blocking Ollama calls on `boundedElastic` to avoid starving the event loop, so chunks flush promptly to the client.
 - If you only see one tool call, ensure the system prompt and tool definitions are included; the prompt mandates snapshot calls for every listed product.
-
