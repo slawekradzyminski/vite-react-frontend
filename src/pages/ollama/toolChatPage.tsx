@@ -10,8 +10,7 @@ interface OllamaToolChatPageProps {
 const suggestedPrompts = [
   'How much does the iPhone 13 Pro cost right now?',
   'What is the current stock level for the Apple Watch Series 7?',
-  'Do we have any information about the PlayStation 5 inventory?',
-  'Search Grokipedia for FC Barcelona stadium updates.'
+  'Do we have any information about the PlayStation 5 inventory?'
 ];
 
 export function OllamaToolChatPage({ hideTitle = false }: OllamaToolChatPageProps) {
@@ -58,7 +57,7 @@ export function OllamaToolChatPage({ hideTitle = false }: OllamaToolChatPageProp
         <div>
           <h2 className="text-lg font-semibold">Tool calling</h2>
           <p className="text-sm text-gray-600">
-            This mode uses <code>qwen3:4b-instruct</code> and automatically loops through catalog + Grokipedia tools before replying.
+            This mode uses <code>qwen3:4b-instruct</code> and automatically loops through catalog tools before replying.
           </p>
         </div>
         <div className="rounded border-l-4 border-blue-400 bg-blue-50 p-3 text-sm text-blue-900">
