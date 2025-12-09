@@ -112,9 +112,9 @@ describe('OllamaChatPage', () => {
 
     render(<OllamaChatPage />);
 
-    expect(screen.getByText('System')).toBeInTheDocument();
-    expect(screen.getByText('User')).toBeInTheDocument();
-    expect(screen.getByText('Assistant')).toBeInTheDocument();
+    expect(screen.getByTestId('chat-message-role-system')).toHaveTextContent('System');
+    expect(screen.getByTestId('chat-message-role-user')).toHaveTextContent('User');
+    expect(screen.getByTestId('chat-message-role-assistant')).toHaveTextContent('Assistant');
     expect(screen.getByText('Hello')).toBeInTheDocument();
     expect(screen.getByText('Hi there!')).toBeInTheDocument();
   });
@@ -216,7 +216,7 @@ describe('OllamaChatPage', () => {
     expect(screen.getByText('The answer is 42.')).toBeInTheDocument();
     expect(screen.getByTestId('thinking-toggle')).toBeInTheDocument();
 
-    const summary = within(screen.getByTestId('thinking-toggle')).getByText('Thinking');
+    const summary = within(screen.getByTestId('thinking-toggle')).getByText('Thinking trace');
     fireEvent.click(summary);
     expect(screen.getByText('Let me think about this carefully...')).toBeInTheDocument();
   });

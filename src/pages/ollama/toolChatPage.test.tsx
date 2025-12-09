@@ -80,14 +80,6 @@ describe('OllamaToolChatPage', () => {
     expect(mockSetTemperature).toHaveBeenCalledWith(0.7);
   });
 
-  it('communicates that thinking traces are unavailable inside the info card', () => {
-    render(<OllamaToolChatPage />);
-    const matches = screen.getAllByText((_, node) =>
-      Boolean(node?.textContent?.toLowerCase().includes('does not emit thinking traces'))
-    );
-    expect(matches.length).toBeGreaterThan(0);
-  });
-
   it('allows expanding tool definition JSON', () => {
     render(<OllamaToolChatPage />);
     const toggle = screen.getByTestId('tool-schema-toggle');

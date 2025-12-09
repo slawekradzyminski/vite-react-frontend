@@ -60,39 +60,6 @@ export function LlmPage() {
           <h1 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl" data-testid="llm-title">
             Choose the right mode for every assistant workflow
           </h1>
-          <p className="mt-4 text-lg text-slate-600">
-            Chat keeps a running conversation, Generate is perfect for single prompts, and Tools
-            goes all-in on shopping APIs. Pick the surface that matches your task—each one loads
-            its own system prompt, defaults, and UX hints so you never have to reconfigure the flow.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-4 text-sm text-slate-600">
-            <div className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 font-medium text-blue-700">
-              Conversational guardrails
-            </div>
-            <div className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 font-medium text-amber-700">
-              Custom temperature + thinking controls
-            </div>
-            <div className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-700">
-              Tool-calling with live JSON streams
-            </div>
-          </div>
-          <div className="mt-8 flex flex-wrap gap-4">
-            <Link
-              to="/llm/chat"
-              className="inline-flex items-center rounded-full bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-600/20 transition hover:bg-indigo-500"
-              data-testid="llm-cta-chat"
-            >
-              Start with Chat
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-            <Link
-              to="/llm/tools"
-              className="inline-flex items-center rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 hover:border-slate-300 hover:bg-slate-50"
-              data-testid="llm-cta-tools"
-            >
-              Explore tool calling
-            </Link>
-          </div>
         </section>
 
         <section className="mt-10" data-testid="llm-mode-grid">

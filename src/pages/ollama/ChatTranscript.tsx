@@ -1,4 +1,6 @@
+import { useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { Brain, Code2, ShieldCheck, TerminalSquare, UserRound, Bot } from 'lucide-react';
 import { ChatMessageDto } from '../../types/ollama';
 import styles from './OllamaChat.module.css';
 
@@ -6,7 +8,46 @@ interface ChatTranscriptProps {
   messages: ChatMessageDto[];
 }
 
-const formatToolMessage = (message: ChatMessageDto) => {
+type RoleKey = 'system' | 'user' | 'assistant';
+
+const ROLE_CONFIG: Record<
+  RoleKey,
+  {
+    label: string;
+    pillLabel: string;
+    icon: typeof ShieldCheck;
+    badgeClass: string;
+    bubbleClass: string;
+    alignment: 'start' | 'end';
+  }
+> = {
+  system: {
+    label: 'System',
+    pillLabel: 'System prompt',
+    icon: ShieldCheck,
+    badgeClass: 'bg-slate-100 text-slate-700 ring-1 ring-slate-200',
+    bubbleClass: 'bg-gradient-to-r from-slate-50 to-white border border-slate-100 text-slate-700 shadow-sm',
+    alignment: 'start',
+  },
+  user: {
+    label: 'User',
+    pillLabel: 'User',
+    icon: UserRound,
+    badgeClass: 'bg-indigo-600 text-white',
+    bubbleClass: 'bg-indigo-600 text-white',
+    alignment: 'end',
+  },
+  assistant: {
+    label: 'Assistant',
+    pillLabel: 'Assistant',
+    icon: Bot,
+    badgeClass: 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-100',
+    bubbleClass: 'bg-white text-slate-900 border border-slate-100 shadow-sm',
+    alignment: 'start',
+  },
+};
+
+const parseToolPayload = (message: ChatMessageDto) => {
   let formattedContent = message.content ?? '';
   let parsed: unknown = null;
 
@@ -20,27 +61,28 @@ const formatToolMessage = (message: ChatMessageDto) => {
   const isError =
     typeof parsed === 'object' && parsed !== null && Object.prototype.hasOwnProperty.call(parsed, 'error');
 
+  return { formattedContent, isError };
+};
+
+const ToolMessage = ({ message }: { message: ChatMessageDto }) => {
+  const { formattedContent, isError } = parseToolPayload(message);
+
   return (
-    <div className="flex flex-col items-start w-full mb-4" data-testid="tool-message">
+    <div className="mb-4">
       <div
-        className={`rounded-lg border px-4 py-3 w-full ${
-          isError ? 'border-red-400 bg-red-50' : 'border-emerald-400 bg-emerald-50'
+        className={`rounded-2xl border px-4 py-3 shadow-inner ${
+          isError ? 'border-red-300 bg-red-50/80' : 'border-emerald-200 bg-emerald-50/80'
         }`}
+        data-testid="tool-message"
       >
-        <div className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className={isError ? 'text-red-500' : 'text-emerald-600'}
-          >
-            <path d="M1 21H23L12 2L1 21Z" />
-            <path d="M11 7H13V13H11V7ZM11 15H13V17H11V15Z" fill="#fff" />
-          </svg>
+        <div className="flex items-center gap-2 text-sm font-semibold text-slate-700 mb-2">
+          <TerminalSquare className={`h-4 w-4 ${isError ? 'text-red-600' : 'text-emerald-600'}`} />
           Function output · {message.tool_name ?? 'tool'}
         </div>
-        <pre className="bg-white rounded p-3 text-xs overflow-x-auto whitespace-pre-wrap" data-testid="tool-message-content">
+        <pre
+          className="rounded-xl bg-white p-3 text-xs text-slate-800 overflow-x-auto whitespace-pre-wrap"
+          data-testid="tool-message-content"
+        >
           {formattedContent}
         </pre>
       </div>
@@ -48,52 +90,78 @@ const formatToolMessage = (message: ChatMessageDto) => {
   );
 };
 
-const renderAssistantMessage = (message: ChatMessageDto) => {
-  const role = message.role ?? 'assistant';
-  const isSystem = role === 'system';
-  const isUser = role === 'user';
-  const bgColor = isSystem ? 'bg-gray-100' : isUser ? 'bg-blue-50' : 'bg-green-50';
-  const alignment = isUser ? 'items-end' : 'items-start';
-  const roleLabel = typeof role === 'string'
-    ? role.charAt(0).toUpperCase() + role.slice(1)
-    : 'Message';
+const ToolCallNotice = ({ message }: { message: ChatMessageDto }) => {
+  if (!message.tool_calls || message.tool_calls.length === 0) {
+    return null;
+  }
 
   return (
-    <div className={`flex flex-col ${alignment} w-full mb-4`} data-testid={`chat-message-${role}`}>
-      <div className={`${bgColor} rounded-lg px-4 py-2 max-w-[80%]`}>
-        <div className="text-sm text-gray-500 mb-1" data-testid={`chat-message-role-${role}`}>
-          {roleLabel}
+    <div
+      className="rounded-2xl border border-dashed border-indigo-200 bg-indigo-50/70 p-3 text-xs text-indigo-900"
+      data-testid="tool-call-notice"
+    >
+      <div className="flex items-center gap-2 font-semibold">
+        <Code2 className="h-4 w-4" />
+        Function call requested
+      </div>
+      <ul className="mt-2 space-y-1">
+        {message.tool_calls.map((toolCall, index) => (
+          <li key={`${toolCall.function.name}-${index}`} className="flex flex-wrap gap-1">
+            <span className="font-semibold">{toolCall.function.name}</span>
+            <code className="rounded bg-white/80 px-1">{JSON.stringify(toolCall.function.arguments ?? {})}</code>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+const ThinkingBlock = ({ thinking }: { thinking?: string }) => {
+  if (!thinking || !thinking.trim()) {
+    return null;
+  }
+
+  return (
+    <details className="group rounded-xl border border-amber-100 bg-amber-50/80 p-3 text-xs text-amber-900" data-testid="thinking-toggle">
+      <summary className="flex cursor-pointer items-center gap-2 font-semibold">
+        <Brain className="h-4 w-4 text-amber-600" />
+        Thinking trace
+      </summary>
+      <div className="mt-2 rounded-lg bg-white/90 p-3 text-amber-900" data-testid="thinking-content">
+        <ReactMarkdown>{thinking}</ReactMarkdown>
+      </div>
+    </details>
+  );
+};
+
+const renderChatMessage = (message: ChatMessageDto) => {
+  const normalizedRole = (message.role as RoleKey) || 'assistant';
+  const roleKey: RoleKey = ['system', 'user'].includes(normalizedRole) ? normalizedRole : 'assistant';
+  const roleConfig = ROLE_CONFIG[roleKey];
+  const Icon = roleConfig.icon;
+  const alignmentClass = roleConfig.alignment === 'end' ? 'justify-end' : 'justify-start';
+
+  return (
+    <div className={`flex ${alignmentClass} w-full mb-4`} data-testid={`chat-message-${roleKey}`}>
+      <div className={`space-y-2 w-full ${roleConfig.alignment === 'end' ? 'md:w-2/3' : 'md:w-4/5'}`}>
+        <div
+          className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${roleConfig.badgeClass}`}
+          data-testid={`chat-role-pill-${roleKey}`}
+          aria-label={roleConfig.pillLabel}
+        >
+          <Icon className="h-4 w-4" />
         </div>
-        {message.thinking && (
-          <details className="mb-3 text-xs text-gray-500" data-testid="thinking-toggle">
-            <summary className="cursor-pointer select-none flex items-center gap-1">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-600">
-                <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.86-3.14-7-7-7z" />
-              </svg>
-              Thinking
-            </summary>
-            <div className="mt-2 p-2 bg-gray-50 rounded text-gray-700" data-testid="thinking-content">
-              <ReactMarkdown>{message.thinking}</ReactMarkdown>
+        <div data-testid={`chat-message-role-${roleKey}`} className="text-xs uppercase tracking-widest text-slate-500">
+          {roleConfig.label}
+        </div>
+        <div className={`${roleConfig.bubbleClass} rounded-2xl px-4 py-3 space-y-3`}>
+          <ToolCallNotice message={message} />
+          {message.thinking && <ThinkingBlock thinking={message.thinking} />}
+          {message.content && (
+            <div className={styles.markdownContainer} data-testid={`chat-message-content-${roleKey}`}>
+              <ReactMarkdown>{message.content}</ReactMarkdown>
             </div>
-          </details>
-        )}
-        {message.tool_calls && message.tool_calls.length > 0 && (
-          <div className="mb-3 rounded border border-dashed border-blue-300 bg-blue-50/80 p-3 text-xs text-blue-900" data-testid="tool-call-notice">
-            <div className="font-semibold mb-2">Requesting backend function</div>
-            <ul className="space-y-1">
-              {message.tool_calls.map((toolCall, index) => (
-                <li key={`${toolCall.function.name}-${index}`}>
-                  <span className="font-mono">{toolCall.function.name}</span>{' '}
-                  <code className="bg-white/70 px-1 rounded">
-                    {JSON.stringify(toolCall.function.arguments ?? {})}
-                  </code>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        <div className={styles.markdownContainer} data-testid={`chat-message-content-${role}`}>
-          <ReactMarkdown>{message.content ?? ''}</ReactMarkdown>
+          )}
         </div>
       </div>
     </div>
@@ -101,6 +169,7 @@ const renderAssistantMessage = (message: ChatMessageDto) => {
 };
 
 export function ChatTranscript({ messages }: ChatTranscriptProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const filteredMessages = messages.filter((msg) => {
     if (msg.role === 'assistant') {
       const hasContent = msg.content && msg.content.trim().length > 0;
@@ -111,11 +180,29 @@ export function ChatTranscript({ messages }: ChatTranscriptProps) {
     return true;
   });
 
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) {
+      return;
+    }
+    const handle = requestAnimationFrame(() => {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: 'smooth',
+      });
+    });
+    return () => cancelAnimationFrame(handle);
+  }, [filteredMessages]);
+
   return (
-    <div className={styles.conversationContainer} data-testid="chat-conversation">
+    <div
+      className={styles.conversationContainer}
+      data-testid="chat-conversation"
+      ref={containerRef}
+    >
       {filteredMessages.map((msg, idx) => (
         <div key={`${idx}-${msg.role ?? 'assistant'}`} data-testid={`chat-message-container-${idx}`}>
-          {msg.role === 'tool' ? formatToolMessage(msg) : renderAssistantMessage(msg)}
+          {msg.role === 'tool' ? <ToolMessage message={msg} /> : renderChatMessage(msg)}
         </div>
       ))}
     </div>

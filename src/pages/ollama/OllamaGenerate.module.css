@@ -1,7 +1,7 @@
 .markdownContainer {
   max-width: none;
-  font-size: 0.875rem;
-  line-height: 1.25;
+  font-size: 0.9rem;
+  line-height: 1.45;
   overflow-wrap: break-word;
 }
 
@@ -9,7 +9,7 @@
 .markdownContainer :global(*) {
   margin-top: 0;
   margin-bottom: 0;
-  line-height: 1.25;
+  line-height: 1.45;
 }
 
 .markdownContainer :global(h1),
@@ -23,27 +23,26 @@
 }
 
 .markdownContainer :global(p) {
-  margin-top: 0.125rem;
-  margin-bottom: 0.125rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
 }
 
 .markdownContainer :global(ul),
 .markdownContainer :global(ol) {
-  margin-top: 0.125rem;
-  margin-bottom: 0.125rem;
-  padding-top: 0;
-  padding-bottom: 0;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  padding-left: 1.25rem;
 }
 
 .markdownContainer :global(li) {
-  margin-top: 0;
-  margin-bottom: 0;
+  margin-top: 0.1rem;
+  margin-bottom: 0.1rem;
 }
 
 .markdownContainer :global(pre),
 .markdownContainer :global(code) {
-  margin-top: 0.125rem;
-  margin-bottom: 0.125rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
 }
 
 /* Remove spacing from first and last elements */
@@ -58,5 +57,5 @@
 /* Reduce line height for lists */
 .markdownContainer :global(ul),
 .markdownContainer :global(ol) {
-  line-height: 1;
-} 
+  line-height: 1.2;
+}

@@ -8,7 +8,8 @@ interface UseOllamaChatOptions {
   onError?: (error: Error) => void;
 }
 
-const DEFAULT_SYSTEM_PROMPT = 'You are a helpful AI assistant. You must use the conversation history to answer questions.';
+export const DEFAULT_SYSTEM_PROMPT =
+  'You are a helpful AI assistant. You must use the conversation history to answer questions.';
 
 export function useOllamaChat(options?: UseOllamaChatOptions) {
   const { toast } = useToast();

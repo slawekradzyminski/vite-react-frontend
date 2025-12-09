@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { OllamaGeneratePage } from './generatePage';
 import { vi, describe, it, expect } from 'vitest';
@@ -65,7 +65,7 @@ describe('OllamaGeneratePage', () => {
 
     // when
     renderWithProviders(<OllamaGeneratePage />);
-    await userEvent.type(screen.getByLabelText(/prompt/i), '2+2=');
+    await userEvent.type(screen.getByTestId('prompt-input'), '2+2=');
     await userEvent.click(screen.getByRole('button', { name: /generate/i }));
 
     // then
@@ -92,7 +92,7 @@ describe('OllamaGeneratePage', () => {
     const modelInput = screen.getByTestId('model-input');
     await userEvent.clear(modelInput);
     await userEvent.type(modelInput, 'mistral:7b');
-    await userEvent.type(screen.getByLabelText(/prompt/i), 'test prompt');
+    await userEvent.type(screen.getByTestId('prompt-input'), 'test prompt');
     await userEvent.click(screen.getByRole('button', { name: /generate/i }));
 
     // then
@@ -111,7 +111,7 @@ describe('OllamaGeneratePage', () => {
 
     // when
     renderWithProviders(<OllamaGeneratePage />);
-    await userEvent.type(screen.getByLabelText(/prompt/i), 'test prompt');
+    await userEvent.type(screen.getByTestId('prompt-input'), 'test prompt');
     await userEvent.click(screen.getByRole('button', { name: /generate/i }));
 
     // then
@@ -141,7 +141,7 @@ describe('OllamaGeneratePage', () => {
 
     // when
     renderWithProviders(<OllamaGeneratePage />);
-    await userEvent.type(screen.getByLabelText(/prompt/i), 'test prompt');
+    await userEvent.type(screen.getByTestId('prompt-input'), 'test prompt');
     await userEvent.click(screen.getByRole('button', { name: /generate/i }));
 
     // then
@@ -149,7 +149,8 @@ describe('OllamaGeneratePage', () => {
       expect(screen.getByRole('heading', { level: 1, name: 'Title' })).toBeInTheDocument();
     });
 
-    const listItems = screen.getAllByRole('listitem');
+    const responseRegion = screen.getByTestId('generated-response');
+    const listItems = within(responseRegion).getAllByRole('listitem');
     expect(listItems).toHaveLength(2);
     expect(listItems[0]).toHaveTextContent('List item 1');
     expect(listItems[1]).toHaveTextContent('List item 2');
@@ -172,7 +173,7 @@ describe('OllamaGeneratePage', () => {
 
     // when
     renderWithProviders(<OllamaGeneratePage />);
-    await userEvent.type(screen.getByLabelText(/prompt/i), 'test prompt');
+    await userEvent.type(screen.getByTestId('prompt-input'), 'test prompt');
     await userEvent.click(screen.getByRole('button', { name: /generate/i }));
 
     // then
@@ -193,7 +194,7 @@ describe('OllamaGeneratePage', () => {
     const generateButton = screen.getByRole('button', { name: /generate/i });
     expect(generateButton).toBeDisabled();
 
-    await userEvent.type(screen.getByLabelText(/prompt/i), ' ');
+    await userEvent.type(screen.getByTestId('prompt-input'), ' ');
     expect(generateButton).toBeDisabled();
 
     // then
@@ -229,7 +230,7 @@ describe('OllamaGeneratePage', () => {
     // when
     renderWithProviders(<OllamaGeneratePage />);
     await userEvent.click(screen.getByTestId('thinking-checkbox'));
-    await userEvent.type(screen.getByLabelText(/prompt/i), 'test prompt');
+    await userEvent.type(screen.getByTestId('prompt-input'), 'test prompt');
     await userEvent.click(screen.getByRole('button', { name: /generate/i }));
 
     // then
@@ -251,7 +252,7 @@ describe('OllamaGeneratePage', () => {
 
     // when
     renderWithProviders(<OllamaGeneratePage />);
-    await userEvent.type(screen.getByLabelText(/prompt/i), '2+2=');
+    await userEvent.type(screen.getByTestId('prompt-input'), '2+2=');
     await userEvent.click(screen.getByRole('button', { name: /generate/i }));
 
     // then
@@ -275,7 +276,7 @@ describe('OllamaGeneratePage', () => {
 
     // when
     renderWithProviders(<OllamaGeneratePage />);
-    await userEvent.type(screen.getByLabelText(/prompt/i), '2+2=');
+    await userEvent.type(screen.getByTestId('prompt-input'), '2+2=');
     await userEvent.click(screen.getByRole('button', { name: /generate/i }));
 
     await waitFor(() => {
@@ -318,7 +319,7 @@ describe('OllamaGeneratePage', () => {
 
     // when
     renderWithProviders(<OllamaGeneratePage />);
-    await userEvent.type(screen.getByLabelText(/prompt/i), 'What is the meaning of life?');
+    await userEvent.type(screen.getByTestId('prompt-input'), 'What is the meaning of life?');
     await userEvent.click(screen.getByRole('button', { name: /generate/i }));
 
     // then

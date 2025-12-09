@@ -9,7 +9,7 @@ interface UseOllamaToolChatOptions {
   onError?: (error: Error) => void;
 }
 
-const DEFAULT_TOOL_PROMPT = `You are a tool-calling shopping assistant for our training store. Tools available:
+export const DEFAULT_TOOL_PROMPT = `You are a tool-calling shopping assistant for our training store. Tools available:
 
 - list_products: returns ONLY id and name for a catalog slice. Accepts offset, limit, category (e.g., "electronics"), and inStockOnly.
 - get_product_snapshot: fetch one product by name or productId (id, name, description, price, stockQuantity, category, imageUrl).

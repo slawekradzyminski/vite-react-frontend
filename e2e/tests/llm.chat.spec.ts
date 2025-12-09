@@ -40,4 +40,18 @@ test.describe('Ollama Chat', () => {
     await chatPage.setTemperature(0.3);
     await expect(chatPage.temperatureLabel).toContainText('0.30');
   });
+
+  test('shows role icons only for conversation bubbles', async () => {
+    await chatPage.sendChatMessage(STATUS_PROMPT);
+    await chatPage.waitForChatComplete();
+
+    const systemBadge = chatPage.chatContent.getByTestId('chat-role-pill-system').first();
+    await expect(systemBadge).toBeVisible();
+    await expect(systemBadge).toHaveAttribute('aria-label', 'System prompt');
+    await expect(systemBadge).toHaveText('');
+
+    const userBadge = chatPage.chatContent.getByTestId('chat-role-pill-user').last();
+    await expect(userBadge).toHaveAttribute('aria-label', 'User');
+    await expect(userBadge).toHaveText('');
+  });
 });

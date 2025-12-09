@@ -50,41 +50,44 @@ export function OllamaToolChatPage({ hideTitle = false }: OllamaToolChatPageProp
 
   return (
     <div className="flex flex-col" data-testid="ollama-tool-chat-page">
-      {!hideTitle && <h1 className="text-2xl font-bold mb-4" data-testid="ollama-tool-chat-title">Live Catalog Assistant</h1>}
+      {!hideTitle && (
+        <h1 className="text-2xl font-bold mb-4" data-testid="ollama-tool-chat-title">
+          Live Catalog Assistant
+        </h1>
+      )}
 
-      <div className="mb-6 flex flex-col gap-3 rounded-lg border border-gray-200 p-4" data-testid="tool-info-card">
+      <div className="mb-6 rounded-lg border border-gray-200 p-4 space-y-3" data-testid="tool-info-card">
         <div>
-          <h2 className="text-lg font-semibold">Tool calling</h2>
           <p className="text-sm text-gray-600">
-            This mode uses <code>qwen3:4b-instruct</code>, loops through catalog tools before replying, and does not emit <code>thinking</code> traces—switch to Chat or Generate for chain-of-thought responses.
+            This mode uses <code>qwen3:4b-instruct</code>, loops through catalog tools before replying, and streams tool call
+            output back into the conversation.
           </p>
         </div>
-        <div className="rounded border-l-4 border-blue-400 bg-blue-50 p-3 text-sm text-blue-900">
-          <p className="mb-2 font-semibold">Available tools</p>
-          <ul className="mb-3 list-disc pl-5" data-testid="tool-definition-list">
-            {availableTools.map((tool) => (
-              <li key={tool.function.name} data-testid="tool-definition-item">
-                <code>{tool.function.name}</code> – {tool.function.description}
-              </li>
-            ))}
-          </ul>
-          <button
-            type="button"
-            className="mt-3 text-xs font-semibold text-blue-700 hover:underline"
-            onClick={() => setShowToolSchema((prev) => !prev)}
-            data-testid="tool-schema-toggle"
-          >
-            {showToolSchema ? 'Hide tool definition JSON' : 'Show tool definition JSON'}
-          </button>
-          {showToolSchema && (
-            <pre
-              className="mt-3 overflow-auto rounded bg-white p-3 text-xs text-gray-800"
-              data-testid="tool-definition-json"
+        {availableTools.length > 0 && (
+          <div className="text-sm text-gray-700">
+            <p className="font-semibold mb-2">Available tools</p>
+            <ul className="list-disc pl-5 space-y-1" data-testid="tool-definition-list">
+              {availableTools.map((tool) => (
+                <li key={tool.function.name} data-testid="tool-definition-item">
+                  <code>{tool.function.name}</code> – {tool.function.description}
+                </li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              className="mt-2 text-xs font-semibold text-blue-700 hover:underline"
+              onClick={() => setShowToolSchema((prev) => !prev)}
+              data-testid="tool-schema-toggle"
             >
-              {prettyToolDefinitions}
-            </pre>
-          )}
-        </div>
+              {showToolSchema ? 'Hide tool definition JSON' : 'Show tool definition JSON'}
+            </button>
+            {showToolSchema && (
+              <pre className="mt-3 overflow-auto rounded bg-gray-50 p-3 text-xs text-gray-800" data-testid="tool-definition-json">
+                {prettyToolDefinitions}
+              </pre>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="mb-4" data-testid="model-selection">
