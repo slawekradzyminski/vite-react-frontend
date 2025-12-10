@@ -30,6 +30,7 @@ test.describe('Ollama Chat', () => {
   });
 
   test('exposes default model and allows editing the value', async () => {
+    await chatPage.expandSettings();
     await expect(chatPage.modelInput).toHaveValue('qwen3:0.6b');
 
     await chatPage.modelInput.fill('custom-model');
@@ -37,21 +38,25 @@ test.describe('Ollama Chat', () => {
   });
 
   test('updates temperature label when slider changes', async () => {
+    await chatPage.expandSettings();
     await chatPage.setTemperature(0.3);
     await expect(chatPage.temperatureLabel).toContainText('0.30');
   });
 
-  test('shows role icons only for conversation bubbles', async () => {
+  test('shows dedicated system prompt card and conversation pills for participants', async () => {
+    await chatPage.expandSystemPrompt();
+    await expect(chatPage.systemPromptCard).toContainText('You are an engineering copilot');
+    await expect(chatPage.chatContent.getByTestId('chat-role-pill-system')).toHaveCount(0);
+
     await chatPage.sendChatMessage(STATUS_PROMPT);
     await chatPage.waitForChatComplete();
-
-    const systemBadge = chatPage.chatContent.getByTestId('chat-role-pill-system').first();
-    await expect(systemBadge).toBeVisible();
-    await expect(systemBadge).toHaveAttribute('aria-label', 'System prompt');
-    await expect(systemBadge).toHaveText('');
 
     const userBadge = chatPage.chatContent.getByTestId('chat-role-pill-user').last();
     await expect(userBadge).toHaveAttribute('aria-label', 'User');
     await expect(userBadge).toHaveText('');
+
+    const assistantBadge = chatPage.chatContent.getByTestId('chat-role-pill-assistant').last();
+    await expect(assistantBadge).toHaveAttribute('aria-label', 'Assistant');
+    await expect(assistantBadge).toHaveText('');
   });
 });

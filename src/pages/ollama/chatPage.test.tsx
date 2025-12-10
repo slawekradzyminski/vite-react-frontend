@@ -13,6 +13,7 @@ vi.mock('react-markdown', () => ({
 describe('OllamaChatPage', () => {
   const mockChat = vi.fn();
   const mockSetModel = vi.fn();
+  const mockSetMessages = vi.fn();
   const defaultMessages: ChatMessageDto[] = [
     {
       role: 'system',
@@ -29,7 +30,7 @@ describe('OllamaChatPage', () => {
       chat: mockChat,
       model: 'qwen3:0.6b',
       setModel: mockSetModel,
-      setMessages: vi.fn(),
+      setMessages: mockSetMessages,
       temperature: 0.8,
       setTemperature: vi.fn(),
       think: false,
@@ -37,9 +38,20 @@ describe('OllamaChatPage', () => {
     });
   });
 
+  const openSettingsPanel = () => {
+    const summary = within(screen.getByTestId('chat-settings-panel')).getByText(/Generation settings/i);
+    fireEvent.click(summary);
+  };
+
+  const openSystemPrompt = () => {
+    const summary = within(screen.getByTestId('chat-system-prompt')).getByText(/System prompt/i);
+    fireEvent.click(summary);
+  };
+
   it('renders initial state correctly', () => {
     render(<OllamaChatPage />);
-    expect(screen.getByText('Chat with Ollama')).toBeInTheDocument();
+    openSettingsPanel();
+    expect(screen.getByText('Conversational assistant')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Type your message...')).toBeInTheDocument();
     expect(screen.getByText('Send')).toBeInTheDocument();
     expect(screen.getByDisplayValue('qwen3:0.6b')).toBeInTheDocument();
@@ -76,7 +88,7 @@ describe('OllamaChatPage', () => {
       chat: mockChat,
       model: 'qwen3:0.6b',
       setModel: mockSetModel,
-      setMessages: vi.fn(),
+      setMessages: mockSetMessages,
       temperature: 0.8,
       setTemperature: vi.fn(),
       think: false,
@@ -103,7 +115,7 @@ describe('OllamaChatPage', () => {
       chat: mockChat,
       model: 'qwen3:0.6b',
       setModel: mockSetModel,
-      setMessages: vi.fn(),
+      setMessages: mockSetMessages,
       temperature: 0.8,
       setTemperature: vi.fn(),
       think: false,
@@ -112,7 +124,9 @@ describe('OllamaChatPage', () => {
 
     render(<OllamaChatPage />);
 
-    expect(screen.getByTestId('chat-message-role-system')).toHaveTextContent('System');
+    openSystemPrompt();
+    expect(screen.getByTestId('chat-system-prompt')).toHaveTextContent(defaultMessages[0].content);
+    expect(screen.queryByTestId('chat-message-role-system')).not.toBeInTheDocument();
     expect(screen.getByTestId('chat-message-role-user')).toHaveTextContent('User');
     expect(screen.getByTestId('chat-message-role-assistant')).toHaveTextContent('Assistant');
     expect(screen.getByText('Hello')).toBeInTheDocument();
@@ -121,6 +135,7 @@ describe('OllamaChatPage', () => {
 
   it('updates model when input changes', () => {
     render(<OllamaChatPage />);
+    openSettingsPanel();
     const modelInput = screen.getByDisplayValue('qwen3:0.6b');
 
     fireEvent.change(modelInput, { target: { value: 'llama3.2:7b' } });
@@ -136,7 +151,7 @@ describe('OllamaChatPage', () => {
       chat: mockChat,
       model: 'qwen3:0.6b',
       setModel: mockSetModel,
-      setMessages: vi.fn(),
+      setMessages: mockSetMessages,
       temperature: 0.8,
       setTemperature: vi.fn(),
       think: false,
@@ -158,10 +173,10 @@ describe('OllamaChatPage', () => {
 
   it('renders title by default and hides when requested', () => {
     const { rerender } = render(<OllamaChatPage />);
-    expect(screen.getByText('Chat with Ollama')).toBeInTheDocument();
+    expect(screen.getByText('Conversational assistant')).toBeInTheDocument();
 
     rerender(<OllamaChatPage hideTitle />);
-    expect(screen.queryByText('Chat with Ollama')).not.toBeInTheDocument();
+    expect(screen.queryByText('Conversational assistant')).not.toBeInTheDocument();
   });
 
   it('shows and toggles the thinking checkbox', () => {
@@ -173,7 +188,7 @@ describe('OllamaChatPage', () => {
       chat: mockChat,
       model: 'qwen3:0.6b',
       setModel: mockSetModel,
-      setMessages: vi.fn(),
+      setMessages: mockSetMessages,
       temperature: 0.8,
       setTemperature: vi.fn(),
       think: false,
@@ -181,6 +196,7 @@ describe('OllamaChatPage', () => {
     });
 
     render(<OllamaChatPage />);
+    openSettingsPanel();
     const checkbox = screen.getByTestId('thinking-checkbox');
 
     expect(checkbox).not.toBeChecked();
@@ -204,7 +220,7 @@ describe('OllamaChatPage', () => {
       chat: mockChat,
       model: 'qwen3:0.6b',
       setModel: mockSetModel,
-      setMessages: vi.fn(),
+      setMessages: mockSetMessages,
       temperature: 0.8,
       setTemperature: vi.fn(),
       think: true,
@@ -249,7 +265,7 @@ describe('OllamaChatPage', () => {
       chat: mockChat,
       model: 'qwen3:0.6b',
       setModel: mockSetModel,
-      setMessages: vi.fn(),
+      setMessages: mockSetMessages,
       temperature: 0.8,
       setTemperature: vi.fn(),
       think: false,
@@ -261,5 +277,13 @@ describe('OllamaChatPage', () => {
     expect(screen.getByTestId('tool-call-notice')).toBeInTheDocument();
     expect(screen.getByTestId('tool-message')).toBeInTheDocument();
     expect(screen.getByTestId('tool-message-content')).toHaveTextContent('"price": 999.99');
+  });
+
+  it('clears the conversation but keeps the system prompt when requested', () => {
+    render(<OllamaChatPage />);
+    fireEvent.click(screen.getByTestId('chat-reset-button'));
+    expect(mockSetMessages).toHaveBeenCalledWith([
+      expect.objectContaining({ role: 'system', content: defaultMessages[0].content }),
+    ]);
   });
 });

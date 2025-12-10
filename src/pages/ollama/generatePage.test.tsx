@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { screen, waitFor, within, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { OllamaGeneratePage } from './generatePage';
 import { vi, describe, it, expect } from 'vitest';
@@ -52,6 +52,13 @@ describe('OllamaGeneratePage', () => {
     vi.mocked(useToast).mockReturnValue({ toast: mockToast });
   });
 
+  const openSettingsPanel = () => {
+    const summary = screen.getByTestId('generate-settings-panel').querySelector('summary');
+    if (summary) {
+      fireEvent.click(summary);
+    }
+  };
+
   it('handles streaming chunks correctly', async () => {
     // given
     const mockResponse = new Response(
@@ -65,6 +72,11 @@ describe('OllamaGeneratePage', () => {
 
     // when
     renderWithProviders(<OllamaGeneratePage />);
+    openSettingsPanel();
+    openSettingsPanel();
+    openSettingsPanel();
+    openSettingsPanel();
+    openSettingsPanel();
     await userEvent.type(screen.getByTestId('prompt-input'), '2+2=');
     await userEvent.click(screen.getByRole('button', { name: /generate/i }));
 
@@ -204,6 +216,7 @@ describe('OllamaGeneratePage', () => {
   it('initializes with default model value', () => {
     // when
     renderWithProviders(<OllamaGeneratePage />);
+    openSettingsPanel();
     
     // then
     const modelInput = screen.getByTestId('model-input');
@@ -213,10 +226,11 @@ describe('OllamaGeneratePage', () => {
   it('renders thinking checkbox unchecked by default', () => {
     // when
     renderWithProviders(<OllamaGeneratePage />);
+    openSettingsPanel();
 
     // then
     expect(screen.getByTestId('thinking-checkbox')).not.toBeChecked();
-    expect(screen.getByText('Thinking')).toBeInTheDocument();
+    expect(screen.getByText('Thinking traces')).toBeInTheDocument();
   });
 
   it('includes think flag in request when checkbox is checked', async () => {
@@ -229,6 +243,7 @@ describe('OllamaGeneratePage', () => {
 
     // when
     renderWithProviders(<OllamaGeneratePage />);
+    openSettingsPanel();
     await userEvent.click(screen.getByTestId('thinking-checkbox'));
     await userEvent.type(screen.getByTestId('prompt-input'), 'test prompt');
     await userEvent.click(screen.getByRole('button', { name: /generate/i }));
@@ -295,11 +310,12 @@ describe('OllamaGeneratePage', () => {
 
     // when
     renderWithProviders(<OllamaGeneratePage />);
+    openSettingsPanel();
 
     // then
     const thinkingCheckbox = screen.getByTestId('thinking-checkbox');
     expect(thinkingCheckbox).toBeInTheDocument();
-    expect(screen.getByText('Thinking')).toBeInTheDocument();
+    expect(screen.getByText('Thinking traces')).toBeInTheDocument();
     
     // Check that the old text is not present
     expect(screen.queryByText('Show model reasoning (think)')).not.toBeInTheDocument();

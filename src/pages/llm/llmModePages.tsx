@@ -8,12 +8,12 @@ import type { ReactNode } from 'react';
 interface LlmModeLayoutProps {
   badge: string;
   title: string;
-  description: string;
+  highlights?: string[];
   children: ReactNode;
   testId: string;
 }
 
-function LlmModeLayout({ badge, title, description, children, testId }: LlmModeLayoutProps) {
+function LlmModeLayout({ badge, title, highlights, children, testId }: LlmModeLayoutProps) {
   return (
     <div className="min-h-screen bg-slate-50 py-12" data-testid={testId}>
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -24,7 +24,18 @@ function LlmModeLayout({ badge, title, description, children, testId }: LlmModeL
                 {badge}
               </span>
               <h1 className="mt-3 text-3xl font-bold text-slate-900">{title}</h1>
-              <p className="mt-3 text-slate-600">{description}</p>
+              {highlights && highlights.length > 0 && (
+                <ul className="mt-4 flex flex-wrap gap-2" data-testid="llm-mode-highlights">
+                  {highlights.map((item) => (
+                    <li
+                      key={item}
+                      className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600"
+                    >
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
             <Link
               to="/llm"
@@ -49,7 +60,7 @@ export function LlmChatExperience() {
     <LlmModeLayout
       badge="Chat"
       title="Conversational assistant"
-      description="Use this space to iterate with qwen3:0.6b, stream replies, and optionally inspect the model’s thinking traces."
+      highlights={['Custom system prompt', 'Thinking toggle', 'Streaming replies']}
       testId="llm-chat-mode"
     >
       <OllamaChatPage hideTitle />
@@ -62,7 +73,7 @@ export function LlmGenerateExperience() {
     <LlmModeLayout
       badge="Generate"
       title="Single prompt generation"
-      description="Perfect for summaries, release notes, or QA answers. Adjust temperature, prompt once, and ship the markdown."
+      highlights={['One prompt', 'Markdown output', 'Thinking optional']}
       testId="llm-generate-mode"
     >
       <OllamaGeneratePage hideTitle />
@@ -75,7 +86,7 @@ export function LlmToolExperience() {
     <LlmModeLayout
       badge="Tools"
       title="Catalog-grounded assistant"
-      description="Grants the model catalog functions so every response cites list_products snapshots before replying."
+      highlights={['Tool streaming', 'Grounded responses', 'qwen3:4b instruct']}
       testId="llm-tools-mode"
     >
       <OllamaToolChatPage hideTitle />

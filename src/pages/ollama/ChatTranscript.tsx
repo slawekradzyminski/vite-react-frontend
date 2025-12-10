@@ -6,6 +6,8 @@ import styles from './OllamaChat.module.css';
 
 interface ChatTranscriptProps {
   messages: ChatMessageDto[];
+  hideSystemMessage?: boolean;
+  showWhenEmpty?: boolean;
 }
 
 type RoleKey = 'system' | 'user' | 'assistant';
@@ -168,9 +170,12 @@ const renderChatMessage = (message: ChatMessageDto) => {
   );
 };
 
-export function ChatTranscript({ messages }: ChatTranscriptProps) {
+export function ChatTranscript({ messages, hideSystemMessage = false, showWhenEmpty = false }: ChatTranscriptProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const filteredMessages = messages.filter((msg) => {
+    if (hideSystemMessage && msg.role === 'system') {
+      return false;
+    }
     if (msg.role === 'assistant') {
       const hasContent = msg.content && msg.content.trim().length > 0;
       const hasToolCalls = msg.tool_calls && msg.tool_calls.length > 0;
@@ -186,13 +191,19 @@ export function ChatTranscript({ messages }: ChatTranscriptProps) {
       return;
     }
     const handle = requestAnimationFrame(() => {
-      container.scrollTo({
-        top: container.scrollHeight,
-        behavior: 'smooth',
-      });
+      const lastMessage = container.lastElementChild;
+      if (lastMessage) {
+        lastMessage.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      } else {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      }
     });
     return () => cancelAnimationFrame(handle);
   }, [filteredMessages]);
+
+  if (!showWhenEmpty && filteredMessages.length === 0) {
+    return null;
+  }
 
   return (
     <div

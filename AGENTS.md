@@ -8,7 +8,7 @@ This section points other automation or human teammates to the right document fo
 
 ## Full dockerised stack
 
-- [`../awesome-localstack/DOCKERISED_LOCALSTACK.md`](../awesome-localstack/DOCKERISED_LOCALSTACK.md) – lives in the sibling repository and describes the all-in-one docker-compose environment (frontend, backend, Postgres, ActiveMQ, Mailhog, consumer, Influx, Ollama, Grafana, etc.) plus the helper scripts to start or prune it.
+- [`awesome-localstack/README.md`](../awesome-localstack/README.md) – main reference describing every docker-compose flavour (full stack, CI slice, lightweight variant) plus helper scripts. It includes the monitoring/LLM notes that are reused during trainings.
 
 ## LLM implementation notes
 

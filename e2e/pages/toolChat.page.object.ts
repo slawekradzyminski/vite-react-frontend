@@ -1,4 +1,4 @@
-import { Locator, Page } from '@playwright/test';
+import { Locator, Page, expect } from '@playwright/test';
 import { LLMPage } from './llm.page.object';
 
 export class ToolChatPage extends LLMPage {
@@ -7,10 +7,12 @@ export class ToolChatPage extends LLMPage {
   readonly temperatureLabel: Locator;
   readonly temperatureSlider: Locator;
   readonly infoCard: Locator;
-  readonly toolDefinitionList: Locator;
+  readonly toolSchemaToggle: Locator;
+  readonly toolDefinitionJson: Locator;
   readonly messageInput: Locator;
   readonly sendButton: Locator;
   readonly chatContent: Locator;
+  readonly settingsPanel: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -19,10 +21,12 @@ export class ToolChatPage extends LLMPage {
     this.temperatureLabel = this.container.getByTestId('temperature-label');
     this.temperatureSlider = this.container.getByTestId('temperature-slider');
     this.infoCard = this.container.getByTestId('tool-info-card');
-    this.toolDefinitionList = this.container.getByTestId('tool-definition-list');
+    this.toolSchemaToggle = this.container.getByTestId('tool-schema-toggle');
+    this.toolDefinitionJson = this.container.getByTestId('tool-definition-json');
     this.messageInput = this.container.getByTestId('chat-input');
     this.sendButton = this.container.getByTestId('chat-send-button');
     this.chatContent = this.container.getByTestId('chat-conversation');
+    this.settingsPanel = this.container.getByTestId('tool-settings-panel');
   }
 
   async goto(path: string = '/llm/tools') {
@@ -35,7 +39,12 @@ export class ToolChatPage extends LLMPage {
   }
 
   async setTemperature(value: number) {
+    await this.expandSettings();
     await this.temperatureSlider.fill(value.toString());
+  }
+
+  async toggleToolSchema() {
+    await this.toolSchemaToggle.click();
   }
 
   getToolCallNotices() {
@@ -52,5 +61,13 @@ export class ToolChatPage extends LLMPage {
       const button = document.querySelector('[data-testid="chat-send-button"]');
       return button && (!button.hasAttribute('disabled') || button.textContent === 'Send');
     }, { timeout: 30000 });
+  }
+
+  async expandSettings() {
+    const isOpen = await this.settingsPanel.evaluate((panel) => panel.hasAttribute('open'));
+    if (!isOpen) {
+      await this.settingsPanel.locator('summary').click();
+    }
+    await expect(this.temperatureSlider).toBeVisible();
   }
 }

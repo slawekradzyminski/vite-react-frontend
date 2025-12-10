@@ -14,6 +14,7 @@ describe('OllamaToolChatPage', () => {
   const mockChat = vi.fn();
   const mockSetModel = vi.fn();
   const mockSetTemperature = vi.fn();
+  const mockSetMessages = vi.fn();
   const defaultMessages: ChatMessageDto[] = [
     { role: 'system', content: 'Use catalog + Grokipedia tools.' }
   ];
@@ -38,7 +39,7 @@ describe('OllamaToolChatPage', () => {
       chat: mockChat,
       model: 'qwen3:4b-instruct',
       setModel: mockSetModel,
-      setMessages: vi.fn(),
+      setMessages: mockSetMessages,
       temperature: 0.4,
       setTemperature: mockSetTemperature,
       think: false,
@@ -47,13 +48,20 @@ describe('OllamaToolChatPage', () => {
     });
   });
 
+  const openSettingsPanel = () => {
+    const summary = screen.getByTestId('tool-settings-panel').querySelector('summary');
+    if (summary) {
+      fireEvent.click(summary);
+    }
+  };
+
   it('renders title, info card, and default model', () => {
     render(<OllamaToolChatPage />);
 
-    expect(screen.getByText('Live Catalog Assistant')).toBeInTheDocument();
+    expect(screen.getByText('Catalog-grounded assistant')).toBeInTheDocument();
     expect(screen.getByTestId('tool-info-card')).toBeInTheDocument();
-    expect(screen.getByTestId('tool-definition-item')).toBeInTheDocument();
     expect(screen.getByTestId('tool-schema-toggle')).toBeInTheDocument();
+    openSettingsPanel();
     expect(screen.getByDisplayValue('qwen3:4b-instruct')).toBeInTheDocument();
   });
 
@@ -70,6 +78,7 @@ describe('OllamaToolChatPage', () => {
 
   it('allows adjusting the model and temperature', () => {
     render(<OllamaToolChatPage />);
+    openSettingsPanel();
     const modelInput = screen.getByDisplayValue('qwen3:4b-instruct');
     const temperatureSlider = screen.getByTestId('temperature-slider');
 
@@ -98,7 +107,7 @@ describe('OllamaToolChatPage', () => {
       chat: mockChat,
       model: 'qwen3:4b-instruct',
       setModel: mockSetModel,
-      setMessages: vi.fn(),
+      setMessages: mockSetMessages,
       temperature: 0.4,
       setTemperature: mockSetTemperature,
       think: false,
@@ -140,7 +149,7 @@ describe('OllamaToolChatPage', () => {
       chat: mockChat,
       model: 'qwen3:4b-instruct',
       setModel: mockSetModel,
-      setMessages: vi.fn(),
+      setMessages: mockSetMessages,
       temperature: 0.4,
       setTemperature: mockSetTemperature,
       think: false,
@@ -151,5 +160,10 @@ describe('OllamaToolChatPage', () => {
     render(<OllamaToolChatPage />);
     expect(screen.getByTestId('tool-call-notice')).toBeInTheDocument();
     expect(screen.getByTestId('tool-message-content')).toHaveTextContent(/"price":\s*999\.99/);
+  });
+
+  it('hides the tool definition JSON by default', () => {
+    render(<OllamaToolChatPage />);
+    expect(screen.queryByTestId('tool-definition-json')).not.toBeInTheDocument();
   });
 });

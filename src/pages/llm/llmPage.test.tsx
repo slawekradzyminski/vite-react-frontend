@@ -15,7 +15,7 @@ describe('LlmPage (landing)', () => {
     renderPage();
 
     expect(screen.getByTestId('llm-hero')).toBeInTheDocument();
-    expect(screen.getByTestId('llm-title')).toHaveTextContent(/Choose the right mode/i);
+    expect(screen.getByTestId('llm-title')).toHaveTextContent(/Orchestrate generate, chat, and tool flows/i);
   });
 
   it('shows cards for each mode with descriptions', () => {
@@ -29,7 +29,7 @@ describe('LlmPage (landing)', () => {
     expect(chatCard).toHaveAttribute('href', '/llm/chat');
     expect(generateCard).toHaveTextContent('Generate');
     expect(generateCard).toHaveAttribute('href', '/llm/generate');
-    expect(toolsCard).toHaveTextContent('Tools');
+    expect(toolsCard).toHaveTextContent('Chat + Tools');
     expect(toolsCard).toHaveAttribute('href', '/llm/tools');
   });
 });

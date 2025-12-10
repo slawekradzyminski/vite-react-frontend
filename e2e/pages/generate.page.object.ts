@@ -1,4 +1,4 @@
-import { Locator, Page } from '@playwright/test';
+import { Locator, Page, expect } from '@playwright/test';
 import { LLMPage } from './llm.page.object';
 
 export class GeneratePage extends LLMPage {
@@ -12,6 +12,7 @@ export class GeneratePage extends LLMPage {
   readonly thinkingCheckbox: Locator;
   readonly thinkingResult: Locator;
   readonly thinkingContent: Locator;
+  readonly settingsPanel: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -24,7 +25,8 @@ export class GeneratePage extends LLMPage {
     this.responseContent = this.container.getByTestId('generated-response');
     this.thinkingCheckbox = this.container.getByTestId('thinking-checkbox');
     this.thinkingResult = this.container.getByTestId('thinking-result');
-    this.thinkingContent = this.thinkingResult.locator('div').last();
+    this.thinkingContent = this.container.getByTestId('thinking-content');
+    this.settingsPanel = this.container.getByTestId('generate-settings-panel');
   }
 
   async goto(path: string = '/llm/generate') {
@@ -33,6 +35,7 @@ export class GeneratePage extends LLMPage {
 
   async generateResponse(prompt: string, model?: string) {
     if (model) {
+      await this.expandSettings();
       await this.modelInput.clear();
       await this.modelInput.fill(model);
     }
@@ -49,10 +52,12 @@ export class GeneratePage extends LLMPage {
   }
 
   async enableThinking() {
+    await this.expandSettings();
     await this.thinkingCheckbox.check();
   }
 
   async disableThinking() {
+    await this.expandSettings();
     await this.thinkingCheckbox.uncheck();
   }
 
@@ -61,6 +66,15 @@ export class GeneratePage extends LLMPage {
   }
 
   async setTemperature(value: number) {
+    await this.expandSettings();
     await this.temperatureSlider.fill(value.toString());
+  }
+
+  async expandSettings() {
+    const isOpen = await this.settingsPanel.evaluate((panel) => panel.hasAttribute('open'));
+    if (!isOpen) {
+      await this.settingsPanel.locator('summary').click();
+    }
+    await expect(this.temperatureSlider).toBeVisible();
   }
 }

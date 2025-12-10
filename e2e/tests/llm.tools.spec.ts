@@ -13,8 +13,10 @@ test.describe('Ollama Tool Calling', () => {
 
   test('shows tool info and available functions', async () => {
     await expect(toolChatPage.infoCard).toBeVisible();
-    const toolItems = toolChatPage.toolDefinitionList.locator('[data-testid="tool-definition-item"]');
-    await expect(toolItems.first()).toBeVisible();
+    await expect(toolChatPage.toolSchemaToggle).toBeVisible();
+    await toolChatPage.toggleToolSchema();
+    await expect(toolChatPage.toolDefinitionJson).toContainText('get_product_snapshot');
+    await toolChatPage.expandSettings();
     await expect(toolChatPage.modelInput).toHaveValue('qwen3:4b-instruct');
   });
 
@@ -29,6 +31,7 @@ test.describe('Ollama Tool Calling', () => {
   });
 
   test('allows adjusting the temperature slider', async () => {
+    await toolChatPage.expandSettings();
     await toolChatPage.setTemperature(0.2);
     await expect(toolChatPage.temperatureLabel).toContainText('0.20');
   });
