@@ -17,6 +17,7 @@ export function TrafficMonitorPage() {
     return 'Disconnected';
   });
   const stompClientRef = useRef<Client | null>(null);
+  const lastClearedAtRef = useRef<number>(0);
 
   // Fetch traffic info (WebSocket endpoint and topic)
   const { data: trafficInfo, isLoading, error } = useQuery({
@@ -50,7 +51,18 @@ export function TrafficMonitorPage() {
         stompClient.subscribe(topic, (message) => {
           try {
             const event: TrafficEventDto = JSON.parse(message.body);
-            setTrafficEvents((prev) => [event, ...prev]);
+            const eventTimestamp = event.timestamp ? Date.parse(event.timestamp) : null;
+            setTrafficEvents((prev) => {
+              if (
+                eventTimestamp !== null &&
+                Number.isFinite(eventTimestamp) &&
+                eventTimestamp <= lastClearedAtRef.current
+              ) {
+                // Ignore events that were generated before the last clear action.
+                return prev;
+              }
+              return [event, ...prev];
+            });
           } catch (err) {
             console.error('Failed to parse traffic event', err);
           }
@@ -80,6 +92,8 @@ export function TrafficMonitorPage() {
 
   // Clear events handler
   const handleClearEvents = () => {
+    // Mark the current time so late-arriving events from before the clear do not reappear.
+    lastClearedAtRef.current = Date.now();
     setTrafficEvents([]);
   };
 

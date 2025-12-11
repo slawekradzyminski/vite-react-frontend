@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Brain, Code2, ShieldCheck, TerminalSquare, UserRound, Bot } from 'lucide-react';
 import { ChatMessageDto } from '../../types/ollama';
@@ -157,13 +156,13 @@ const renderChatMessage = (message: ChatMessageDto) => {
           {roleConfig.label}
         </div>
         <div className={`${roleConfig.bubbleClass} rounded-2xl px-4 py-3 space-y-3`}>
-          <ToolCallNotice message={message} />
           {message.thinking && <ThinkingBlock thinking={message.thinking} />}
           {message.content && (
             <div className={styles.markdownContainer} data-testid={`chat-message-content-${roleKey}`}>
               <ReactMarkdown>{message.content}</ReactMarkdown>
             </div>
           )}
+          <ToolCallNotice message={message} />
         </div>
       </div>
     </div>
@@ -171,7 +170,6 @@ const renderChatMessage = (message: ChatMessageDto) => {
 };
 
 export function ChatTranscript({ messages, hideSystemMessage = false, showWhenEmpty = false }: ChatTranscriptProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
   const filteredMessages = messages.filter((msg) => {
     if (hideSystemMessage && msg.role === 'system') {
       return false;
@@ -185,22 +183,6 @@ export function ChatTranscript({ messages, hideSystemMessage = false, showWhenEm
     return true;
   });
 
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) {
-      return;
-    }
-    const handle = requestAnimationFrame(() => {
-      const lastMessage = container.lastElementChild;
-      if (lastMessage) {
-        lastMessage.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      } else {
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-      }
-    });
-    return () => cancelAnimationFrame(handle);
-  }, [filteredMessages]);
-
   if (!showWhenEmpty && filteredMessages.length === 0) {
     return null;
   }
@@ -209,7 +191,6 @@ export function ChatTranscript({ messages, hideSystemMessage = false, showWhenEm
     <div
       className={styles.conversationContainer}
       data-testid="chat-conversation"
-      ref={containerRef}
     >
       {filteredMessages.map((msg, idx) => (
         <div key={`${idx}-${msg.role ?? 'assistant'}`} data-testid={`chat-message-container-${idx}`}>
