@@ -53,10 +53,7 @@ describe('OllamaGeneratePage', () => {
   });
 
   const openSettingsPanel = () => {
-    const summary = screen.getByTestId('generate-settings-panel').querySelector('summary');
-    if (summary) {
-      fireEvent.click(summary);
-    }
+    fireEvent.click(screen.getByTestId('generate-sidebar-toggle'));
   };
 
   it('handles streaming chunks correctly', async () => {
@@ -230,7 +227,7 @@ describe('OllamaGeneratePage', () => {
 
     // then
     expect(screen.getByTestId('thinking-checkbox')).not.toBeChecked();
-    expect(screen.getByText('Thinking traces')).toBeInTheDocument();
+    expect(screen.getByText('Thinking')).toBeInTheDocument();
   });
 
   it('includes think flag in request when checkbox is checked', async () => {
@@ -315,7 +312,7 @@ describe('OllamaGeneratePage', () => {
     // then
     const thinkingCheckbox = screen.getByTestId('thinking-checkbox');
     expect(thinkingCheckbox).toBeInTheDocument();
-    expect(screen.getByText('Thinking traces')).toBeInTheDocument();
+    expect(screen.getByText('Thinking')).toBeInTheDocument();
     
     // Check that the old text is not present
     expect(screen.queryByText('Show model reasoning (think)')).not.toBeInTheDocument();

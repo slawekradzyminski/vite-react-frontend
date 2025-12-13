@@ -3,6 +3,8 @@ import { LLMPage } from './llm.page.object';
 
 export class ChatPage extends LLMPage {
   readonly container: Locator;
+  readonly sidebarToggle: Locator;
+  readonly sidebar: Locator;
   readonly modelInput: Locator;
   readonly temperatureLabel: Locator;
   readonly temperatureSlider: Locator;
@@ -18,6 +20,8 @@ export class ChatPage extends LLMPage {
   constructor(page: Page) {
     super(page);
     this.container = page.getByTestId('ollama-chat-page');
+    this.sidebarToggle = this.container.getByTestId('chat-sidebar-toggle');
+    this.sidebar = this.container.getByTestId('chat-sidebar');
     this.modelInput = this.container.getByTestId('model-input');
     this.temperatureLabel = this.container.getByTestId('temperature-label');
     this.temperatureSlider = this.container.getByTestId('temperature-slider');
@@ -69,10 +73,11 @@ export class ChatPage extends LLMPage {
   }
 
   async expandSettings() {
-    const isOpen = await this.settingsPanel.evaluate((panel) => panel.hasAttribute('open'));
-    if (!isOpen) {
-      await this.settingsPanel.locator('summary').click();
+    const isHidden = await this.sidebar.getAttribute('aria-hidden');
+    if (isHidden !== 'false') {
+      await this.sidebarToggle.click();
     }
+    await expect(this.sidebar).toBeVisible();
     await expect(this.temperatureSlider).toBeVisible();
   }
 

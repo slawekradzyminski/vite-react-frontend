@@ -14,11 +14,8 @@ test.describe('Ollama Tool Calling', () => {
   });
 
   test('shows tool info and available functions', async () => {
-    await expect(toolChatPage.infoCard).toBeVisible();
-    await expect(toolChatPage.toolSchemaToggle).toBeVisible();
-    await toolChatPage.toggleToolSchema();
-    await expect(toolChatPage.toolDefinitionJson).toContainText('get_product_snapshot');
     await toolChatPage.expandSettings();
+    await expect(toolChatPage.toolDefinitionJson).toContainText('get_product_snapshot');
     await expect(toolChatPage.modelInput).toHaveValue('qwen3:4b-instruct');
   });
 

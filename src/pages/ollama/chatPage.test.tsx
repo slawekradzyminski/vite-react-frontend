@@ -39,8 +39,7 @@ describe('OllamaChatPage', () => {
   });
 
   const openSettingsPanel = () => {
-    const summary = within(screen.getByTestId('chat-settings-panel')).getByText(/Generation settings/i);
-    fireEvent.click(summary);
+    fireEvent.click(screen.getByTestId('chat-sidebar-toggle'));
   };
 
   const openSystemPrompt = () => {
@@ -279,11 +278,5 @@ describe('OllamaChatPage', () => {
     expect(screen.getByTestId('tool-message-content')).toHaveTextContent('"price": 999.99');
   });
 
-  it('clears the conversation but keeps the system prompt when requested', () => {
-    render(<OllamaChatPage />);
-    fireEvent.click(screen.getByTestId('chat-reset-button'));
-    expect(mockSetMessages).toHaveBeenCalledWith([
-      expect.objectContaining({ role: 'system', content: defaultMessages[0].content }),
-    ]);
-  });
+  // Clear conversation button was removed from the UI.
 });

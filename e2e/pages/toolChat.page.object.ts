@@ -3,11 +3,11 @@ import { LLMPage } from './llm.page.object';
 
 export class ToolChatPage extends LLMPage {
   readonly container: Locator;
+  readonly sidebarToggle: Locator;
+  readonly sidebar: Locator;
   readonly modelInput: Locator;
   readonly temperatureLabel: Locator;
   readonly temperatureSlider: Locator;
-  readonly infoCard: Locator;
-  readonly toolSchemaToggle: Locator;
   readonly toolDefinitionJson: Locator;
   readonly messageInput: Locator;
   readonly sendButton: Locator;
@@ -17,11 +17,11 @@ export class ToolChatPage extends LLMPage {
   constructor(page: Page) {
     super(page);
     this.container = page.getByTestId('ollama-tool-chat-page');
+    this.sidebarToggle = this.container.getByTestId('tool-sidebar-toggle');
+    this.sidebar = this.container.getByTestId('tool-sidebar');
     this.modelInput = this.container.getByTestId('model-input');
     this.temperatureLabel = this.container.getByTestId('temperature-label');
     this.temperatureSlider = this.container.getByTestId('temperature-slider');
-    this.infoCard = this.container.getByTestId('tool-info-card');
-    this.toolSchemaToggle = this.container.getByTestId('tool-schema-toggle');
     this.toolDefinitionJson = this.container.getByTestId('tool-definition-json');
     this.messageInput = this.container.getByTestId('chat-input');
     this.sendButton = this.container.getByTestId('chat-send-button');
@@ -43,10 +43,6 @@ export class ToolChatPage extends LLMPage {
     await this.temperatureSlider.fill(value.toString());
   }
 
-  async toggleToolSchema() {
-    await this.toolSchemaToggle.click();
-  }
-
   getToolCallNotices() {
     return this.chatContent.locator('[data-testid="tool-call-notice"]');
   }
@@ -64,10 +60,11 @@ export class ToolChatPage extends LLMPage {
   }
 
   async expandSettings() {
-    const isOpen = await this.settingsPanel.evaluate((panel) => panel.hasAttribute('open'));
-    if (!isOpen) {
-      await this.settingsPanel.locator('summary').click();
+    const isHidden = await this.sidebar.getAttribute('aria-hidden');
+    if (isHidden !== 'false') {
+      await this.sidebarToggle.click();
     }
+    await expect(this.sidebar).toBeVisible();
     await expect(this.temperatureSlider).toBeVisible();
   }
 }

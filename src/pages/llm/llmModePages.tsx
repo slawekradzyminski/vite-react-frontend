@@ -8,12 +8,11 @@ import type { ReactNode } from 'react';
 interface LlmModeLayoutProps {
   badge: string;
   title: string;
-  highlights?: string[];
   children: ReactNode;
   testId: string;
 }
 
-function LlmModeLayout({ badge, title, highlights, children, testId }: LlmModeLayoutProps) {
+function LlmModeLayout({ badge, title, children, testId }: LlmModeLayoutProps) {
   return (
     <div className="min-h-screen bg-slate-50 py-12" data-testid={testId}>
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -24,18 +23,6 @@ function LlmModeLayout({ badge, title, highlights, children, testId }: LlmModeLa
                 {badge}
               </span>
               <h1 className="mt-3 text-3xl font-bold text-slate-900">{title}</h1>
-              {highlights && highlights.length > 0 && (
-                <ul className="mt-4 flex flex-wrap gap-2" data-testid="llm-mode-highlights">
-                  {highlights.map((item) => (
-                    <li
-                      key={item}
-                      className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600"
-                    >
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              )}
             </div>
             <Link
               to="/llm"
@@ -60,7 +47,6 @@ export function LlmChatExperience() {
     <LlmModeLayout
       badge="Chat"
       title="Conversational assistant"
-      highlights={['Custom system prompt', 'Thinking toggle', 'Streaming replies']}
       testId="llm-chat-mode"
     >
       <OllamaChatPage hideTitle />
@@ -73,7 +59,6 @@ export function LlmGenerateExperience() {
     <LlmModeLayout
       badge="Generate"
       title="Single prompt generation"
-      highlights={['One prompt', 'Markdown output', 'Thinking optional']}
       testId="llm-generate-mode"
     >
       <OllamaGeneratePage hideTitle />
@@ -86,7 +71,6 @@ export function LlmToolExperience() {
     <LlmModeLayout
       badge="Tools"
       title="Catalog-grounded assistant"
-      highlights={['Tool streaming', 'Grounded responses', 'qwen3:4b instruct']}
       testId="llm-tools-mode"
     >
       <OllamaToolChatPage hideTitle />

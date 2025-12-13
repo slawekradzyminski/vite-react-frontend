@@ -48,25 +48,25 @@ describe('OllamaToolChatPage', () => {
     });
   });
 
-  const openSettingsPanel = () => {
-    const summary = screen.getByTestId('tool-settings-panel').querySelector('summary');
-    if (summary) {
-      fireEvent.click(summary);
-    }
+  const openSidebar = () => {
+    fireEvent.click(screen.getByTestId('tool-sidebar-toggle'));
   };
 
-  it('renders title, info card, and default model', () => {
+  it('renders title and exposes model settings when the panel is opened', () => {
     render(<OllamaToolChatPage />);
 
     expect(screen.getByText('Catalog-grounded assistant')).toBeInTheDocument();
-    expect(screen.getByTestId('tool-info-card')).toBeInTheDocument();
-    expect(screen.getByTestId('tool-schema-toggle')).toBeInTheDocument();
-    openSettingsPanel();
+    expect(screen.getByTestId('tool-sidebar')).toHaveAttribute('aria-hidden', 'true');
+
+    openSidebar();
+    expect(screen.getByTestId('tool-sidebar')).toHaveAttribute('aria-hidden', 'false');
     expect(screen.getByDisplayValue('qwen3:4b-instruct')).toBeInTheDocument();
+    expect(screen.getByTestId('tool-definition-json')).toBeInTheDocument();
   });
 
   it('sends chat messages through the tool hook', () => {
     render(<OllamaToolChatPage />);
+    openSidebar();
     const input = screen.getByPlaceholderText('Ask about catalog items or sports...');
 
     fireEvent.change(input, { target: { value: 'Show me iPhones' } });
@@ -78,7 +78,7 @@ describe('OllamaToolChatPage', () => {
 
   it('allows adjusting the model and temperature', () => {
     render(<OllamaToolChatPage />);
-    openSettingsPanel();
+    openSidebar();
     const modelInput = screen.getByDisplayValue('qwen3:4b-instruct');
     const temperatureSlider = screen.getByTestId('temperature-slider');
 
@@ -89,13 +89,10 @@ describe('OllamaToolChatPage', () => {
     expect(mockSetTemperature).toHaveBeenCalledWith(0.7);
   });
 
-  it('allows expanding tool definition JSON', () => {
+  it('keeps the tool definition JSON expanded when the panel is visible', () => {
     render(<OllamaToolChatPage />);
-    const toggle = screen.getByTestId('tool-schema-toggle');
-    fireEvent.click(toggle);
+    openSidebar();
     expect(screen.getByTestId('tool-definition-json')).toBeInTheDocument();
-    fireEvent.click(toggle);
-    expect(screen.queryByTestId('tool-definition-json')).not.toBeInTheDocument();
   });
 
   it('shows loading state before system prompt loads', () => {
@@ -162,8 +159,10 @@ describe('OllamaToolChatPage', () => {
     expect(screen.getByTestId('tool-message-content')).toHaveTextContent(/"price":\s*999\.99/);
   });
 
-  it('hides the tool definition JSON by default', () => {
+  it('keeps the sidebar hidden by default until toggled', () => {
     render(<OllamaToolChatPage />);
-    expect(screen.queryByTestId('tool-definition-json')).not.toBeInTheDocument();
+    expect(screen.getByTestId('tool-sidebar')).toHaveAttribute('aria-hidden', 'true');
+    openSidebar();
+    expect(screen.getByTestId('tool-sidebar')).toHaveAttribute('aria-hidden', 'false');
   });
 });
