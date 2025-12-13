@@ -1,7 +1,7 @@
-import { Locator, Page, expect } from '@playwright/test';
-import { LLMPage } from './llm.page.object';
+import { Locator, Page } from '@playwright/test';
+import { BaseLlmChatPage } from './baseLlm.page.object';
 
-export class ChatPage extends LLMPage {
+export class ChatPage extends BaseLlmChatPage {
   readonly container: Locator;
   readonly sidebarToggle: Locator;
   readonly sidebar: Locator;
@@ -35,61 +35,21 @@ export class ChatPage extends LLMPage {
     this.systemPromptCard = this.container.getByTestId('chat-system-prompt');
   }
 
-  async goto(path: string = '/llm/chat') {
+  async goto(path: string = '/llm/chat'): Promise<void> {
     await super.goto(path);
   }
 
-  async sendChatMessage(message: string, model?: string) {
-    if (model) {
-      await this.expandSettings();
-      await this.modelInput.clear();
-      await this.modelInput.fill(model);
-    }
-    await this.messageInput.fill(message);
-    await this.sendButton.click();
-  }
-
-  async setTemperature(temperature: number) {
-    await this.expandSettings();
-    await this.temperatureSlider.fill(temperature.toString());
-  }
-
-  async enableThinking() {
+  async enableThinking(): Promise<void> {
     await this.expandSettings();
     await this.thinkingCheckbox.check();
   }
 
-  async disableThinking() {
+  async disableThinking(): Promise<void> {
     await this.expandSettings();
     await this.thinkingCheckbox.uncheck();
   }
 
-  async expandThinking() {
+  async expandThinking(): Promise<void> {
     await this.thinkingToggle.locator('summary').click();
-  }
-
-  getChatMessage(role: 'user' | 'assistant' | 'system') {
-    return this.chatContent.getByTestId(`chat-message-${role}`);
-  }
-
-  async expandSettings() {
-    const isHidden = await this.sidebar.getAttribute('aria-hidden');
-    if (isHidden !== 'false') {
-      await this.sidebarToggle.click();
-    }
-    await expect(this.sidebar).toBeVisible();
-    await expect(this.temperatureSlider).toBeVisible();
-  }
-
-  async expandSystemPrompt() {
-    await this.systemPromptCard.locator('summary').click();
-  }
-
-  async waitForChatComplete() {
-    await this.sendButton.waitFor({ state: 'visible' });
-    await this.page.waitForFunction(() => {
-      const button = document.querySelector('[data-testid="chat-send-button"]');
-      return button && (!button.hasAttribute('disabled') || button.textContent === 'Send');
-    }, { timeout: 30000 });
   }
 }

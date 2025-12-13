@@ -1,7 +1,7 @@
-import { Locator, Page, expect } from '@playwright/test';
-import { LLMPage } from './llm.page.object';
+import { Locator, Page } from '@playwright/test';
+import { BaseLlmChatPage } from './baseLlm.page.object';
 
-export class ToolChatPage extends LLMPage {
+export class ToolChatPage extends BaseLlmChatPage {
   readonly container: Locator;
   readonly sidebarToggle: Locator;
   readonly sidebar: Locator;
@@ -13,6 +13,7 @@ export class ToolChatPage extends LLMPage {
   readonly sendButton: Locator;
   readonly chatContent: Locator;
   readonly settingsPanel: Locator;
+  readonly systemPromptCard: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -27,44 +28,18 @@ export class ToolChatPage extends LLMPage {
     this.sendButton = this.container.getByTestId('chat-send-button');
     this.chatContent = this.container.getByTestId('chat-conversation');
     this.settingsPanel = this.container.getByTestId('tool-settings-panel');
+    this.systemPromptCard = this.container.getByTestId('tool-system-prompt');
   }
 
-  async goto(path: string = '/llm/tools') {
+  async goto(path: string = '/llm/tools'): Promise<void> {
     await super.goto(path);
   }
 
-  async sendChatMessage(message: string) {
-    await this.messageInput.fill(message);
-    await this.sendButton.click();
-  }
-
-  async setTemperature(value: number) {
-    await this.expandSettings();
-    await this.temperatureSlider.fill(value.toString());
-  }
-
-  getToolCallNotices() {
+  getToolCallNotices(): Locator {
     return this.chatContent.locator('[data-testid="tool-call-notice"]');
   }
 
-  getToolMessages() {
+  getToolMessages(): Locator {
     return this.chatContent.locator('[data-testid="tool-message"]');
-  }
-
-  async waitForChatComplete() {
-    await this.sendButton.waitFor({ state: 'visible' });
-    await this.page.waitForFunction(() => {
-      const button = document.querySelector('[data-testid="chat-send-button"]');
-      return button && (!button.hasAttribute('disabled') || button.textContent === 'Send');
-    }, { timeout: 30000 });
-  }
-
-  async expandSettings() {
-    const isHidden = await this.sidebar.getAttribute('aria-hidden');
-    if (isHidden !== 'false') {
-      await this.sidebarToggle.click();
-    }
-    await expect(this.sidebar).toBeVisible();
-    await expect(this.temperatureSlider).toBeVisible();
   }
 }

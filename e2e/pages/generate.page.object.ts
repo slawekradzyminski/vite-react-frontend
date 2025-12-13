@@ -1,7 +1,7 @@
-import { Locator, Page, expect } from '@playwright/test';
-import { LLMPage } from './llm.page.object';
+import { Locator, Page } from '@playwright/test';
+import { BaseLlmGeneratePage } from './baseLlm.page.object';
 
-export class GeneratePage extends LLMPage {
+export class GeneratePage extends BaseLlmGeneratePage {
   readonly container: Locator;
   readonly sidebarToggle: Locator;
   readonly sidebar: Locator;
@@ -33,53 +33,21 @@ export class GeneratePage extends LLMPage {
     this.settingsPanel = this.container.getByTestId('generate-settings-panel');
   }
 
-  async goto(path: string = '/llm/generate') {
+  async goto(path: string = '/llm/generate'): Promise<void> {
     await super.goto(path);
   }
 
-  async generateResponse(prompt: string, model?: string) {
-    if (model) {
-      await this.expandSettings();
-      await this.modelInput.clear();
-      await this.modelInput.fill(model);
-    }
-    await this.promptInput.fill(prompt);
-    await this.generateButton.click();
-  }
-
-  async waitForGenerationComplete() {
-    await this.generateButton.waitFor({ state: 'visible' });
-    await this.page.waitForFunction(() => {
-      const button = document.querySelector('[data-testid="generate-button"]');
-      return button && (!button.hasAttribute('disabled') || button.textContent === 'Generate');
-    }, { timeout: 30000 });
-  }
-
-  async enableThinking() {
+  async enableThinking(): Promise<void> {
     await this.expandSettings();
     await this.thinkingCheckbox.check();
   }
 
-  async disableThinking() {
+  async disableThinking(): Promise<void> {
     await this.expandSettings();
     await this.thinkingCheckbox.uncheck();
   }
 
-  async expandThinking() {
+  async expandThinking(): Promise<void> {
     await this.thinkingResult.locator('summary').click();
-  }
-
-  async setTemperature(value: number) {
-    await this.expandSettings();
-    await this.temperatureSlider.fill(value.toString());
-  }
-
-  async expandSettings() {
-    const isHidden = await this.sidebar.getAttribute('aria-hidden');
-    if (isHidden !== 'false') {
-      await this.sidebarToggle.click();
-    }
-    await expect(this.sidebar).toBeVisible();
-    await expect(this.temperatureSlider).toBeVisible();
   }
 }
