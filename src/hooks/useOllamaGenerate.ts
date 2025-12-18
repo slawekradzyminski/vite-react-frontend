@@ -3,6 +3,7 @@ import { useToast } from './useToast';
 import { GenerateRequestDto } from '../types/ollama';
 import { processSSEResponse } from '../lib/sse';
 import { ollama } from '../lib/api';
+import { useInFlightRequest, useOllamaParams } from './useOllamaParams';
 
 interface OllamaGenerateResponse {
   model: string;
@@ -19,12 +20,17 @@ interface UseOllamaGenerateOptions {
 }
 
 export function useOllamaGenerate(options?: UseOllamaGenerateOptions) {
-  const [isGenerating, setIsGenerating] = useState(false);
+  const { inFlight: isGenerating, start, stop } = useInFlightRequest(false);
   const [response, setResponse] = useState('');
   const [thinking, setThinking] = useState('');
-  const [model, setModel] = useState('qwen3:0.6b');
-  const [temperature, setTemperature] = useState(0.8);
-  const [think, setThink] = useState(false);
+  const {
+    model,
+    setModel,
+    temperature,
+    setTemperature,
+    think,
+    setThink,
+  } = useOllamaParams({ model: 'qwen3:0.6b', temperature: 0.8, think: false });
   const { toast } = useToast();
 
   const generate = async (prompt: string) => {
@@ -36,7 +42,17 @@ export function useOllamaGenerate(options?: UseOllamaGenerateOptions) {
       return;
     }
 
-    setIsGenerating(true);
+    const started = start(() => {
+      toast({
+        variant: 'error',
+        description: 'Please wait for the current response to finish.',
+      });
+    });
+
+    if (!started) {
+      return;
+    }
+
     setResponse(''); 
     setThinking('');
 
@@ -59,7 +75,7 @@ export function useOllamaGenerate(options?: UseOllamaGenerateOptions) {
             setThinking(prev => prev + data.thinking);
           }
           if (data.done) {
-            setIsGenerating(false);
+            stop();
           }
         },
         onError: (error) => {
@@ -69,9 +85,10 @@ export function useOllamaGenerate(options?: UseOllamaGenerateOptions) {
             variant: 'error',
             description: 'Failed to process response',
           });
+          stop();
         },
         onComplete: () => {
-          setIsGenerating(false);
+          stop();
         },
       });
     } catch (error) {
@@ -82,8 +99,7 @@ export function useOllamaGenerate(options?: UseOllamaGenerateOptions) {
         description: errorMessage,
       });
       options?.onError?.(error instanceof Error ? error : new Error(errorMessage));
-    } finally {
-      setIsGenerating(false);
+      stop();
     }
   };
 

@@ -4,6 +4,7 @@ import { TOOL_DEFINITIONS } from '../lib/ollamaTools';
 import type { ChatMessageDto, ChatRequestDto, ChatResponseDto, OllamaToolDefinition } from '../types/ollama';
 import { processSSEResponse } from '../lib/sse';
 import { useToast } from './useToast';
+import { useInFlightRequest, useOllamaParams } from './useOllamaParams';
 
 interface UseOllamaToolChatOptions {
   onError?: (error: Error) => void;
@@ -61,10 +62,15 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
     { role: 'system', content: DEFAULT_TOOL_PROMPT },
   ]);
   const [toolMessages, setToolMessages] = useState<ChatMessageDto[]>([]);
-  const [isChatting, setIsChatting] = useState(false);
-  const [model, setModel] = useState('qwen3:4b-instruct');
-  const [temperature, setTemperature] = useState(0.4);
-  const [think, setThink] = useState(false);
+  const { inFlight: isChatting, start, stop } = useInFlightRequest(false);
+  const {
+    model,
+    setModel,
+    temperature,
+    setTemperature,
+    think,
+    setThink,
+  } = useOllamaParams({ model: 'qwen3:4b-instruct', temperature: 0.4, think: false });
   const [isLoadingSystemPrompt, setIsLoadingSystemPrompt] = useState(true);
   const [toolDefinitions, setToolDefinitions] = useState<OllamaToolDefinition[]>(DEFAULT_TOOL_DEFINITIONS);
 
@@ -111,12 +117,15 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
         toast({ variant: 'error', description: 'Please enter a question.' });
         return;
       }
-      if (isChatting) {
+
+      const started = start(() => {
         toast({ variant: 'error', description: 'Wait for the current response to finish.' });
+      });
+
+      if (!started) {
         return;
       }
 
-      setIsChatting(true);
       isStreamingAssistantRef.current = false;
       accumulatedContentRef.current = '';
       accumulatedThinkingRef.current = '';
@@ -144,7 +153,7 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
             const incoming = data.message;
             if (!incoming) {
               if (data.done) {
-                setIsChatting(false);
+                stop();
               }
               return;
             }
@@ -208,17 +217,17 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
             }
 
             if (data.done) {
-              setIsChatting(false);
+              stop();
             }
           },
           onError: (error) => {
             console.error('Tool chat SSE error', error);
             options?.onError?.(error);
             toast({ variant: 'error', description: 'Failed to process tool response' });
-            setIsChatting(false);
+            stop();
           },
           onComplete: () => {
-            setIsChatting(false);
+            stop();
           },
         });
       } catch (error) {
@@ -226,10 +235,10 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
         const message = error instanceof Error ? error.message : 'Failed to chat with tools';
         toast({ variant: 'error', description: message });
         options?.onError?.(error instanceof Error ? error : new Error(message));
-        setIsChatting(false);
+        stop();
       }
     },
-    [isChatting, messages, model, temperature, think, toast, toolDefinitions, options]
+    [isChatting, messages, model, temperature, think, toast, toolDefinitions, options, start, stop]
   );
 
   return {

@@ -3,6 +3,7 @@ import { useToast } from './useToast';
 import { ChatMessageDto, ChatRequestDto, ChatResponseDto } from '../types/ollama';
 import { processSSEResponse } from '../lib/sse';
 import { ollama, prompts } from '../lib/api';
+import { useInFlightRequest, useOllamaParams } from './useOllamaParams';
 
 interface UseOllamaChatOptions {
   onError?: (error: Error) => void;
@@ -19,10 +20,15 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
       content: DEFAULT_SYSTEM_PROMPT
     }
   ]);
-  const [model, setModel] = useState('qwen3:0.6b');
-  const [temperature, setTemperature] = useState(0.8);
-  const [think, setThink] = useState(false);
-  const [isChatting, setIsChatting] = useState(false);
+  const {
+    model,
+    setModel,
+    temperature,
+    setTemperature,
+    think,
+    setThink
+  } = useOllamaParams({ model: 'qwen3:0.6b', temperature: 0.8, think: false });
+  const { inFlight: isChatting, start, stop } = useInFlightRequest(false);
   const [isLoadingSystemPrompt, setIsLoadingSystemPrompt] = useState(true);
   
   // Fetch user's system prompt
@@ -58,15 +64,16 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
         return;
       }
 
-      if (isChatting) {
+      const started = start(() => {
         toast({
           variant: 'error',
           description: 'Please wait for the current response to finish.'
         });
+      });
+
+      if (!started) {
         return;
       }
-
-      setIsChatting(true);
 
       const newMessages = [
         ...messages,
@@ -118,17 +125,17 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
             });
 
             if (data.done) {
-              setIsChatting(false);
+              stop();
             }
           },
           onError: (error) => {
             console.error('SSE processing error:', error);
             options?.onError?.(error);
             toast({ variant: 'error', description: 'Failed to process response' });
-            setIsChatting(false);
+            stop();
           },
           onComplete: () => {
-            setIsChatting(false);
+            stop();
           }
         });
       } catch (error) {
@@ -136,10 +143,10 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to chat';
         toast({ variant: 'error', description: errorMessage });
         options?.onError?.(error instanceof Error ? error : new Error(errorMessage));
-        setIsChatting(false);
+        stop();
       }
     },
-    [messages, model, temperature, think, isChatting, toast, options]
+    [messages, model, temperature, think, toast, options, start, stop]
   );
 
   return {
