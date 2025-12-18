@@ -14,7 +14,7 @@ export class TrafficPage {
     this.statusMessage = page.locator('.bg-gray-50 p').first();
     this.clearEventsButton = page.getByRole('button', { name: /clear events/i });
     this.trafficEventsTable = page.locator('table');
-    this.noEventsMessage = page.getByText(/no traffic events recorded yet/i);
+    this.noEventsMessage = page.getByTestId('traffic-empty-state');
   }
 
   async goto() {

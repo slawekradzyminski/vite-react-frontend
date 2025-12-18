@@ -1,26 +1,28 @@
 .markdownContainer {
   max-width: none;
-  font-size: 0.875rem;
-  line-height: 1.25;
+  font-size: 0.9rem;
+  line-height: 1.45;
   overflow-wrap: break-word;
 }
 
 .conversationContainer {
   flex: 1;
-  overflow: auto;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.25rem;
-  padding: 1rem;
+  overflow-y: visible;
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
   margin-bottom: 1rem;
-  min-height: 200px;
-  max-height: 60vh;
+  min-height: 220px;
+  max-height: none;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.15);
 }
 
 /* Reset all margins and line heights */
 .markdownContainer :global(*) {
   margin-top: 0;
   margin-bottom: 0;
-  line-height: 1.25;
+  line-height: 1.45;
 }
 
 .markdownContainer :global(h1),
@@ -34,27 +36,35 @@
 }
 
 .markdownContainer :global(p) {
-  margin-top: 0.125rem;
-  margin-bottom: 0.125rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
 }
 
 .markdownContainer :global(ul),
 .markdownContainer :global(ol) {
-  margin-top: 0.125rem;
-  margin-bottom: 0.125rem;
-  padding-top: 0;
-  padding-bottom: 0;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  padding-left: 1.25rem;
+  list-style-position: outside;
+}
+
+.markdownContainer :global(ul) {
+  list-style-type: disc;
+}
+
+.markdownContainer :global(ol) {
+  list-style-type: decimal;
 }
 
 .markdownContainer :global(li) {
-  margin-top: 0;
-  margin-bottom: 0;
+  margin-top: 0.1rem;
+  margin-bottom: 0.1rem;
 }
 
 .markdownContainer :global(pre),
 .markdownContainer :global(code) {
-  margin-top: 0.125rem;
-  margin-bottom: 0.125rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
 }
 
 /* Remove spacing from first and last elements */
@@ -69,5 +79,5 @@
 /* Reduce line height for lists */
 .markdownContainer :global(ul),
 .markdownContainer :global(ol) {
-  line-height: 1;
-} 
+  line-height: 1.2;
+}

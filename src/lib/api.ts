@@ -14,8 +14,8 @@ import type {
 } from '../types/auth';
 import type { EmailDto, EmailResponse } from '../types/email';
 import type { CreateQrDto, QrCodeResponse } from '../types/qr';
-import type { GenerateRequestDto, ChatRequestDto } from '../types/ollama';
-import type { SystemPromptDto } from '../types/system-prompt';
+import type { GenerateRequestDto, ChatRequestDto, OllamaToolDefinition } from '../types/ollama';
+import type { ChatSystemPromptDto, ToolSystemPromptDto } from '../types/prompts';
 import type { Order, PageDtoOrderDto, Address, OrderStatus } from '../types/order';
 import type { Product, ProductCreateDto, ProductUpdateDto } from '../types/product';
 import type { Cart, CartItemDto, UpdateCartItemDto } from '../types/cart';
@@ -48,6 +48,7 @@ interface RefreshableRequestConfig extends AxiosRequestConfig {
 }
 
 let refreshPromise: Promise<TokenPair> | null = null;
+const isRefreshEndpoint = (url?: string) => url?.includes('/users/refresh');
 
 const enqueueRefresh = (refreshToken: string) => {
   if (!refreshPromise) {
@@ -79,6 +80,11 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const status = error.response?.status;
     const originalRequest = error.config as RefreshableRequestConfig | undefined;
+    if (originalRequest && isRefreshEndpoint(originalRequest.url)) {
+      authStorage.clearTokens();
+      window.location.href = '/login';
+      return Promise.reject(error);
+    }
 
     if (status === 401 && originalRequest && !originalRequest._retry) {
       const refreshToken = authStorage.getRefreshToken();
@@ -106,6 +112,27 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+const streamWithAuth = async (path: string, payload: unknown) => {
+  const response = await fetch(`${getApiBaseUrl()}${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${authStorage.getAccessToken() ?? ''}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      authStorage.clearTokens();
+      window.location.href = '/login';
+    }
+    throw new Error(`Failed to fetch stream: ${response.statusText}`);
+  }
+
+  return response;
+};
 
 export const auth = {
   login: (data: LoginRequest) => 
@@ -158,54 +185,38 @@ export const qr = {
 
 export const ollama = {
   generate: async (data: GenerateRequestDto) => {
-    const response = await fetch(`${getApiBaseUrl()}/api/ollama/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${authStorage.getAccessToken() ?? ''}`,
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        authStorage.clearTokens();
-        window.location.href = '/login';
-      }
-      throw new Error(`Failed to fetch stream: ${response.statusText}`);
-    }
-
-    return response;
+    return streamWithAuth('/api/ollama/generate', data);
   },
 
   chat: async (data: ChatRequestDto) => {
-    const response = await fetch(`${getApiBaseUrl()}/api/ollama/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${authStorage.getAccessToken() ?? ''}`,
-      },
-      body: JSON.stringify(data),
-    });
+    return streamWithAuth('/api/ollama/chat', data);
+  },
 
-    if (!response.ok) {
-      if (response.status === 401) {
-        authStorage.clearTokens();
-        window.location.href = '/login';
-      }
-      throw new Error(`Failed to fetch stream: ${response.statusText}`);
-    }
+  chatWithTools: async (data: ChatRequestDto) => {
+    return streamWithAuth('/api/ollama/chat/tools', data);
+  },
 
-    return response;
+  getToolDefinitions: async () => {
+    const response = await api.get<OllamaToolDefinition[]>('/api/ollama/chat/tools/definitions');
+    return response.data;
   },
 };
 
-export const systemPrompt = {
-  get: () => 
-    api.get<SystemPromptDto>('/users/system-prompt'),
-  
-  update: (systemPrompt: string) =>
-    api.put<SystemPromptDto>('/users/system-prompt', { systemPrompt }),
+export const prompts = {
+  chat: {
+    get: () =>
+      api.get<ChatSystemPromptDto>('/users/chat-system-prompt'),
+
+    update: (chatSystemPrompt: string) =>
+      api.put<ChatSystemPromptDto>('/users/chat-system-prompt', { chatSystemPrompt }),
+  },
+  tool: {
+    get: () =>
+      api.get<ToolSystemPromptDto>('/users/tool-system-prompt'),
+
+    update: (toolSystemPrompt: string) =>
+      api.put<ToolSystemPromptDto>('/users/tool-system-prompt', { toolSystemPrompt }),
+  },
 };
 
 export const orders = {

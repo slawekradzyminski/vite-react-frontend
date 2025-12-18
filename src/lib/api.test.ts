@@ -260,6 +260,35 @@ describe('API Client', () => {
       });
     });
 
+    it('clears tokens when the refresh endpoint returns 401', async () => {
+      const errorInterceptor = getErrorInterceptor();
+      localStorage.setItem('token', 'expired-token');
+      localStorage.setItem('refreshToken', 'refresh-123');
+      const refreshSpy = vi.spyOn(auth, 'refresh');
+      const originalLocation = window.location;
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: { href: 'http://localhost/' } as Location,
+      });
+
+      const error = {
+        config: { url: '/users/refresh', headers: {}, _retry: false },
+        response: { status: 401 },
+      };
+
+      await expect(errorInterceptor(error as any)).rejects.toBe(error as any);
+      expect(refreshSpy).not.toHaveBeenCalled();
+      expect(localStorage.getItem('token')).toBeNull();
+      expect(localStorage.getItem('refreshToken')).toBeNull();
+      expect(window.location.href).toBe('/login');
+
+      refreshSpy.mockRestore();
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    });
+
     it('passes through non-auth errors without redirect', async () => {
       const errorInterceptor = getErrorInterceptor();
       localStorage.setItem('token', 'test-token');

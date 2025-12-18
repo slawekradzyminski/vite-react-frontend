@@ -3,7 +3,8 @@
     "playwright": {
       "command": "npx",
       "args": [
-        "@playwright/mcp@0.0.22"
+        "@playwright/mcp@latest",
+        "--isolated"
       ]
     }
   }
