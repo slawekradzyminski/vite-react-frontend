@@ -1,7 +1,7 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Menu, X, ShoppingCart } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { auth, cart } from '../../lib/api';
 import { Button } from '../ui/button';
 import { Role } from '../../types/auth';
@@ -9,10 +9,12 @@ import { authStorage } from '../../lib/authStorage';
 
 export function Navigation() {
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   
   const hasToken = !!authStorage.getAccessToken();
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
   const { data: user } = useQuery({
     queryKey: ['me'],
@@ -30,7 +32,7 @@ export function Navigation() {
 
   const cartItemCount = cartData?.data?.totalItems || 0;
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     const { refreshToken } = authStorage.getTokens();
     try {
       if (refreshToken) {
@@ -44,7 +46,13 @@ export function Navigation() {
       queryClient.removeQueries({ queryKey: ['cart'], exact: true });
       navigate('/login');
     }
-  };
+  }, [navigate, queryClient]);
+
+  useEffect(() => {
+    if (hasToken && isAuthPage) {
+      handleLogout();
+    }
+  }, [handleLogout, hasToken, isAuthPage]);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);

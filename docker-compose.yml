@@ -6,6 +6,8 @@ services:
     hostname: backend
     environment:
       SPRING_PROFILES_ACTIVE: local
+      # Point the backend at the Ollama mock container instead of localhost
+      OLLAMA_BASE_URL: http://ollama-mock:11434
     networks:
       - my-private-ntwk
   ollama-mock:

@@ -28,6 +28,7 @@ describe('Navigation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    window.history.pushState({}, '', '/');
   });
 
   it('shows login link when user is not authenticated', () => {
@@ -37,6 +38,36 @@ describe('Navigation', () => {
     // then
     expect(screen.getByText('Login')).toBeInTheDocument();
     expect(screen.queryByText('Logout')).not.toBeInTheDocument();
+  });
+
+  it('logs out automatically when visiting auth pages while authenticated', async () => {
+    // given
+    localStorage.setItem('token', 'fake-token');
+    localStorage.setItem('refreshToken', 'fake-refresh');
+    vi.mocked(auth.me).mockResolvedValue({
+      data: {
+        id: 1,
+        username: 'testuser',
+        email: 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        roles: [Role.CLIENT],
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+    window.history.pushState({}, '', '/login');
+
+    // when
+    renderWithProviders(<Navigation />);
+
+    // then
+    await waitFor(() => expect(auth.logout).toHaveBeenCalledWith({ refreshToken: 'fake-refresh' }));
+    expect(localStorage.getItem('token')).toBeNull();
+    expect(localStorage.getItem('refreshToken')).toBeNull();
+    expect(screen.getByText('Login')).toBeInTheDocument();
   });
 
   it('shows user info and logout button when authenticated', async () => {
