@@ -8,15 +8,11 @@ import SockJS from 'sockjs-client';
 
 // Mock dependencies
 vi.mock('../../lib/api', () => ({
-  default: {
-    defaults: {
-      baseURL: 'http://localhost:4001'
-    }
-  },
+  getAbsoluteApiUrl: vi.fn((path: string) => `http://localhost:4001${path}`),
   traffic: {
     getInfo: vi.fn().mockResolvedValue({
       data: {
-        webSocketEndpoint: '/ws-traffic',
+        webSocketEndpoint: '/api/v1/ws-traffic',
         topic: '/topic/traffic',
         description: 'Test description'
       },
@@ -91,10 +87,12 @@ vi.mock('@stomp/stompjs', () => {
 
 // Mock localStorage
 Object.defineProperty(window, 'localStorage', {
+  configurable: true,
   value: {
     getItem: vi.fn(() => 'fake-token'),
     setItem: vi.fn(),
-    removeItem: vi.fn()
+    removeItem: vi.fn(),
+    clear: vi.fn(),
   },
   writable: true
 });
@@ -138,8 +136,23 @@ describe('TrafficMonitorPage', () => {
     
     // then + then
     await waitFor(() => {
-      expect(SockJS).toHaveBeenCalledWith('http://localhost:4001/ws-traffic');
+      expect(SockJS).toHaveBeenCalledWith('http://localhost:4001/api/v1/ws-traffic');
       expect(stompjs.Client).toHaveBeenCalled();
+    });
+  });
+
+  it('should use same-origin websocket URLs when API resolution returns the public origin', async () => {
+    const { getAbsoluteApiUrl } = await import('../../lib/api');
+    vi.mocked(getAbsoluteApiUrl).mockReturnValueOnce('https://awesome.byst.re/api/v1/ws-traffic');
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <TrafficMonitorPage />
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => {
+      expect(SockJS).toHaveBeenCalledWith('https://awesome.byst.re/api/v1/ws-traffic');
     });
   });
 

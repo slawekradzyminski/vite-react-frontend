@@ -196,6 +196,45 @@ describe('ProductDetails', () => {
     expect(screen.getByText('Error loading product details')).toBeInTheDocument();
   });
 
+  it('renders relative image paths without rewriting them', () => {
+    (useQuery as any).mockImplementation(({ queryKey }) => {
+      if (queryKey[0] === 'product') {
+        return {
+          data: {
+            data: {
+              ...mockProduct.data,
+              imageUrl: '/images/iphone.png',
+            },
+          },
+          isLoading: false,
+          error: null,
+        };
+      }
+      if (queryKey[0] === 'cart') {
+        return {
+          data: {
+            data: {
+              items: [{ id: 1, productId: 1, quantity: 3 }],
+              totalItems: 3,
+              totalPrice: 29.97,
+            },
+          },
+          isLoading: false,
+          error: null,
+        };
+      }
+      return {
+        data: null,
+        isLoading: false,
+        error: null,
+      };
+    });
+
+    renderWithProviders(<ProductDetails />);
+
+    expect(screen.getByAltText('Test Product')).toHaveAttribute('src', '/images/iphone.png');
+  });
+
   it('increases quantity when + button is clicked', () => {
     // given
     renderWithProviders(<ProductDetails />);

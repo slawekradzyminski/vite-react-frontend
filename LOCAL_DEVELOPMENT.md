@@ -19,7 +19,7 @@ If you do need containers later, the `docker-compose.yml` in this repo exposes p
    cd /Users/admin/IdeaProjects/test-secure-backend
    ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
    ```
-   The server sends password reset e-mails to the local outbox endpoint and proxies all `/api/ollama/**` calls to the mock on `localhost:11434`.
+   The server sends password reset e-mails to the local outbox endpoint and proxies all `/api/v1/ollama/**` calls to the mock on `localhost:11434`.
 
 2. **Ollama mock**  
    ```

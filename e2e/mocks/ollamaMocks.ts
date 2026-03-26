@@ -7,7 +7,7 @@ function createMockEventStream(chunks: any[]): string {
 
 export const ollamaMocks = {
     async mockSuccess(page: Page, onRequest?: (route: Route) => void) {
-        await page.route('**/api/ollama/generate', async route => {
+        await page.route('**/api/v1/ollama/generate', async route => {
             if (onRequest) {
                 await onRequest(route);
             }
@@ -32,7 +32,7 @@ export const ollamaMocks = {
     },
     
     async mockError(page: Page) {
-        await page.route('**/api/ollama/generate', route => {
+        await page.route('**/api/v1/ollama/generate', route => {
             route.fulfill({
                 status: 500,
                 contentType: 'application/json',
@@ -44,14 +44,14 @@ export const ollamaMocks = {
 
 export const ollamaGenerateMocks = {
   async mockSuccess(page: Page, onRequest?: (route: Route) => void) {
-    await page.route(`${BACKEND_URL}/api/ollama/generate`, async (route) => {
+    await page.route(`${BACKEND_URL}/api/v1/ollama/generate`, async (route) => {
       onRequest?.(route);
       await route.fulfill({
         status: 200,
         headers: { 'content-type': 'text/event-stream' },
         body: createMockEventStream([
           {
-            response: "# Heading\n\n1. Item 1\n2. Item 2",
+            response: "Release plan: mock Ollama service ready",
             done: false
           },
           {
@@ -64,15 +64,15 @@ export const ollamaGenerateMocks = {
   },
 
   async mockWithThinking(page: Page, onRequest?: (route: Route) => void) {
-    await page.route(`${BACKEND_URL}/api/ollama/generate`, async (route) => {
+    await page.route(`${BACKEND_URL}/api/v1/ollama/generate`, async (route) => {
       onRequest?.(route);
       await route.fulfill({
         status: 200,
         headers: { 'content-type': 'text/event-stream' },
         body: createMockEventStream([
           {
-            response: "Based on my analysis, here's my response.",
-            thinking: "Let me think about this... I need to analyze the request carefully.",
+            response: "Release plan: mock Ollama service ready",
+            thinking: "Reviewing the release checklist before answering.",
             done: false
           },
           {
@@ -85,7 +85,7 @@ export const ollamaGenerateMocks = {
   },
 
   async mockStreamingThinking(page: Page, onRequest?: (route: Route) => void) {
-    await page.route(`${BACKEND_URL}/api/ollama/generate`, async (route) => {
+    await page.route(`${BACKEND_URL}/api/v1/ollama/generate`, async (route) => {
       onRequest?.(route);
       await route.fulfill({
         status: 200,
@@ -116,7 +116,7 @@ export const ollamaGenerateMocks = {
   },
 
   async mockError(page: Page) {
-    await page.route(`${BACKEND_URL}/api/ollama/generate`, async (route) => {
+    await page.route(`${BACKEND_URL}/api/v1/ollama/generate`, async (route) => {
       await route.fulfill({
         status: 500,
         headers: { 'content-type': 'text/event-stream' },
@@ -125,4 +125,3 @@ export const ollamaGenerateMocks = {
     });
   }
 };
-

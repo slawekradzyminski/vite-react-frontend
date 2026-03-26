@@ -1,8 +1,7 @@
-import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
-import { auth, qr, ollama } from './api';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { auth, ollama, qr } from './api';
 import { Role } from '../types/auth';
 
-// Hoist mocks
 const mockAxios = vi.hoisted(() => {
   const instance: any = vi.fn(() => Promise.resolve({ data: {} }));
   instance.interceptors = {
@@ -23,9 +22,26 @@ vi.mock('axios', () => ({
 }));
 
 const originalFetch = global.fetch;
+const localStorageStore = new Map<string, string>();
+
+Object.defineProperty(window, 'localStorage', {
+  configurable: true,
+  value: {
+    getItem: vi.fn((key: string) => localStorageStore.get(key) ?? null),
+    setItem: vi.fn((key: string, value: string) => {
+      localStorageStore.set(key, value);
+    }),
+    removeItem: vi.fn((key: string) => {
+      localStorageStore.delete(key);
+    }),
+    clear: vi.fn(() => {
+      localStorageStore.clear();
+    }),
+  },
+});
 
 describe('auth API', () => {
-afterEach(() => {
+  afterEach(() => {
     mockAxios.mockClear();
     mockAxios.post.mockReset();
     mockAxios.get.mockReset();
@@ -34,66 +50,60 @@ afterEach(() => {
     localStorage.clear();
   });
 
-  // given
   describe('login', () => {
-    const loginData = {
-      username: 'testuser',
-      password: 'password123',
-    };
-
-    // when
     it('calls the correct endpoint with credentials', async () => {
-      // then
-      await auth.login(loginData);
-      expect(mockAxios.post).toHaveBeenCalledWith('/users/signin', loginData);
+      await auth.login({
+        username: 'testuser',
+        password: 'password123',
+      });
+
+      expect(mockAxios.post).toHaveBeenCalledWith('/api/v1/users/signin', {
+        username: 'testuser',
+        password: 'password123',
+      });
     });
   });
 
-  // given
   describe('register', () => {
-    const registerData = {
-      username: 'newuser',
-      password: 'password123',
-      email: 'test@example.com',
-      firstName: 'Test',
-      lastName: 'User',
-      roles: [Role.CLIENT],
-    };
-
-    // when
     it('calls the correct endpoint with user data', async () => {
-      // then
+      const registerData = {
+        username: 'newuser',
+        password: 'password123',
+        email: 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        roles: [Role.CLIENT],
+      };
+
       await auth.register(registerData);
-      expect(mockAxios.post).toHaveBeenCalledWith('/users/signup', registerData);
+
+      expect(mockAxios.post).toHaveBeenCalledWith('/api/v1/users/signup', registerData);
     });
   });
 
-  // given
   describe('getUsers', () => {
-    // when
     it('calls the correct endpoint', async () => {
-      // then
       await auth.getUsers();
-      expect(mockAxios.get).toHaveBeenCalledWith('/users');
+
+      expect(mockAxios.get).toHaveBeenCalledWith('/api/v1/users');
     });
   });
 
-  // given
   describe('deleteUser', () => {
-    // when
     it('calls the correct endpoint with username', async () => {
       const username = 'testuser';
-      
-      // then
+
       await auth.deleteUser(username);
-      expect(mockAxios.delete).toHaveBeenCalledWith(`/users/${username}`);
+
+      expect(mockAxios.delete).toHaveBeenCalledWith(`/api/v1/users/${username}`);
     });
   });
 
   describe('logout', () => {
     it('calls logout endpoint with refresh payload', async () => {
       await auth.logout({ refreshToken: 'refresh-123' });
-      expect(mockAxios.post).toHaveBeenCalledWith('/users/logout', { refreshToken: 'refresh-123' });
+
+      expect(mockAxios.post).toHaveBeenCalledWith('/api/v1/users/logout', { refreshToken: 'refresh-123' });
     });
   });
 });
@@ -113,30 +123,22 @@ describe('API Client', () => {
   });
 
   describe('QR API', () => {
-    // given
     it('should generate QR code', async () => {
       const mockBlob = new Blob(['test'], { type: 'image/png' });
       mockAxios.post.mockResolvedValue({ data: mockBlob });
 
-      // when
       const response = await qr.create({ text: 'test' });
 
-      // then
-      expect(mockAxios.post).toHaveBeenCalledWith('/qr/create', { text: 'test' }, { responseType: 'blob' });
+      expect(mockAxios.post).toHaveBeenCalledWith('/api/v1/qr/create', { text: 'test' }, { responseType: 'blob' });
       expect(response.type).toBe('image/png');
       expect(response.data).toBeInstanceOf(Blob);
     });
 
-    // given
     it('should handle API errors', async () => {
       const error = new Error('API Error');
       mockAxios.post.mockRejectedValue(error);
 
-      // when
-      const promise = qr.create({ text: '' });
-
-      // then
-      await expect(promise).rejects.toThrow('API Error');
+      await expect(qr.create({ text: '' })).rejects.toThrow('API Error');
     });
   });
 
@@ -164,7 +166,7 @@ describe('API Client', () => {
       localStorage.setItem('token', 'test-token');
 
       const config = requestInterceptor({
-        url: '/api/orders',
+        url: '/api/v1/orders',
         headers: {},
       });
 
@@ -176,7 +178,7 @@ describe('API Client', () => {
       localStorage.setItem('token', 'test-token');
 
       const config = requestInterceptor({
-        url: '/users/signin',
+        url: '/api/v1/users/signin',
         headers: {},
       });
 
@@ -196,7 +198,7 @@ describe('API Client', () => {
       mockAxios.mockResolvedValueOnce({ data: { ok: true } });
 
       const response = await errorInterceptor({
-        config: { url: '/api/orders', headers: {}, _retry: false },
+        config: { url: '/api/v1/orders', headers: {}, _retry: false },
         response: { status: 401 },
       } as any);
 
@@ -204,7 +206,7 @@ describe('API Client', () => {
       expect(localStorage.getItem('token')).toBe('new-token');
       expect(localStorage.getItem('refreshToken')).toBe('new-refresh');
       expect(mockAxios).toHaveBeenCalledWith(expect.objectContaining({
-        url: '/api/orders',
+        url: '/api/v1/orders',
         headers: expect.objectContaining({ Authorization: 'Bearer new-token' }),
       }));
       expect(response).toEqual({ data: { ok: true } });
@@ -224,7 +226,7 @@ describe('API Client', () => {
 
       await expect(
         errorInterceptor({
-          config: { url: '/api/orders', headers: {}, _retry: false },
+          config: { url: '/api/v1/orders', headers: {}, _retry: false },
           response: { status: 401 },
         } as any)
       ).rejects.toThrow('Invalid refresh token');
@@ -272,7 +274,7 @@ describe('API Client', () => {
       });
 
       const error = {
-        config: { url: '/users/refresh', headers: {}, _retry: false },
+        config: { url: '/api/v1/users/refresh', headers: {}, _retry: false },
         response: { status: 401 },
       };
 
@@ -324,7 +326,7 @@ describe('API Client', () => {
       const response = await ollama.generate(requestBody);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${apiBase}/api/ollama/generate`,
+        `${apiBase}/api/v1/ollama/generate`,
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({
@@ -373,7 +375,7 @@ describe('API Client', () => {
       await ollama.chat(chatBody);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${apiBase}/api/ollama/chat`,
+        `${apiBase}/api/v1/ollama/chat`,
         expect.objectContaining({
           method: 'POST',
           headers: expect.objectContaining({

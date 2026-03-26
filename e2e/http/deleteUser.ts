@@ -10,7 +10,7 @@ export async function deleteUser(
         'Authorization': `Bearer ${token}`
     } : {};
 
-    const response = await request.delete(`${BACKEND_URL}/users/${username}`, {
+    const response = await request.delete(`${BACKEND_URL}/api/v1/users/${username}`, {
         headers
     });
 

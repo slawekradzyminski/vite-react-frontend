@@ -16,19 +16,9 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM --platform=$TARGETPLATFORM node:24-alpine
+FROM --platform=$TARGETPLATFORM nginx:1.29.1-alpine
 
-WORKDIR /app
+COPY deploy/nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy built assets from build stage
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/package*.json ./
-
-# Install production dependencies and vite globally
-RUN npm ci --production && npm install -g vite
-
-# Expose port
-EXPOSE 8081
-
-# Start the application
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "8081"] 
+EXPOSE 80

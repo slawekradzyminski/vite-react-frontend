@@ -6,7 +6,7 @@ export async function postSignIn(
   request: APIRequestContext,
   credentials: SignInRequest
 ): Promise<{ response: SignInResponse; status: number }> {
-  const response = await request.post(`${BACKEND_URL}/users/signin`, {
+  const response = await request.post(`${BACKEND_URL}/api/v1/users/signin`, {
     data: credentials
   });
   

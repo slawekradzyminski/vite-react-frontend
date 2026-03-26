@@ -12,7 +12,7 @@ export interface Product {
 
 export const productsMocks = {
   async mockGetProducts(page: Page) {
-    await page.route('**/api/products', async (route: Route) => {
+    await page.route('**/api/v1/products', async (route: Route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -27,7 +27,7 @@ export const productsMocks = {
   },
 
   async mockEmptyProducts(page: Page) {
-    await page.route('**/api/products', async (route: Route) => {
+    await page.route('**/api/v1/products', async (route: Route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -37,7 +37,7 @@ export const productsMocks = {
   },
 
   async mockGetProductDetailsSuccess(page: Page, productId: number, productData: Product) {
-    await page.route(`**/api/products/${productId}`, async (route: Route) => {
+    await page.route(`**/api/v1/products/${productId}`, async (route: Route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -47,7 +47,7 @@ export const productsMocks = {
   },
 
   async mockGetProductDetailsNotFound(page: Page, productId: number) {
-    await page.route(`**/api/products/${productId}`, async (route: Route) => {
+    await page.route(`**/api/v1/products/${productId}`, async (route: Route) => {
       await route.fulfill({
         status: 404,
         contentType: 'application/json',

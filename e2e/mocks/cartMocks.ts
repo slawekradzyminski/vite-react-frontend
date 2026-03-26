@@ -2,7 +2,7 @@ import { Page } from "@playwright/test";
 
 export const cartMocks = {
   async mockEmptyCart(page: Page) {
-    await page.route("**/api/cart", async (route) => {
+    await page.route("**/api/v1/cart", async (route) => {
       await route.fulfill({
         status: 200,
         headers: {
@@ -18,7 +18,7 @@ export const cartMocks = {
   },
 
   async mockCartWithItems(page: Page) {
-    await page.route("**/api/cart", async (route) => {
+    await page.route("**/api/v1/cart", async (route) => {
       await route.fulfill({
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -49,7 +49,7 @@ export const cartMocks = {
     });
 
     // Mock product API calls for image URLs
-    await page.route("**/api/products/1", async (route) => {
+    await page.route("**/api/v1/products/1", async (route) => {
       await route.fulfill({
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -65,7 +65,7 @@ export const cartMocks = {
       });
     });
 
-    await page.route("**/api/products/2", async (route) => {
+    await page.route("**/api/v1/products/2", async (route) => {
       await route.fulfill({
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -83,7 +83,7 @@ export const cartMocks = {
   },
 
   async mockCartWithState(page: Page, cartState: any) {
-    await page.route("**/api/cart", async (route) => {
+    await page.route("**/api/v1/cart", async (route) => {
       await route.fulfill({
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -93,7 +93,7 @@ export const cartMocks = {
 
     // Mock product API calls for image URLs
     for (const item of cartState.items || []) {
-      await page.route(`**/api/products/${item.productId}`, async (route) => {
+      await page.route(`**/api/v1/products/${item.productId}`, async (route) => {
         await route.fulfill({
           status: 200,
           headers: { "Content-Type": "application/json" },
@@ -112,7 +112,7 @@ export const cartMocks = {
   },
 
   async mockAddCartItem(page: Page) {
-    await page.route("**/api/cart/items", async (route) => {
+    await page.route("**/api/v1/cart/items", async (route) => {
       await route.fulfill({
         status: 200,
         headers: { "Content-Type": "application/json" }
@@ -121,7 +121,7 @@ export const cartMocks = {
   },
 
   async mockUpdateSuccess(page: Page, productId: number) {
-    await page.route(`**/api/cart/items/${productId}`, async (route) => {
+    await page.route(`**/api/v1/cart/items/${productId}`, async (route) => {
       await route.fulfill({
         status: 200,
         headers: { "Content-Type": "application/json" }
@@ -130,7 +130,7 @@ export const cartMocks = {
   },
 
   async mockUpdateCartState(page: Page, cartState: any) {
-    await page.route("**/api/cart/items/1", async (route) => {
+    await page.route("**/api/v1/cart/items/1", async (route) => {
       if (route.request().method() === "PUT") {
         cartState.items[0].quantity = 2;
         cartState.items[0].totalPrice = cartState.items[0].unitPrice * 2;
@@ -147,7 +147,7 @@ export const cartMocks = {
   },
 
   async mockRemoveCartItem(page: Page, cartState: any) {
-    await page.route("**/api/cart/items/1", async (route) => {
+    await page.route("**/api/v1/cart/items/1", async (route) => {
       if (route.request().method() === "DELETE") {
         cartState.items = [];
         cartState.totalPrice = 0;
@@ -163,7 +163,7 @@ export const cartMocks = {
   },
 
   async mockRemoveCart(page: Page, cartState: any) {
-    await page.route("**/api/cart", async (route) => {
+    await page.route("**/api/v1/cart", async (route) => {
       if (route.request().method() === "DELETE") {
         cartState.items = [];
         cartState.totalPrice = 0;
@@ -179,7 +179,7 @@ export const cartMocks = {
   },
 
   async mockCartForClearTest(page: Page, cartState: any) {
-    await page.route("**/api/cart", async (route) => {
+    await page.route("**/api/v1/cart", async (route) => {
       const method = route.request().method();
       if (method === "DELETE") {
         cartState.items = [];
@@ -202,7 +202,7 @@ export const cartMocks = {
 
     // Mock product API calls for image URLs
     for (const item of cartState.items || []) {
-      await page.route(`**/api/products/${item.productId}`, async (route) => {
+      await page.route(`**/api/v1/products/${item.productId}`, async (route) => {
         await route.fulfill({
           status: 200,
           headers: { "Content-Type": "application/json" },

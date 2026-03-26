@@ -3,7 +3,7 @@
 This project demonstrates Ollama function calling end-to-end: listing products, fetching detailed snapshots, and streaming every step to the UI.
 
 ## Backend flow
-1) **Endpoint**: `POST /api/ollama/chat/tools` (SSE, text/event-stream).
+1) **Endpoint**: `POST /api/v1/ollama/chat/tools` (SSE, text/event-stream).
 2) **Model loop** (`OllamaFunctionCallingService`):
    - Sends the full chat history + tool definitions to `/api/chat` on Ollama (streaming enabled).
    - Emits every chunk downstream (so the UI sees tool calls as they happen).
@@ -20,8 +20,8 @@ This project demonstrates Ollama function calling end-to-end: listing products, 
 ## Frontend flow (what trainees should see)
 1) **Auth & setup**
    - Sign in to get a JWT; all LLM calls send `Authorization: Bearer <token>`.
-   - Fetch tool definitions from `/api/ollama/chat/tools/definitions` and pass them to the chat request.
-   - Optionally fetch the chat prompt (`/users/chat-system-prompt`) and tool prompt (`/users/tool-system-prompt`) if you want to display/edit them locally—the backend injects them automatically before relaying the request to Ollama.
+   - Fetch tool definitions from `/api/v1/ollama/chat/tools/definitions` and pass them to the chat request.
+   - Optionally fetch the chat prompt (`/api/v1/users/chat-system-prompt`) and tool prompt (`/api/v1/users/tool-system-prompt`) if you want to display/edit them locally—the backend injects them automatically before relaying the request to Ollama.
 2) **Hook & streaming**
    - `useOllamaToolChat` builds the request with `model`, `messages`, `tools`, `options`, `think`.
    - `processSSEResponse` consumes SSE chunks so tokens and tool events render live.
@@ -42,16 +42,16 @@ This project demonstrates Ollama function calling end-to-end: listing products, 
 
 ## Curl recipe (manual test)
 ```bash
-TOKEN=$(curl -s -X POST http://localhost:4001/users/signin \
+TOKEN=$(curl -s -X POST http://localhost:4001/api/v1/users/signin \
   -H 'Content-Type: application/json' \
   -d '{"username":"<user>","password":"<pass>"}' | jq -r '.token')
 
 TOOLS=$(curl -s -H "Authorization: Bearer $TOKEN" \
-  http://localhost:4001/api/ollama/chat/tools/definitions)
+  http://localhost:4001/api/v1/ollama/chat/tools/definitions)
 CHAT_PROMPT=$(curl -s -H "Authorization: Bearer $TOKEN" \
-  http://localhost:4001/users/chat-system-prompt | jq -r '.chatSystemPrompt')
+  http://localhost:4001/api/v1/users/chat-system-prompt | jq -r '.chatSystemPrompt')
 TOOL_PROMPT=$(curl -s -H "Authorization: Bearer $TOKEN" \
-  http://localhost:4001/users/tool-system-prompt | jq -r '.toolSystemPrompt')
+  http://localhost:4001/api/v1/users/tool-system-prompt | jq -r '.toolSystemPrompt')
 
 jq -n --arg chatPrompt "$CHAT_PROMPT" \
       --arg toolPrompt "$TOOL_PROMPT" \
@@ -60,7 +60,7 @@ jq -n --arg chatPrompt "$CHAT_PROMPT" \
       '{model:"qwen3:4b-instruct",
         messages:[{role:"system",content:$chatPrompt},{role:"system",content:$toolPrompt},{role:"user",content:$user}],
         tools:$tools, think:false, options:{temperature:0}}' \
-| curl -N -X POST http://localhost:4001/api/ollama/chat/tools \
+| curl -N -X POST http://localhost:4001/api/v1/ollama/chat/tools \
     -H "Authorization: Bearer $TOKEN" \
     -H 'Content-Type: application/json' \
     -d @-

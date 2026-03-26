@@ -21,12 +21,7 @@ import type { Product, ProductCreateDto, ProductUpdateDto } from '../types/produ
 import type { Cart, CartItemDto, UpdateCartItemDto } from '../types/cart';
 import type { TrafficInfoDto } from '../types/traffic';
 import { authStorage } from './authStorage';
-
-const getApiBaseUrl = () => {
-  const isDocker = import.meta.env.VITE_DOCKER === 'true';
-  const host = isDocker ? 'host.docker.internal' : 'localhost';
-  return `http://${host}:4001`;
-};
+import { getAbsoluteApiUrl, getApiBaseUrl } from './runtimeConfig';
 
 const api = axios.create({
   baseURL: getApiBaseUrl(),
@@ -35,12 +30,22 @@ const api = axios.create({
   },
 });
 
+const API_V1_PREFIX = '/api/v1';
+const USERS_API = `${API_V1_PREFIX}/users`;
+const EMAIL_API = `${API_V1_PREFIX}/email`;
+const QR_API = `${API_V1_PREFIX}/qr`;
+const OLLAMA_API = `${API_V1_PREFIX}/ollama`;
+const ORDERS_API = `${API_V1_PREFIX}/orders`;
+const PRODUCTS_API = `${API_V1_PREFIX}/products`;
+const CART_API = `${API_V1_PREFIX}/cart`;
+const TRAFFIC_API = `${API_V1_PREFIX}/traffic`;
+
 const PUBLIC_ENDPOINTS = [
-  '/users/signin',
-  '/users/signup',
-  '/users/refresh',
-  '/users/password/forgot',
-  '/users/password/reset',
+  `${USERS_API}/signin`,
+  `${USERS_API}/signup`,
+  `${USERS_API}/refresh`,
+  `${USERS_API}/password/forgot`,
+  `${USERS_API}/password/reset`,
 ];
 
 interface RefreshableRequestConfig extends AxiosRequestConfig {
@@ -48,7 +53,7 @@ interface RefreshableRequestConfig extends AxiosRequestConfig {
 }
 
 let refreshPromise: Promise<TokenPair> | null = null;
-const isRefreshEndpoint = (url?: string) => url?.includes('/users/refresh');
+const isRefreshEndpoint = (url?: string) => url?.includes(`${USERS_API}/refresh`);
 
 const enqueueRefresh = (refreshToken: string) => {
   if (!refreshPromise) {
@@ -114,7 +119,7 @@ api.interceptors.response.use(
 );
 
 const streamWithAuth = async (path: string, payload: unknown) => {
-  const response = await fetch(`${getApiBaseUrl()}${path}`, {
+  const response = await fetch(getAbsoluteApiUrl(path), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -136,44 +141,44 @@ const streamWithAuth = async (path: string, payload: unknown) => {
 
 export const auth = {
   login: (data: LoginRequest) => 
-    api.post<LoginResponse>('/users/signin', data),
+    api.post<LoginResponse>(`${USERS_API}/signin`, data),
   
   register: (data: RegisterRequest) =>
-    api.post<string>('/users/signup', data),
+    api.post<string>(`${USERS_API}/signup`, data),
     
   refresh: (data: RefreshTokenRequest) => 
-    api.post<TokenPair>('/users/refresh', data),
+    api.post<TokenPair>(`${USERS_API}/refresh`, data),
     
   me: () => 
-    api.get<User>('/users/me'),
+    api.get<User>(`${USERS_API}/me`),
 
   getUsers: () =>
-    api.get<User[]>('/users'),
+    api.get<User[]>(USERS_API),
 
   deleteUser: (username: string) =>
-    api.delete(`/users/${username}`),
+    api.delete(`${USERS_API}/${username}`),
 
   updateUser: (username: string, data: UserEditDTO) =>
-    api.put<User>(`/users/${username}`, data),
+    api.put<User>(`${USERS_API}/${username}`, data),
 
   logout: (data: LogoutRequest) =>
-    api.post<void>('/users/logout', data),
+    api.post<void>(`${USERS_API}/logout`, data),
 
   requestPasswordReset: (data: ForgotPasswordRequest) =>
-    api.post<ForgotPasswordResponse>('/users/password/forgot', data),
+    api.post<ForgotPasswordResponse>(`${USERS_API}/password/forgot`, data),
 
   resetPassword: (data: ResetPasswordRequest) =>
-    api.post<void>('/users/password/reset', data),
+    api.post<void>(`${USERS_API}/password/reset`, data),
 };
 
 export const email = {
   send: (data: EmailDto) =>
-    api.post<EmailResponse>('/email', data),
+    api.post<EmailResponse>(EMAIL_API, data),
 };
 
 export const qr = {
   create: async (data: CreateQrDto): Promise<QrCodeResponse> => {
-    const response = await api.post('/qr/create', data, {
+    const response = await api.post(`${QR_API}/create`, data, {
       responseType: 'blob',
     });
     return {
@@ -185,19 +190,19 @@ export const qr = {
 
 export const ollama = {
   generate: async (data: GenerateRequestDto) => {
-    return streamWithAuth('/api/ollama/generate', data);
+    return streamWithAuth(`${OLLAMA_API}/generate`, data);
   },
 
   chat: async (data: ChatRequestDto) => {
-    return streamWithAuth('/api/ollama/chat', data);
+    return streamWithAuth(`${OLLAMA_API}/chat`, data);
   },
 
   chatWithTools: async (data: ChatRequestDto) => {
-    return streamWithAuth('/api/ollama/chat/tools', data);
+    return streamWithAuth(`${OLLAMA_API}/chat/tools`, data);
   },
 
   getToolDefinitions: async () => {
-    const response = await api.get<OllamaToolDefinition[]>('/api/ollama/chat/tools/definitions');
+    const response = await api.get<OllamaToolDefinition[]>(`${OLLAMA_API}/chat/tools/definitions`);
     return response.data;
   },
 };
@@ -205,85 +210,87 @@ export const ollama = {
 export const prompts = {
   chat: {
     get: () =>
-      api.get<ChatSystemPromptDto>('/users/chat-system-prompt'),
+      api.get<ChatSystemPromptDto>(`${USERS_API}/chat-system-prompt`),
 
     update: (chatSystemPrompt: string) =>
-      api.put<ChatSystemPromptDto>('/users/chat-system-prompt', { chatSystemPrompt }),
+      api.put<ChatSystemPromptDto>(`${USERS_API}/chat-system-prompt`, { chatSystemPrompt }),
   },
   tool: {
     get: () =>
-      api.get<ToolSystemPromptDto>('/users/tool-system-prompt'),
+      api.get<ToolSystemPromptDto>(`${USERS_API}/tool-system-prompt`),
 
     update: (toolSystemPrompt: string) =>
-      api.put<ToolSystemPromptDto>('/users/tool-system-prompt', { toolSystemPrompt }),
+      api.put<ToolSystemPromptDto>(`${USERS_API}/tool-system-prompt`, { toolSystemPrompt }),
   },
 };
 
 export const orders = {
   getUserOrders: (page: number = 0, size: number = 10, status?: OrderStatus) =>
-    api.get<PageDtoOrderDto>('/api/orders', {
+    api.get<PageDtoOrderDto>(ORDERS_API, {
       params: { page, size, status },
     }),
 
   getAllOrders: (page: number = 0, size: number = 10, status?: OrderStatus) =>
-    api.get<PageDtoOrderDto>('/api/orders/admin', {
+    api.get<PageDtoOrderDto>(`${ORDERS_API}/admin`, {
       params: { page, size, status },
     }),
 
   getOrderById: (id: number) => 
-    api.get<Order>(`/api/orders/${id}`),
+    api.get<Order>(`${ORDERS_API}/${id}`),
   
   createOrder: (address: Address) => 
-    api.post<Order>('/api/orders', address),
+    api.post<Order>(ORDERS_API, address),
   
   updateOrderStatus: (id: number, status: OrderStatus) => 
-    api.put<Order>(`/api/orders/${id}/status`, JSON.stringify(status), {
+    api.put<Order>(`${ORDERS_API}/${id}/status`, JSON.stringify(status), {
       headers: {
         'Content-Type': 'application/json'
       }
     }),
   
   cancelOrder: (id: number) => 
-    api.post<Order>(`/api/orders/${id}/cancel`),
+    api.post<Order>(`${ORDERS_API}/${id}/cancel`),
 };
 
 export const products = {
   getAllProducts: () => 
-    api.get<Product[]>('/api/products'),
+    api.get<Product[]>(PRODUCTS_API),
   
   getProductById: (id: number) => 
-    api.get<Product>(`/api/products/${id}`),
+    api.get<Product>(`${PRODUCTS_API}/${id}`),
   
   createProduct: (data: ProductCreateDto) => 
-    api.post<Product>('/api/products', data),
+    api.post<Product>(PRODUCTS_API, data),
   
   updateProduct: (id: number, data: ProductUpdateDto) => 
-    api.put<Product>(`/api/products/${id}`, data),
+    api.put<Product>(`${PRODUCTS_API}/${id}`, data),
   
   deleteProduct: (id: number) => 
-    api.delete(`/api/products/${id}`),
+    api.delete(`${PRODUCTS_API}/${id}`),
 };
 
 export const cart = {
   getCart: () => 
-    api.get<Cart>('/api/cart'),
+    api.get<Cart>(CART_API),
   
   addToCart: (data: CartItemDto) => 
-    api.post<Cart>('/api/cart/items', data),
+    api.post<Cart>(`${CART_API}/items`, data),
   
   updateCartItem: (productId: number, data: UpdateCartItemDto) => 
-    api.put<Cart>(`/api/cart/items/${productId}`, data),
+    api.put<Cart>(`${CART_API}/items/${productId}`, data),
   
   removeFromCart: (productId: number) => 
-    api.delete<Cart>(`/api/cart/items/${productId}`),
+    api.delete<Cart>(`${CART_API}/items/${productId}`),
   
   clearCart: () => 
-    api.delete('/api/cart'),
+    api.delete(CART_API),
 };
 
 export const traffic = {
   getInfo: () => 
-    api.get<TrafficInfoDto>('/api/traffic/info'),
+    api.get<TrafficInfoDto>(`${TRAFFIC_API}/info`),
 };
+
+export { getAbsoluteApiUrl, getApiBaseUrl } from './runtimeConfig';
 
 export default api; 

@@ -2,7 +2,7 @@ import { Page } from "@playwright/test";
 
 export const orderMocks = {
     async mockOrderWithState(page: Page, orderState: any) {
-        await page.route(`**/api/orders/${orderState.id}`, async (route) => {
+        await page.route(`**/api/v1/orders/${orderState.id}`, async (route) => {
             await route.fulfill({
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },
@@ -12,7 +12,7 @@ export const orderMocks = {
     },
 
     async mockCancelOrder(page: Page, orderState: any) {
-        await page.route(`**/api/orders/${orderState.id}/cancel`, async (route) => {
+        await page.route(`**/api/v1/orders/${orderState.id}/cancel`, async (route) => {
             if (route.request().method() === 'POST') {
                 orderState.status = 'CANCELLED';
 
@@ -24,7 +24,7 @@ export const orderMocks = {
             }
         });
 
-        await page.route(`**/api/orders/${orderState.id}`, async (route) => {
+        await page.route(`**/api/v1/orders/${orderState.id}`, async (route) => {
             await route.fulfill({
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },
@@ -34,7 +34,7 @@ export const orderMocks = {
     },
 
     async mockUpdateOrderStatus(page: Page, orderState: any) {
-        await page.route(`**/api/orders/${orderState.id}/status`, async (route) => {
+        await page.route(`**/api/v1/orders/${orderState.id}/status`, async (route) => {
             if (route.request().method() === 'PUT') {
                 orderState.status = 'SHIPPED'
                 await route.fulfill({
@@ -45,7 +45,7 @@ export const orderMocks = {
             }
         });
 
-        await page.route(`**/api/orders/${orderState.id}`, async (route) => {
+        await page.route(`**/api/v1/orders/${orderState.id}`, async (route) => {
             await route.fulfill({
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },

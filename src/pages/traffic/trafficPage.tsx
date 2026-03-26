@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import { useQuery } from '@tanstack/react-query';
-import api, { traffic } from '../../lib/api';
+import { getAbsoluteApiUrl, traffic } from '../../lib/api';
 import { TrafficEventDto } from '../../types/traffic';
 import { Button } from '../../components/ui/button';
 import { authStorage } from '../../lib/authStorage';
@@ -33,7 +33,7 @@ export function TrafficMonitorPage() {
     const token = authStorage.getAccessToken();
     if (!token) return;
 
-    const fullUrl = `${api.defaults.baseURL}${webSocketEndpoint}`;
+    const fullUrl = getAbsoluteApiUrl(webSocketEndpoint);
     
     // Create SockJS connection
     const socket = new SockJS(fullUrl);

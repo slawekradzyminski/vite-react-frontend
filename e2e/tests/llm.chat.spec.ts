@@ -1,17 +1,27 @@
 import { test, expect } from '../fixtures/auth.fixture';
 import { ChatPage } from '../pages/chat.page.object';
+import { ollamaChatMocks } from '../mocks/ollamaChatMocks';
 
 const STATUS_PROMPT = 'Give me a quick status update on the Ollama mock';
+const CHAT_SYSTEM_PROMPT = 'You are an engineering copilot focused on delivery-readiness checks.';
 
 test.describe('Ollama Chat', () => {
   let chatPage: ChatPage;
 
   test.beforeEach(async ({ authenticatedPage }) => {
+    await authenticatedPage.page.route('**/api/v1/users/chat-system-prompt', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ chatSystemPrompt: CHAT_SYSTEM_PROMPT }),
+      });
+    });
     chatPage = new ChatPage(authenticatedPage.page);
-    await chatPage.goto();
   });
 
   test('responds with deterministic mock content', async () => {
+    await ollamaChatMocks.mockSuccess(chatPage.page);
+    await chatPage.goto();
     await chatPage.sendChatMessage(STATUS_PROMPT);
     await chatPage.waitForChatComplete();
 
@@ -20,6 +30,8 @@ test.describe('Ollama Chat', () => {
   });
 
   test('shows thinking content when enabled', async () => {
+    await ollamaChatMocks.mockWithThinking(chatPage.page);
+    await chatPage.goto();
     await chatPage.enableThinking();
     await chatPage.sendChatMessage(STATUS_PROMPT);
     await chatPage.waitForChatComplete();
@@ -30,6 +42,7 @@ test.describe('Ollama Chat', () => {
   });
 
   test('exposes default model and allows editing the value', async () => {
+    await chatPage.goto();
     await chatPage.expandSettings();
     await expect(chatPage.modelInput).toHaveValue('qwen3:0.6b');
 
@@ -38,14 +51,17 @@ test.describe('Ollama Chat', () => {
   });
 
   test('updates temperature label when slider changes', async () => {
+    await chatPage.goto();
     await chatPage.expandSettings();
     await chatPage.setTemperature(0.3);
     await expect(chatPage.temperatureLabel).toContainText('0.30');
   });
 
   test('shows dedicated system prompt card and conversation pills for participants', async () => {
+    await ollamaChatMocks.mockSuccess(chatPage.page);
+    await chatPage.goto();
     await chatPage.expandSystemPrompt();
-    await expect(chatPage.systemPromptCard).toContainText('You are an engineering copilot');
+    await expect(chatPage.systemPromptCard).toContainText(CHAT_SYSTEM_PROMPT);
     await expect(chatPage.chatContent.getByTestId('chat-role-pill-system')).toHaveCount(0);
 
     await chatPage.sendChatMessage(STATUS_PROMPT);

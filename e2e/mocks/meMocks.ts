@@ -3,7 +3,7 @@ import { Role } from "../../src/types/auth";
 
 export const meMocks = {
     async mockRegularCustomer(page: Page, user: any) {
-        await page.route('**/users/me', async (route) => {
+        await page.route('**/api/v1/users/me', async (route) => {
             await route.fulfill({
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },
@@ -20,7 +20,7 @@ export const meMocks = {
     },
 
     async mockAdminUser(page: Page, user: any) {
-        await page.route('**/api/users/me', async (route) => {
+        await page.route('**/api/v1/users/me', async (route) => {
             await route.fulfill({
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },

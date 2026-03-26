@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { vi, describe, it, beforeEach, expect } from 'vitest';
+import { vi, describe, it, beforeEach, afterEach, expect } from 'vitest';
 import { ForgotPasswordPage } from './forgotPasswordPage';
 
 const mockNavigate = vi.fn();
@@ -26,6 +26,10 @@ describe('ForgotPasswordPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     user = userEvent.setup();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it('renders the form', () => {
@@ -86,6 +90,26 @@ describe('ForgotPasswordPage', () => {
           description: 'Failure',
         })
       );
+    });
+  });
+
+  it('uses VITE_PASSWORD_RESET_BASE_URL when provided', async () => {
+    vi.stubEnv('VITE_PASSWORD_RESET_BASE_URL', 'https://awesome.byst.re/reset');
+    const { auth } = await import('../../lib/api');
+    vi.mocked(auth.requestPasswordReset).mockResolvedValue({
+      data: { message: 'ok', token: null },
+    } as any);
+
+    render(<ForgotPasswordPage />);
+
+    await user.type(screen.getByTestId('forgot-identifier-input'), 'client');
+    await user.click(screen.getByTestId('forgot-submit-button'));
+
+    await waitFor(() => {
+      expect(auth.requestPasswordReset).toHaveBeenCalledWith({
+        identifier: 'client',
+        resetBaseUrl: 'https://awesome.byst.re/reset',
+      });
     });
   });
 });

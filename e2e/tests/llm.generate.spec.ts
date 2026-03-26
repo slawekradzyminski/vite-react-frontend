@@ -1,5 +1,6 @@
 import { test, expect } from '../fixtures/auth.fixture';
 import { GeneratePage } from '../pages/generate.page.object';
+import { ollamaGenerateMocks } from '../mocks/ollamaMocks';
 
 const GENERATE_PROMPT = 'Summarize the release plan';
 
@@ -8,10 +9,11 @@ test.describe('Ollama Generate', () => {
 
   test.beforeEach(async ({ authenticatedPage }) => {
     generatePage = new GeneratePage(authenticatedPage.page);
-    await generatePage.goto();
   });
 
   test('renders deterministic response from the mock', async () => {
+    await ollamaGenerateMocks.mockSuccess(generatePage.page);
+    await generatePage.goto();
     await generatePage.generateResponse(GENERATE_PROMPT);
     await generatePage.waitForGenerationComplete();
 
@@ -19,6 +21,7 @@ test.describe('Ollama Generate', () => {
   });
 
   test('uses qwen3:0.6b by default and allows editing the value', async () => {
+    await generatePage.goto();
     await generatePage.expandSettings();
     await expect(generatePage.modelInput).toHaveValue('qwen3:0.6b');
 
@@ -27,6 +30,8 @@ test.describe('Ollama Generate', () => {
   });
 
   test('shows thinking details when the option is enabled', async () => {
+    await ollamaGenerateMocks.mockWithThinking(generatePage.page);
+    await generatePage.goto();
     await generatePage.enableThinking();
     await generatePage.generateResponse(GENERATE_PROMPT);
     await generatePage.waitForGenerationComplete();
@@ -37,6 +42,7 @@ test.describe('Ollama Generate', () => {
   });
 
   test('updates temperature label when slider changes', async () => {
+    await generatePage.goto();
     await generatePage.expandSettings();
     await generatePage.setTemperature(0.3);
     await expect(generatePage.temperatureLabel).toContainText('0.30');

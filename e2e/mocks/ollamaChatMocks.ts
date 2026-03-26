@@ -7,14 +7,14 @@ function createMockEventStream(chunks: any[]): string {
 
 export const ollamaChatMocks = {
   async mockSuccess(page: Page, onRequest?: (route: Route) => void) {
-    await page.route(`${BACKEND_URL}/api/ollama/chat`, async (route) => {
+    await page.route(`${BACKEND_URL}/api/v1/ollama/chat`, async (route) => {
       onRequest?.(route);
       await route.fulfill({
         status: 200,
         headers: { 'content-type': 'text/event-stream' },
         body: createMockEventStream([
           {
-            message: { content: "# Heading\n\n1. Item 1\n2. Item 2", role: 'assistant' },
+            message: { content: "The Ollama mock is up on port 11434 and ready to serve deterministic responses.", role: 'assistant' },
             done: false
           },
           {
@@ -28,7 +28,7 @@ export const ollamaChatMocks = {
 
   async mockConversation(page: Page, onRequest?: (route: Route) => void) {
     let requestCount = 0;
-    await page.route(`${BACKEND_URL}/api/ollama/chat`, async (route) => {
+    await page.route(`${BACKEND_URL}/api/v1/ollama/chat`, async (route) => {
       if (requestCount === 1) {
         onRequest?.(route);
       }
@@ -51,7 +51,7 @@ export const ollamaChatMocks = {
   },
 
   async mockWithThinking(page: Page, onRequest?: (route: Route) => void) {
-    await page.route(`${BACKEND_URL}/api/ollama/chat`, async (route) => {
+    await page.route(`${BACKEND_URL}/api/v1/ollama/chat`, async (route) => {
       onRequest?.(route);
       await route.fulfill({
         status: 200,
@@ -59,8 +59,8 @@ export const ollamaChatMocks = {
         body: createMockEventStream([
           {
             message: { 
-              content: "Based on my analysis, here's my response.",
-              thinking: "Let me think about this... I need to analyze the request carefully.",
+              content: "The Ollama mock is up on port 11434 and ready to serve deterministic responses.",
+              thinking: "Reviewing the latest notes about the local mock server before responding.",
               role: 'assistant' 
             },
             done: false
@@ -75,7 +75,7 @@ export const ollamaChatMocks = {
   },
 
   async mockError(page: Page) {
-    await page.route(`${BACKEND_URL}/api/ollama/chat`, async (route) => {
+    await page.route(`${BACKEND_URL}/api/v1/ollama/chat`, async (route) => {
       await route.fulfill({
         status: 500,
         headers: { 'content-type': 'text/event-stream' },
@@ -85,7 +85,7 @@ export const ollamaChatMocks = {
   },
 
   async mockMultiIterationToolCall(page: Page, onRequest?: (route: Route) => void) {
-    await page.route(`${BACKEND_URL}/api/ollama/chat/tools`, async (route) => {
+    await page.route(`${BACKEND_URL}/api/v1/ollama/chat/tools`, async (route) => {
       onRequest?.(route);
       await route.fulfill({
         status: 200,
@@ -136,7 +136,7 @@ export const ollamaChatMocks = {
   },
 
   async mockSingleToolCall(page: Page, onRequest?: (route: Route) => void) {
-    await page.route(`${BACKEND_URL}/api/ollama/chat/tools`, async (route) => {
+    await page.route(`${BACKEND_URL}/api/v1/ollama/chat/tools`, async (route) => {
       onRequest?.(route);
       await route.fulfill({
         status: 200,
@@ -171,7 +171,7 @@ export const ollamaChatMocks = {
   },
 
   async mockToolCallWithIntermediateContent(page: Page, onRequest?: (route: Route) => void) {
-    await page.route(`${BACKEND_URL}/api/ollama/chat/tools`, async (route) => {
+    await page.route(`${BACKEND_URL}/api/v1/ollama/chat/tools`, async (route) => {
       onRequest?.(route);
       await route.fulfill({
         status: 200,
@@ -206,7 +206,7 @@ export const ollamaChatMocks = {
   },
 
   async mockToolError(page: Page) {
-    await page.route(`${BACKEND_URL}/api/ollama/chat/tools`, async (route) => {
+    await page.route(`${BACKEND_URL}/api/v1/ollama/chat/tools`, async (route) => {
       await route.fulfill({
         status: 200,
         headers: { 'content-type': 'text/event-stream' },

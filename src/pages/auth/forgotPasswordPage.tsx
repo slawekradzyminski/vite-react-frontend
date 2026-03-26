@@ -7,6 +7,7 @@ import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { auth } from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
+import { getPasswordResetBaseUrl } from '../../lib/runtimeConfig';
 import { ForgotPasswordFormData, forgotPasswordSchema } from '../../validators/auth';
 
 export function ForgotPasswordPage() {
@@ -16,7 +17,7 @@ export function ForgotPasswordPage() {
   const [rawToken, setRawToken] = useState<string | null>(null);
 
   const resetDestination = useMemo(
-    () => import.meta.env.VITE_PASSWORD_RESET_BASE_URL ?? `${window.location.origin}/reset`,
+    () => getPasswordResetBaseUrl(),
     []
   );
 

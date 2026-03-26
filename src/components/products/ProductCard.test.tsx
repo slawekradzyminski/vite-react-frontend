@@ -219,6 +219,14 @@ describe('ProductCard', () => {
     expect(screen.getByText('No image available')).toBeInTheDocument();
   });
 
+  it('renders relative image paths without rewriting them', () => {
+    renderWithProviders(
+      <ProductCard product={{ ...mockProduct, imageUrl: '/images/iphone.png' }} />
+    );
+
+    expect(screen.getByRole('img')).toHaveAttribute('src', '/images/iphone.png');
+  });
+
   it('displays current cart quantity for the product', () => {
     // given
     renderWithProviders(<ProductCard product={mockProduct} />);

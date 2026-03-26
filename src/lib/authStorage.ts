@@ -3,15 +3,24 @@ const REFRESH_TOKEN_KEY = 'refreshToken';
 
 const isBrowser = () => typeof window !== 'undefined';
 
-const safeGetItem = (key: string) => (isBrowser() ? window.localStorage.getItem(key) : null);
+const getStorage = () => (isBrowser() ? window.localStorage : null);
+
+const safeGetItem = (key: string) => {
+  const storage = getStorage();
+  return storage && typeof storage.getItem === 'function' ? storage.getItem(key) : null;
+};
+
 const safeSetItem = (key: string, value: string) => {
-  if (isBrowser()) {
-    window.localStorage.setItem(key, value);
+  const storage = getStorage();
+  if (storage && typeof storage.setItem === 'function') {
+    storage.setItem(key, value);
   }
 };
+
 const safeRemoveItem = (key: string) => {
-  if (isBrowser()) {
-    window.localStorage.removeItem(key);
+  const storage = getStorage();
+  if (storage && typeof storage.removeItem === 'function') {
+    storage.removeItem(key);
   }
 };
 

@@ -50,7 +50,7 @@ src/
 - **Chat** streams conversations through `qwen3:0.6b` and can expose the model’s thinking traces on demand.
 - **Generate** also targets `qwen3:0.6b` but uses a single-prompt workflow with the same temperature + thinking controls.
 - **Tools** is the catalog/Grokipedia playground pinned to `qwen3:4b-instruct`, showing live tool call notices, tool outputs, and a disabled thinking notice (that model does not emit reasoning).
-- The Tools mode fetches runtime tool schemas from the backend at `/api/ollama/chat/tools/definitions` and renders an expandable JSON viewer so you see exactly what’s passed to the LLM.
+- The Tools mode fetches runtime tool schemas from the backend at `/api/v1/ollama/chat/tools/definitions` and renders an expandable JSON viewer so you see exactly what’s passed to the LLM.
 
 ## Development Setup
 
@@ -65,6 +65,39 @@ src/
    ```
 
 The application will be available at http://localhost:8081.
+
+## Runtime Profiles
+
+The frontend supports one codepath across these runtime shapes:
+
+- local Vite development
+- Dockerized Vite development
+- lightweight Docker runtime
+- full Docker / localstack-style runtime
+- server deployment behind a single public origin such as `https://awesome.byst.re`
+
+Built frontend assets are expected to run same-origin with the backend gateway. Only Vite development mode talks directly to the backend by default.
+
+The frontend expects the backend business API only under `/api/v1/...`. There is no old-path fallback for `/users/...`, `/email`, `/qr/create`, `/api/ollama/...`, or `/ws-traffic`.
+
+## Environment Contract
+
+The frontend runtime behavior is controlled by three environment variables:
+
+- `VITE_API_BASE_URL`
+  Optional. Overrides the resolved API origin completely. Use this only when the frontend must call a non-default backend origin.
+- `VITE_PASSWORD_RESET_BASE_URL`
+  Optional. Controls the absolute reset page URL sent in forgot-password requests. Defaults to `${window.location.origin}/reset`.
+- `VITE_DOCKER`
+  Dev-only flag. When `true`, Vite development mode targets `http://host.docker.internal:4001` instead of `http://localhost:4001`.
+
+Default behavior by profile:
+
+- local Vite dev: API `http://localhost:4001`, reset base `${window.location.origin}/reset`
+- Dockerized Vite dev: API `http://host.docker.internal:4001` when `VITE_DOCKER=true`
+- built Docker/server runtime: API same-origin via `window.location.origin`, reset base `${window.location.origin}/reset` unless overridden
+
+Product image URLs are rendered exactly as provided by the backend. Relative paths like `/images/iphone.png` are supported and preferred for same-origin deployments.
 
 ## Available Scripts
 
@@ -110,6 +143,17 @@ The backend service runs on `http://localhost:4001` and provides:
 - API Documentation: `/v3/api-docs`
 - Swagger UI: `/swagger-ui/index.html`
 - H2 Database Console: `/h2-console`
+
+Business API calls from this frontend now target:
+- `/api/v1/users/...`
+- `/api/v1/email`
+- `/api/v1/qr/create`
+- `/api/v1/products/...`
+- `/api/v1/orders/...`
+- `/api/v1/cart/...`
+- `/api/v1/traffic/info`
+- `/api/v1/ollama/...`
+- `/api/v1/ws-traffic`
 
 ## Password Reset Flow
 

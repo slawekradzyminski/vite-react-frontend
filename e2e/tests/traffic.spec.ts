@@ -26,15 +26,15 @@ test.describe('Traffic Monitor Page', () => {
     
     // when
     await trafficPage.waitForConnection();
-    await request.get(`${BACKEND_URL}/api/products`, authHeaders(token));
-    await request.get(`${BACKEND_URL}/api/products/1`, authHeaders(token));
+    await request.get(`${BACKEND_URL}/api/v1/products`, authHeaders(token));
+    await request.get(`${BACKEND_URL}/api/v1/products/1`, authHeaders(token));
     await page.waitForTimeout(1000);
 
     // then
     await expect(trafficPage.trafficEventsTable).toBeVisible();
-    const methodElement1 = page.locator('td:has-text("/api/products")').first();
+    const methodElement1 = page.locator('td:has-text("/api/v1/products")').first();
     await expect(methodElement1).toBeVisible();
-    const methodElement2 = page.locator('td:has-text("/api/products/1")').first();
+    const methodElement2 = page.locator('td:has-text("/api/v1/products/1")').first();
     await expect(methodElement2).toBeVisible();
     const statusElement1 = page.locator('td:has-text("200")').first();
     await expect(statusElement1).toBeVisible();
@@ -46,10 +46,10 @@ test.describe('Traffic Monitor Page', () => {
     const { page, token } = authenticatedPage;
 
     await trafficPage.waitForConnection();
-    await request.get(`${BACKEND_URL}/api/products`, authHeaders(token));
-    await request.get(`${BACKEND_URL}/api/products/1`, authHeaders(token));
+    await request.get(`${BACKEND_URL}/api/v1/products`, authHeaders(token));
+    await request.get(`${BACKEND_URL}/api/v1/products/1`, authHeaders(token));
     await page.waitForTimeout(1000);
-    const methodElement1 = page.locator('td:has-text("/api/products")').first();
+    const methodElement1 = page.locator('td:has-text("/api/v1/products")').first();
     await expect(methodElement1).toBeVisible();
     
     // when

@@ -1,11 +1,12 @@
 services:
   backend:
-    image: slawekradzyminski/backend:3.2.0
+    image: slawekradzyminski/backend:3.4.1
     ports:
       - "4001:4001"
     hostname: backend
     environment:
       SPRING_PROFILES_ACTIVE: local
+      SWAGGER_UI_OAUTH2_REDIRECT_URL: http://localhost:4001/swagger-ui/oauth2-redirect.html
       # Point the backend at the Ollama mock container instead of localhost
       OLLAMA_BASE_URL: http://ollama-mock:11434
     networks:
