@@ -4,7 +4,7 @@
 - Introduce a dedicated “Tools” tab so `/llm` exposes Chat, Generate, and Tool Calling as separate surfaces.
 - Update `OllamaChatPage` so the plain chat flow always uses `useOllamaChat`, while the new tool tab relies exclusively on `useOllamaToolChat`.
 - Remove the runtime toggle that mixed tool/normal chat, simplify props, and make sure the UI explains which scenarios live in each tab.
-- Set default models to `qwen3:0.6b` for chat/generate hooks and keep `qwen3:4b-instruct` only for tool calling; hide the thinking switch in the tool tab because that model does not support it.
+- Set default models to `qwen3.5:2b` for chat, generate, and tool-calling hooks, and expose the thinking switch consistently so all three surfaces behave the same way.
 
 ## Phase 2 – Test harness + mock wiring
 - Rework Playwright page objects/tests to reflect the three-tab layout (e.g., separate helpers for tool mode vs chat/generate).

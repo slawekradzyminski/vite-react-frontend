@@ -37,7 +37,7 @@ describe('OllamaToolChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: mockChat,
-      model: 'qwen3:4b-instruct',
+      model: 'qwen3.5:2b',
       setModel: mockSetModel,
       setMessages: mockSetMessages,
       temperature: 0.4,
@@ -60,8 +60,9 @@ describe('OllamaToolChatPage', () => {
 
     openSidebar();
     expect(screen.getByTestId('tool-sidebar')).toHaveAttribute('aria-hidden', 'false');
-    expect(screen.getByDisplayValue('qwen3:4b-instruct')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('qwen3.5:2b')).toBeInTheDocument();
     expect(screen.getByTestId('tool-definition-json')).toBeInTheDocument();
+    expect(screen.getByTestId('thinking-checkbox')).not.toBeChecked();
   });
 
   it('sends chat messages through the tool hook', () => {
@@ -79,7 +80,7 @@ describe('OllamaToolChatPage', () => {
   it('allows adjusting the model and temperature', () => {
     render(<OllamaToolChatPage />);
     openSidebar();
-    const modelInput = screen.getByDisplayValue('qwen3:4b-instruct');
+    const modelInput = screen.getByDisplayValue('qwen3.5:2b');
     const temperatureSlider = screen.getByTestId('temperature-slider');
 
     fireEvent.change(modelInput, { target: { value: 'custom-model' } });
@@ -102,7 +103,7 @@ describe('OllamaToolChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: true,
       chat: mockChat,
-      model: 'qwen3:4b-instruct',
+      model: 'qwen3.5:2b',
       setModel: mockSetModel,
       setMessages: mockSetMessages,
       temperature: 0.4,
@@ -144,7 +145,7 @@ describe('OllamaToolChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: mockChat,
-      model: 'qwen3:4b-instruct',
+      model: 'qwen3.5:2b',
       setModel: mockSetModel,
       setMessages: mockSetMessages,
       temperature: 0.4,

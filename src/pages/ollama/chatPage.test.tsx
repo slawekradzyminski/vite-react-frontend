@@ -28,7 +28,7 @@ describe('OllamaChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: mockChat,
-      model: 'qwen3:0.6b',
+      model: 'qwen3.5:2b',
       setModel: mockSetModel,
       setMessages: mockSetMessages,
       temperature: 0.8,
@@ -53,7 +53,7 @@ describe('OllamaChatPage', () => {
     expect(screen.getByText('Conversational assistant')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Type your message...')).toBeInTheDocument();
     expect(screen.getByText('Send')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('qwen3:0.6b')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('qwen3.5:2b')).toBeInTheDocument();
   });
 
   it('handles user input and sends messages', () => {
@@ -85,7 +85,7 @@ describe('OllamaChatPage', () => {
       isChatting: true,
       isLoadingSystemPrompt: false,
       chat: mockChat,
-      model: 'qwen3:0.6b',
+      model: 'qwen3.5:2b',
       setModel: mockSetModel,
       setMessages: mockSetMessages,
       temperature: 0.8,
@@ -112,7 +112,7 @@ describe('OllamaChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: mockChat,
-      model: 'qwen3:0.6b',
+      model: 'qwen3.5:2b',
       setModel: mockSetModel,
       setMessages: mockSetMessages,
       temperature: 0.8,
@@ -135,7 +135,7 @@ describe('OllamaChatPage', () => {
   it('updates model when input changes', () => {
     render(<OllamaChatPage />);
     openSettingsPanel();
-    const modelInput = screen.getByDisplayValue('qwen3:0.6b');
+    const modelInput = screen.getByDisplayValue('qwen3.5:2b');
 
     fireEvent.change(modelInput, { target: { value: 'llama3.2:7b' } });
 
@@ -148,7 +148,7 @@ describe('OllamaChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: true,
       chat: mockChat,
-      model: 'qwen3:0.6b',
+      model: 'qwen3.5:2b',
       setModel: mockSetModel,
       setMessages: mockSetMessages,
       temperature: 0.8,
@@ -185,7 +185,7 @@ describe('OllamaChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: mockChat,
-      model: 'qwen3:0.6b',
+      model: 'qwen3.5:2b',
       setModel: mockSetModel,
       setMessages: mockSetMessages,
       temperature: 0.8,
@@ -217,7 +217,7 @@ describe('OllamaChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: mockChat,
-      model: 'qwen3:0.6b',
+      model: 'qwen3.5:2b',
       setModel: mockSetModel,
       setMessages: mockSetMessages,
       temperature: 0.8,
@@ -262,7 +262,7 @@ describe('OllamaChatPage', () => {
       isChatting: false,
       isLoadingSystemPrompt: false,
       chat: mockChat,
-      model: 'qwen3:0.6b',
+      model: 'qwen3.5:2b',
       setModel: mockSetModel,
       setMessages: mockSetMessages,
       temperature: 0.8,

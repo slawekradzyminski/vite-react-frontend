@@ -27,8 +27,8 @@ This project demonstrates Ollama function calling end-to-end: listing products, 
    - `processSSEResponse` consumes SSE chunks so tokens and tool events render live.
 3) **UI entry points**
    - `/llm` is now a landing page that explains the difference between the **Chat**, **Generate**, and **Tools** modes and links directly to `/llm/chat`, `/llm/generate`, and `/llm/tools`.
-   - Chat/Generate default to `qwen3:0.6b` so the mock can emit thinking traces; both routes expose the thinking toggle.
-   - Tools pins the model to `qwen3:4b-instruct` (function calling) and disables thinking because that model does not output the `<think>` stream.
+   - Chat/Generate/Tools default to `qwen3.5:2b`, so the same model family covers normal replies, reasoning, and tool calling.
+   - The thinking toggle is exposed on all three modes; tool chat keeps it as an opt-in advanced control.
    - All modes reuse the shared `ChatTranscript` component so assistant/tool bubbles remain consistent no matter which flow emitted them.
 3) **On screen, live**
    - As soon as the model emits `tool_calls`, you see a “Requesting backend function …” line with arguments.
@@ -57,7 +57,7 @@ jq -n --arg chatPrompt "$CHAT_PROMPT" \
       --arg toolPrompt "$TOOL_PROMPT" \
       --arg user "How many iPhones do you have? Tell me details about them. Please show details for every iPhone you list." \
       --argjson tools "$TOOLS" \
-      '{model:"qwen3:4b-instruct",
+      '{model:"qwen3.5:2b",
         messages:[{role:"system",content:$chatPrompt},{role:"system",content:$toolPrompt},{role:"user",content:$user}],
         tools:$tools, think:false, options:{temperature:0}}' \
 | curl -N -X POST http://localhost:4001/api/v1/ollama/chat/tools \

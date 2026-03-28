@@ -4,7 +4,7 @@ export const PRODUCT_SNAPSHOT_TOOL: OllamaToolDefinition = {
   type: 'function',
   function: {
     name: 'get_product_snapshot',
-    description: 'Anchor every SKU answer with trusted price/stock/description. qwen3:4b-instruct hallucinates, so call this before saying anything about a product and keep it paired with list_products.',
+    description: 'Anchor every SKU answer with trusted price, stock, and description data. Small local models can hallucinate catalog facts, so call this before saying anything about a product and keep it paired with list_products.',
     parameters: {
       type: 'object',
       properties: {

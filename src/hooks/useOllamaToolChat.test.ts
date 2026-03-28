@@ -48,7 +48,7 @@ describe('useOllamaToolChat', () => {
     expect(result.current.messages).toEqual([
       { role: 'system', content: expect.stringContaining('tool-calling shopping assistant') }
     ]);
-    expect(result.current.model).toBe('qwen3:4b-instruct');
+    expect(result.current.model).toBe('qwen3.5:2b');
     expect(result.current.temperature).toBe(0.4);
   });
 
@@ -104,7 +104,7 @@ describe('useOllamaToolChat', () => {
     // given
     const sseSpy = vi.spyOn(sse, 'processSSEResponse').mockImplementation(async (_resp, handlers) => {
       handlers.onMessage({
-        model: 'qwen3:4b-instruct',
+        model: 'qwen3.5:2b',
         message: {
           role: 'assistant',
           content: '',
@@ -115,7 +115,7 @@ describe('useOllamaToolChat', () => {
       });
 
       handlers.onMessage({
-        model: 'qwen3:4b-instruct',
+        model: 'qwen3.5:2b',
         message: {
           role: 'tool',
           tool_name: 'list_products',
@@ -126,7 +126,7 @@ describe('useOllamaToolChat', () => {
       });
 
       handlers.onMessage({
-        model: 'qwen3:4b-instruct',
+        model: 'qwen3.5:2b',
         message: {
           role: 'assistant',
           content: '',
@@ -137,7 +137,7 @@ describe('useOllamaToolChat', () => {
       });
 
       handlers.onMessage({
-        model: 'qwen3:4b-instruct',
+        model: 'qwen3.5:2b',
         message: {
           role: 'tool',
           tool_name: 'get_product_snapshot',
@@ -148,7 +148,7 @@ describe('useOllamaToolChat', () => {
       });
 
       handlers.onMessage({
-        model: 'qwen3:4b-instruct',
+        model: 'qwen3.5:2b',
         message: {
           role: 'assistant',
           content: 'We have one iPhone: **iPhone 13 Pro** at $999.99.',
@@ -195,7 +195,7 @@ describe('useOllamaToolChat', () => {
     // given
     const sseSpy = vi.spyOn(sse, 'processSSEResponse').mockImplementation(async (_resp, handlers) => {
       handlers.onMessage({
-        model: 'qwen3:4b-instruct',
+        model: 'qwen3.5:2b',
         message: {
           role: 'assistant',
           content: '',
@@ -206,7 +206,7 @@ describe('useOllamaToolChat', () => {
       });
 
       handlers.onMessage({
-        model: 'qwen3:4b-instruct',
+        model: 'qwen3.5:2b',
         message: {
           role: 'tool',
           tool_name: 'list_products',
@@ -217,7 +217,7 @@ describe('useOllamaToolChat', () => {
       });
 
       handlers.onMessage({
-        model: 'qwen3:4b-instruct',
+        model: 'qwen3.5:2b',
         message: {
           role: 'assistant',
           content: 'No products found.',
@@ -254,21 +254,21 @@ describe('useOllamaToolChat', () => {
     // given
     const sseSpy = vi.spyOn(sse, 'processSSEResponse').mockImplementation(async (_resp, handlers) => {
       handlers.onMessage({
-        model: 'qwen3:4b-instruct',
+        model: 'qwen3.5:2b',
         message: { role: 'assistant', content: 'Hello' },
         done: false,
         created_at: '',
       });
 
       handlers.onMessage({
-        model: 'qwen3:4b-instruct',
+        model: 'qwen3.5:2b',
         message: { role: 'assistant', content: ' World' },
         done: false,
         created_at: '',
       });
 
       handlers.onMessage({
-        model: 'qwen3:4b-instruct',
+        model: 'qwen3.5:2b',
         message: { role: 'assistant', content: '!' },
         done: true,
         created_at: '',
@@ -298,7 +298,7 @@ describe('useOllamaToolChat', () => {
     // given
     const sseSpy = vi.spyOn(sse, 'processSSEResponse').mockImplementation(async (_resp, handlers) => {
       handlers.onMessage({
-        model: 'qwen3:4b-instruct',
+        model: 'qwen3.5:2b',
         message: {
           role: 'assistant',
           content: 'I will fetch the product details.',
@@ -309,7 +309,7 @@ describe('useOllamaToolChat', () => {
       });
 
       handlers.onMessage({
-        model: 'qwen3:4b-instruct',
+        model: 'qwen3.5:2b',
         message: {
           role: 'tool',
           tool_name: 'get_product_snapshot',
@@ -320,7 +320,7 @@ describe('useOllamaToolChat', () => {
       });
 
       handlers.onMessage({
-        model: 'qwen3:4b-instruct',
+        model: 'qwen3.5:2b',
         message: { role: 'assistant', content: 'Here is the iPhone.' },
         done: true,
         created_at: '',
@@ -432,14 +432,14 @@ describe('useOllamaToolChat', () => {
     // given
     const sseSpy = vi.spyOn(sse, 'processSSEResponse').mockImplementation(async (_resp, handlers) => {
       handlers.onMessage({
-        model: 'qwen3:4b-instruct',
+        model: 'qwen3.5:2b',
         message: { role: 'assistant', content: 'Hello' },
         done: false,
         created_at: '',
       });
 
       handlers.onMessage({
-        model: 'qwen3:4b-instruct',
+        model: 'qwen3.5:2b',
         message: undefined as never,
         done: true,
         created_at: '',

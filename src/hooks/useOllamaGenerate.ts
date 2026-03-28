@@ -30,7 +30,7 @@ export function useOllamaGenerate(options?: UseOllamaGenerateOptions) {
     setTemperature,
     think,
     setThink,
-  } = useOllamaParams({ model: 'qwen3:0.6b', temperature: 0.8, think: false });
+  } = useOllamaParams({ model: 'qwen3.5:2b', temperature: 0.8, think: false });
   const { toast } = useToast();
 
   const generate = async (prompt: string) => {

@@ -47,9 +47,9 @@ src/
 ### LLM Assistant overview
 
 - `/llm` is a landing page that explains when to use each mode and links to `/llm/chat`, `/llm/generate`, and `/llm/tools`.
-- **Chat** streams conversations through `qwen3:0.6b` and can expose the model’s thinking traces on demand.
-- **Generate** also targets `qwen3:0.6b` but uses a single-prompt workflow with the same temperature + thinking controls.
-- **Tools** is the catalog/Grokipedia playground pinned to `qwen3:4b-instruct`, showing live tool call notices, tool outputs, and a disabled thinking notice (that model does not emit reasoning).
+- **Chat** streams conversations through `qwen3.5:2b` and can expose the model’s thinking traces on demand.
+- **Generate** also targets `qwen3.5:2b` but uses a single-prompt workflow with the same temperature + thinking controls.
+- **Tools** is the catalog/Grokipedia playground pinned to `qwen3.5:2b`, showing live tool call notices, tool outputs, and the same opt-in thinking control for tool-focused runs.
 - The Tools mode fetches runtime tool schemas from the backend at `/api/v1/ollama/chat/tools/definitions` and renders an expandable JSON viewer so you see exactly what’s passed to the LLM.
 
 ## Development Setup
@@ -180,7 +180,7 @@ npx playwright test    # E2E tests (requires backend on :4001, dev server on :80
 
 Before launching Playwright:
 1. Start the Spring backend (`./mvnw spring-boot:run`) so the frontend can authenticate and proxy to Ollama.
-2. Start the deterministic Ollama mock (`cd ../ollama-mock && ./mvnw spring-boot:run`) – it listens on `http://localhost:11434` and the backend is already configured to point at it when the local profile is active.
+2. Start the deterministic Ollama mock (`cd ../ollama-mock && ./mvnw spring-boot:run`) – it listens on `http://localhost:11434` and mirrors the frontend's `qwen3.5:2b` defaults when the local profile is active.
 3. Run `npm run dev` to serve the Vite app on `http://localhost:8081`.
 
 Playwright exercises the full stack (e.g., the Tools tab triggers real streaming tool calls), so deterministic results come from that mock service. The tests still rely on the backend’s local email outbox endpoint, so run the backend with the `local` Spring profile or adapt helpers to pull tokens from Mailhog when using docker/localstack.

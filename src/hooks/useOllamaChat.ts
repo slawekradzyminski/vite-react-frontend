@@ -27,7 +27,7 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
     setTemperature,
     think,
     setThink
-  } = useOllamaParams({ model: 'qwen3:0.6b', temperature: 0.8, think: false });
+  } = useOllamaParams({ model: 'qwen3.5:2b', temperature: 0.8, think: false });
   const { inFlight: isChatting, start, stop } = useInFlightRequest(false);
   const [isLoadingSystemPrompt, setIsLoadingSystemPrompt] = useState(true);
   

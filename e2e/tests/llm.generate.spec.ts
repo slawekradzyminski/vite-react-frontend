@@ -20,10 +20,10 @@ test.describe('Ollama Generate', () => {
     await expect(generatePage.responseContent).toContainText('Release plan: mock Ollama service ready');
   });
 
-  test('uses qwen3:0.6b by default and allows editing the value', async () => {
+  test('uses qwen3.5:2b by default and allows editing the value', async () => {
     await generatePage.goto();
     await generatePage.expandSettings();
-    await expect(generatePage.modelInput).toHaveValue('qwen3:0.6b');
+    await expect(generatePage.modelInput).toHaveValue('qwen3.5:2b');
 
     await generatePage.modelInput.fill('custom-model');
     await expect(generatePage.modelInput).toHaveValue('custom-model');

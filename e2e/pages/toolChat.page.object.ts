@@ -8,6 +8,7 @@ export class ToolChatPage extends BaseLlmChatPage {
   readonly modelInput: Locator;
   readonly temperatureLabel: Locator;
   readonly temperatureSlider: Locator;
+  readonly thinkingCheckbox: Locator;
   readonly toolDefinitionJson: Locator;
   readonly messageInput: Locator;
   readonly sendButton: Locator;
@@ -23,6 +24,7 @@ export class ToolChatPage extends BaseLlmChatPage {
     this.modelInput = this.container.getByTestId('model-input');
     this.temperatureLabel = this.container.getByTestId('temperature-label');
     this.temperatureSlider = this.container.getByTestId('temperature-slider');
+    this.thinkingCheckbox = this.container.getByTestId('thinking-checkbox');
     this.toolDefinitionJson = this.container.getByTestId('tool-definition-json');
     this.messageInput = this.container.getByTestId('chat-input');
     this.sendButton = this.container.getByTestId('chat-send-button');

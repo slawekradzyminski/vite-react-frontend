@@ -70,7 +70,7 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
     setTemperature,
     think,
     setThink,
-  } = useOllamaParams({ model: 'qwen3:4b-instruct', temperature: 0.4, think: false });
+  } = useOllamaParams({ model: 'qwen3.5:2b', temperature: 0.4, think: false });
   const [isLoadingSystemPrompt, setIsLoadingSystemPrompt] = useState(true);
   const [toolDefinitions, setToolDefinitions] = useState<OllamaToolDefinition[]>(DEFAULT_TOOL_DEFINITIONS);
 

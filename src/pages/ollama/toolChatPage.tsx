@@ -20,6 +20,8 @@ export function OllamaToolChatPage({ hideTitle = false }: OllamaToolChatPageProp
     setModel,
     temperature,
     setTemperature,
+    think,
+    setThink,
     toolDefinitions
   } = useOllamaToolChat();
   const availableTools = toolDefinitions ?? [];
@@ -94,6 +96,9 @@ export function OllamaToolChatPage({ hideTitle = false }: OllamaToolChatPageProp
           settingsPanelTestId="tool-settings-panel"
           sidebarTestId="tool-sidebar"
           toggleTestId="tool-sidebar-toggle"
+          showThinkingControl
+          think={think}
+          onThinkChange={setThink}
           extraContent={toolDefinitionsContent}
           maxHeight="800px"
         />

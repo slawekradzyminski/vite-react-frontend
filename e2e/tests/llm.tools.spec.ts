@@ -47,7 +47,8 @@ test.describe('Ollama Tool Calling', () => {
     await toolChatPage.goto();
     await toolChatPage.expandSettings();
     await expect(toolChatPage.toolDefinitionJson).toContainText('get_product_snapshot');
-    await expect(toolChatPage.modelInput).toHaveValue('qwen3:4b-instruct');
+    await expect(toolChatPage.modelInput).toHaveValue('qwen3.5:2b');
+    await expect(toolChatPage.thinkingCheckbox).not.toBeChecked();
   });
 
   test('streams tool calls and final summary from the mock', async () => {

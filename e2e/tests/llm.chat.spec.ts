@@ -44,7 +44,7 @@ test.describe('Ollama Chat', () => {
   test('exposes default model and allows editing the value', async () => {
     await chatPage.goto();
     await chatPage.expandSettings();
-    await expect(chatPage.modelInput).toHaveValue('qwen3:0.6b');
+    await expect(chatPage.modelInput).toHaveValue('qwen3.5:2b');
 
     await chatPage.modelInput.fill('custom-model');
     await expect(chatPage.modelInput).toHaveValue('custom-model');
