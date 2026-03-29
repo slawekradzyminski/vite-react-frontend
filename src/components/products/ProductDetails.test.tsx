@@ -302,11 +302,7 @@ describe('ProductDetails', () => {
     fireEvent.click(minusButton); // 1 -> 0
     
     // when
-    const removeButtons = screen.getAllByRole('button', { name: /remove from cart/i });
-    const blueRemoveButton = removeButtons  .find(button => 
-      button.className.includes('bg-blue-600')
-    );
-    fireEvent.click(blueRemoveButton!);
+    fireEvent.click(screen.getByTestId('add-to-cart'));
 
     // then
     await waitFor(() => {
@@ -328,11 +324,7 @@ describe('ProductDetails', () => {
     renderWithProviders(<ProductDetails />);
 
     // when
-    const removeButtons = screen.getAllByRole('button', { name: /remove from cart/i });
-    const redRemoveButton = removeButtons.find(button => 
-      button.className.includes('bg-red-600')
-    );
-    fireEvent.click(redRemoveButton!);
+    fireEvent.click(screen.getByTestId('remove-from-cart'));
 
     // then
     await waitFor(() => {
@@ -466,11 +458,7 @@ describe('ProductDetails', () => {
     renderWithProviders(<ProductDetails />);
     
     // when
-    const removeButtons = screen.getAllByRole('button', { name: /remove from cart/i });
-    const redRemoveButton = removeButtons.find(button => 
-      button.className.includes('bg-red-600')
-    );
-    fireEvent.click(redRemoveButton!);
+    fireEvent.click(screen.getByTestId('remove-from-cart'));
     
     // then
     await waitFor(() => {

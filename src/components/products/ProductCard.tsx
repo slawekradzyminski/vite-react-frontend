@@ -126,36 +126,40 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
 
   return (
     <div 
-      className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col"
+      className="flex h-full cursor-pointer flex-col overflow-hidden rounded-[1.75rem] border border-stone-200/80 bg-white/88 shadow-[0_24px_60px_-50px_rgba(15,23,42,0.45)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_28px_70px_-45px_rgba(15,23,42,0.55)]"
       onClick={navigateToProductDetails}
       data-testid="product-item"
     >
-      <div className="h-48 overflow-hidden" data-testid="product-image-container">
+      <div className="h-52 overflow-hidden bg-stone-100" data-testid="product-image-container">
         {product.imageUrl ? (
           <img 
             src={product.imageUrl} 
             alt={product.name} 
-            className="w-full h-48 object-cover"
+            className="h-52 w-full object-cover transition duration-300 hover:scale-[1.03]"
             data-testid="product-image"
           />
         ) : (
-          <div className="w-full h-48 bg-gray-200 flex items-center justify-center" data-testid="product-no-image">
+          <div className="flex h-52 w-full items-center justify-center bg-stone-100 text-sm font-medium text-slate-400" data-testid="product-no-image">
             No image available
           </div>
         )}
       </div>
-      <div className="p-4 flex flex-col grow" data-testid="product-content">
-        <h3 className="text-lg font-semibold h-14 line-clamp-2" data-testid="product-name">{product.name}</h3>
-        <p className="text-gray-600 mt-1 font-bold" data-testid="product-price">${product.price.toFixed(2)}</p>
+      <div className="flex grow flex-col p-5" data-testid="product-content">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="min-h-14 text-lg font-semibold leading-7 text-slate-950 line-clamp-2" data-testid="product-name">{product.name}</h3>
+          <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-sm font-semibold text-slate-900" data-testid="product-price">
+            ${product.price.toFixed(2)}
+          </span>
+        </div>
         {product.category && (
-          <p className="text-xs text-gray-500 mt-1" data-testid="product-category">{product.category}</p>
+          <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500" data-testid="product-category">{product.category}</p>
         )}
-        <p className="text-sm text-gray-500 mt-2 line-clamp-2 grow" data-testid="product-description">{product.description}</p>
-        <div className="mt-4" data-testid="product-controls">
-          <div className="flex items-center justify-between mb-2" data-testid="product-quantity-container">
+        <p className="mt-3 grow text-sm leading-6 text-slate-600 line-clamp-3" data-testid="product-description">{product.description}</p>
+        <div className="mt-5 border-t border-stone-200/80 pt-4" data-testid="product-controls">
+          <div className="mb-3 flex items-center justify-between gap-3" data-testid="product-quantity-container">
             <div className="flex items-center" data-testid="product-quantity-controls">
               <button 
-                className="px-2 py-1 border rounded-l"
+                className="h-10 rounded-l-2xl border border-stone-200 bg-stone-50 px-3 text-slate-700 transition hover:bg-white"
                 onClick={(e) => {
                   e.stopPropagation();
                   setQuantity(prev => Math.max(0, prev - 1));
@@ -164,9 +168,9 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
               >
                 -
               </button>
-              <span className="px-4 py-1 border-t border-b" data-testid="product-quantity-value">{quantity}</span>
+              <span className="flex h-10 min-w-[52px] items-center justify-center border-y border-stone-200 bg-white px-4 text-sm font-medium text-slate-900" data-testid="product-quantity-value">{quantity}</span>
               <button 
-                className="px-2 py-1 border rounded-r"
+                className="h-10 rounded-r-2xl border border-stone-200 bg-stone-50 px-3 text-slate-700 transition hover:bg-white"
                 onClick={(e) => {
                   e.stopPropagation();
                   setQuantity(prev => Math.min(product.stockQuantity, prev + 1));
@@ -177,7 +181,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
               </button>
             </div>
             {cartQuantity > 0 && (
-              <span className="text-sm text-blue-600 font-medium" data-testid="product-card-cart-quantity">
+              <span className="text-sm font-medium text-sky-700" data-testid="product-card-cart-quantity">
                 {cartQuantity} in cart
               </span>
             )}
@@ -186,7 +190,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
             <div className="flex gap-2 w-full justify-end" data-testid="product-buttons">
               {cartQuantity > 0 && (
                 <button
-                  className="bg-red-600 text-white px-3 py-2 rounded-md hover:bg-red-700 transition-colors disabled:bg-gray-400 flex items-center justify-center min-w-[80px] font-medium shadow-sm"
+                  className="flex min-w-[96px] items-center justify-center rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100 disabled:border-stone-200 disabled:bg-stone-100 disabled:text-slate-400"
                   onClick={handleRemoveFromCart}
                   disabled={isLoading}
                   aria-label="Remove from cart"
@@ -196,7 +200,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
                 </button>
               )}
               <button
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400 flex items-center justify-center min-w-[120px] font-medium shadow-sm"
+                className="flex min-w-[128px] items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-stone-50 transition hover:bg-slate-800 disabled:bg-stone-300"
                 onClick={handleAddToCart}
                 disabled={isLoading || product.stockQuantity < 1 || (quantity === 0 && !cartQuantity)}
                 data-testid="product-add-button"

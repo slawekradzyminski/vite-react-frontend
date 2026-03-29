@@ -128,15 +128,15 @@ Exit criteria:
 
 ## Phase 7: Interior Page Visual Alignment
 
-Status: `todo`
+Status: `done`
 
 Goal: extend the updated look and feel beyond entry points and home into the most visible authenticated work surfaces.
 
 Tasks:
-- [ ] Review products, product details, profile, order details, cart, and traffic pages for visual mismatch against the new shell.
-- [ ] Normalize section spacing, headings, and surface treatments on the highest-traffic interior pages first.
-- [ ] Remove remaining generic card stacks where a simpler layout would read better.
-- [ ] Keep route behavior and existing functional coverage intact.
+- [x] Review products, product details, profile, order details, cart, and traffic pages for visual mismatch against the new shell.
+- [x] Normalize section spacing, headings, and surface treatments on the highest-traffic interior pages first.
+- [x] Remove remaining generic card stacks where a simpler layout would read better.
+- [x] Keep route behavior and existing functional coverage intact.
 
 Exit criteria:
 - Primary logged-in workflows feel like one product rather than a mix of old and new surfaces.
@@ -144,17 +144,65 @@ Exit criteria:
 
 ## Phase 8: Responsive and Accessibility QA Pass
 
-Status: `todo`
+Status: `done`
 
 Goal: catch polish issues that unit tests miss across common breakpoints and interaction states.
 
 Tasks:
-- [ ] Do a manual browser pass on desktop and mobile-sized viewports for the redesigned shell, home, and auth pages.
-- [ ] Check focus states, keyboard traversal, and contrast on the updated navigation and buttons.
-- [ ] Capture any spacing or wrapping regressions introduced by the new branding and larger button geometry.
-- [ ] Document follow-up fixes separately from broader redesign work.
+- [x] Do a manual browser pass on desktop and mobile-sized viewports for the redesigned shell, home, and auth pages.
+- [x] Check focus states, keyboard traversal, and contrast on the updated navigation and buttons.
+- [x] Capture any spacing or wrapping regressions introduced by the new branding and larger button geometry.
+- [x] Document follow-up fixes separately from broader redesign work.
 
 Exit criteria:
 - Updated pages remain clean at desktop and mobile widths.
 - Focus visibility and tap targets stay acceptable after the visual pass.
 - Remaining issues are narrowed to explicit follow-up items.
+
+## Phase 9: Visual System Consolidation
+
+Status: `todo`
+
+Goal: reduce one-off styling drift now that the main redesign pass is complete.
+
+Tasks:
+- [ ] Audit repeated surface, shadow, radius, and spacing patterns across shell, auth, home, and interior pages.
+- [ ] Extract the most repeated container and section treatments into shared utility patterns or lightweight wrapper components.
+- [ ] Normalize form field chrome where raw `className` overrides still diverge from the updated system.
+- [ ] Keep current behavior and test coverage intact while reducing style duplication.
+
+Exit criteria:
+- The main visual system is easier to extend without copying long Tailwind class strings.
+- Future page polish can reuse shared layout/surface primitives instead of bespoke wrappers.
+
+## Phase 10: Secondary Page Alignment
+
+Status: `todo`
+
+Goal: bring the remaining lower-traffic pages into the same visual language as the completed core flows.
+
+Tasks:
+- [ ] Review email, QR, checkout, admin, and user-management pages for pre-redesign styling leftovers.
+- [ ] Prioritize the most visible mismatches and align headings, surfaces, and action treatments.
+- [ ] Add only the minimal structural changes needed to make those pages feel consistent with the shell.
+- [ ] Update any stale tests that still assert legacy class names or copy.
+
+Exit criteria:
+- The app no longer feels split between redesigned flagship routes and untouched legacy utility pages.
+- Secondary workflows inherit the same hierarchy and control language as the rest of the product.
+
+## Phase 11: Visual Regression and A11y Coverage
+
+Status: `todo`
+
+Goal: make the polish pass durable by adding lightweight automated guardrails.
+
+Tasks:
+- [ ] Add focused Playwright coverage for keyboard traversal on the redesigned navigation and auth flows.
+- [ ] Add a small set of responsive smoke checks for the most layout-sensitive pages.
+- [ ] Introduce snapshot or screenshot coverage only where it will catch real visual regressions without becoming noisy.
+- [ ] Document any remaining manual QA checks that are still worth running before release.
+
+Exit criteria:
+- The repo has automated coverage for the highest-risk polish regressions.
+- Accessibility and responsive behavior are less dependent on one-off manual checking.

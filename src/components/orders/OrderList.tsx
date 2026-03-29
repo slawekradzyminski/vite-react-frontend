@@ -24,13 +24,16 @@ export function OrderList() {
   };
 
   const renderOrdersHeader = () => (
-    <div className="mb-6 flex justify-between items-center" data-testid="order-list-header">
-      <h2 className="text-2xl font-bold" data-testid="order-list-title">Your Orders</h2>
-      <div data-testid="order-list-filter">
-        <label htmlFor="status-filter" className="mr-2">Filter by status:</label>
+    <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between" data-testid="order-list-header">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">History</p>
+        <h2 className="mt-2 text-2xl font-semibold text-slate-950" data-testid="order-list-title">Your Orders</h2>
+      </div>
+      <div className="flex items-center gap-2" data-testid="order-list-filter">
+        <label htmlFor="status-filter" className="text-sm font-medium text-slate-600">Filter by status:</label>
         <select
           id="status-filter"
-          className="border rounded p-2"
+          className="h-11 rounded-2xl border border-stone-200 bg-stone-50 px-4 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
           value={selectedStatus || 'ALL'}
           onChange={handleStatusChange}
           data-testid="order-list-status-filter"
@@ -50,7 +53,7 @@ export function OrderList() {
     return (
       <div data-testid="order-list-container">
         {renderOrdersHeader()}
-        <div className="text-center py-8" data-testid="order-list-loading">Loading orders...</div>
+        <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 px-6 py-10 text-center text-slate-500" data-testid="order-list-loading">Loading orders...</div>
       </div>
     );
   }
@@ -59,7 +62,7 @@ export function OrderList() {
     return (
       <div data-testid="order-list-container">
         {renderOrdersHeader()}
-        <div className="text-center py-8 text-red-500" data-testid="order-list-error">Error loading orders</div>
+        <div className="rounded-[1.5rem] border border-red-200 bg-red-50 px-6 py-10 text-center text-red-600" data-testid="order-list-error">Error loading orders</div>
       </div>
     );
   }
@@ -71,7 +74,7 @@ export function OrderList() {
     return (
       <div data-testid="order-list-container">
         {renderOrdersHeader()}
-        <div className="text-center py-8 border rounded-lg p-6 bg-white" data-testid="order-list-empty">
+        <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 px-6 py-10 text-center text-slate-600" data-testid="order-list-empty">
           {selectedStatus ? (
             <p>No orders found with status "{selectedStatus}". Try selecting a different status or view all orders.</p>
           ) : (
@@ -88,11 +91,11 @@ export function OrderList() {
       
       <div className="space-y-4" data-testid="order-list-items">
         {ordersList.map((order: Order) => (
-          <div key={order.id} className="border rounded-lg p-4 hover:shadow-sm transition-shadow" data-testid={`order-item-${order.id}`}>
+          <div key={order.id} className="rounded-[1.5rem] border border-stone-200 bg-stone-50/80 p-5 transition hover:bg-white hover:shadow-[0_20px_45px_-35px_rgba(15,23,42,0.5)]" data-testid={`order-item-${order.id}`}>
             <div className="flex justify-between items-start mb-3">
               <div>
-                <h3 className="font-semibold" data-testid={`order-id-${order.id}`}>Order #{order.id}</h3>
-                <p className="text-sm text-gray-500" data-testid={`order-date-${order.id}`}>
+                <h3 className="font-semibold text-slate-950" data-testid={`order-id-${order.id}`}>Order #{order.id}</h3>
+                <p className="text-sm text-slate-500" data-testid={`order-date-${order.id}`}>
                   Placed on {new Date(order.createdAt).toLocaleDateString()}
                 </p>
               </div>
@@ -107,13 +110,13 @@ export function OrderList() {
             </div>
             
             <div className="mb-3">
-              <p className="font-medium" data-testid={`order-total-${order.id}`}>Total: ${order.totalAmount.toFixed(2)}</p>
-              <p className="text-sm text-gray-600" data-testid={`order-items-count-${order.id}`}>{order.items.length} items</p>
+              <p className="font-medium text-slate-900" data-testid={`order-total-${order.id}`}>Total: ${order.totalAmount.toFixed(2)}</p>
+              <p className="text-sm text-slate-600" data-testid={`order-items-count-${order.id}`}>{order.items.length} items</p>
             </div>
             
             <Link 
               to={`/orders/${order.id}`} 
-              className="text-blue-600 hover:underline block text-right"
+              className="block text-right text-sm font-medium text-slate-700 underline-offset-4 transition hover:text-slate-950 hover:underline"
               data-testid={`order-details-link-${order.id}`}
             >
               View Details →
@@ -124,9 +127,9 @@ export function OrderList() {
       
       {totalPages > 1 && (
         <div className="flex justify-center mt-6" data-testid="order-list-pagination">
-          <nav className="flex items-center space-x-2">
+          <nav className="flex items-center space-x-2 rounded-full border border-stone-200 bg-stone-50 px-3 py-2">
             <button
-              className="px-3 py-1 rounded border disabled:opacity-50"
+              className="rounded-full px-3 py-1.5 text-sm text-slate-600 transition hover:bg-white hover:text-slate-900 disabled:opacity-50"
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 0}
               data-testid="order-list-prev-page"
@@ -137,8 +140,8 @@ export function OrderList() {
             {Array.from({ length: totalPages }, (_, i) => (
               <button
                 key={i}
-                className={`px-3 py-1 rounded ${
-                  currentPage === i ? 'bg-blue-600 text-white' : 'border'
+                className={`rounded-full px-3 py-1.5 text-sm transition ${
+                  currentPage === i ? 'bg-slate-900 text-stone-50' : 'text-slate-600 hover:bg-white hover:text-slate-900'
                 }`}
                 onClick={() => handlePageChange(i)}
                 data-testid={`order-list-page-${i + 1}`}
@@ -148,7 +151,7 @@ export function OrderList() {
             ))}
             
             <button
-              className="px-3 py-1 rounded border disabled:opacity-50"
+              className="rounded-full px-3 py-1.5 text-sm text-slate-600 transition hover:bg-white hover:text-slate-900 disabled:opacity-50"
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages - 1}
               data-testid="order-list-next-page"

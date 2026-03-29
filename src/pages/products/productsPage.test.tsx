@@ -218,15 +218,15 @@ describe('ProductsPage', () => {
     
     // Initially "All Products" should be highlighted
     const allProductsButton = screen.getByTestId('products-category-all');
-    expect(allProductsButton.className).toContain('bg-blue-100');
+    expect(allProductsButton.className).toContain('bg-slate-900');
     
     // Click on a category
     const electronicsCategory = screen.getByTestId('products-category-electronics');
     await user.click(electronicsCategory);
     
     // then
-    expect(electronicsCategory.className).toContain('bg-blue-100');
-    expect(allProductsButton.className).not.toContain('bg-blue-100');
+    expect(electronicsCategory.className).toContain('bg-slate-900');
+    expect(allProductsButton.className).not.toContain('bg-slate-900');
   });
 
   it('displays all categories from products', async () => {

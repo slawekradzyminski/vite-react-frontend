@@ -45,20 +45,20 @@ export class CartPage {
 
     const quantityCell = row.locator('td:nth-child(3)');
     
-    const quantityText = await quantityCell.locator('.px-4.py-1.border-t.border-b').textContent();
+    const quantityText = await quantityCell.locator('span[data-testid^="cart-item-quantity-"]').textContent();
     const currentQuantity = quantityText ? parseInt(quantityText, 10) : 0;
 
     if (newQuantity > currentQuantity) {
       for (let i = 0; i < newQuantity - currentQuantity; i++) {
-        await quantityCell.locator('button', { hasText: '+' }).click();
+        await quantityCell.locator('button[data-testid^="cart-item-increase-"]').click();
       }
     } else if (newQuantity < currentQuantity) {
       for (let i = 0; i < currentQuantity - newQuantity; i++) {
-        await quantityCell.locator('button', { hasText: '-' }).click();
+        await quantityCell.locator('button[data-testid^="cart-item-decrease-"]').click();
       }
     }
 
-    const updateButton = quantityCell.locator('button', { hasText: 'Update' });
+    const updateButton = quantityCell.locator('button[data-testid^="cart-item-update-"]');
     if (await updateButton.isVisible()) {
       await updateButton.click();
     }

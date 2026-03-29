@@ -62,7 +62,7 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-7rem)] items-center py-6" data-testid="login-page">
+    <div className="flex min-h-[calc(100svh-7rem)] items-center py-6" data-testid="login-page">
       <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(420px,0.8fr)]" data-testid="login-container">
         <section className="flex flex-col justify-between overflow-hidden rounded-[2rem] border border-stone-200/80 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.16),_transparent_32%),linear-gradient(135deg,_rgba(255,255,255,0.94),_rgba(244,240,235,0.98))] p-8 shadow-[0_30px_90px_-55px_rgba(15,23,42,0.55)]">
           <div className="space-y-8">

@@ -10,10 +10,10 @@ export class TrafficPage {
 
   constructor(protected readonly page: Page) {
     this.heading = page.getByRole('heading', { name: /traffic monitor/i });
-    this.statusPill = page.locator('.bg-green-100, .bg-red-100').first();
-    this.statusMessage = page.locator('.bg-gray-50 p').first();
+    this.statusPill = page.getByTestId('traffic-connection-status');
+    this.statusMessage = page.getByTestId('traffic-status-message');
     this.clearEventsButton = page.getByRole('button', { name: /clear events/i });
-    this.trafficEventsTable = page.locator('table');
+    this.trafficEventsTable = page.getByTestId('traffic-events-table');
     this.noEventsMessage = page.getByTestId('traffic-empty-state');
   }
 
@@ -34,6 +34,6 @@ export class TrafficPage {
   }
 
   async waitForConnection() {
-    await this.page.waitForSelector('.bg-green-100:has-text("Connected")');
+    await this.page.getByTestId('traffic-connection-status').getByText('Connected').waitFor();
   }
 } 

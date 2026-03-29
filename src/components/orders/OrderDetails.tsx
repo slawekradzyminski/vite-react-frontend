@@ -112,47 +112,50 @@ export const OrderDetails = () => {
   };
 
   if (isLoadingOrder) {
-    return <div className="text-center py-8" data-testid="order-details-loading">Loading order details...</div>;
+    return <div className="rounded-[1.75rem] border border-stone-200/80 bg-white/84 px-6 py-12 text-center text-slate-500" data-testid="order-details-loading">Loading order details...</div>;
   }
 
   if (!order) {
-    return <div className="text-center py-8" data-testid="order-details-not-found">Order not found</div>;
+    return <div className="rounded-[1.75rem] border border-stone-200/80 bg-white/84 px-6 py-12 text-center text-slate-500" data-testid="order-details-not-found">Order not found</div>;
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6" data-testid="order-details">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold" data-testid="order-details-title">Order #{order.id}</h1>
+    <div className="rounded-[2rem] border border-stone-200/80 bg-white/84 p-6 shadow-[0_28px_70px_-55px_rgba(15,23,42,0.45)] md:p-8" data-testid="order-details">
+      <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Order detail</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950" data-testid="order-details-title">Order #{order.id}</h1>
+        </div>
         <span 
-          className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}
+          className={`w-fit rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(order.status)}`}
           data-testid="order-details-status"
         >
           {order.status}
         </span>
       </div>
 
-      <div className="border-t border-gray-200 pt-4 mb-6" data-testid="order-details-items-section">
-        <h2 className="text-lg font-semibold mb-3" data-testid="order-details-items-title">Items</h2>
+      <div className="mb-6 rounded-[1.5rem] border border-stone-200 bg-stone-50/80 p-5" data-testid="order-details-items-section">
+        <h2 className="mb-3 text-lg font-semibold text-slate-950" data-testid="order-details-items-title">Items</h2>
         <div className="space-y-4" data-testid="order-details-items-list">
           {order.items.map((item) => (
-            <div key={item.id} className="flex justify-between items-center border-b pb-3" data-testid={`order-item-${item.id}`}>
+            <div key={item.id} className="flex justify-between items-center border-b border-stone-200 pb-3 last:border-b-0 last:pb-0" data-testid={`order-item-${item.id}`}>
               <div>
-                <p className="font-medium" data-testid={`order-item-name-${item.id}`}>{item.productName}</p>
-                <p className="text-sm text-gray-500" data-testid={`order-item-price-details-${item.id}`}>${item.unitPrice} x {item.quantity}</p>
+                <p className="font-medium text-slate-900" data-testid={`order-item-name-${item.id}`}>{item.productName}</p>
+                <p className="text-sm text-slate-500" data-testid={`order-item-price-details-${item.id}`}>${item.unitPrice} x {item.quantity}</p>
               </div>
-              <p className="font-medium" data-testid={`order-item-total-${item.id}`}>${item.totalPrice.toFixed(2)}</p>
+              <p className="font-medium text-slate-900" data-testid={`order-item-total-${item.id}`}>${item.totalPrice.toFixed(2)}</p>
             </div>
           ))}
         </div>
-        <div className="flex justify-between items-center mt-4 pt-2 border-t" data-testid="order-details-total">
-          <p className="font-semibold">Total</p>
-          <p className="font-bold text-lg" data-testid="order-details-total-amount">${order.totalAmount.toFixed(2)}</p>
+        <div className="mt-4 flex items-center justify-between border-t border-stone-200 pt-3" data-testid="order-details-total">
+          <p className="font-semibold text-slate-700">Total</p>
+          <p className="font-bold text-lg text-slate-950" data-testid="order-details-total-amount">${order.totalAmount.toFixed(2)}</p>
         </div>
       </div>
 
-      <div className="border-t border-gray-200 pt-4 mb-6" data-testid="order-details-shipping-section">
-        <h2 className="text-lg font-semibold mb-3" data-testid="order-details-shipping-title">Shipping Address</h2>
-        <div className="text-gray-700" data-testid="order-details-shipping-address">
+      <div className="mb-6 rounded-[1.5rem] border border-stone-200 bg-stone-50/80 p-5" data-testid="order-details-shipping-section">
+        <h2 className="mb-3 text-lg font-semibold text-slate-950" data-testid="order-details-shipping-title">Shipping Address</h2>
+        <div className="text-slate-700" data-testid="order-details-shipping-address">
           <p data-testid="order-details-address-street">{order.shippingAddress.street}</p>
           <p data-testid="order-details-address-city-state">
             {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}
@@ -165,7 +168,7 @@ export const OrderDetails = () => {
         {order.status === 'PENDING' && (
           <button
             onClick={handleCancelOrder}
-            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
+            className="rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100"
             disabled={cancelOrderMutation.isPending}
             data-testid="order-details-cancel-button"
           >
@@ -178,7 +181,7 @@ export const OrderDetails = () => {
             <select
               value={effectiveSelectedStatus ?? ''}
               onChange={handleStatusChange}
-              className="border rounded p-2"
+              className="h-11 rounded-2xl border border-stone-200 bg-stone-50 px-4 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
               disabled={updateStatusMutation.isPending}
               data-testid="order-details-status-select"
             >
@@ -190,7 +193,7 @@ export const OrderDetails = () => {
             </select>
             <button
               onClick={handleUpdateStatus}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+              className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-stone-50 transition hover:bg-slate-800 disabled:bg-stone-300"
               disabled={isUpdateDisabled}
               data-testid="order-details-update-status-button"
             >

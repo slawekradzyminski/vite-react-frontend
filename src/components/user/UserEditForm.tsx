@@ -36,12 +36,12 @@ export function UserEditForm({ user, onSave, isUpdating = false }: UserEditFormP
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-6 rounded-lg shadow" data-testid="user-edit-form">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 rounded-[1.5rem] border border-stone-200 bg-stone-50/80 p-5" data-testid="user-edit-form">
       <div data-testid="user-edit-email-field">
         <Label htmlFor="email">Email</Label>
         <Input
           id="email"
-          className="mt-1"
+          className="mt-2 rounded-[1.25rem] border-stone-200 bg-white"
           error={errors.email?.message}
           data-testid="user-edit-email-input"
           {...register('email')}
@@ -55,7 +55,7 @@ export function UserEditForm({ user, onSave, isUpdating = false }: UserEditFormP
         <Label htmlFor="firstName">First Name</Label>
         <Input
           id="firstName"
-          className="mt-1"
+          className="mt-2 rounded-[1.25rem] border-stone-200 bg-white"
           error={errors.firstName?.message}
           data-testid="user-edit-firstName-input"
           {...register('firstName')}
@@ -69,7 +69,7 @@ export function UserEditForm({ user, onSave, isUpdating = false }: UserEditFormP
         <Label htmlFor="lastName">Last Name</Label>
         <Input
           id="lastName"
-          className="mt-1"
+          className="mt-2 rounded-[1.25rem] border-stone-200 bg-white"
           error={errors.lastName?.message}
           data-testid="user-edit-lastName-input"
           {...register('lastName')}

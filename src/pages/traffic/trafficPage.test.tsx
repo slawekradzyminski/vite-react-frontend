@@ -317,8 +317,8 @@ describe('TrafficMonitorPage', () => {
     await waitFor(() => expect(screen.getByText('Connected to traffic monitor')).toBeInTheDocument());
 
     const events = [
-      { status: 201, className: 'text-green-600' },
-      { status: 302, className: 'text-blue-600' },
+      { status: 201, className: 'text-emerald-600' },
+      { status: 302, className: 'text-sky-600' },
       { status: 404, className: 'text-orange-600' },
       { status: 503, className: 'text-red-600' },
     ];
