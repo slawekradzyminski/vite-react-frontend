@@ -5,6 +5,8 @@ import { products, cart } from '../../lib/api';
 import { CartItemDto, UpdateCartItemDto } from '../../types/cart';
 import { useToast } from '../../hooks/useToast';
 import { authStorage } from '../../lib/authStorage';
+import { Surface } from '../ui/surface';
+import { Badge } from '../ui/badge';
 
 export function ProductDetails() {
   const { id } = useParams<{ id: string }>();
@@ -123,88 +125,105 @@ export function ProductDetails() {
   };
 
   if (isLoading) {
-    return <div className="text-center py-8" data-testid="product-loading">Loading product details...</div>;
+    return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="product-loading">Loading product details...</Surface>;
   }
 
   if (error || !product?.data) {
     return (
-      <div className="text-center py-8" data-testid="product-not-found">
-        <p className="text-red-500 mb-4">Error loading product details</p>
-        <Link to="/products" className="text-blue-600 hover:underline">
+      <Surface variant="danger" padding="message" className="text-center" data-testid="product-not-found">
+        <p className="mb-4 text-red-600">Error loading product details</p>
+        <Link to="/products" className="text-sm font-medium text-slate-900 underline-offset-4 hover:underline">
           Back to Products
         </Link>
-      </div>
+      </Surface>
     );
   }
 
   const { data: productData } = product;
 
   return (
-    <div className="max-w-6xl mx-auto p-4" data-testid="product-details">
-      <div className="mb-4" data-testid="product-back-link-container">
-        <Link to="/products" className="text-blue-600 hover:underline" data-testid="product-back-link">
+    <div className="space-y-6 pb-10" data-testid="product-details">
+      <div data-testid="product-back-link-container">
+        <Link to="/products" className="text-sm font-medium text-slate-600 underline-offset-4 transition hover:text-slate-900 hover:underline" data-testid="product-back-link">
           ← Back to Products
         </Link>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8" data-testid="product-details-content">
-        <div data-testid="product-image-container">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)]" data-testid="product-details-content">
+        <Surface
+          variant="default"
+          className="overflow-hidden"
+          data-testid="product-image-container"
+        >
           {productData.imageUrl ? (
             <img 
               src={productData.imageUrl} 
               alt={productData.name} 
-              className="w-full h-auto rounded-lg shadow-md"
+              className="h-full min-h-[320px] w-full object-cover"
               data-testid="product-image"
             />
           ) : (
-            <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center" data-testid="product-no-image">
+            <div className="flex min-h-[320px] w-full items-center justify-center bg-stone-100 text-sm font-medium text-slate-400" data-testid="product-no-image">
               No image available
             </div>
           )}
-        </div>
-        
-        <div data-testid="product-info-container">
-          <h1 className="text-3xl font-bold mb-2" data-testid="product-title">{productData.name}</h1>
-          <p className="text-2xl text-blue-600 mb-4" data-testid="product-price">${productData.price.toFixed(2)}</p>
-          
-          <div className="mb-6" data-testid="product-description-section">
-            <h2 className="text-lg font-semibold mb-2" data-testid="product-description-title">Description</h2>
-            <p className="text-gray-700" data-testid="product-description">{productData.description}</p>
+        </Surface>
+
+        <Surface
+          variant="default"
+          padding="lg"
+          data-testid="product-info-container"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Product detail</p>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950" data-testid="product-title">{productData.name}</h1>
+            </div>
+            <Badge className="px-4 py-2 text-xl font-semibold text-slate-950" data-testid="product-price">${productData.price.toFixed(2)}</Badge>
           </div>
           
-          <div className="mb-6" data-testid="product-category-section">
-            <h2 className="text-lg font-semibold mb-2" data-testid="product-category-title">Category</h2>
-            <p className="text-gray-700" data-testid="product-category">{productData.category}</p>
-          </div>
-          
-          <div className="mb-6" data-testid="product-availability-section">
-            <h2 className="text-lg font-semibold mb-2" data-testid="product-availability-title">Availability</h2>
-            <p className={`${productData.stockQuantity > 0 ? 'text-green-600' : 'text-red-600'}`} data-testid="product-stock">
-              {productData.stockQuantity > 0 
-                ? `${productData.stockQuantity} in stock` 
-                : 'Out of stock'}
-            </p>
-            {cartQuantity > 0 && (
-              <p className="text-blue-600 mt-1" data-testid="product-cart-quantity">
-                {cartQuantity} in cart
-              </p>
-            )}
+          <div className="mt-8 grid gap-6 md:grid-cols-2">
+            <div data-testid="product-description-section">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500" data-testid="product-description-title">Description</h2>
+              <p className="mt-3 text-sm leading-7 text-slate-600" data-testid="product-description">{productData.description}</p>
+            </div>
+            
+            <div className="space-y-6">
+              <div data-testid="product-category-section">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500" data-testid="product-category-title">Category</h2>
+                <p className="mt-3 text-sm font-medium text-slate-900" data-testid="product-category">{productData.category}</p>
+              </div>
+              
+              <div data-testid="product-availability-section">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500" data-testid="product-availability-title">Availability</h2>
+                <p className={`mt-3 text-sm font-medium ${productData.stockQuantity > 0 ? 'text-emerald-700' : 'text-red-600'}`} data-testid="product-stock">
+                  {productData.stockQuantity > 0 
+                    ? `${productData.stockQuantity} in stock` 
+                    : 'Out of stock'}
+                </p>
+                {cartQuantity > 0 && (
+                  <p className="mt-1 text-sm font-medium text-sky-700" data-testid="product-cart-quantity">
+                    {cartQuantity} in cart
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
           
           {productData.stockQuantity > 0 && (
-            <div className="mb-6" data-testid="product-quantity-section">
-              <h2 className="text-lg font-semibold mb-2" data-testid="product-quantity-title">Quantity</h2>
-              <div className="flex items-center" data-testid="product-quantity-controls">
+            <div className="mt-8 border-t border-stone-200/80 pt-6" data-testid="product-quantity-section">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500" data-testid="product-quantity-title">Quantity</h2>
+              <div className="mt-3 flex items-center" data-testid="product-quantity-controls">
                 <button 
-                  className="px-3 py-2 border rounded-l"
+                  className="h-11 rounded-l-2xl border border-stone-200 bg-stone-50 px-4 text-slate-700 transition hover:bg-white"
                   onClick={() => setQuantity(prev => Math.max(0, prev - 1))}
                   data-testid="decrease-quantity"
                 >
                   -
                 </button>
-                <span className="px-6 py-2 border-t border-b" data-testid="quantity-value">{quantity}</span>
+                <span className="flex h-11 min-w-[64px] items-center justify-center border-y border-stone-200 bg-white px-6 text-sm font-medium text-slate-900" data-testid="quantity-value">{quantity}</span>
                 <button 
-                  className="px-3 py-2 border rounded-r"
+                  className="h-11 rounded-r-2xl border border-stone-200 bg-stone-50 px-4 text-slate-700 transition hover:bg-white"
                   onClick={() => setQuantity(prev => Math.min(productData.stockQuantity, prev + 1))}
                   data-testid="increase-quantity"
                 >
@@ -214,10 +233,10 @@ export function ProductDetails() {
             </div>
           )}
           
-          <div className="flex gap-3" data-testid="product-actions">
+          <div className="mt-8 flex flex-wrap gap-3" data-testid="product-actions">
             {cartQuantity > 0 && (
               <button
-                className="bg-red-600 text-white py-3 px-6 rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-400"
+                className="rounded-full border border-red-200 bg-red-50 px-5 py-3 text-sm font-medium text-red-700 transition hover:bg-red-100 disabled:border-stone-200 disabled:bg-stone-100 disabled:text-slate-400"
                 onClick={handleRemoveFromCart}
                 disabled={isRemovingFromCart || isAddingToCart}
                 data-testid="remove-from-cart"
@@ -227,7 +246,7 @@ export function ProductDetails() {
             )}
             
             <button
-              className={`${cartQuantity > 0 ? 'flex-1' : 'w-full'} bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400`}
+              className={`${cartQuantity > 0 ? 'flex-1' : 'w-full'} rounded-full bg-slate-900 px-6 py-3 text-sm font-medium text-stone-50 transition hover:bg-slate-800 disabled:bg-stone-300`}
               onClick={handleAddToCart}
               disabled={isAddingToCart || isRemovingFromCart || productData.stockQuantity < 1 || (quantity === 0 && !cartQuantity)}
               data-testid="add-to-cart"
@@ -242,7 +261,7 @@ export function ProductDetails() {
               }
             </button>
           </div>
-        </div>
+        </Surface>
       </div>
     </div>
   );

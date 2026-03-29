@@ -1,8 +1,12 @@
 import { useState } from 'react';
+import { ArrowRight } from 'lucide-react';
 import { useOllamaChat, DEFAULT_SYSTEM_PROMPT } from '../../hooks/useOllamaChat';
 import { Spinner } from '../../components/ui/spinner';
 import { ChatTranscript } from './ChatTranscript';
 import { LlmSettingsPanel, SystemPromptDetails } from '../../components/llm';
+import { Surface } from '../../components/ui/surface';
+import { Textarea } from '../../components/ui/textarea';
+import { Button } from '../../components/ui/button';
 
 interface OllamaChatPageProps {
   hideTitle?: boolean;
@@ -50,8 +54,8 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
   return (
     <div className="space-y-4" data-testid="ollama-chat-page">
       {!hideTitle && (
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-indigo-500">Chat</p>
+        <div className="space-y-2">
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-500">Chat</p>
           <h1 className="text-3xl font-bold text-slate-900" data-testid="ollama-chat-title">
             Conversational assistant
           </h1>
@@ -66,7 +70,7 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
           onModelChange={setModel}
           temperature={temperature}
           onTemperatureChange={setTemperature}
-          colorTheme="indigo"
+          colorTheme="neutral"
           toggleLabel="Settings"
           toggleLabelOpen="Hide Settings"
           settingsPanelTestId="chat-settings-panel"
@@ -77,7 +81,7 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
           onThinkChange={setThink}
         />
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <Surface as="section" variant="default" padding="md" className="space-y-4">
           <SystemPromptDetails
             content={systemMessage?.content ?? DEFAULT_SYSTEM_PROMPT}
             testId="chat-system-prompt"
@@ -86,8 +90,8 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
           <ChatTranscript messages={messages} hideSystemMessage />
 
           <div className="flex items-end gap-2" data-testid="chat-input-container">
-            <textarea
-              className="flex-1 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm placeholder:text-slate-400 focus:border-indigo-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100 resize-none"
+            <Textarea
+              className="min-h-[88px] flex-1 resize-none"
               rows={2}
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
@@ -96,23 +100,21 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
               disabled={isChatting}
               data-testid="chat-input"
             />
-            <button
+            <Button
               onClick={handleSend}
               disabled={isChatting || !userInput.trim()}
-              className="flex h-10 items-center gap-2 rounded-xl bg-indigo-600 px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-11 px-4"
               data-testid="chat-send-button"
             >
               {isChatting ? <Spinner size="sm" /> : (
                 <>
                   Send
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
+                  <ArrowRight className="h-4 w-4" />
                 </>
               )}
-            </button>
+            </Button>
           </div>
-        </section>
+        </Surface>
       </div>
     </div>
   );

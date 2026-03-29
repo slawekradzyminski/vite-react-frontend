@@ -40,25 +40,26 @@ export function CartSummary({ cartData, onUpdate }: CartSummaryProps) {
 
   return (
     <div className="p-6" data-testid="cart-summary">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-        <div className="mb-4 md:mb-0" data-testid="cart-summary-info">
-          <h2 className="text-lg font-semibold mb-2" data-testid="cart-summary-title">Cart Summary</h2>
-          <div className="flex space-x-6">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="mb-0" data-testid="cart-summary-info">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Snapshot</p>
+          <h2 className="mt-2 text-lg font-semibold text-slate-950" data-testid="cart-summary-title">Cart Summary</h2>
+          <div className="mt-4 flex space-x-6">
             <div data-testid="cart-summary-items">
-              <span className="text-sm font-medium text-gray-500 uppercase block">Items</span>
-              <span className="text-lg" data-testid="cart-summary-items-count">{safeCartData.totalItems}</span>
+              <span className="block text-sm font-medium uppercase text-slate-500">Items</span>
+              <span className="text-lg font-semibold text-slate-950" data-testid="cart-summary-items-count">{safeCartData.totalItems}</span>
             </div>
             
             <div data-testid="cart-summary-total">
-              <span className="text-sm font-medium text-gray-500 uppercase block">Total</span>
-              <span className="text-xl font-bold" data-testid="cart-summary-total-price">${safeCartData.totalPrice.toFixed(2)}</span>
+              <span className="block text-sm font-medium uppercase text-slate-500">Total</span>
+              <span className="text-xl font-bold text-slate-950" data-testid="cart-summary-total-price">${safeCartData.totalPrice.toFixed(2)}</span>
             </div>
           </div>
         </div>
         
-        <div className="flex space-x-3" data-testid="cart-summary-actions">
+        <div className="flex flex-wrap gap-3" data-testid="cart-summary-actions">
           <button
-            className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-stone-50 transition hover:bg-slate-800 disabled:bg-stone-300 disabled:cursor-not-allowed"
             onClick={handleCheckout}
             disabled={safeCartData.items.length === 0}
             data-testid="cart-checkout-button"
@@ -67,7 +68,7 @@ export function CartSummary({ cartData, onUpdate }: CartSummaryProps) {
           </button>
           
           <button
-            className="bg-white text-red-600 border border-red-600 py-2 px-4 rounded hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-full border border-red-200 bg-red-50 px-5 py-2.5 text-sm font-medium text-red-700 transition hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleClearCart}
             disabled={isClearing || safeCartData.items.length === 0}
             data-testid="cart-clear-button"

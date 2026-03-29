@@ -1,6 +1,6 @@
 services:
   backend:
-    image: slawekradzyminski/backend:3.5.0
+    image: slawekradzyminski/backend:3.6.2
     ports:
       - "4001:4001"
     hostname: backend
@@ -12,8 +12,6 @@ services:
     networks:
       - my-private-ntwk
   ollama-mock:
-    build:
-      context: ../ollama-mock
     image: slawekradzyminski/ollama-mock:local-qwen35-2b
     restart: always
     ports:

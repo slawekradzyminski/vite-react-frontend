@@ -62,7 +62,7 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
           {safeItem.imageUrl && (
             <div className="shrink-0 h-12 w-12 mr-4">
               <img
-                className="h-12 w-12 rounded-full object-cover"
+                className="h-12 w-12 rounded-2xl object-cover"
                 src={safeItem.imageUrl}
                 alt={safeItem.productName}
                 data-testid={`cart-item-image-${safeItem.productId}`}
@@ -72,7 +72,7 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
           <div>
             <Link 
               to={`/products/${safeItem.productId}`} 
-              className="text-blue-600 hover:text-blue-900 font-medium"
+              className="font-medium text-slate-900 transition hover:text-sky-700"
               data-testid={`cart-item-name-${safeItem.productId}`}
             >
               {safeItem.productName}
@@ -80,14 +80,14 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
           </div>
         </div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-testid={`cart-item-price-${safeItem.productId}`}>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600" data-testid={`cart-item-price-${safeItem.productId}`}>
         ${safeItem.unitPrice.toFixed(2)}
       </td>
       <td className="px-6 py-4 whitespace-nowrap" data-testid={`cart-item-quantity-cell-${safeItem.productId}`}>
         <div className="flex flex-col sm:flex-row items-start sm:items-center">
           <div className="flex items-center mb-2 sm:mb-0" data-testid={`cart-item-quantity-controls-${safeItem.productId}`}>
             <button 
-              className="px-2 py-1 border rounded-l bg-gray-50 hover:bg-gray-100"
+              className="h-9 rounded-l-2xl border border-stone-200 bg-stone-50 px-3 text-slate-700 transition hover:bg-white"
               onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
               disabled={isUpdating}
               data-testid={`cart-item-decrease-${safeItem.productId}`}
@@ -95,13 +95,13 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
               -
             </button>
             <span 
-              className="px-4 py-1 border-t border-b min-w-[40px] text-center"
+              className="flex h-9 min-w-[44px] items-center justify-center border-y border-stone-200 bg-white px-4 text-center text-sm font-medium text-slate-900"
               data-testid={`cart-item-quantity-${safeItem.productId}`}
             >
               {quantity}
             </span>
             <button 
-              className="px-2 py-1 border rounded-r bg-gray-50 hover:bg-gray-100"
+              className="h-9 rounded-r-2xl border border-stone-200 bg-stone-50 px-3 text-slate-700 transition hover:bg-white"
               onClick={() => setQuantity(prev => prev + 1)}
               disabled={isUpdating}
               data-testid={`cart-item-increase-${safeItem.productId}`}
@@ -112,7 +112,7 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
           
           {quantity !== safeItem.quantity && (
             <button
-              className="ml-0 sm:ml-2 text-blue-600 hover:text-blue-800 text-sm"
+              className="ml-0 text-sm font-medium text-sky-700 transition hover:text-sky-800 sm:ml-2"
               onClick={handleQuantityChange}
               disabled={isUpdating}
               data-testid={`cart-item-update-${safeItem.productId}`}
@@ -122,12 +122,12 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
           )}
         </div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium" data-testid={`cart-item-total-${safeItem.productId}`}>
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900" data-testid={`cart-item-total-${safeItem.productId}`}>
         ${safeItem.totalPrice.toFixed(2)}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
         <button
-          className="text-red-600 hover:text-red-900"
+          className="text-red-700 transition hover:text-red-800"
           onClick={handleRemove}
           disabled={isRemoving}
           data-testid={`cart-item-remove-${safeItem.productId}`}

@@ -10,7 +10,13 @@ This section points other automation or human teammates to the right document fo
 
 - [`awesome-localstack/README.md`](../awesome-localstack/README.md) – main reference describing every docker-compose flavour (full stack, CI slice, lightweight variant) plus helper scripts. It includes the monitoring/LLM notes that are reused during trainings.
 
+## Deployment asset rule
+
+- In `awesome-localstack`, the gateway owns `/images/...` and serves that path directly from its own mounted volume.
+- Do not place frontend-only branding assets under `/images/...` if they must work behind the gateway.
+- Use a separate public prefix such as `/branding/...` for frontend logos, favicons, and similar files.
+- If deployed branding assets 404 while they exist in the frontend image, inspect the gateway config before changing Vite or nginx in this repo.
+
 ## LLM implementation notes
 
 - [`docs/function-calling-flow.md`](./docs/function-calling-flow.md) – diagrams the message flow for chat, generate, and tool calling, which helps when triaging SSE events or tool payloads.
-- [`implementation_plan_llm.md`](./implementation_plan_llm.md) – historic context on why the workspace has three modes and what the rollout expectations are.

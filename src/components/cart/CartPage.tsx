@@ -5,6 +5,7 @@ import { cart, products } from '../../lib/api';
 import { CartItem } from './CartItem';
 import { CartSummary } from './CartSummary';
 import { Cart as CartType, CartItem as CartItemType } from '../../types/cart';
+import { Surface } from '../ui/surface';
 
 interface RawCartResponse {
   items?: Array<{
@@ -86,21 +87,21 @@ export function CartPage() {
   };
   
   if (isLoading || isUpdating) {
-    return <div className="text-center py-8" data-testid="cart-loading">Loading cart...</div>;
+    return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="cart-loading">Loading cart...</Surface>;
   }
   
   if (error) {
     return (
-      <div className="text-center py-8" data-testid="cart-error">
-        <p className="text-red-500 mb-4">Error loading cart</p>
-        <button 
-          onClick={() => refetch()} 
-          className="text-blue-600 hover:underline"
+      <Surface variant="danger" padding="message" className="text-center" data-testid="cart-error">
+        <p className="mb-4 text-red-600">Error loading cart</p>
+        <button
+          onClick={() => refetch()}
+          className="text-sm font-medium text-slate-900 underline-offset-4 hover:underline"
           data-testid="cart-retry"
         >
           Try again
         </button>
-      </div>
+      </Surface>
     );
   }
   
@@ -117,76 +118,83 @@ export function CartPage() {
   const isEmpty = safeCartData.items.length === 0;
   
   return (
-    <div className="max-w-6xl mx-auto p-4" data-testid="cart-page">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold" data-testid="cart-title">Your Cart</h1>
-        <Link
-          to="/products"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-          data-testid="cart-continue-shopping"
-        >
-          Continue Shopping
-        </Link>
-      </div>
-      
+    <div className="space-y-6 pb-10" data-testid="cart-page">
+      <Surface as="section" variant="hero" padding="xl">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Cart</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl" data-testid="cart-title">Your Cart</h1>
+          </div>
+          <Link
+            to="/products"
+            className="w-fit rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-stone-50 transition hover:bg-slate-800"
+            data-testid="cart-continue-shopping"
+          >
+            Continue Shopping
+          </Link>
+        </div>
+      </Surface>
+
       {isEmpty ? (
-        <div className="bg-white rounded-lg shadow-sm p-8 text-center" data-testid="cart-empty">
-          <p className="text-gray-600 mb-4">Your cart is empty</p>
-          <Link 
-            to="/products" 
-            className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+        <Surface variant="default" className="p-10 text-center" data-testid="cart-empty">
+          <p className="mb-4 text-slate-600">Your cart is empty</p>
+          <Link
+            to="/products"
+            className="inline-block rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-stone-50 transition hover:bg-slate-800"
             data-testid="cart-browse-products"
           >
             Browse Products
           </Link>
-        </div>
+        </Surface>
       ) : (
         <div className="space-y-6" data-testid="cart-content">
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden" data-testid="cart-summary-container">
-            <CartSummary 
-              cartData={safeCartData} 
-              onUpdate={handleCartUpdate} 
+          <Surface variant="default" className="overflow-hidden" data-testid="cart-summary-container">
+            <CartSummary
+              cartData={safeCartData}
+              onUpdate={handleCartUpdate}
             />
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden" data-testid="cart-items-container">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold" data-testid="cart-items-heading">Cart Items</h2>
+          </Surface>
+
+          <Surface variant="default" className="overflow-hidden" data-testid="cart-items-container">
+            <div className="border-b border-stone-200 px-6 py-5">
+              <h2 className="text-lg font-semibold text-slate-950" data-testid="cart-items-heading">Cart Items</h2>
             </div>
-            
-            <table className="min-w-full divide-y divide-gray-200" data-testid="cart-items-table">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/5">
-                    Product
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Price
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Quantity
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200 space-y-0" data-testid="cart-items-list">
-                {safeCartData.items.map((item) => (
-                  <CartItem 
-                    key={item.productId} 
-                    item={item} 
-                    onUpdate={handleCartUpdate} 
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-stone-200" data-testid="cart-items-table">
+                <thead className="bg-stone-50/80">
+                  <tr>
+                    <th className="w-2/5 px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
+                      Product
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
+                      Price
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
+                      Quantity
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
+                      Total
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-500">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-200 bg-white/60 space-y-0" data-testid="cart-items-list">
+                  {safeCartData.items.map((item) => (
+                    <CartItem
+                      key={item.productId}
+                      item={item}
+                      onUpdate={handleCartUpdate}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Surface>
         </div>
       )}
     </div>
   );
-} 
+}

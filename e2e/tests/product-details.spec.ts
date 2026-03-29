@@ -46,8 +46,7 @@ test.describe('Product Details Page', () => {
 
     // then
     await productDetailsPage.notFoundMessage.waitFor({ state: 'visible' });
-    const errorMessage = authenticatedPage.page.locator('p.text-red-500');
-    await expect(errorMessage).toHaveText('Error loading product details');
+    await expect(productDetailsPage.notFoundMessage).toContainText('Error loading product details');
     const backToProductsLink = authenticatedPage.page.getByRole('link', { name: /back to products/i });
     await expect(backToProductsLink).toBeVisible();
   });

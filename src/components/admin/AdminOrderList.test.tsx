@@ -344,7 +344,7 @@ describe('AdminOrderList', () => {
     await waitFor(() => {
       const previousButton = screen.getByText('Previous');
       expect(previousButton).toBeDisabled();
-      expect(previousButton).toHaveClass('bg-gray-200');
+      expect(previousButton).toHaveClass('disabled:opacity-50');
     });
   });
 
@@ -386,7 +386,7 @@ describe('AdminOrderList', () => {
     await waitFor(() => {
       const nextButton = screen.getByText('Next');
       expect(nextButton).toBeDisabled();
-      expect(nextButton).toHaveClass('bg-gray-200');
+      expect(nextButton).toHaveClass('disabled:opacity-50');
     });
   });
 }); 

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { products } from '../../lib/api';
 import { Product } from '../../types/product';
+import { Surface } from '../ui/surface';
 
 export function AdminProductList() {
   const queryClient = useQueryClient();
@@ -35,72 +36,77 @@ export function AdminProductList() {
   };
   
   if (isLoading) {
-    return <div className="text-center py-8" data-testid="admin-product-list-loading">Loading products...</div>;
+    return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="admin-product-list-loading">Loading products...</Surface>;
   }
   
   if (error) {
     return (
-      <div className="text-center py-8" data-testid="admin-product-list-error">
-        <p className="text-red-500 mb-4">Error loading products</p>
-      </div>
+      <Surface variant="danger" padding="message" className="text-center" data-testid="admin-product-list-error">
+        <p className="mb-4 text-red-500">Error loading products</p>
+      </Surface>
     );
   }
   
   const productList = data?.data || [];
   
   return (
-    <div className="max-w-6xl mx-auto p-4" data-testid="admin-product-list">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold" data-testid="admin-product-list-title">Manage Products</h1>
+    <div className="space-y-6 pb-10" data-testid="admin-product-list">
+      <Surface as="section" variant="hero" padding="xl">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Admin</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl" data-testid="admin-product-list-title">Manage Products</h1>
+          </div>
         <Link
           to="/admin/products/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+          className="w-fit rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-stone-50 transition hover:bg-slate-800"
           data-testid="admin-product-list-add-new"
         >
           Add New Product
         </Link>
-      </div>
+        </div>
+      </Surface>
       
       {productList.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-8 text-center" data-testid="admin-product-list-empty">
-          <p className="text-gray-600 mb-4">No products found</p>
+        <Surface variant="default" className="p-8 text-center" data-testid="admin-product-list-empty">
+          <p className="mb-4 text-slate-600">No products found</p>
           <Link
             to="/admin/products/new"
-            className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+            className="inline-block rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-stone-50 transition hover:bg-slate-800"
             data-testid="admin-product-list-empty-add"
           >
             Add Your First Product
           </Link>
-        </div>
+        </Surface>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden" data-testid="admin-product-list-table-container">
-          <table className="min-w-full divide-y divide-gray-200" data-testid="admin-product-list-table">
-            <thead className="bg-gray-50">
+        <Surface variant="default" className="overflow-hidden" data-testid="admin-product-list-table-container">
+          <table className="min-w-full divide-y divide-stone-200" data-testid="admin-product-list-table">
+            <thead className="bg-stone-50/80">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                   ID
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                   Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                   Price
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                   Stock
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                   Category
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-500">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y divide-stone-200 bg-white/60">
               {productList.map((product: Product) => (
                 <tr key={product.id} data-testid={`admin-product-row-${product.id}`}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                     {product.id}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -116,25 +122,25 @@ export function AdminProductList() {
                         </div>
                       )}
                       <div>
-                        <div className="text-sm font-medium text-gray-900" data-testid={`admin-product-name-${product.id}`}>
+                        <div className="text-sm font-medium text-slate-900" data-testid={`admin-product-name-${product.id}`}>
                           {product.name}
                         </div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-testid={`admin-product-price-${product.id}`}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500" data-testid={`admin-product-price-${product.id}`}>
                     ${product.price.toFixed(2)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-testid={`admin-product-stock-${product.id}`}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500" data-testid={`admin-product-stock-${product.id}`}>
                     {product.stockQuantity}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-testid={`admin-product-category-${product.id}`}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500" data-testid={`admin-product-category-${product.id}`}>
                     {product.category}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <Link
                       to={`/admin/products/edit/${product.id}`}
-                      className="text-blue-600 hover:text-blue-900 mr-4"
+                      className="mr-4 text-sky-700 hover:text-sky-900"
                       data-testid={`admin-product-edit-${product.id}`}
                     >
                       Edit
@@ -152,7 +158,7 @@ export function AdminProductList() {
               ))}
             </tbody>
           </table>
-        </div>
+        </Surface>
       )}
     </div>
   );

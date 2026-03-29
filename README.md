@@ -99,11 +99,27 @@ Default behavior by profile:
 
 Product image URLs are rendered exactly as provided by the backend. Relative paths like `/images/iphone.png` are supported and preferred for same-origin deployments.
 
+## Static Asset Routing Rule
+
+When this frontend is deployed behind the `awesome-localstack` gateway, the `/images/...` path is owned by the gateway and is used for shared static product images mounted from the stack host.
+
+That means:
+
+- frontend-owned branding assets must not live under `/images/...`
+- use a separate public prefix such as `/branding/...` for logos, favicons, and similar frontend-only files
+- if a logo works locally from the frontend container but returns `404` behind the gateway, check for a path collision with the gateway’s `/images/...` alias first
+
+Current convention in this repo:
+
+- product/backend-managed images: `/images/...`
+- frontend branding assets: `/branding/...`
+
 ## Available Scripts
 
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
+- `./build-multiarch.sh <version>` - Build and push the multi-arch frontend image, for example `./build-multiarch.sh 3.6.2`
 
 ## Project Guidelines
 

@@ -4,6 +4,9 @@ import { OllamaChatPage } from '../ollama/chatPage';
 import { OllamaGeneratePage } from '../ollama/generatePage';
 import { OllamaToolChatPage } from '../ollama/toolChatPage';
 import type { ReactNode } from 'react';
+import { Surface } from '../../components/ui/surface';
+import { Button } from '../../components/ui/button';
+import { Badge } from '../../components/ui/badge';
 
 interface LlmModeLayoutProps {
   badge: string;
@@ -14,29 +17,27 @@ interface LlmModeLayoutProps {
 
 function LlmModeLayout({ badge, title, children, testId }: LlmModeLayoutProps) {
   return (
-    <div className="min-h-screen bg-slate-50 py-12" data-testid={testId}>
+    <div className="min-h-screen py-12" data-testid={testId}>
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-6 rounded-3xl border border-slate-100 bg-white p-8 shadow-sm">
+        <Surface as="section" variant="hero" padding="lg" className="flex flex-col gap-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <span className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-indigo-700">
+              <Badge tone="tracking" className="text-[11px] tracking-[0.24em]">
                 {badge}
-              </span>
+              </Badge>
               <h1 className="mt-3 text-3xl font-bold text-slate-900">{title}</h1>
             </div>
-            <Link
-              to="/llm"
-              className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-              data-testid="llm-back-link"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to overview
-            </Link>
+            <Button asChild variant="outline" className="rounded-full px-4" data-testid="llm-back-link">
+              <Link to="/llm">
+                <ArrowLeft className="h-4 w-4" />
+                Back to overview
+              </Link>
+            </Button>
           </div>
-          <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-inner" data-testid="llm-mode-workspace">
+          <Surface variant="muted" padding="sm" data-testid="llm-mode-workspace">
             {children}
-          </div>
-        </div>
+          </Surface>
+        </Surface>
       </div>
     </div>
   );

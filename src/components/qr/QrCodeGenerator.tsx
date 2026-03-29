@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { qr } from '../../lib/api';
 import { Button } from '../ui/button';
 import { useToast } from '../../hooks/useToast';
-import { Card, Text, TextArea, Flex } from '@radix-ui/themes';
+import { Label } from '../ui/label';
+import { Textarea } from '../ui/textarea';
+import { Surface } from '../ui/surface';
 
 export function QrCodeGenerator() {
   const [text, setText] = useState('');
@@ -46,27 +48,27 @@ export function QrCodeGenerator() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto p-6" data-testid="qr-generator">
+    <Surface variant="default" padding="lg" className="w-full" data-testid="qr-generator">
       <form onSubmit={handleSubmit} className="space-y-6" data-testid="qr-generator-form">
-        <div data-testid="qr-text-field">
-          <Text as="label" size="2" htmlFor="qr-text" weight="medium" data-testid="qr-text-label">
+        <Surface variant="inset" padding="md" data-testid="qr-text-field">
+          <Label htmlFor="qr-text" data-testid="qr-text-label">
             Text or URL for QR Code
-          </Text>
-          <TextArea 
+          </Label>
+          <Textarea
             id="qr-text"
             placeholder="Enter text or URL"
             value={text}
             onChange={(e) => setText(e.target.value)}
             disabled={isLoading}
-            className="mt-1.5"
+            className="mt-2 min-h-[180px]"
             data-testid="qr-text-input"
           />
-        </div>
-        <Flex gap="3" data-testid="qr-generator-actions">
+        </Surface>
+        <div className="flex flex-col gap-3 sm:flex-row" data-testid="qr-generator-actions">
           <Button 
             type="submit" 
             disabled={isLoading}
-            className="flex-1"
+            className="h-11 flex-1"
             data-testid="qr-generate-button"
           >
             {isLoading ? 'Generating...' : 'Generate QR Code'}
@@ -76,26 +78,26 @@ export function QrCodeGenerator() {
             variant="outline"
             onClick={handleClear}
             disabled={isLoading || !text}
-            className="flex-1"
+            className="h-11 flex-1"
             data-testid="qr-clear-button"
           >
             Clear
           </Button>
-        </Flex>
+        </div>
       </form>
 
       {qrCode && (
         <div className="mt-8 flex justify-center" data-testid="qr-code-result">
-          <Card className="p-4" data-testid="qr-code-container">
+          <Surface variant="inset" padding="sm" data-testid="qr-code-container">
             <img
               src={qrCode}
               alt="Generated QR Code"
               className="w-64 h-64"
               data-testid="qr-code-image"
             />
-          </Card>
+          </Surface>
         </div>
       )}
-    </Card>
+    </Surface>
   );
 } 

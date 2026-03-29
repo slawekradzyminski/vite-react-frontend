@@ -4,25 +4,72 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 42 23% 95%;
+    --foreground: 220 20% 14%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 220 20% 14%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
+    --popover-foreground: 220 20% 14%;
+    --primary: 212 72% 44%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
+    --secondary: 40 18% 91%;
+    --secondary-foreground: 220 16% 22%;
+    --muted: 36 18% 89%;
+    --muted-foreground: 220 10% 42%;
+    --accent: 210 38% 92%;
+    --accent-foreground: 220 16% 18%;
+    --destructive: 0 72% 52%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --border: 32 13% 83%;
+    --input: 32 13% 83%;
+    --ring: 212 72% 44%;
+    --radius: 1rem;
+    --shell-ink: 220 20% 14%;
+    --shell-muted: 220 10% 42%;
+    --shell-surface: 36 25% 98%;
+    --shell-elevated: 0 0% 100%;
+    --shell-line: 30 15% 84%;
+    --shell-accent: 212 72% 44%;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html {
+    min-height: 100%;
+    background:
+      radial-gradient(circle at top, hsla(var(--shell-accent), 0.08), transparent 35%),
+      linear-gradient(180deg, hsl(var(--background)) 0%, hsl(36 18% 92%) 100%);
+  }
+
+  body {
+    min-height: 100vh;
+    color: hsl(var(--foreground));
+    background: transparent;
+    font-family:
+      Inter,
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    margin: 0;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+
+  :where(a, button, input, select, textarea, [role="button"]):focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 3px;
+  }
+
+  :where(a, button, input, select, textarea, [role="button"]) {
+    -webkit-tap-highlight-color: transparent;
   }
 }

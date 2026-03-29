@@ -138,4 +138,39 @@ describe('ToastProvider', () => {
     // We don't test automatic dismissal as it depends on animations
     // and would make the test brittle
   });
+
+  it('allows the same toast to be shown again after it closes', () => {
+    render(
+      <MemoryRouter>
+        <ToastProvider>
+          <TestComponent />
+        </ToastProvider>
+      </MemoryRouter>
+    );
+
+    const button = screen.getByTestId('show-error-toast-button');
+
+    act(() => {
+      button.click();
+    });
+
+    const firstToast = within(screen.getByTestId('toast-viewport')).getAllByTestId(/toast-/)[0];
+    expect(firstToast).toHaveAttribute('data-state', 'open');
+
+    act(() => {
+      vi.advanceTimersByTime(6000);
+    });
+
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+
+    act(() => {
+      button.click();
+    });
+
+    const reopenedToast = within(screen.getByTestId('toast-viewport')).getAllByTestId(/toast-/)[0];
+    expect(reopenedToast).toHaveAttribute('data-state', 'open');
+    expect(screen.getByTestId('toast-description')).toHaveTextContent('Error message');
+  });
 }); 

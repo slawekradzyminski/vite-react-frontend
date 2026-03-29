@@ -1,8 +1,10 @@
 import clsx from 'clsx';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { Input } from '../ui/input';
+import { Surface } from '../ui/surface';
 
-export type LlmColorTheme = 'indigo' | 'rose' | 'emerald';
+export type LlmColorTheme = 'neutral';
 
 interface LlmSettingsPanelProps {
   isOpen: boolean;
@@ -27,29 +29,11 @@ interface LlmSettingsPanelProps {
 }
 
 const themeClasses = {
-  indigo: {
-    icon: 'text-indigo-500',
-    accent: 'accent-indigo-600',
-    focusBorder: 'focus:border-indigo-300',
-    focusRing: 'focus:ring-indigo-100',
-    checkbox: 'text-indigo-600 focus:ring-indigo-500',
-    toggleActive: 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200',
-  },
-  rose: {
-    icon: 'text-rose-500',
-    accent: 'accent-rose-500',
-    focusBorder: 'focus:border-rose-300',
-    focusRing: 'focus:ring-rose-100',
-    checkbox: 'text-rose-600 focus:ring-rose-500',
-    toggleActive: 'bg-rose-100 text-rose-700 hover:bg-rose-200',
-  },
-  emerald: {
-    icon: 'text-emerald-500',
-    accent: 'accent-emerald-500',
-    focusBorder: 'focus:border-emerald-300',
-    focusRing: 'focus:ring-emerald-100',
-    checkbox: 'text-emerald-600 focus:ring-emerald-500',
-    toggleActive: 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200',
+  neutral: {
+    icon: 'text-slate-700',
+    accent: 'accent-slate-700',
+    checkbox: 'text-slate-700 focus:ring-slate-400',
+    toggleActive: 'bg-slate-900 text-stone-50 hover:bg-slate-800',
   },
 };
 
@@ -81,14 +65,14 @@ export function LlmSettingsPanel({
     <>
       <div
         className={clsx(
-          'overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300',
-          isOpen ? `max-h-[${maxHeight}] opacity-100` : 'max-h-0 border-transparent opacity-0'
+          'overflow-hidden transition-all duration-300',
+          isOpen ? `max-h-[${maxHeight}] opacity-100` : 'max-h-0 opacity-0'
         )}
         style={{ maxHeight: isOpen ? maxHeight : 0 }}
         aria-hidden={!isOpen}
         data-testid={sidebarTestId}
       >
-        <div className="p-5 space-y-4" data-testid={settingsPanelTestId}>
+        <Surface variant="muted" padding="md" className="space-y-4" data-testid={settingsPanelTestId}>
           <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
             <SettingsIcon className={theme.icon} />
             Generation Settings
@@ -98,14 +82,10 @@ export function LlmSettingsPanel({
               <label htmlFor={modelInputId} className="block text-xs font-medium text-slate-600" data-testid="model-label">
                 Model
               </label>
-              <input
+              <Input
                 id={modelInputId}
                 type="text"
-                className={clsx(
-                  'w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:bg-white focus:outline-none focus:ring-2',
-                  theme.focusBorder,
-                  theme.focusRing
-                )}
+                className="h-10 rounded-[1.1rem] bg-white/92"
                 value={model}
                 onChange={(e) => onModelChange(e.target.value)}
                 placeholder="Enter model name"
@@ -136,7 +116,7 @@ export function LlmSettingsPanel({
 
             {showThinkingControl && onThinkChange && (
               <div className="flex items-center" data-testid="thinking-control">
-                <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 transition-colors hover:bg-slate-100" data-testid="thinking-label">
+                <label className="flex cursor-pointer items-center gap-2 rounded-[1.1rem] border border-stone-200 bg-stone-50 px-3 py-2 transition-colors hover:bg-white" data-testid="thinking-label">
                   <input
                     type="checkbox"
                     checked={think}
@@ -153,7 +133,7 @@ export function LlmSettingsPanel({
             )}
           </div>
           {extraContent}
-        </div>
+        </Surface>
       </div>
 
       <SettingsToggleButton
@@ -192,8 +172,10 @@ export function SettingsToggleButton({
       type="button"
       onClick={onToggle}
       className={clsx(
-        'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
-        isOpen ? theme.toggleActive : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+        isOpen
+          ? theme.toggleActive
+          : 'border-stone-200 bg-white/85 text-slate-600 hover:bg-white hover:text-slate-900'
       )}
       data-testid={testId}
     >
