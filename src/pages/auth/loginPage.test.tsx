@@ -60,6 +60,7 @@ describe('LoginPage', () => {
     expect(screen.getByTestId('login-password-input')).toBeInTheDocument();
     expect(screen.getByTestId('login-submit-button')).toBeInTheDocument();
     expect(screen.getByTestId('login-register-link')).toBeInTheDocument();
+    expect(screen.getByTestId('login-playground-notice')).toHaveTextContent('Public training playground only');
   });
 
   it('displays validation errors for empty fields', async () => {

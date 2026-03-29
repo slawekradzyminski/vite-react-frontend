@@ -72,6 +72,12 @@ export function RegisterPage() {
               <p className="max-w-xl text-base leading-7 text-slate-600">
                 Join the workspace and get immediate access to operations tooling, monitoring flows, and the AI surface.
               </p>
+              <div
+                className="max-w-xl rounded-[1.4rem] border border-amber-200 bg-amber-50/90 px-4 py-3 text-sm leading-6 text-amber-950 shadow-[0_18px_40px_-32px_rgba(120,53,15,0.55)]"
+                data-testid="register-playground-notice"
+              >
+                Training environment only. Create throwaway accounts, use fake inputs, and assume demo data can be reset at any time.
+              </div>
             </div>
           </div>
 

@@ -48,6 +48,7 @@ describe('RegisterPage', () => {
     expect(screen.getByTestId('register-lastname-input')).toBeInTheDocument();
     expect(screen.getByTestId('register-submit-button')).toBeInTheDocument();
     expect(screen.getByTestId('register-login-link')).toBeInTheDocument();
+    expect(screen.getByTestId('register-playground-notice')).toHaveTextContent('Training environment only');
   });
 
   it('displays validation errors for empty fields', async () => {

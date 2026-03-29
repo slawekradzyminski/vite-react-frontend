@@ -81,6 +81,12 @@ export function LoginPage() {
               <p className="max-w-xl text-base leading-7 text-slate-600">
                 Step into the operations workspace for product management, live monitoring, and AI-assisted testing flows.
               </p>
+              <div
+                className="max-w-xl rounded-[1.4rem] border border-amber-200 bg-amber-50/90 px-4 py-3 text-sm leading-6 text-amber-950 shadow-[0_18px_40px_-32px_rgba(120,53,15,0.55)]"
+                data-testid="login-playground-notice"
+              >
+                Public training playground only. Use fake data, expect resets, and do not treat this environment as private or production-grade.
+              </div>
             </div>
           </div>
 
