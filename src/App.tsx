@@ -14,9 +14,9 @@ export function App() {
       <BrowserRouter>
         <ToastProvider>
           <Theme>
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-transparent text-slate-900">
               <Navigation />
-              <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+              <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                 <AppRoutes />
               </main>
             </div>

@@ -13,14 +13,14 @@ export class OrderDetailsPage {
 
   constructor(authenticatedPage: any) {
     this.page = authenticatedPage.page;
-    this.orderTitle = this.page.locator('h1:has-text("Order #")');
-    this.orderStatus = this.page.locator('.rounded-full');
-    this.orderItems = this.page.locator('.space-y-4 > div');
-    this.totalAmount = this.page.locator('.border-t .font-bold.text-lg');
-    this.shippingAddress = this.page.locator('h2:has-text("Shipping Address") + div');
-    this.cancelButton = this.page.locator('button:has-text("Cancel Order")');
-    this.statusSelect = this.page.locator('select');
-    this.updateButton = this.page.locator('button:has-text("Update")');
+    this.orderTitle = this.page.getByTestId('order-details-title');
+    this.orderStatus = this.page.getByTestId('order-details-status');
+    this.orderItems = this.page.locator('[data-testid="order-details-items-list"] > [data-testid^="order-item-"]');
+    this.totalAmount = this.page.getByTestId('order-details-total-amount');
+    this.shippingAddress = this.page.getByTestId('order-details-shipping-address');
+    this.cancelButton = this.page.getByTestId('order-details-cancel-button');
+    this.statusSelect = this.page.getByTestId('order-details-status-select');
+    this.updateButton = this.page.getByTestId('order-details-update-status-button');
   }
 
   async navigateToOrder(orderId: number) {

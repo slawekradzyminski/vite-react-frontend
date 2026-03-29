@@ -7,6 +7,8 @@ import { Button } from '../ui/button';
 import { Role } from '../../types/auth';
 import { authStorage } from '../../lib/authStorage';
 
+const PRODUCT_NAME = 'Awesome Testing';
+
 export function Navigation() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,10 +60,15 @@ export function Navigation() {
     setIsOpen(!isOpen);
   };
 
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
+
   const isAdmin = user?.data?.roles?.includes(Role.ADMIN);
+  const isActive = (path: string) =>
+    path === '/' ? location.pathname === path : location.pathname.startsWith(path);
 
   const authMenuItems = [
-    { label: 'Home', path: '/' },
     { label: 'Products', path: '/products' },
     { label: 'Send Email', path: '/email' },
     { label: 'QR Code', path: '/qr' },
@@ -74,27 +81,50 @@ export function Navigation() {
   ];
 
   return (
-    <nav className="bg-white shadow-lg" data-testid="navigation">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            <div className="hidden lg:ml-6 lg:flex lg:space-x-8" data-testid="desktop-menu">
+    <nav
+      className="sticky top-0 z-40 border-b border-stone-200/80 bg-stone-50/88 backdrop-blur-xl"
+      data-testid="navigation"
+    >
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex min-h-18 items-center justify-between gap-4 py-3">
+          <div className="flex min-w-0 items-center gap-4">
+            <Link
+              to={user?.data ? '/' : '/login'}
+              className="group flex shrink-0 items-center justify-center rounded-2xl p-1 transition hover:bg-white/70"
+              data-testid="brand-link"
+            >
+              <img
+                src="/images/logo/generated/at-transparent.png"
+                alt={PRODUCT_NAME}
+                className="block h-11 w-11 object-contain sm:h-12 sm:w-12"
+              />
+            </Link>
+
+            <div className="hidden lg:flex lg:items-center lg:gap-2" data-testid="desktop-menu">
               {user?.data && authMenuItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-900"
+                  className={`inline-flex items-center rounded-full px-3 py-2 text-sm font-medium transition ${
+                    isActive(item.path)
+                      ? 'bg-slate-900 text-stone-50 shadow-[0_10px_25px_-16px_rgba(15,23,42,0.75)]'
+                      : 'text-slate-600 hover:bg-white hover:text-slate-900'
+                  }`}
                   data-testid={`desktop-menu-${item.label.toLowerCase().replace(' ', '-')}`}
                 >
                   {item.label}
                 </Link>
               ))}
-              
+
               {isAdmin && adminMenuItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-900"
+                  className={`inline-flex items-center rounded-full px-3 py-2 text-sm font-medium transition ${
+                    isActive(item.path)
+                      ? 'bg-slate-900 text-stone-50 shadow-[0_10px_25px_-16px_rgba(15,23,42,0.75)]'
+                      : 'text-slate-600 hover:bg-white hover:text-slate-900'
+                  }`}
                   data-testid={`desktop-menu-${item.label.toLowerCase().replace(' ', '-')}`}
                 >
                   {item.label}
@@ -103,22 +133,29 @@ export function Navigation() {
             </div>
           </div>
 
-          <div className="flex items-center" data-testid="navigation-actions">
+          <div className="flex items-center gap-2" data-testid="navigation-actions">
             {user?.data ? (
               <>
-                <Link to="/cart" className="mr-4 relative" data-testid="desktop-cart-icon">
-                  <ShoppingCart className="h-6 w-6 text-gray-500 hover:text-gray-900" />
+                <Link
+                  to="/cart"
+                  className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-stone-200 bg-white text-slate-600 shadow-[0_10px_25px_-20px_rgba(15,23,42,0.75)] transition hover:-translate-y-0.5 hover:border-stone-300 hover:text-slate-900"
+                  data-testid="desktop-cart-icon"
+                >
+                  <ShoppingCart className="h-5 w-5" />
                   {cartItemCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-indigo-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center" data-testid="cart-item-count">
+                    <span
+                      className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-sky-600 text-xs font-bold text-white"
+                      data-testid="cart-item-count"
+                    >
                       {cartItemCount}
                     </span>
                   )}
                 </Link>
-                
-                <div className="hidden lg:flex lg:items-center lg:ml-6 lg:space-x-4" data-testid="user-actions">
-                  <Link 
+
+                <div className="hidden lg:flex lg:items-center lg:gap-3" data-testid="user-actions">
+                  <Link
                     to="/profile" 
-                    className="text-sm text-gray-500 hover:text-gray-900 hover:underline"
+                    className="rounded-full border border-transparent px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-stone-200 hover:bg-white hover:text-slate-900"
                     data-testid="username-profile-link"
                   >
                     {user.data.firstName} {user.data.lastName}
@@ -126,39 +163,39 @@ export function Navigation() {
                   <Button
                     variant="ghost"
                     onClick={handleLogout}
-                    className="text-sm font-medium text-gray-500 hover:text-gray-900"
+                    className="rounded-full px-4 text-sm font-medium text-slate-600 hover:bg-white hover:text-slate-900"
                     data-testid="logout-button"
                   >
                     Logout
                   </Button>
                 </div>
-                <div className="lg:hidden flex items-center">
+                <div className="flex items-center lg:hidden">
                   <button
                     onClick={toggleMenu}
-                    className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-stone-200 bg-white text-slate-600 transition hover:border-stone-300 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-sky-600"
                     data-testid="mobile-menu-toggle"
                   >
                     <span className="sr-only">Open main menu</span>
                     {isOpen ? (
-                      <X className="block h-6 w-6" data-testid="mobile-menu-close-icon" />
+                      <X className="block h-5 w-5" data-testid="mobile-menu-close-icon" />
                     ) : (
-                      <Menu className="block h-6 w-6" data-testid="mobile-menu-open-icon" />
+                      <Menu className="block h-5 w-5" data-testid="mobile-menu-open-icon" />
                     )}
                   </button>
                 </div>
               </>
             ) : (
-              <div className="flex items-center space-x-4" data-testid="auth-actions">
+              <div className="flex items-center gap-2" data-testid="auth-actions">
                 <Link
                   to="/login"
-                  className="text-sm font-medium text-gray-500 hover:text-gray-900"
+                  className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-white hover:text-slate-900"
                   data-testid="login-link"
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
-                  className="text-sm font-medium text-gray-500 hover:text-gray-900"
+                  className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-stone-50 transition hover:bg-slate-800"
                   data-testid="register-link"
                 >
                   Register
@@ -169,66 +206,79 @@ export function Navigation() {
         </div>
       </div>
       {isOpen && user?.data && (
-        <div className="lg:hidden" data-testid="mobile-menu">
-          <div className="pt-2 pb-3 space-y-1">
+        <div className="border-t border-stone-200/80 bg-stone-50/95 px-4 pb-4 pt-3 lg:hidden" data-testid="mobile-menu">
+          <div className="space-y-2">
             {authMenuItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
-                className="block pl-3 pr-4 py-2 text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+                className={`block rounded-2xl px-4 py-3 text-base font-medium transition ${
+                  isActive(item.path)
+                    ? 'bg-slate-900 text-stone-50'
+                    : 'bg-white/80 text-slate-700 hover:bg-white hover:text-slate-900'
+                }`}
                 onClick={() => setIsOpen(false)}
                 data-testid={`mobile-menu-${item.label.toLowerCase().replace(' ', '-')}`}
               >
                 {item.label}
               </Link>
             ))}
-            
+
             {isAdmin && adminMenuItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
-                className="block pl-3 pr-4 py-2 text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+                className={`block rounded-2xl px-4 py-3 text-base font-medium transition ${
+                  isActive(item.path)
+                    ? 'bg-slate-900 text-stone-50'
+                    : 'bg-white/80 text-slate-700 hover:bg-white hover:text-slate-900'
+                }`}
                 onClick={() => setIsOpen(false)}
                 data-testid={`mobile-menu-${item.label.toLowerCase().replace(' ', '-')}`}
               >
                 {item.label}
               </Link>
             ))}
-            
-            <Link
-              to="/cart"
-              className="block pl-3 pr-4 py-2 text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 items-center"
-              onClick={() => setIsOpen(false)}
-              data-testid="mobile-menu-cart"
-            >
-              Cart
-              {cartItemCount > 0 && (
-                <span className="ml-2 bg-indigo-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center" data-testid="mobile-cart-item-count">
-                  {cartItemCount}
-                </span>
-              )}
-            </Link>
-            
-            <Link
-              to="/profile"
-              className="block pl-3 pr-4 py-2 text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50"
-              onClick={() => setIsOpen(false)}
-              data-testid="mobile-menu-username"
-            >
-              {user.data.firstName} {user.data.lastName}
-            </Link>
-            
-            <Button
-              variant="ghost"
-              onClick={() => {
-                handleLogout();
-                setIsOpen(false);
-              }}
-              className="block w-full text-left pl-3 pr-4 py-2 text-base font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50"
-              data-testid="mobile-menu-logout"
-            >
-              Logout
-            </Button>
+
+            <div className="rounded-[1.5rem] border border-stone-200 bg-white/90 p-2 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.8)]">
+              <Link
+                to="/cart"
+                className="flex items-center justify-between rounded-2xl px-4 py-3 text-base font-medium text-slate-700 transition hover:bg-stone-50 hover:text-slate-900"
+                onClick={() => setIsOpen(false)}
+                data-testid="mobile-menu-cart"
+              >
+                <span>Cart</span>
+                {cartItemCount > 0 && (
+                  <span
+                    className="ml-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-sky-600 px-2 text-xs font-bold text-white"
+                    data-testid="mobile-cart-item-count"
+                  >
+                    {cartItemCount}
+                  </span>
+                )}
+              </Link>
+
+              <Link
+                to="/profile"
+                className="block rounded-2xl px-4 py-3 text-base font-medium text-slate-700 transition hover:bg-stone-50 hover:text-slate-900"
+                onClick={() => setIsOpen(false)}
+                data-testid="mobile-menu-username"
+              >
+                {user.data.firstName} {user.data.lastName}
+              </Link>
+
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  handleLogout();
+                  setIsOpen(false);
+                }}
+                className="block h-auto w-full justify-start rounded-2xl px-4 py-3 text-base font-medium text-slate-700 hover:bg-stone-50 hover:text-slate-900"
+                data-testid="mobile-menu-logout"
+              >
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       )}

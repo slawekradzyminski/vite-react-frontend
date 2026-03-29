@@ -20,18 +20,18 @@ export class HomePage {
   readonly emailDelayText: Locator;
 
   constructor(protected readonly page: Page) {
-    this.heading = page.getByRole('heading', { name: /welcome/i });
-    this.welcomeMessage = page.getByText(/welcome/i);
-    this.applicationFeaturesSection = page.getByText('Application Features').first();
-    this.advancedMonitoringSection = page.getByText('Advanced Monitoring').first();
-    this.aiIntegrationSection = page.getByText('AI Integration').first();
-    this.viewProductsButton = page.getByRole('button', { name: 'View Products' });
-    this.manageUsersButton = page.getByRole('button', { name: 'Manage Users' });
-    this.viewProfileOrdersButton = page.getByRole('button', { name: 'View Profile & Orders' });
-    this.openTrafficMonitorButton = page.getByRole('button', { name: 'Open Traffic Monitor' });
-    this.openAIAssistantButton = page.getByRole('button', { name: 'Open AI Assistant' });
-    this.generateQRCodesButton = page.getByRole('button', { name: 'Generate QR Codes' });
-    this.sendEmailsButton = page.getByRole('button', { name: 'Send Emails' });
+    this.heading = page.getByTestId('home-welcome-title');
+    this.welcomeMessage = page.getByTestId('home-welcome-title');
+    this.applicationFeaturesSection = page.getByTestId('home-features-title');
+    this.advancedMonitoringSection = page.getByTestId('home-monitoring-title');
+    this.aiIntegrationSection = page.getByTestId('home-ai-title');
+    this.viewProductsButton = page.getByTestId('home-products-button');
+    this.manageUsersButton = page.getByTestId('home-users-button');
+    this.viewProfileOrdersButton = page.getByTestId('home-profile-button');
+    this.openTrafficMonitorButton = page.getByTestId('home-traffic-button');
+    this.openAIAssistantButton = page.getByTestId('home-llm-button');
+    this.generateQRCodesButton = page.getByTestId('home-qr-button');
+    this.sendEmailsButton = page.getByTestId('home-email-button');
     this.websocketText = page.getByText(/WebSocket technology/i);
     this.sseText = page.getByText(/Server-Sent Events \(SSE\)/i);
     this.privateDataText = page.getByText(/View orders and manage your personal account information/i);

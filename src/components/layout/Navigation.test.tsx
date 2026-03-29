@@ -244,7 +244,6 @@ describe('Navigation', () => {
     // then
     const mobileMenu = screen.getByTestId('mobile-menu');
     expect(mobileMenu).toBeVisible();
-    expect(mobileMenu).toHaveTextContent('Home');
     expect(mobileMenu).toHaveTextContent('Products');
     expect(mobileMenu).toHaveTextContent('Cart');
     expect(mobileMenu).toHaveTextContent('Send Email');
@@ -281,8 +280,8 @@ describe('Navigation', () => {
     const menuButton = screen.getByRole('button', { name: /open main menu/i });
     await user.click(menuButton);
     
-    const mobileHomeLink = screen.getByTestId('mobile-menu-home');
-    await user.click(mobileHomeLink);
+    const mobileProductsLink = screen.getByTestId('mobile-menu-products');
+    await user.click(mobileProductsLink);
 
     // then
     expect(screen.queryByTestId('mobile-menu')).not.toBeInTheDocument();
@@ -355,8 +354,8 @@ describe('Navigation', () => {
     const menuItemsArray = Array.from(menuItems);
     
     // First items should be navigation links
-    expect(menuItemsArray[0]).toHaveTextContent('Home');
-    expect(menuItemsArray[1]).toHaveTextContent('Products');
+    expect(menuItemsArray[0]).toHaveTextContent('Products');
+    expect(menuItemsArray[1]).toHaveTextContent('Send Email');
     
     // Cart should come after navigation links but before username
     const cartIndex = menuItemsArray.findIndex(item => item.textContent?.includes('Cart'));

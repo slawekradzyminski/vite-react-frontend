@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { Activity, ArrowRight, Boxes, Mail, QrCode, Sparkles, UserRound, Users } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { auth } from '../../lib/api';
 
@@ -11,120 +12,259 @@ export function HomePage() {
   });
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-50 to-gray-100 p-8" data-testid="home-page">
-      <div className="mx-auto max-w-5xl">
-        <div className="mb-8" data-testid="home-welcome-section">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2" data-testid="home-welcome-title">
-            Welcome, {user?.data.firstName}!
-          </h1>
-          <p className="text-lg text-gray-600" data-testid="home-user-email">{user?.data.email}</p>
-        </div>
-
-        {/* Main content grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6" data-testid="home-content-grid">
-          {/* Features section */}
-          <div className="bg-white rounded-lg shadow-md p-6 md:col-span-2" data-testid="home-features-section">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4" data-testid="home-features-title">Application Features</h2>
-            <p className="text-gray-600 mb-6">
-              Explore our comprehensive suite of tools designed to help you manage and monitor your data effectively.
+    <div className="space-y-6 pb-10" data-testid="home-page">
+      <section
+        className="overflow-hidden rounded-[2rem] border border-stone-200/80 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.16),_transparent_30%),linear-gradient(135deg,_rgba(255,255,255,0.95),_rgba(244,240,235,0.98))] shadow-[0_30px_90px_-55px_rgba(15,23,42,0.55)]"
+        data-testid="home-welcome-section"
+      >
+        <div className="grid gap-8 px-6 py-8 md:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)] md:px-8 md:py-10">
+          <div className="space-y-5">
+            <p className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/85 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-600">
+              <span className="h-2 w-2 rounded-full bg-sky-600" />
+              Awesome Testing
             </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Feature 1: Product Management */}
-              <div className="bg-blue-50 rounded-lg p-5" data-testid="home-feature-products">
-                <h3 className="text-lg font-medium text-blue-800 mb-2">Product Management</h3>
-                <p className="text-gray-600 mb-4">Browse, add, edit, and manage your product inventory.</p>
-                <Button onClick={() => navigate('/products')} className="w-full" data-testid="home-products-button">
-                  View Products
-                </Button>
-              </div>
-              
-              {/* Feature 2: User Management */}
-              <div className="bg-green-50 rounded-lg p-5" data-testid="home-feature-users">
-                <h3 className="text-lg font-medium text-green-800 mb-2">User Management</h3>
-                <p className="text-gray-600 mb-4">Manage user accounts and permissions within the system.</p>
-                <Button onClick={() => navigate('/users')} variant="outline" className="w-full border-green-600 text-green-700 hover:bg-green-100" data-testid="home-users-button">
-                  Manage Users
-                </Button>
-              </div>
-
-              {/* Feature 3: Orders */}
-              <div className="bg-purple-50 rounded-lg p-5" data-testid="home-feature-profile">
-                <h3 className="text-lg font-medium text-purple-800 mb-2">Order Processing & Profile</h3>
-                <p className="text-gray-600 mb-4">View orders and manage your personal account information.</p>
-                <Button onClick={() => navigate('/profile')} variant="outline" className="w-full border-purple-600 text-purple-700 hover:bg-purple-100" data-testid="home-profile-button">
-                  View Profile & Orders
-                </Button>
-              </div>
+            <div className="space-y-3">
+              <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-slate-950 md:text-5xl" data-testid="home-welcome-title">
+                Welcome, {user?.data.firstName}!
+              </h1>
+              <p className="max-w-2xl text-base leading-7 text-slate-600">
+                Run product operations, inspect live traffic, and open the AI workspace from one control surface.
+              </p>
+              <p className="text-sm font-medium uppercase tracking-[0.24em] text-slate-500" data-testid="home-user-email">
+                {user?.data.email}
+              </p>
             </div>
           </div>
 
-          {/* Technical Features */}
-          <div className="bg-white rounded-lg shadow-md p-6" data-testid="home-monitoring-section">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4" data-testid="home-monitoring-title">Advanced Monitoring</h2>
-            
-            <div className="mb-6 p-4 bg-amber-50 rounded-lg border border-amber-200" data-testid="home-feature-traffic">
-              <h3 className="text-lg font-medium text-amber-800 mb-2">Traffic Monitor</h3>
-              <p className="text-gray-600 mb-3">
-                Our real-time traffic monitoring system uses <span className="font-semibold">WebSocket technology</span> to provide immediate visibility into all API requests and responses.
-              </p>
-              <ul className="list-disc list-inside text-gray-600 mb-4 space-y-1">
-                <li>View all HTTP requests in real-time</li>
-                <li>Monitor response times and status codes</li>
-                <li>Debug API interactions immediately</li>
-              </ul>
-              <Button onClick={() => navigate('/traffic')} variant="outline" className="w-full border-amber-600 text-amber-700 hover:bg-amber-100" data-testid="home-traffic-button">
-                Open Traffic Monitor
-              </Button>
-            </div>
-          </div>
+          <div className="grid gap-3 self-start rounded-[1.75rem] border border-stone-200/80 bg-white/88 p-3 shadow-[0_20px_45px_-35px_rgba(15,23,42,0.7)]">
+            <button
+              type="button"
+              onClick={() => navigate('/products')}
+              className="flex items-center justify-between rounded-2xl border border-transparent bg-stone-50 px-4 py-4 text-left transition hover:border-stone-200 hover:bg-white"
+              data-testid="home-products-button"
+            >
+              <span className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-900 text-white">
+                  <Boxes className="h-5 w-5" />
+                </span>
+                <span>
+                  <span className="block text-sm font-semibold text-slate-900">Products</span>
+                  <span className="block text-sm text-slate-600">Catalog, pricing, and inventory control.</span>
+                </span>
+              </span>
+              <ArrowRight className="h-4 w-4 text-slate-400" />
+            </button>
 
-          {/* AI Integration */}
-          <div className="bg-white rounded-lg shadow-md p-6" data-testid="home-ai-section">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4" data-testid="home-ai-title">AI Integration</h2>
-            
-            <div className="mb-6 p-4 bg-indigo-50 rounded-lg border border-indigo-200" data-testid="home-feature-llm">
-              <h3 className="text-lg font-medium text-indigo-800 mb-2">LLM Assistant</h3>
-              <p className="text-gray-600 mb-3">
-                Our AI assistant uses <span className="font-semibold">Server-Sent Events (SSE)</span> to stream responses in real-time, providing immediate assistance while conserving resources.
-              </p>
-              <ul className="list-disc list-inside text-gray-600 mb-4 space-y-1">
-                <li>Generate content with AI assistance</li>
-                <li>Chat with our AI for immediate help</li>
-                <li>Customize system prompts for better results</li>
-              </ul>
-              <Button 
-                onClick={() => navigate('/llm')} 
-                className="w-full bg-indigo-600 hover:bg-indigo-700"
-                data-testid="home-llm-button"
-              >
-                Open AI Assistant
-              </Button>
-            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/users')}
+              className="flex items-center justify-between rounded-2xl border border-transparent bg-stone-50 px-4 py-4 text-left transition hover:border-stone-200 hover:bg-white"
+              data-testid="home-users-button"
+            >
+              <span className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-700 ring-1 ring-stone-200">
+                  <Users className="h-5 w-5" />
+                </span>
+                <span>
+                  <span className="block text-sm font-semibold text-slate-900">Users</span>
+                  <span className="block text-sm text-slate-600">Accounts, roles, and access checks.</span>
+                </span>
+              </span>
+              <ArrowRight className="h-4 w-4 text-slate-400" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate('/profile')}
+              className="flex items-center justify-between rounded-2xl border border-transparent bg-stone-50 px-4 py-4 text-left transition hover:border-stone-200 hover:bg-white"
+              data-testid="home-profile-button"
+            >
+              <span className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-700 ring-1 ring-stone-200">
+                  <UserRound className="h-5 w-5" />
+                </span>
+                <span>
+                  <span className="block text-sm font-semibold text-slate-900">Profile & Orders</span>
+                  <span className="block text-sm text-slate-600">View orders and manage your personal account information.</span>
+                </span>
+              </span>
+              <ArrowRight className="h-4 w-4 text-slate-400" />
+            </button>
           </div>
         </div>
+      </section>
 
-        {/* Utilities section */}
-        <div className="mt-6 bg-white rounded-lg shadow-md p-6" data-testid="home-utilities-section">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4" data-testid="home-utilities-title">Additional Utilities</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="border border-gray-200 rounded-lg p-4" data-testid="home-feature-qr">
-              <h3 className="text-md font-medium text-gray-700 mb-2">QR Code Generator</h3>
-              <p className="text-gray-600 mb-3 text-sm">Generate valid and scannable QR codes for any text or URL. Perfect for sharing links or information quickly.</p>
-              <Button onClick={() => navigate('/qr')} variant="outline" className="w-full border-gray-400" data-testid="home-qr-button">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]" data-testid="home-content-grid">
+        <section
+          className="rounded-[2rem] border border-stone-200/80 bg-white/82 p-6 shadow-[0_30px_70px_-50px_rgba(15,23,42,0.5)]"
+          data-testid="home-features-section"
+        >
+          <div className="mb-6 flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Core operations</p>
+              <h2 className="mt-2 text-2xl font-semibold text-slate-950" data-testid="home-features-title">
+                Daily control areas
+              </h2>
+            </div>
+            <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-xs font-medium text-slate-600">
+              3 primary routes
+            </span>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-5" data-testid="home-feature-products">
+              <h3 className="text-lg font-semibold text-slate-900">Product management</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Browse, add, edit, and manage your product inventory.
+              </p>
+            </div>
+
+            <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-5" data-testid="home-feature-users">
+              <h3 className="text-lg font-semibold text-slate-900">User management</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Manage user accounts and permissions within the system.
+              </p>
+            </div>
+
+            <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-5" data-testid="home-feature-profile">
+              <h3 className="text-lg font-semibold text-slate-900">Orders and profile</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Check recent orders and keep account details current.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section
+          className="rounded-[2rem] border border-stone-200/80 bg-slate-950 p-6 text-stone-50 shadow-[0_35px_80px_-55px_rgba(15,23,42,0.9)]"
+          data-testid="home-ai-section"
+        >
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-200">AI workspace</p>
+          <h2 className="mt-2 text-2xl font-semibold" data-testid="home-ai-title">Live prompting, chat, and tool flows</h2>
+          <div className="mt-5 rounded-[1.5rem] border border-white/10 bg-white/5 p-5" data-testid="home-feature-llm">
+            <div className="flex items-start gap-3">
+              <span className="mt-1 flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-500/15 text-sky-200">
+                <Sparkles className="h-5 w-5" />
+              </span>
+              <div>
+                <h3 className="text-lg font-semibold text-white">LLM assistant</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-300">
+                  Our AI assistant uses <span className="font-semibold text-white">Server-Sent Events (SSE)</span> to stream responses in real-time, providing immediate assistance while conserving resources.
+                </p>
+              </div>
+            </div>
+
+            <ul className="mt-4 space-y-2 text-sm text-slate-300">
+              <li>Generate content with AI assistance.</li>
+              <li>Chat with the assistant for immediate help.</li>
+              <li>Customize prompts and inspect tool-backed flows.</li>
+            </ul>
+
+            <Button
+              onClick={() => navigate('/llm')}
+              className="mt-6 w-full bg-sky-600 text-white hover:bg-sky-500"
+              data-testid="home-llm-button"
+            >
+              Open AI Assistant
+            </Button>
+          </div>
+        </section>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section
+          className="rounded-[2rem] border border-stone-200/80 bg-white/82 p-6 shadow-[0_30px_70px_-50px_rgba(15,23,42,0.5)]"
+          data-testid="home-monitoring-section"
+        >
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Observability</p>
+          <h2 className="mt-2 text-2xl font-semibold text-slate-950" data-testid="home-monitoring-title">
+            Advanced monitoring
+          </h2>
+
+          <div className="mt-5 rounded-[1.5rem] border border-amber-200/70 bg-amber-50/80 p-5" data-testid="home-feature-traffic">
+            <div className="flex items-start gap-3">
+              <span className="mt-1 flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                <Activity className="h-5 w-5" />
+              </span>
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">Traffic monitor</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Our real-time traffic monitoring system uses <span className="font-semibold">WebSocket technology</span> to provide immediate visibility into all API requests and responses.
+                </p>
+              </div>
+            </div>
+
+            <ul className="mt-4 space-y-2 text-sm text-slate-600">
+              <li>View all HTTP requests in real-time.</li>
+              <li>Monitor response times and status codes.</li>
+              <li>Debug API interactions immediately.</li>
+            </ul>
+
+            <Button
+              onClick={() => navigate('/traffic')}
+              variant="outline"
+              className="mt-6 w-full border-amber-300 bg-white/80 text-amber-900 hover:bg-white"
+              data-testid="home-traffic-button"
+            >
+              Open Traffic Monitor
+            </Button>
+          </div>
+        </section>
+
+        <section
+          className="rounded-[2rem] border border-stone-200/80 bg-white/82 p-6 shadow-[0_30px_70px_-50px_rgba(15,23,42,0.5)]"
+          data-testid="home-utilities-section"
+        >
+          <div className="mb-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Utilities</p>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950" data-testid="home-utilities-title">
+              Supporting tools
+            </h2>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="flex h-full flex-col rounded-[1.5rem] border border-stone-200 bg-stone-50 p-5" data-testid="home-feature-qr">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-700 ring-1 ring-stone-200">
+                  <QrCode className="h-5 w-5" />
+                </span>
+                <h3 className="text-base font-semibold text-slate-900">QR code generator</h3>
+              </div>
+              <p className="mt-3 flex-1 text-sm leading-6 text-slate-600">
+                Generate valid and scannable QR codes for any text or URL.
+              </p>
+              <Button
+                onClick={() => navigate('/qr')}
+                variant="outline"
+                className="mt-5 w-full bg-white"
+                data-testid="home-qr-button"
+              >
                 Generate QR Codes
               </Button>
             </div>
-            <div className="border border-gray-200 rounded-lg p-4" data-testid="home-feature-email">
-              <h3 className="text-md font-medium text-gray-700 mb-2">Email Service</h3>
-              <p className="text-gray-600 mb-3 text-sm">Send emails through our system. Delivery is handled asynchronously with a delay of up to 10 minutes.</p>
-              <Button onClick={() => navigate('/email')} variant="outline" className="w-full border-gray-400" data-testid="home-email-button">
+
+            <div className="flex h-full flex-col rounded-[1.5rem] border border-stone-200 bg-stone-50 p-5" data-testid="home-feature-email">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-700 ring-1 ring-stone-200">
+                  <Mail className="h-5 w-5" />
+                </span>
+                <h3 className="text-base font-semibold text-slate-900">Email service</h3>
+              </div>
+              <p className="mt-3 flex-1 text-sm leading-6 text-slate-600">
+                Delivery is handled asynchronously with a delay of up to 10 minutes.
+              </p>
+              <Button
+                onClick={() => navigate('/email')}
+                variant="outline"
+                className="mt-5 w-full bg-white"
+                data-testid="home-email-button"
+              >
                 Send Emails
               </Button>
             </div>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );
-} 
+}
