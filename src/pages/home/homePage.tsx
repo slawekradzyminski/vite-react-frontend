@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Activity, ArrowRight, Boxes, Mail, QrCode, Sparkles, UserRound, Users } from 'lucide-react';
 import { Button } from '../../components/ui/button';
+import { Badge } from '../../components/ui/badge';
 import { auth } from '../../lib/api';
 
 export function HomePage() {
@@ -19,10 +20,10 @@ export function HomePage() {
       >
         <div className="grid gap-8 px-6 py-8 md:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)] md:px-8 md:py-10">
           <div className="space-y-5">
-            <p className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-white/85 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-600">
+            <Badge variant="outline" tone="tracking" className="gap-2 text-[11px] tracking-[0.28em]">
               <span className="h-2 w-2 rounded-full bg-sky-600" />
               Awesome Testing
-            </p>
+            </Badge>
             <div className="space-y-3">
               <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-slate-950 md:text-5xl" data-testid="home-welcome-title">
                 Welcome, {user?.data.firstName}!
@@ -106,9 +107,9 @@ export function HomePage() {
                 Daily control areas
               </h2>
             </div>
-            <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-xs font-medium text-slate-600">
+            <Badge className="font-medium">
               3 primary routes
-            </span>
+            </Badge>
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">

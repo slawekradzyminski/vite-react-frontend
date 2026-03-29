@@ -385,11 +385,11 @@ describe('OrderDetails', () => {
   });
 
   it.each([
-    ['PENDING', 'bg-yellow-100 text-yellow-800'],
-    ['PAID', 'bg-blue-100 text-blue-800'],
-    ['SHIPPED', 'bg-purple-100 text-purple-800'],
-    ['DELIVERED', 'bg-green-100 text-green-800'],
-    ['CANCELLED', 'bg-red-100 text-red-800'],
+    ['PENDING', 'border-amber-200 bg-amber-50 text-amber-800'],
+    ['PAID', 'border-stone-200 bg-stone-50 text-slate-600'],
+    ['SHIPPED', 'border-stone-200 bg-white/85 text-slate-600'],
+    ['DELIVERED', 'border-emerald-200 bg-emerald-50 text-emerald-800'],
+    ['CANCELLED', 'border-red-200 bg-red-50 text-red-800'],
   ] as Array<[OrderStatus, string]>)('applies %s styling for %s status', async (status, className) => {
     vi.mocked(orders.getOrderById).mockResolvedValueOnce(createOrderResponse({ status }));
 

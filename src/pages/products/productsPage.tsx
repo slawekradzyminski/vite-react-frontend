@@ -3,6 +3,7 @@ import { ProductList } from '../../components/products/ProductList';
 import { useQuery } from '@tanstack/react-query';
 import { products } from '../../lib/api';
 import type { Product } from '../../types/product';
+import { Surface } from '../../components/ui/surface';
 
 export function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
@@ -20,8 +21,10 @@ export function ProductsPage() {
   
   return (
     <div className="space-y-6 pb-10" data-testid="products-page">
-      <section
-        className="rounded-[2rem] border border-stone-200/80 bg-[linear-gradient(135deg,_rgba(255,255,255,0.95),_rgba(244,240,235,0.98))] px-6 py-7 shadow-[0_28px_70px_-55px_rgba(15,23,42,0.45)] md:px-8"
+      <Surface
+        as="section"
+        variant="hero"
+        padding="xl"
         data-testid="products-hero"
       >
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Catalog</p>
@@ -38,14 +41,11 @@ export function ProductsPage() {
             {allProducts.length} products across {categories.length || 1} categories
           </div>
         </div>
-      </section>
+      </Surface>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[280px_minmax(0,1fr)]" data-testid="products-layout">
         <aside className="xl:sticky xl:top-24 xl:self-start" data-testid="products-sidebar">
-          <div
-            className="rounded-[1.75rem] border border-stone-200/80 bg-white/84 p-5 shadow-[0_24px_60px_-50px_rgba(15,23,42,0.45)]"
-            data-testid="products-categories-container"
-          >
+          <Surface variant="muted" padding="md" data-testid="products-categories-container">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Filter</p>
             <h2 className="mt-2 text-xl font-semibold text-slate-950" data-testid="products-categories-title">Categories</h2>
             {isLoading ? (
@@ -89,7 +89,7 @@ export function ProductsPage() {
                 </ul>
               </div>
             )}
-          </div>
+          </Surface>
         </aside>
         
         <div className="min-w-0" data-testid="products-content">

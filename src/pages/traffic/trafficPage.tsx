@@ -5,7 +5,9 @@ import { useQuery } from '@tanstack/react-query';
 import { getAbsoluteApiUrl, traffic } from '../../lib/api';
 import { TrafficEventDto } from '../../types/traffic';
 import { Button } from '../../components/ui/button';
+import { Badge } from '../../components/ui/badge';
 import { authStorage } from '../../lib/authStorage';
+import { Surface } from '../../components/ui/surface';
 
 export function TrafficMonitorPage() {
   const [trafficEvents, setTrafficEvents] = useState<TrafficEventDto[]>([]);
@@ -97,17 +99,19 @@ export function TrafficMonitorPage() {
   };
 
   if (isLoading) {
-    return <div className="rounded-[1.75rem] border border-stone-200/80 bg-white/84 px-6 py-12 text-center text-slate-500" data-testid="traffic-loading">Loading traffic monitor...</div>;
+    return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="traffic-loading">Loading traffic monitor...</Surface>;
   }
 
   if (error) {
-    return <div className="rounded-[1.75rem] border border-red-200 bg-red-50 px-6 py-12 text-center text-red-600" data-testid="traffic-error">Error loading traffic monitor: {(error as Error).message}</div>;
+    return <Surface variant="danger" padding="message" className="text-center text-red-600" data-testid="traffic-error">Error loading traffic monitor: {(error as Error).message}</Surface>;
   }
 
   return (
     <div className="space-y-6 pb-10" data-testid="traffic-monitor-page">
-      <section
-        className="rounded-[2rem] border border-stone-200/80 bg-[linear-gradient(135deg,_rgba(255,255,255,0.95),_rgba(244,240,235,0.98))] px-6 py-7 shadow-[0_28px_70px_-55px_rgba(15,23,42,0.45)] md:px-8"
+      <Surface
+        as="section"
+        variant="hero"
+        padding="xl"
         data-testid="traffic-header"
       >
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -115,23 +119,22 @@ export function TrafficMonitorPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Observability</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl" data-testid="traffic-title">Traffic Monitor</h1>
           </div>
-          <span
-            className={`inline-flex w-fit items-center rounded-full px-3 py-1 text-xs font-medium ${
-              isConnected ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
-            }`}
+          <Badge
+            variant={isConnected ? 'success' : 'error'}
+            className="w-fit font-medium"
             data-testid="traffic-connection-status"
           >
             {isConnected ? 'Connected' : 'Disconnected'}
-          </span>
+          </Badge>
         </div>
-      </section>
+      </Surface>
 
-      <div className="rounded-[1.75rem] border border-stone-200/80 bg-white/84 p-5 shadow-[0_24px_60px_-50px_rgba(15,23,42,0.45)]" data-testid="traffic-status-container">
+      <Surface variant="muted" padding="md" data-testid="traffic-status-container">
         <p className="text-slate-700" data-testid="traffic-status-message">{statusMessage}</p>
         <p className="mt-1 text-sm text-slate-500" data-testid="traffic-description">
           {trafficInfo?.data?.description || 'Live HTTP request monitoring'}
         </p>
-      </div>
+      </Surface>
 
       <div className="mb-4 flex justify-between items-center" data-testid="traffic-events-header">
         <h2 className="text-lg font-semibold text-slate-950" data-testid="traffic-events-title">Recent Traffic Events</h2>
@@ -146,7 +149,7 @@ export function TrafficMonitorPage() {
       </div>
 
       {trafficEvents.length > 0 ? (
-        <div className="overflow-hidden rounded-[2rem] border border-stone-200/80 bg-white/84 shadow-[0_28px_70px_-55px_rgba(15,23,42,0.45)]" data-testid="traffic-events-table-container">
+        <Surface variant="default" className="overflow-hidden" data-testid="traffic-events-table-container">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-stone-200" data-testid="traffic-events-table">
               <thead className="bg-stone-50/80">
@@ -181,11 +184,11 @@ export function TrafficMonitorPage() {
               </tbody>
             </table>
           </div>
-        </div>
+        </Surface>
       ) : (
-        <div className="rounded-[2rem] border border-stone-200/80 bg-white/84 p-12 text-center text-slate-500 shadow-[0_28px_70px_-55px_rgba(15,23,42,0.45)]" data-testid="traffic-empty-state">
+        <Surface variant="default" className="p-12 text-center text-slate-500" data-testid="traffic-empty-state">
           No traffic events recorded yet. Make some API requests to see them appear here.
-        </div>
+        </Surface>
       )}
     </div>
   );

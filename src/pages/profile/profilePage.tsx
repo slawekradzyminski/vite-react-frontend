@@ -11,6 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { systemPromptSchema, SystemPromptFormData, toolSystemPromptSchema, ToolSystemPromptFormData } from '../../validators/user';
 import type { UserEditDTO } from '../../types/auth';
 import { OrderList } from '../../components/orders/OrderList';
+import { Surface } from '../../components/ui/surface';
 
 export function Profile() {
   const queryClient = useQueryClient();
@@ -170,17 +171,19 @@ export function Profile() {
   };
 
   if (isLoadingUser) {
-    return <div className="rounded-[1.75rem] border border-stone-200/80 bg-white/84 px-6 py-12 text-center text-slate-500" data-testid="profile-loading">Loading user data...</div>;
+    return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="profile-loading">Loading user data...</Surface>;
   }
 
   if (!currentUser?.data) {
-    return <div className="rounded-[1.75rem] border border-stone-200/80 bg-white/84 px-6 py-12 text-center text-slate-500" data-testid="profile-not-found">User not found</div>;
+    return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="profile-not-found">User not found</Surface>;
   }
 
   return (
     <div className="space-y-6 pb-10" data-testid="profile-page">
-      <section
-        className="rounded-[2rem] border border-stone-200/80 bg-[linear-gradient(135deg,_rgba(255,255,255,0.95),_rgba(244,240,235,0.98))] px-6 py-7 shadow-[0_28px_70px_-55px_rgba(15,23,42,0.45)] md:px-8"
+      <Surface
+        as="section"
+        variant="hero"
+        padding="xl"
         data-testid="profile-container"
       >
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Account</p>
@@ -197,35 +200,29 @@ export function Profile() {
             <p className="text-sm text-slate-600">{currentUser.data.email}</p>
           </div>
         </div>
-      </section>
+      </Surface>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]" data-testid="profile-sections">
-        <section
-          className="rounded-[2rem] border border-stone-200/80 bg-white/84 p-6 shadow-[0_28px_70px_-55px_rgba(15,23,42,0.45)] md:p-7"
-          data-testid="profile-user-section"
-        >
+        <Surface as="section" variant="default" padding="lg" data-testid="profile-user-section">
           <h2 className="mb-4 text-xl font-semibold text-slate-950" data-testid="profile-user-title">Personal Information</h2>
           <UserEditForm
             user={currentUser.data}
             onSave={handleUserUpdate}
             isUpdating={updateUserMutation.isPending}
           />
-        </section>
+        </Surface>
 
-        <section
-          className="rounded-[2rem] border border-stone-200/80 bg-white/84 p-6 shadow-[0_28px_70px_-55px_rgba(15,23,42,0.45)] md:p-7"
-          data-testid="profile-prompt-section"
-        >
+        <Surface as="section" variant="default" padding="lg" data-testid="profile-prompt-section">
           <h2 className="mb-4 text-xl font-semibold text-slate-950" data-testid="profile-prompt-title">System Prompts</h2>
           {isLoadingChatPrompt ? (
-            <div className="rounded-[1.4rem] border border-stone-200 bg-stone-50 p-4 text-center text-slate-500" data-testid="profile-prompt-loading">Loading prompt...</div>
+            <Surface variant="inset" padding="sm" className="text-center text-slate-500" data-testid="profile-prompt-loading">Loading prompt...</Surface>
           ) : (
-            <form onSubmit={handleChatPromptSubmit(onChatSystemPromptSubmit)} className="space-y-4 rounded-[1.5rem] border border-stone-200 bg-stone-50/80 p-5" data-testid="profile-prompt-form">
+            <Surface as="form" variant="inset" padding="md" onSubmit={handleChatPromptSubmit(onChatSystemPromptSubmit)} className="space-y-4" data-testid="profile-prompt-form">
               <div data-testid="profile-prompt-field">
                 <Label htmlFor="systemPrompt">Your System Prompt</Label>
                 <Textarea
                   id="systemPrompt"
-                  className="mt-2 h-32 rounded-[1.25rem] border-stone-200 bg-white"
+                  className="mt-2 h-32"
                   placeholder="Enter your system prompt here..."
                   {...registerChatPrompt('systemPrompt')}
                   data-testid="profile-prompt-input"
@@ -244,18 +241,18 @@ export function Profile() {
                   {updateChatPromptMutation.isPending ? 'Saving...' : 'Save Prompt'}
                 </Button>
               </div>
-            </form>
+            </Surface>
           )}
 
           {isLoadingToolPrompt ? (
-            <div className="mt-6 rounded-[1.4rem] border border-stone-200 bg-stone-50 p-4 text-center text-slate-500" data-testid="profile-tool-prompt-loading">Loading tool prompt...</div>
+            <Surface variant="inset" padding="sm" className="mt-6 text-center text-slate-500" data-testid="profile-tool-prompt-loading">Loading tool prompt...</Surface>
           ) : (
-            <form onSubmit={handleToolPromptSubmit(onToolSystemPromptSubmit)} className="mt-6 space-y-4 rounded-[1.5rem] border border-stone-200 bg-stone-50/80 p-5" data-testid="profile-tool-prompt-form">
+            <Surface as="form" variant="inset" padding="md" onSubmit={handleToolPromptSubmit(onToolSystemPromptSubmit)} className="mt-6 space-y-4" data-testid="profile-tool-prompt-form">
               <div data-testid="profile-tool-prompt-field">
                 <Label htmlFor="toolSystemPrompt">Tool System Prompt</Label>
                 <Textarea
                   id="toolSystemPrompt"
-                  className="mt-2 h-32 rounded-[1.25rem] border-stone-200 bg-white"
+                  className="mt-2 h-32"
                   placeholder="Enter your tool prompt here..."
                   {...registerToolPrompt('toolSystemPrompt')}
                   data-testid="profile-tool-prompt-input"
@@ -274,17 +271,14 @@ export function Profile() {
                   {updateToolPromptMutation.isPending ? 'Saving...' : 'Save Tool Prompt'}
                 </Button>
               </div>
-            </form>
+            </Surface>
           )}
-        </section>
+        </Surface>
       </div>
 
-      <section
-        className="rounded-[2rem] border border-stone-200/80 bg-white/84 p-6 shadow-[0_28px_70px_-55px_rgba(15,23,42,0.45)] md:p-7"
-        data-testid="profile-orders-section"
-      >
+      <Surface as="section" variant="default" padding="lg" data-testid="profile-orders-section">
         <OrderList />
-      </section>
+      </Surface>
     </div>
   );
 }

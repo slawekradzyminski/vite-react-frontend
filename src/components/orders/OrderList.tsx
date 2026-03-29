@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { orders } from '../../lib/api';
 import { Order, OrderStatus } from '../../types/order';
+import { Badge } from '../ui/badge';
 
 export function OrderList() {
   const [currentPage, setCurrentPage] = useState(0);
@@ -100,12 +101,13 @@ export function OrderList() {
                 </p>
               </div>
               <div>
-                <span 
-                  className={`px-3 py-1 rounded-full text-sm ${getStatusColor(order.status)}`}
+                <Badge
+                  variant={getStatusVariant(order.status)}
+                  className="text-sm font-medium"
                   data-testid={`order-status-${order.id}`}
                 >
                   {order.status}
-                </span>
+                </Badge>
               </div>
             </div>
             
@@ -165,19 +167,19 @@ export function OrderList() {
   );
 }
 
-function getStatusColor(status: OrderStatus): string {
+function getStatusVariant(status: OrderStatus): 'default' | 'outline' | 'success' | 'error' | 'warning' {
   switch (status) {
     case 'PENDING':
-      return 'bg-yellow-100 text-yellow-800';
+      return 'warning';
     case 'PAID':
-      return 'bg-blue-100 text-blue-800';
+      return 'default';
     case 'SHIPPED':
-      return 'bg-purple-100 text-purple-800';
+      return 'outline';
     case 'DELIVERED':
-      return 'bg-green-100 text-green-800';
+      return 'success';
     case 'CANCELLED':
-      return 'bg-red-100 text-red-800';
+      return 'error';
     default:
-      return 'bg-gray-100 text-gray-800';
+      return 'default';
   }
-} 
+}

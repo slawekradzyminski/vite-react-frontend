@@ -9,6 +9,8 @@ import { auth } from '../../lib/api';
 import { Role } from '../../types/auth';
 import { RegisterFormData, registerSchema } from '../../validators/auth';
 import { useToast } from '../../hooks/useToast';
+import { Surface } from '../../components/ui/surface';
+import { Badge } from '../../components/ui/badge';
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -55,7 +57,7 @@ export function RegisterPage() {
   return (
     <div className="flex min-h-[calc(100svh-7rem)] items-center py-6" data-testid="register-page">
       <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(460px,0.9fr)]" data-testid="register-container">
-        <section className="flex flex-col justify-between overflow-hidden rounded-[2rem] border border-stone-200/80 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.16),_transparent_32%),linear-gradient(135deg,_rgba(255,255,255,0.94),_rgba(244,240,235,0.98))] p-8 shadow-[0_30px_90px_-55px_rgba(15,23,42,0.55)]">
+        <Surface as="section" variant="heroAccent" padding="auth" className="flex flex-col justify-between">
           <div className="space-y-8">
             <img
               src="/images/logo/generated/at-transparent.png"
@@ -63,7 +65,7 @@ export function RegisterPage() {
               className="h-14 w-14 object-contain"
             />
             <div className="space-y-4" data-testid="register-header">
-              <p className="text-xs font-semibold uppercase tracking-[0.26em] text-slate-500">Awesome Testing</p>
+              <Badge tone="tracking" variant="outline" className="text-[11px] tracking-[0.26em]">Awesome Testing</Badge>
               <h2 className="max-w-lg text-4xl font-semibold tracking-tight text-slate-950" data-testid="register-title">
                 Create your account
               </h2>
@@ -87,16 +89,16 @@ export function RegisterPage() {
               <p className="mt-2 text-sm leading-6 text-slate-600">Products, email, QR, traffic, and LLM tools stay in one place.</p>
             </div>
           </div>
-        </section>
+        </Surface>
 
-        <section className="rounded-[2rem] border border-stone-200/80 bg-white/88 p-8 shadow-[0_30px_90px_-55px_rgba(15,23,42,0.55)]">
+        <Surface as="section" variant="default" padding="auth" className="bg-white/88 shadow-[0_30px_90px_-55px_rgba(15,23,42,0.55)]">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate data-testid="register-form">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2" data-testid="register-username-field">
                 <Label htmlFor="username">Username</Label>
                 <Input
                   id="username"
-                  className="mt-2 bg-white"
+                  className="mt-2"
                   placeholder="Username"
                   error={errors.username?.message}
                   {...register('username')}
@@ -111,7 +113,7 @@ export function RegisterPage() {
                 <Input
                   id="email"
                   type="email"
-                  className="mt-2 bg-white"
+                  className="mt-2"
                   placeholder="Email"
                   error={errors.email?.message}
                   {...register('email')}
@@ -126,7 +128,7 @@ export function RegisterPage() {
                 <Input
                   id="password"
                   type="password"
-                  className="mt-2 bg-white"
+                  className="mt-2"
                   placeholder="Password"
                   error={errors.password?.message}
                   {...register('password')}
@@ -140,7 +142,7 @@ export function RegisterPage() {
                 <Label htmlFor="firstName">First Name</Label>
                 <Input
                   id="firstName"
-                  className="mt-2 bg-white"
+                  className="mt-2"
                   placeholder="First Name"
                   error={errors.firstName?.message}
                   {...register('firstName')}
@@ -154,7 +156,7 @@ export function RegisterPage() {
                 <Label htmlFor="lastName">Last Name</Label>
                 <Input
                   id="lastName"
-                  className="mt-2 bg-white"
+                  className="mt-2"
                   placeholder="Last Name"
                   error={errors.lastName?.message}
                   {...register('lastName')}
@@ -195,7 +197,7 @@ export function RegisterPage() {
               </Button>
             </div>
           </form>
-        </section>
+        </Surface>
       </div>
     </div>
   );

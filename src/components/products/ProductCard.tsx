@@ -6,6 +6,7 @@ import { CartItemDto, UpdateCartItemDto } from '../../types/cart';
 import { useToast } from '../../hooks/useToast';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { authStorage } from '../../lib/authStorage';
+import { Badge } from '../ui/badge';
 
 interface ProductCardProps {
   product: Product;
@@ -147,12 +148,12 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
       <div className="flex grow flex-col p-5" data-testid="product-content">
         <div className="flex items-start justify-between gap-3">
           <h3 className="min-h-14 text-lg font-semibold leading-7 text-slate-950 line-clamp-2" data-testid="product-name">{product.name}</h3>
-          <span className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-sm font-semibold text-slate-900" data-testid="product-price">
+          <Badge className="text-sm font-semibold text-slate-900" data-testid="product-price">
             ${product.price.toFixed(2)}
-          </span>
+          </Badge>
         </div>
         {product.category && (
-          <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500" data-testid="product-category">{product.category}</p>
+          <Badge tone="tracking" variant="outline" className="mt-2 w-fit text-[11px] tracking-[0.18em]" data-testid="product-category">{product.category}</Badge>
         )}
         <p className="mt-3 grow text-sm leading-6 text-slate-600 line-clamp-3" data-testid="product-description">{product.description}</p>
         <div className="mt-5 border-t border-stone-200/80 pt-4" data-testid="product-controls">

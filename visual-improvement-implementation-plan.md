@@ -161,15 +161,25 @@ Exit criteria:
 
 ## Phase 9: Visual System Consolidation
 
-Status: `todo`
+Status: `done`
 
 Goal: reduce one-off styling drift now that the main redesign pass is complete.
 
 Tasks:
-- [ ] Audit repeated surface, shadow, radius, and spacing patterns across shell, auth, home, and interior pages.
-- [ ] Extract the most repeated container and section treatments into shared utility patterns or lightweight wrapper components.
-- [ ] Normalize form field chrome where raw `className` overrides still diverge from the updated system.
-- [ ] Keep current behavior and test coverage intact while reducing style duplication.
+- [x] Audit repeated surface, shadow, radius, and spacing patterns across shell, auth, home, and interior pages.
+- [x] Extract the most repeated container and section treatments into shared utility patterns or lightweight wrapper components.
+- [x] Normalize form field chrome where raw `className` overrides still diverge from the updated system.
+- [x] Keep current behavior and test coverage intact while reducing style duplication.
+
+Completed in this phase:
+- Added a shared surface primitive in [`src/components/ui/surface.tsx`](/Users/admin/IdeaProjects/vite-react-frontend/src/components/ui/surface.tsx) for hero, default, muted, inset, raised, and danger panels.
+- Replaced duplicated shell/page wrappers in products, profile, cart, traffic, order details, product details, and auth pages with the shared surface component.
+- Updated [`src/components/ui/input.tsx`](/Users/admin/IdeaProjects/vite-react-frontend/src/components/ui/input.tsx) and [`src/components/ui/textarea.tsx`](/Users/admin/IdeaProjects/vite-react-frontend/src/components/ui/textarea.tsx) so forms no longer need repeated per-page radius/background overrides.
+- Simplified profile and auth form markup by removing one-off container styling that is now covered by shared primitives.
+
+Verification:
+- `npm run test -- src/pages/profile/profile.test.tsx src/components/cart/CartPage.test.tsx src/pages/traffic/trafficPage.test.tsx src/components/orders/OrderDetails.test.tsx src/components/products/ProductDetails.test.tsx src/pages/auth/loginPage.test.tsx src/pages/auth/registerPage.test.tsx src/pages/auth/forgotPasswordPage.test.tsx src/pages/auth/resetPasswordPage.test.tsx src/components/ui/input.test.tsx src/components/ui/textarea.test.tsx`
+- `npm run test -- src/pages/products/productsPage.test.tsx src/components/products/ProductList.test.tsx`
 
 Exit criteria:
 - The main visual system is easier to extend without copying long Tailwind class strings.
@@ -177,15 +187,25 @@ Exit criteria:
 
 ## Phase 10: Secondary Page Alignment
 
-Status: `todo`
+Status: `done`
 
 Goal: bring the remaining lower-traffic pages into the same visual language as the completed core flows.
 
 Tasks:
-- [ ] Review email, QR, checkout, admin, and user-management pages for pre-redesign styling leftovers.
-- [ ] Prioritize the most visible mismatches and align headings, surfaces, and action treatments.
-- [ ] Add only the minimal structural changes needed to make those pages feel consistent with the shell.
-- [ ] Update any stale tests that still assert legacy class names or copy.
+- [x] Review email, QR, checkout, admin, and user-management pages for pre-redesign styling leftovers.
+- [x] Prioritize the most visible mismatches and align headings, surfaces, and action treatments.
+- [x] Add only the minimal structural changes needed to make those pages feel consistent with the shell.
+- [x] Update any stale tests that still assert legacy class names or copy.
+
+Completed in this phase:
+- Aligned secondary workflow pages for email, QR, checkout, users, and admin with the shared hero/surface system.
+- Replaced remaining legacy card wrappers and raw form controls in [`src/components/email/EmailForm.tsx`](/Users/admin/IdeaProjects/vite-react-frontend/src/components/email/EmailForm.tsx), [`src/components/qr/QrCodeGenerator.tsx`](/Users/admin/IdeaProjects/vite-react-frontend/src/components/qr/QrCodeGenerator.tsx), [`src/components/checkout/CheckoutForm.tsx`](/Users/admin/IdeaProjects/vite-react-frontend/src/components/checkout/CheckoutForm.tsx), and [`src/components/products/AdminProductForm.tsx`](/Users/admin/IdeaProjects/vite-react-frontend/src/components/products/AdminProductForm.tsx) with shared `Input`, `Textarea`, `Button`, and `Surface` primitives.
+- Reframed admin dashboard, product list, order list, and user-management pages with the same heading hierarchy, table styling, and action treatments used elsewhere in the app.
+- Updated stale unit tests that still asserted legacy wrapper classes or disabled-state colors.
+
+Verification:
+- `npm run test -- src/pages/email/emailPage.test.tsx src/components/email/EmailForm.test.tsx src/pages/qr/qrPage.test.tsx src/components/qr/QrCodeGenerator.test.tsx src/pages/checkout/checkoutPage.test.tsx src/components/checkout/CheckoutPage.test.tsx src/components/checkout/CheckoutForm.test.tsx`
+- `npm run test -- src/pages/users/usersPage.test.tsx src/pages/users/editUserPage.test.tsx src/components/admin/AdminDashboard.test.tsx src/components/admin/AdminProductList.test.tsx src/components/admin/AdminOrderList.test.tsx src/pages/admin/dashboardPage.test.tsx src/pages/admin/productsPage.test.tsx src/pages/admin/ordersPage.test.tsx src/pages/admin/productFormPage.test.tsx src/components/products/AdminProductForm.test.tsx`
 
 Exit criteria:
 - The app no longer feels split between redesigned flagship routes and untouched legacy utility pages.
@@ -198,6 +218,7 @@ Status: `todo`
 Goal: make the polish pass durable by adding lightweight automated guardrails.
 
 Tasks:
+- [ ] Normalize the LLM overview and mode pages onto the shared stone/slate surface system before adding regression coverage.
 - [ ] Add focused Playwright coverage for keyboard traversal on the redesigned navigation and auth flows.
 - [ ] Add a small set of responsive smoke checks for the most layout-sensitive pages.
 - [ ] Introduce snapshot or screenshot coverage only where it will catch real visual regressions without becoming noisy.

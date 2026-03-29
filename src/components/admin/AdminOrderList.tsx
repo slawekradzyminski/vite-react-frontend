@@ -3,6 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { orders } from '../../lib/api';
 import { OrderStatus } from '../../types/order';
+import { Button } from '../ui/button';
+import { Surface } from '../ui/surface';
+import { Badge } from '../ui/badge';
 
 export function AdminOrderList() {
   const [currentPage, setCurrentPage] = useState(0); // Changed to 0-indexed to match API
@@ -35,14 +38,14 @@ export function AdminOrderList() {
   };
   
   if (isLoading) {
-    return <div className="text-center py-8" data-testid="admin-order-list-loading">Loading orders...</div>;
+    return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="admin-order-list-loading">Loading orders...</Surface>;
   }
   
   if (error) {
     return (
-      <div className="text-center py-8" data-testid="admin-order-list-error">
-        <p className="text-red-500 mb-4">Error loading orders</p>
-      </div>
+      <Surface variant="danger" padding="message" className="text-center" data-testid="admin-order-list-error">
+        <p className="mb-4 text-red-500">Error loading orders</p>
+      </Surface>
     );
   }
   
@@ -51,17 +54,20 @@ export function AdminOrderList() {
   const displayPage = currentPage + 1; // For display purposes (1-indexed)
   
   return (
-    <div className="max-w-6xl mx-auto p-4" data-testid="admin-order-list">
-      <h1 className="text-2xl font-bold mb-6" data-testid="admin-order-list-title">Manage Orders</h1>
+    <div className="space-y-6 pb-10" data-testid="admin-order-list">
+      <Surface as="section" variant="hero" padding="xl">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Admin</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl" data-testid="admin-order-list-title">Manage Orders</h1>
+      </Surface>
       
-      <div className="mb-6 flex justify-between items-center" data-testid="admin-order-list-filters">
-        <div>
-          <label htmlFor="status-filter" className="mr-2 text-sm font-medium text-gray-700">
+      <Surface variant="muted" padding="md" className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between" data-testid="admin-order-list-filters">
+        <div className="flex items-center gap-3">
+          <label htmlFor="status-filter" className="text-sm font-medium text-slate-700">
             Filter by Status:
           </label>
           <select
             id="status-filter"
-            className="border rounded p-2"
+            className="h-11 rounded-2xl border border-stone-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-slate-300"
             value={selectedStatus}
             onChange={handleStatusChange}
             data-testid="admin-order-list-status-filter"
@@ -75,67 +81,68 @@ export function AdminOrderList() {
           </select>
         </div>
         
-        <div className="text-sm text-gray-600" data-testid="admin-order-list-pagination-info">
+        <div className="text-sm text-slate-600" data-testid="admin-order-list-pagination-info">
           Page {displayPage} of {totalPages}
         </div>
-      </div>
+      </Surface>
       
       {orderList.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-8 text-center" data-testid="admin-order-list-empty">
-          <p className="text-gray-600">No orders found</p>
-        </div>
+        <Surface variant="default" className="p-8 text-center" data-testid="admin-order-list-empty">
+          <p className="text-slate-600">No orders found</p>
+        </Surface>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden" data-testid="admin-order-list-table-container">
-          <table className="min-w-full divide-y divide-gray-200" data-testid="admin-order-list-table">
-            <thead className="bg-gray-50">
+        <Surface variant="default" className="overflow-hidden" data-testid="admin-order-list-table-container">
+          <table className="min-w-full divide-y divide-stone-200" data-testid="admin-order-list-table">
+            <thead className="bg-stone-50/80">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                   Order ID
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                   Customer
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                   Date
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                   Total
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                   Status
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-500">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="divide-y divide-stone-200 bg-white/60">
               {orderList.map((order) => (
                 <tr key={order.id} data-testid={`admin-order-row-${order.id}`}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-testid={`admin-order-id-${order.id}`}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500" data-testid={`admin-order-id-${order.id}`}>
                     #{order.id}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-testid={`admin-order-customer-${order.id}`}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900" data-testid={`admin-order-customer-${order.id}`}>
                     {order.username}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-testid={`admin-order-date-${order.id}`}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500" data-testid={`admin-order-date-${order.id}`}>
                     {new Date(order.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-testid={`admin-order-amount-${order.id}`}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500" data-testid={`admin-order-amount-${order.id}`}>
                     ${order.totalAmount.toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap" data-testid={`admin-order-status-cell-${order.id}`}>
-                    <span 
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}
+                    <Badge
+                      variant={getStatusVariant(order.status)}
+                      className="text-xs leading-5"
                       data-testid={`admin-order-status-${order.id}`}
                     >
                       {order.status}
-                    </span>
+                    </Badge>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <Link
                       to={`/orders/${order.id}`}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="text-sky-700 hover:text-sky-900"
                       data-testid={`admin-order-details-${order.id}`}
                     >
                       View Details
@@ -146,52 +153,45 @@ export function AdminOrderList() {
             </tbody>
           </table>
           
-          <div className="px-6 py-4 flex justify-between items-center border-t border-gray-200" data-testid="admin-order-list-pagination">
-            <button
+          <div className="flex items-center justify-between border-t border-stone-200 px-6 py-4" data-testid="admin-order-list-pagination">
+            <Button
               onClick={handlePreviousPage}
               disabled={currentPage === 0}
-              className={`px-3 py-1 rounded ${
-                currentPage === 0
-                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
+              variant="outline"
+              size="sm"
               data-testid="admin-order-list-prev-page"
             >
               Previous
-            </button>
+            </Button>
             
-            <button
+            <Button
               onClick={handleNextPage}
               disabled={currentPage >= totalPages - 1}
-              className={`px-3 py-1 rounded ${
-                currentPage >= totalPages - 1
-                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
+              size="sm"
               data-testid="admin-order-list-next-page"
             >
               Next
-            </button>
+            </Button>
           </div>
-        </div>
+        </Surface>
       )}
     </div>
   );
 }
 
-function getStatusColor(status: OrderStatus): string {
+function getStatusVariant(status: OrderStatus): 'default' | 'outline' | 'success' | 'error' | 'warning' {
   switch (status) {
     case 'PENDING':
-      return 'bg-yellow-100 text-yellow-800';
+      return 'warning';
     case 'PAID':
-      return 'bg-blue-100 text-blue-800';
+      return 'default';
     case 'SHIPPED':
-      return 'bg-purple-100 text-purple-800';
+      return 'outline';
     case 'DELIVERED':
-      return 'bg-green-100 text-green-800';
+      return 'success';
     case 'CANCELLED':
-      return 'bg-red-100 text-red-800';
+      return 'error';
     default:
-      return 'bg-gray-100 text-gray-800';
+      return 'default';
   }
-} 
+}

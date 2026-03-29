@@ -5,6 +5,8 @@ import { products, cart } from '../../lib/api';
 import { CartItemDto, UpdateCartItemDto } from '../../types/cart';
 import { useToast } from '../../hooks/useToast';
 import { authStorage } from '../../lib/authStorage';
+import { Surface } from '../ui/surface';
+import { Badge } from '../ui/badge';
 
 export function ProductDetails() {
   const { id } = useParams<{ id: string }>();
@@ -123,17 +125,17 @@ export function ProductDetails() {
   };
 
   if (isLoading) {
-    return <div className="rounded-[1.75rem] border border-stone-200/80 bg-white/84 px-6 py-12 text-center text-slate-500" data-testid="product-loading">Loading product details...</div>;
+    return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="product-loading">Loading product details...</Surface>;
   }
 
   if (error || !product?.data) {
     return (
-      <div className="rounded-[1.75rem] border border-red-200 bg-red-50 px-6 py-12 text-center" data-testid="product-not-found">
+      <Surface variant="danger" padding="message" className="text-center" data-testid="product-not-found">
         <p className="mb-4 text-red-600">Error loading product details</p>
         <Link to="/products" className="text-sm font-medium text-slate-900 underline-offset-4 hover:underline">
           Back to Products
         </Link>
-      </div>
+      </Surface>
     );
   }
 
@@ -148,8 +150,9 @@ export function ProductDetails() {
       </div>
       
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)]" data-testid="product-details-content">
-        <div
-          className="overflow-hidden rounded-[2rem] border border-stone-200/80 bg-white/84 shadow-[0_28px_70px_-55px_rgba(15,23,42,0.45)]"
+        <Surface
+          variant="default"
+          className="overflow-hidden"
           data-testid="product-image-container"
         >
           {productData.imageUrl ? (
@@ -164,10 +167,11 @@ export function ProductDetails() {
               No image available
             </div>
           )}
-        </div>
-        
-        <div
-          className="rounded-[2rem] border border-stone-200/80 bg-white/84 p-6 shadow-[0_28px_70px_-55px_rgba(15,23,42,0.45)] md:p-8"
+        </Surface>
+
+        <Surface
+          variant="default"
+          padding="lg"
           data-testid="product-info-container"
         >
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -175,7 +179,7 @@ export function ProductDetails() {
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Product detail</p>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950" data-testid="product-title">{productData.name}</h1>
             </div>
-            <p className="rounded-full border border-stone-200 bg-stone-50 px-4 py-2 text-xl font-semibold text-slate-950" data-testid="product-price">${productData.price.toFixed(2)}</p>
+            <Badge className="px-4 py-2 text-xl font-semibold text-slate-950" data-testid="product-price">${productData.price.toFixed(2)}</Badge>
           </div>
           
           <div className="mt-8 grid gap-6 md:grid-cols-2">
@@ -257,7 +261,7 @@ export function ProductDetails() {
               }
             </button>
           </div>
-        </div>
+        </Surface>
       </div>
     </div>
   );

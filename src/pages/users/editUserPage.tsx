@@ -6,6 +6,7 @@ import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { auth } from '../../lib/api';
 import { Role, type User } from '../../types/auth';
+import { Surface } from '../../components/ui/surface';
 
 export function EditUserPage() {
   const { username } = useParams<{ username: string }>();
@@ -54,27 +55,28 @@ export function EditUserPage() {
   };
 
   if (isLoading) {
-    return <div className="text-center p-8" data-testid="edit-user-loading">Loading...</div>;
+    return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="edit-user-loading">Loading...</Surface>;
   }
 
   if (!user) {
-    return <div className="text-center p-8" data-testid="edit-user-not-found">User not found</div>;
+    return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="edit-user-not-found">User not found</Surface>;
   }
 
   if (!currentUser?.data.roles.includes(Role.ADMIN)) {
-    return <div className="text-center p-8" data-testid="edit-user-denied">Access denied</div>;
+    return <Surface variant="danger" padding="message" className="text-center text-red-600" data-testid="edit-user-denied">Access denied</Surface>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8" data-testid="edit-user-page">
-      <div className="mx-auto max-w-md" data-testid="edit-user-container">
-        <div className="mb-8" data-testid="edit-user-header">
-          <h1 className="text-3xl font-bold text-gray-900" data-testid="edit-user-title">Edit User</h1>
-          <p className="mt-2 text-gray-600" data-testid="edit-user-username">Editing user: {username}</p>
-        </div>
+    <div className="space-y-6 pb-10" data-testid="edit-user-page">
+      <Surface as="section" variant="hero" padding="xl" data-testid="edit-user-header">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Admin</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl" data-testid="edit-user-title">Edit User</h1>
+        <p className="mt-2 text-sm leading-6 text-slate-600" data-testid="edit-user-username">Editing user: {username}</p>
+      </Surface>
 
-        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow" data-testid="edit-user-form">
-          <div data-testid="edit-user-email-field">
+      <div className="mx-auto max-w-xl" data-testid="edit-user-container">
+        <Surface as="form" variant="default" padding="lg" onSubmit={handleSubmit} className="space-y-6" data-testid="edit-user-form">
+          <Surface variant="inset" padding="md" data-testid="edit-user-email-field">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
@@ -82,12 +84,12 @@ export function EditUserPage() {
               type="email"
               defaultValue={user.email}
               required
-              className="mt-1"
+              className="mt-2"
               data-testid="edit-user-email-input"
             />
-          </div>
+          </Surface>
 
-          <div data-testid="edit-user-firstname-field">
+          <Surface variant="inset" padding="md" data-testid="edit-user-firstname-field">
             <Label htmlFor="firstName">First Name</Label>
             <Input
               id="firstName"
@@ -95,12 +97,12 @@ export function EditUserPage() {
               type="text"
               defaultValue={user.firstName}
               required
-              className="mt-1"
+              className="mt-2"
               data-testid="edit-user-firstname-input"
             />
-          </div>
+          </Surface>
 
-          <div data-testid="edit-user-lastname-field">
+          <Surface variant="inset" padding="md" data-testid="edit-user-lastname-field">
             <Label htmlFor="lastName">Last Name</Label>
             <Input
               id="lastName"
@@ -108,15 +110,15 @@ export function EditUserPage() {
               type="text"
               defaultValue={user.lastName}
               required
-              className="mt-1"
+              className="mt-2"
               data-testid="edit-user-lastname-input"
             />
-          </div>
+          </Surface>
 
           {error && (
-            <div className="text-sm text-red-600" data-testid="edit-user-error">
+            <Surface variant="danger" padding="sm" className="text-sm text-red-600" data-testid="edit-user-error">
               {error}
-            </div>
+            </Surface>
           )}
 
           <div className="flex justify-end space-x-4" data-testid="edit-user-actions">
@@ -136,7 +138,7 @@ export function EditUserPage() {
               {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
-        </form>
+        </Surface>
       </div>
     </div>
   );

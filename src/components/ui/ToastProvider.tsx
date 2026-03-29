@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as ToastPrimitive from '@radix-ui/react-toast';
 import { useLocation } from 'react-router-dom';
+import { AlertCircle, CheckCircle2, Info, X } from 'lucide-react';
 import { ToastProps, ToastContext } from '../../hooks/useToast';
 import styles from './ToastProvider.module.css';
 import { useEffect } from 'react';
@@ -10,6 +11,24 @@ type InternalToast = ToastProps & {
   createdAt: number;
   open: boolean;
 };
+
+const toastMeta = {
+  default: {
+    label: 'Notice',
+    icon: Info,
+    iconClassName: styles.defaultIcon,
+  },
+  success: {
+    label: 'Success',
+    icon: CheckCircle2,
+    iconClassName: styles.successIcon,
+  },
+  error: {
+    label: 'Error',
+    icon: AlertCircle,
+    iconClassName: styles.errorIcon,
+  },
+} as const;
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation();
@@ -21,13 +40,19 @@ function InternalToastProvider({ children }: { children: React.ReactNode }) {
 
   const addToast = React.useCallback((props: ToastProps) => {
     setToasts((prev) => {
-      const exists = prev.some(
+      const activeToasts = prev.filter((toast) => toast.open);
+      const exists = activeToasts.some(
         (t) => t.description === props.description && t.variant === props.variant
       );
       if (exists) return prev;
       return [
-        ...prev,
-        { ...props, id: Math.random().toString(), createdAt: Date.now(), open: true },
+        ...activeToasts,
+        {
+          ...props,
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          createdAt: Date.now(),
+          open: true,
+        },
       ];
     });
   }, []);
@@ -48,9 +73,27 @@ function InternalToastProvider({ children }: { children: React.ReactNode }) {
 
   const handleOpenChange = (id: string, open: boolean) => {
     if (!open) {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
+      setToasts((prev) => prev.map((toast) => (
+        toast.id === id ? { ...toast, open: false } : toast
+      )));
     }
   };
+
+  React.useEffect(() => {
+    const closedToastIds = toasts
+      .filter((toast) => !toast.open)
+      .map((toast) => toast.id);
+
+    if (closedToastIds.length === 0) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setToasts((prev) => prev.filter((toast) => !closedToastIds.includes(toast.id)));
+    }, 180);
+
+    return () => window.clearTimeout(timeout);
+  }, [toasts]);
 
   const contextValue = React.useMemo(() => ({ toast: addToast }), [addToast]);
 
@@ -59,36 +102,50 @@ function InternalToastProvider({ children }: { children: React.ReactNode }) {
       {children}
       <ToastPrimitive.Provider swipeDirection="right" data-testid="toast-provider">
         {toasts.map(({ id, title, description, action, variant = 'default', open }) => (
-          <ToastPrimitive.Root
-            key={id}
-            open={open}
-            className={`${styles.toast} ${styles[variant]}`}
-            onOpenChange={(open) => handleOpenChange(id, open)}
-            data-testid={`toast-${id}`}
-          >
-            <div className="flex-1" data-testid="toast-content">
-              {title && (
-                <ToastPrimitive.Title className={styles.title} data-testid="toast-title">
-                  {title}
-                </ToastPrimitive.Title>
-              )}
-              <ToastPrimitive.Description className={styles.description} data-testid="toast-description">
-                {description}
-              </ToastPrimitive.Description>
-            </div>
-            {action && (
-              <ToastPrimitive.Action altText="toast-action" asChild data-testid="toast-action">
-                {action}
-              </ToastPrimitive.Action>
-            )}
-            <ToastPrimitive.Close
-              aria-label="Close"
-              className={styles.close}
-              data-testid="toast-close"
-            >
-              <span aria-hidden className={styles.closeIcon} data-testid="toast-close-icon">×</span>
-            </ToastPrimitive.Close>
-          </ToastPrimitive.Root>
+          (() => {
+            const meta = toastMeta[variant];
+            const Icon = meta.icon;
+
+            return (
+              <ToastPrimitive.Root
+                key={id}
+                open={open}
+                className={`${styles.toast} ${styles[variant]}`}
+                onOpenChange={(open) => handleOpenChange(id, open)}
+                data-testid={`toast-${id}`}
+              >
+                <div className={styles.accent} aria-hidden />
+                <div className={styles.iconWrap} data-testid="toast-icon">
+                  <Icon className={`${styles.icon} ${meta.iconClassName}`} />
+                </div>
+                <div className={styles.body} data-testid="toast-content">
+                  {!title && <div className={styles.kicker}>{meta.label}</div>}
+                  {title && (
+                    <ToastPrimitive.Title className={styles.title} data-testid="toast-title">
+                      {title}
+                    </ToastPrimitive.Title>
+                  )}
+                  <ToastPrimitive.Description className={styles.description} data-testid="toast-description">
+                    {description}
+                  </ToastPrimitive.Description>
+                  {action && (
+                    <div className={styles.actionRow}>
+                      <ToastPrimitive.Action altText="toast-action" asChild data-testid="toast-action">
+                        {action}
+                      </ToastPrimitive.Action>
+                    </div>
+                  )}
+                </div>
+                <ToastPrimitive.Close
+                  aria-label="Close"
+                  className={styles.close}
+                  data-testid="toast-close"
+                >
+                  <X aria-hidden className={styles.closeIcon} data-testid="toast-close-icon" />
+                </ToastPrimitive.Close>
+              </ToastPrimitive.Root>
+            );
+          })()
         ))}
         <ToastPrimitive.Viewport data-testid="toast-viewport" />
       </ToastPrimitive.Provider>

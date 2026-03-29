@@ -5,6 +5,7 @@ import { cart, products } from '../../lib/api';
 import { CartItem } from './CartItem';
 import { CartSummary } from './CartSummary';
 import { Cart as CartType, CartItem as CartItemType } from '../../types/cart';
+import { Surface } from '../ui/surface';
 
 interface RawCartResponse {
   items?: Array<{
@@ -86,12 +87,12 @@ export function CartPage() {
   };
   
   if (isLoading || isUpdating) {
-    return <div className="rounded-[1.75rem] border border-stone-200/80 bg-white/84 px-6 py-12 text-center text-slate-500" data-testid="cart-loading">Loading cart...</div>;
+    return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="cart-loading">Loading cart...</Surface>;
   }
   
   if (error) {
     return (
-      <div className="rounded-[1.75rem] border border-red-200 bg-red-50 px-6 py-12 text-center" data-testid="cart-error">
+      <Surface variant="danger" padding="message" className="text-center" data-testid="cart-error">
         <p className="mb-4 text-red-600">Error loading cart</p>
         <button
           onClick={() => refetch()}
@@ -100,7 +101,7 @@ export function CartPage() {
         >
           Try again
         </button>
-      </div>
+      </Surface>
     );
   }
   
@@ -118,7 +119,7 @@ export function CartPage() {
   
   return (
     <div className="space-y-6 pb-10" data-testid="cart-page">
-      <section className="rounded-[2rem] border border-stone-200/80 bg-[linear-gradient(135deg,_rgba(255,255,255,0.95),_rgba(244,240,235,0.98))] px-6 py-7 shadow-[0_28px_70px_-55px_rgba(15,23,42,0.45)] md:px-8">
+      <Surface as="section" variant="hero" padding="xl">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Cart</p>
@@ -132,10 +133,10 @@ export function CartPage() {
             Continue Shopping
           </Link>
         </div>
-      </section>
+      </Surface>
 
       {isEmpty ? (
-        <div className="rounded-[2rem] border border-stone-200/80 bg-white/84 p-10 text-center shadow-[0_28px_70px_-55px_rgba(15,23,42,0.45)]" data-testid="cart-empty">
+        <Surface variant="default" className="p-10 text-center" data-testid="cart-empty">
           <p className="mb-4 text-slate-600">Your cart is empty</p>
           <Link
             to="/products"
@@ -144,17 +145,17 @@ export function CartPage() {
           >
             Browse Products
           </Link>
-        </div>
+        </Surface>
       ) : (
         <div className="space-y-6" data-testid="cart-content">
-          <div className="overflow-hidden rounded-[2rem] border border-stone-200/80 bg-white/84 shadow-[0_28px_70px_-55px_rgba(15,23,42,0.45)]" data-testid="cart-summary-container">
+          <Surface variant="default" className="overflow-hidden" data-testid="cart-summary-container">
             <CartSummary
               cartData={safeCartData}
               onUpdate={handleCartUpdate}
             />
-          </div>
+          </Surface>
 
-          <div className="overflow-hidden rounded-[2rem] border border-stone-200/80 bg-white/84 shadow-[0_28px_70px_-55px_rgba(15,23,42,0.45)]" data-testid="cart-items-container">
+          <Surface variant="default" className="overflow-hidden" data-testid="cart-items-container">
             <div className="border-b border-stone-200 px-6 py-5">
               <h2 className="text-lg font-semibold text-slate-950" data-testid="cart-items-heading">Cart Items</h2>
             </div>
@@ -191,7 +192,7 @@ export function CartPage() {
                 </tbody>
               </table>
             </div>
-          </div>
+          </Surface>
         </div>
       )}
     </div>

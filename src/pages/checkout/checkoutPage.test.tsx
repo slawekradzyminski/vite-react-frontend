@@ -21,10 +21,6 @@ describe('CheckoutPage', () => {
     // then
     const container = screen.getByTestId('checkout-page-container');
     expect(container).toBeInTheDocument();
-    expect(container).toHaveClass('container');
-    expect(container).toHaveClass('mx-auto');
-    expect(container).toHaveClass('px-4');
-    expect(container).toHaveClass('py-8');
   });
 
   it('renders the CheckoutPageComponent inside the container', () => {

@@ -8,6 +8,7 @@ import { Textarea } from '../ui/textarea';
 import { auth } from '../../lib/api';
 import { emailSchema } from '../../validators/email';
 import type { EmailFormData } from '../../types/email';
+import { Surface } from '../ui/surface';
 
 interface EmailFormProps {
   onSubmit: (data: EmailFormData) => void;
@@ -35,12 +36,12 @@ export function EmailForm({ onSubmit, isLoading = false }: EmailFormProps) {
 
   return (
     <form onSubmit={handleFormSubmit} className="space-y-6" noValidate data-testid="email-form">
-      <div data-testid="email-to-field">
+      <Surface variant="inset" padding="md" data-testid="email-to-field">
         <Label htmlFor="to">To</Label>
         <Input
           id="to"
           type="email"
-          className="mt-1"
+          className="mt-2"
           placeholder="Recipient email"
           error={errors.to?.message}
           list="users"
@@ -55,13 +56,13 @@ export function EmailForm({ onSubmit, isLoading = false }: EmailFormProps) {
             <option key={user.email} value={user.email} />
           ))}
         </datalist>
-      </div>
+      </Surface>
 
-      <div data-testid="email-subject-field">
+      <Surface variant="inset" padding="md" data-testid="email-subject-field">
         <Label htmlFor="subject">Subject</Label>
         <Input
           id="subject"
-          className="mt-1"
+          className="mt-2"
           placeholder="Email subject"
           error={errors.subject?.message}
           {...register('subject')}
@@ -70,13 +71,13 @@ export function EmailForm({ onSubmit, isLoading = false }: EmailFormProps) {
         {errors.subject?.message && (
           <p className="mt-1 text-sm text-red-600" role="alert" data-testid="email-subject-error">{errors.subject.message}</p>
         )}
-      </div>
+      </Surface>
 
-      <div data-testid="email-message-field">
+      <Surface variant="inset" padding="md" data-testid="email-message-field">
         <Label htmlFor="message">Message</Label>
         <Textarea
           id="message"
-          className="mt-1"
+          className="mt-2 min-h-[180px]"
           placeholder="Your message"
           {...register('message')}
           data-testid="email-message-input"
@@ -84,11 +85,11 @@ export function EmailForm({ onSubmit, isLoading = false }: EmailFormProps) {
         {errors.message?.message && (
           <p className="mt-1 text-sm text-red-600" role="alert" data-testid="email-message-error">{errors.message.message}</p>
         )}
-      </div>
+      </Surface>
 
       <Button
         type="submit"
-        className="w-full"
+        className="h-11 w-full"
         disabled={isLoading}
         data-testid="email-submit-button"
       >

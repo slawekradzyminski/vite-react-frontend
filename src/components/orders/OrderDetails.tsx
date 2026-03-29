@@ -5,6 +5,8 @@ import { OrderStatus } from '../../types/order';
 import { Role } from '../../types/auth';
 import { useState } from 'react';
 import { useToast } from '../../hooks/useToast';
+import { Surface } from '../ui/surface';
+import { Badge } from '../ui/badge';
 
 export const OrderDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -94,47 +96,48 @@ export const OrderDetails = () => {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusVariant = (status: string) => {
     switch (status) {
       case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'warning';
       case 'PAID':
-        return 'bg-blue-100 text-blue-800';
+        return 'default';
       case 'SHIPPED':
-        return 'bg-purple-100 text-purple-800';
+        return 'outline';
       case 'DELIVERED':
-        return 'bg-green-100 text-green-800';
+        return 'success';
       case 'CANCELLED':
-        return 'bg-red-100 text-red-800';
+        return 'error';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'default';
     }
   };
 
   if (isLoadingOrder) {
-    return <div className="rounded-[1.75rem] border border-stone-200/80 bg-white/84 px-6 py-12 text-center text-slate-500" data-testid="order-details-loading">Loading order details...</div>;
+    return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="order-details-loading">Loading order details...</Surface>;
   }
 
   if (!order) {
-    return <div className="rounded-[1.75rem] border border-stone-200/80 bg-white/84 px-6 py-12 text-center text-slate-500" data-testid="order-details-not-found">Order not found</div>;
+    return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="order-details-not-found">Order not found</Surface>;
   }
 
   return (
-    <div className="rounded-[2rem] border border-stone-200/80 bg-white/84 p-6 shadow-[0_28px_70px_-55px_rgba(15,23,42,0.45)] md:p-8" data-testid="order-details">
+    <Surface variant="default" padding="lg" data-testid="order-details">
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Order detail</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950" data-testid="order-details-title">Order #{order.id}</h1>
         </div>
-        <span 
-          className={`w-fit rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(order.status)}`}
+        <Badge
+          variant={getStatusVariant(order.status)}
+          className="w-fit text-sm font-medium"
           data-testid="order-details-status"
         >
           {order.status}
-        </span>
+        </Badge>
       </div>
 
-      <div className="mb-6 rounded-[1.5rem] border border-stone-200 bg-stone-50/80 p-5" data-testid="order-details-items-section">
+      <Surface variant="inset" padding="md" className="mb-6" data-testid="order-details-items-section">
         <h2 className="mb-3 text-lg font-semibold text-slate-950" data-testid="order-details-items-title">Items</h2>
         <div className="space-y-4" data-testid="order-details-items-list">
           {order.items.map((item) => (
@@ -151,9 +154,9 @@ export const OrderDetails = () => {
           <p className="font-semibold text-slate-700">Total</p>
           <p className="font-bold text-lg text-slate-950" data-testid="order-details-total-amount">${order.totalAmount.toFixed(2)}</p>
         </div>
-      </div>
+      </Surface>
 
-      <div className="mb-6 rounded-[1.5rem] border border-stone-200 bg-stone-50/80 p-5" data-testid="order-details-shipping-section">
+      <Surface variant="inset" padding="md" className="mb-6" data-testid="order-details-shipping-section">
         <h2 className="mb-3 text-lg font-semibold text-slate-950" data-testid="order-details-shipping-title">Shipping Address</h2>
         <div className="text-slate-700" data-testid="order-details-shipping-address">
           <p data-testid="order-details-address-street">{order.shippingAddress.street}</p>
@@ -162,7 +165,7 @@ export const OrderDetails = () => {
           </p>
           <p data-testid="order-details-address-country">{order.shippingAddress.country}</p>
         </div>
-      </div>
+      </Surface>
 
       <div className="flex justify-between items-center" data-testid="order-details-actions">
         {order.status === 'PENDING' && (
@@ -202,7 +205,7 @@ export const OrderDetails = () => {
           </div>
         )}
       </div>
-    </div>
+    </Surface>
   );
 };
 

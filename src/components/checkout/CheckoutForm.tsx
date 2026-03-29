@@ -4,6 +4,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { orders } from '../../lib/api';
 import { AddressDto } from '../../types/order';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Surface } from '../ui/surface';
 
 interface CheckoutFormProps {
   cartTotal: number;
@@ -56,109 +60,114 @@ export function CheckoutForm({ cartTotal }: CheckoutFormProps) {
   };
   
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6" data-testid="checkout-form-container">
-      <h2 className="text-xl font-semibold mb-4" data-testid="checkout-form-title">Shipping Information</h2>
+    <div data-testid="checkout-form-container">
+      <h2 className="mb-4 text-xl font-semibold text-slate-950" data-testid="checkout-form-title">Shipping Information</h2>
       
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" data-testid="checkout-form">
-        <div data-testid="checkout-street-field">
-          <label htmlFor="street" className="block text-sm font-medium text-gray-700 mb-1" data-testid="checkout-street-label">
+        <Surface variant="inset" padding="md" data-testid="checkout-street-field">
+          <Label htmlFor="street" data-testid="checkout-street-label">
             Street Address
-          </label>
-          <input
+          </Label>
+          <Input
             id="street"
             type="text"
-            className={`w-full p-2 border rounded ${errors.street ? 'border-red-500' : 'border-gray-300'}`}
+            className="mt-2"
             {...register('street', { required: 'Street address is required' })}
+            error={errors.street?.message}
             data-testid="checkout-street-input"
           />
           {errors.street && (
-            <p className="text-red-500 text-sm mt-1" data-testid="checkout-street-error">{errors.street.message}</p>
+            <p className="mt-1 text-sm text-red-500" data-testid="checkout-street-error">{errors.street.message}</p>
           )}
-        </div>
+        </Surface>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-testid="checkout-city-state-row">
-          <div data-testid="checkout-city-field">
-            <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1" data-testid="checkout-city-label">
+          <Surface variant="inset" padding="md" data-testid="checkout-city-field">
+            <Label htmlFor="city" data-testid="checkout-city-label">
               City
-            </label>
-            <input
+            </Label>
+            <Input
               id="city"
               type="text"
-              className={`w-full p-2 border rounded ${errors.city ? 'border-red-500' : 'border-gray-300'}`}
+              className="mt-2"
               {...register('city', { required: 'City is required' })}
+              error={errors.city?.message}
               data-testid="checkout-city-input"
             />
             {errors.city && (
-              <p className="text-red-500 text-sm mt-1" data-testid="checkout-city-error">{errors.city.message}</p>
+              <p className="mt-1 text-sm text-red-500" data-testid="checkout-city-error">{errors.city.message}</p>
             )}
-          </div>
+          </Surface>
           
-          <div data-testid="checkout-state-field">
-            <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1" data-testid="checkout-state-label">
+          <Surface variant="inset" padding="md" data-testid="checkout-state-field">
+            <Label htmlFor="state" data-testid="checkout-state-label">
               State/Province
-            </label>
-            <input
+            </Label>
+            <Input
               id="state"
               type="text"
-              className={`w-full p-2 border rounded ${errors.state ? 'border-red-500' : 'border-gray-300'}`}
+              className="mt-2"
               {...register('state', { required: 'State is required' })}
+              error={errors.state?.message}
               data-testid="checkout-state-input"
             />
             {errors.state && (
-              <p className="text-red-500 text-sm mt-1" data-testid="checkout-state-error">{errors.state.message}</p>
+              <p className="mt-1 text-sm text-red-500" data-testid="checkout-state-error">{errors.state.message}</p>
             )}
-          </div>
+          </Surface>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-testid="checkout-zip-country-row">
-          <div data-testid="checkout-zip-field">
-            <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-1" data-testid="checkout-zip-label">
+          <Surface variant="inset" padding="md" data-testid="checkout-zip-field">
+            <Label htmlFor="zipCode" data-testid="checkout-zip-label">
               ZIP/Postal Code
-            </label>
-            <input
+            </Label>
+            <Input
               id="zipCode"
               type="text"
-              className={`w-full p-2 border rounded ${errors.zipCode ? 'border-red-500' : 'border-gray-300'}`}
+              className="mt-2"
               {...register('zipCode', { required: 'ZIP code is required' })}
+              error={errors.zipCode?.message}
               data-testid="checkout-zip-input"
             />
             {errors.zipCode && (
-              <p className="text-red-500 text-sm mt-1" data-testid="checkout-zip-error">{errors.zipCode.message}</p>
+              <p className="mt-1 text-sm text-red-500" data-testid="checkout-zip-error">{errors.zipCode.message}</p>
             )}
-          </div>
+          </Surface>
           
-          <div data-testid="checkout-country-field">
-            <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1" data-testid="checkout-country-label">
+          <Surface variant="inset" padding="md" data-testid="checkout-country-field">
+            <Label htmlFor="country" data-testid="checkout-country-label">
               Country
-            </label>
-            <input
+            </Label>
+            <Input
               id="country"
               type="text"
-              className={`w-full p-2 border rounded ${errors.country ? 'border-red-500' : 'border-gray-300'}`}
+              className="mt-2"
               {...register('country', { required: 'Country is required' })}
+              error={errors.country?.message}
               data-testid="checkout-country-input"
             />
             {errors.country && (
-              <p className="text-red-500 text-sm mt-1" data-testid="checkout-country-error">{errors.country.message}</p>
+              <p className="mt-1 text-sm text-red-500" data-testid="checkout-country-error">{errors.country.message}</p>
             )}
-          </div>
+          </Surface>
         </div>
         
-        <div className="mt-6 pt-4 border-t border-gray-200" data-testid="checkout-summary">
+        <Surface variant="inset" padding="md" className="mt-6" data-testid="checkout-summary">
           <div className="flex justify-between items-center mb-4" data-testid="checkout-total">
-            <span className="font-semibold" data-testid="checkout-total-label">Order Total:</span>
-            <span className="font-bold text-lg" data-testid="checkout-total-amount">${cartTotal.toFixed(2)}</span>
+            <span className="font-semibold text-slate-700" data-testid="checkout-total-label">Order Total:</span>
+            <span className="text-lg font-bold text-slate-950" data-testid="checkout-total-amount">${cartTotal.toFixed(2)}</span>
           </div>
           
-          <button
+          <Button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+            className="h-11 w-full"
             disabled={isSubmitting || cartTotal <= 0}
             data-testid="checkout-submit-button"
           >
             {isSubmitting ? 'Processing...' : 'Place Order'}
-          </button>
-        </div>
+          </Button>
+        </Surface>
       </form>
     </div>
   );

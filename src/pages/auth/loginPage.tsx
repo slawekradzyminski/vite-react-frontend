@@ -9,6 +9,8 @@ import { auth } from '../../lib/api';
 import { authStorage } from '../../lib/authStorage';
 import { LoginFormData, loginSchema } from '../../validators/auth';
 import { useToast } from '../../hooks/useToast';
+import { Surface } from '../../components/ui/surface';
+import { Badge } from '../../components/ui/badge';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -64,7 +66,7 @@ export function LoginPage() {
   return (
     <div className="flex min-h-[calc(100svh-7rem)] items-center py-6" data-testid="login-page">
       <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(420px,0.8fr)]" data-testid="login-container">
-        <section className="flex flex-col justify-between overflow-hidden rounded-[2rem] border border-stone-200/80 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.16),_transparent_32%),linear-gradient(135deg,_rgba(255,255,255,0.94),_rgba(244,240,235,0.98))] p-8 shadow-[0_30px_90px_-55px_rgba(15,23,42,0.55)]">
+        <Surface as="section" variant="heroAccent" padding="auth" className="flex flex-col justify-between">
           <div className="space-y-8">
             <img
               src="/images/logo/generated/at-transparent.png"
@@ -72,7 +74,7 @@ export function LoginPage() {
               className="h-14 w-14 object-contain"
             />
             <div className="space-y-4" data-testid="login-header">
-              <p className="text-xs font-semibold uppercase tracking-[0.26em] text-slate-500">Awesome Testing</p>
+              <Badge tone="tracking" variant="outline" className="text-[11px] tracking-[0.26em]">Awesome Testing</Badge>
               <h2 className="max-w-lg text-4xl font-semibold tracking-tight text-slate-950" data-testid="login-title">
                 Sign in to your account
               </h2>
@@ -96,16 +98,16 @@ export function LoginPage() {
               <p className="mt-2 text-sm leading-6 text-slate-600">Prompt, chat, and tool flows backed by SSE streaming.</p>
             </div>
           </div>
-        </section>
+        </Surface>
 
-        <section className="rounded-[2rem] border border-stone-200/80 bg-white/88 p-8 shadow-[0_30px_90px_-55px_rgba(15,23,42,0.55)]">
+        <Surface as="section" variant="default" padding="auth" className="bg-white/88 shadow-[0_30px_90px_-55px_rgba(15,23,42,0.55)]">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate data-testid="login-form">
             <div className="space-y-4 rounded-md shadow-sm">
               <div data-testid="login-username-field">
                 <Label htmlFor="username">Username</Label>
                 <Input
                   id="username"
-                  className="mt-2 bg-white"
+                  className="mt-2"
                   placeholder="Username"
                   error={errors.username?.message}
                   {...register('username')}
@@ -120,7 +122,7 @@ export function LoginPage() {
                 <Input
                   id="password"
                   type="password"
-                  className="mt-2 bg-white"
+                  className="mt-2"
                   placeholder="Password"
                   error={errors.password?.message}
                   {...register('password')}
@@ -168,7 +170,7 @@ export function LoginPage() {
               </Button>
             </div>
           </form>
-        </section>
+        </Surface>
       </div>
     </div>
   );
