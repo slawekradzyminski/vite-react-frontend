@@ -59,7 +59,6 @@ export const test = base.extend<AuthenticatedPageFixtures>({
             refreshToken,
         });
 
-        await cleanupUser(context.request, user.username, token);
         await context.close();
     },
 
