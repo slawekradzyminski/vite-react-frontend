@@ -60,7 +60,7 @@ export function RegisterPage() {
         <Surface as="section" variant="heroAccent" padding="auth" className="flex flex-col justify-between">
           <div className="space-y-8">
             <img
-              src="/images/logo/generated/at-transparent.png"
+              src="/branding/generated/at-transparent.png"
               alt="Awesome Testing"
               className="h-14 w-14 object-contain"
             />

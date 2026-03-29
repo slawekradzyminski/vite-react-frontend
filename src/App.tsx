@@ -71,7 +71,7 @@ export function App() {
                             <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-slate-600">
                               {Icon === 'blog' ? (
                                 <img
-                                  src="/images/logo/generated/at-transparent.png"
+                                  src="/branding/generated/at-transparent.png"
                                   alt=""
                                   aria-hidden="true"
                                   className="h-4.5 w-4.5 object-contain"
