@@ -108,7 +108,7 @@ export function LoginPage() {
 
         <Surface as="section" variant="default" padding="auth" className="bg-white/88 shadow-[0_30px_90px_-55px_rgba(15,23,42,0.55)]">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate data-testid="login-form">
-            <div className="space-y-4 rounded-md shadow-sm">
+            <div className="space-y-4">
               <div data-testid="login-username-field">
                 <Label htmlFor="username">Username</Label>
                 <Input
