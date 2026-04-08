@@ -1,5 +1,6 @@
 const TOKEN_KEY = 'token';
 const REFRESH_TOKEN_KEY = 'refreshToken';
+const CLIENT_SESSION_ID_KEY = 'clientSessionId';
 
 const isBrowser = () => typeof window !== 'undefined';
 
@@ -24,6 +25,14 @@ const safeRemoveItem = (key: string) => {
   }
 };
 
+const generateClientSessionId = () => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+
+  return `client-session-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+};
+
 export const authStorage = {
   getTokens: () => ({
     token: safeGetItem(TOKEN_KEY),
@@ -39,4 +48,17 @@ export const authStorage = {
   },
   getAccessToken: () => safeGetItem(TOKEN_KEY),
   getRefreshToken: () => safeGetItem(REFRESH_TOKEN_KEY),
+  getClientSessionId: () => {
+    const existingClientSessionId = safeGetItem(CLIENT_SESSION_ID_KEY);
+    if (existingClientSessionId) {
+      return existingClientSessionId;
+    }
+
+    const generatedClientSessionId = generateClientSessionId();
+    safeSetItem(CLIENT_SESSION_ID_KEY, generatedClientSessionId);
+    return generatedClientSessionId;
+  },
+  setClientSessionId: (clientSessionId: string) => {
+    safeSetItem(CLIENT_SESSION_ID_KEY, clientSessionId);
+  },
 };

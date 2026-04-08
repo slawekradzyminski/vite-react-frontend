@@ -171,6 +171,7 @@ describe('API Client', () => {
       });
 
       expect(config.headers.Authorization).toBe('Bearer test-token');
+      expect(config.headers['X-Client-Session-Id']).toEqual(expect.any(String));
     });
 
     it('skips auth header for public endpoints', () => {
@@ -183,6 +184,39 @@ describe('API Client', () => {
       });
 
       expect(config.headers.Authorization).toBeUndefined();
+      expect(config.headers['X-Client-Session-Id']).toEqual(expect.any(String));
+    });
+
+    it('reuses an existing client session id', () => {
+      const requestInterceptor = getRequestInterceptor();
+      localStorage.setItem('clientSessionId', 'client-session-123');
+
+      const config = requestInterceptor({
+        url: '/api/v1/orders',
+        headers: {},
+      });
+
+      expect(config.headers['X-Client-Session-Id']).toBe('client-session-123');
+    });
+
+    it('stores client session id returned by the server', async () => {
+      const successInterceptor = mockAxios.interceptors.response.use.mock.calls.at(-1)?.[0];
+      if (!successInterceptor) {
+        throw new Error('Success interceptor was not registered');
+      }
+
+      const response = successInterceptor({
+        headers: {
+          'x-client-session-id': 'server-session-456',
+        },
+      });
+
+      expect(localStorage.getItem('clientSessionId')).toBe('server-session-456');
+      expect(response).toEqual({
+        headers: {
+          'x-client-session-id': 'server-session-456',
+        },
+      });
     });
 
     it('refreshes token and retries the original request on 401', async () => {
@@ -322,6 +356,7 @@ describe('API Client', () => {
       const mockResponse = new Response('stream');
       vi.mocked(global.fetch).mockResolvedValue(mockResponse);
       localStorage.setItem('token', 'abc');
+      localStorage.setItem('clientSessionId', 'client-session-789');
 
       const response = await ollama.generate(requestBody);
 
@@ -332,11 +367,26 @@ describe('API Client', () => {
           headers: expect.objectContaining({
             'Content-Type': 'application/json',
             Authorization: 'Bearer abc',
+            'X-Client-Session-Id': 'client-session-789',
           }),
           body: JSON.stringify(requestBody),
         })
       );
       expect(response).toBe(mockResponse);
+    });
+
+    it('stores client session id returned from streaming responses', async () => {
+      const mockResponse = new Response('stream', {
+        headers: {
+          'X-Client-Session-Id': 'server-stream-session',
+        },
+      });
+      vi.mocked(global.fetch).mockResolvedValue(mockResponse);
+      localStorage.setItem('token', 'abc');
+
+      await ollama.generate(requestBody);
+
+      expect(localStorage.getItem('clientSessionId')).toBe('server-stream-session');
     });
 
     it('clears auth and redirects when generate receives 401', async () => {

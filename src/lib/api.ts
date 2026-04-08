@@ -39,6 +39,7 @@ const ORDERS_API = `${API_V1_PREFIX}/orders`;
 const PRODUCTS_API = `${API_V1_PREFIX}/products`;
 const CART_API = `${API_V1_PREFIX}/cart`;
 const TRAFFIC_API = `${API_V1_PREFIX}/traffic`;
+const CLIENT_SESSION_ID_HEADER = 'X-Client-Session-Id';
 
 const PUBLIC_ENDPOINTS = [
   `${USERS_API}/signin`,
@@ -54,6 +55,21 @@ interface RefreshableRequestConfig extends AxiosRequestConfig {
 
 let refreshPromise: Promise<TokenPair> | null = null;
 const isRefreshEndpoint = (url?: string) => url?.includes(`${USERS_API}/refresh`);
+const readClientSessionIdHeader = (headers: unknown) => {
+  if (!headers || typeof headers !== 'object') {
+    return null;
+  }
+
+  const headerRecord = headers as Record<string, unknown>;
+  const headerValue = headerRecord[CLIENT_SESSION_ID_HEADER] ?? headerRecord[CLIENT_SESSION_ID_HEADER.toLowerCase()];
+  return typeof headerValue === 'string' && headerValue.trim() ? headerValue : null;
+};
+
+const storeClientSessionId = (clientSessionId: string | null) => {
+  if (clientSessionId) {
+    authStorage.setClientSessionId(clientSessionId);
+  }
+};
 
 const enqueueRefresh = (refreshToken: string) => {
   if (!refreshPromise) {
@@ -69,6 +85,9 @@ const enqueueRefresh = (refreshToken: string) => {
 };
 
 api.interceptors.request.use((config) => {
+  config.headers = config.headers ?? {};
+  config.headers[CLIENT_SESSION_ID_HEADER] = authStorage.getClientSessionId();
+
   if (config.url && PUBLIC_ENDPOINTS.includes(config.url)) {
     return config;
   }
@@ -81,7 +100,10 @@ api.interceptors.request.use((config) => {
 });
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    storeClientSessionId(readClientSessionIdHeader(response.headers));
+    return response;
+  },
   async (error: AxiosError) => {
     const status = error.response?.status;
     const originalRequest = error.config as RefreshableRequestConfig | undefined;
@@ -124,9 +146,12 @@ const streamWithAuth = async (path: string, payload: unknown) => {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${authStorage.getAccessToken() ?? ''}`,
+      [CLIENT_SESSION_ID_HEADER]: authStorage.getClientSessionId(),
     },
     body: JSON.stringify(payload),
   });
+
+  storeClientSessionId(response.headers.get(CLIENT_SESSION_ID_HEADER));
 
   if (!response.ok) {
     if (response.status === 401) {
