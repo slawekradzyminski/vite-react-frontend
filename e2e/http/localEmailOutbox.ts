@@ -13,7 +13,7 @@ interface OutboxEmail {
 }
 
 export async function clearLocalOutbox(request: APIRequestContext) {
-  await request.delete(`${BACKEND_URL}/local/email/outbox`);
+  await request.delete(`${BACKEND_URL}/api/v1/local/email/outbox`);
 }
 
 export async function getLatestResetToken(request: APIRequestContext): Promise<{ token: string; link: string | null }> {
@@ -23,7 +23,7 @@ export async function getLatestResetToken(request: APIRequestContext): Promise<{
   let emails: OutboxEmail[] = [];
 
   while (attempt < maxAttempts) {
-    const response = await request.get(`${BACKEND_URL}/local/email/outbox`);
+    const response = await request.get(`${BACKEND_URL}/api/v1/local/email/outbox`);
     if (!response.ok()) {
       throw new Error(`Unable to fetch local email outbox (${response.status()})`);
     }

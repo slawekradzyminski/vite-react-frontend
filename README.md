@@ -179,7 +179,7 @@ The frontend now exposes:
 - `/reset` – consumes the token delivered via e-mail and lets the user pick a new password.
 
 For local development you can retrieve reset links in two ways:
-1. **Local Spring profile** – call `DELETE /local/email/outbox` before tests to clear it, then inspect `GET /local/email/outbox` (default: `http://localhost:4001/local/email/outbox`) to grab the latest payload and token.
+1. **Local Spring profile** – call `DELETE /api/v1/local/email/outbox` before tests to clear it, then inspect `GET /api/v1/local/email/outbox` (default: `http://localhost:4001/api/v1/local/email/outbox`) to grab the latest payload and token.
 2. **Docker/localstack profile** – open Mailhog at [http://localhost:8025](http://localhost:8025) and copy the reset link from the emulated e-mail.
 
 After successfully resetting a password the app redirects back to `/login` and displays a toast confirming the update.
