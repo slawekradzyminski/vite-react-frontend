@@ -63,9 +63,6 @@ jobs:
       - name: Wait for Keycloak
         run: ./scripts/wait-for-keycloak.sh
         
-      - name: Start dev server
-        run: npm run dev &
-        
       - name: Wait for frontend
         run: ./scripts/wait-for-frontend.sh
         

@@ -4,10 +4,10 @@ timeout=120  # 2 minutes in seconds
 interval=5   # Check every 5 seconds
 elapsed=0
 
-echo "Waiting for backend to be ready at http://localhost:4001/v3/api-docs"
+echo "Waiting for backend to be ready via gateway at http://localhost:8081/v3/api-docs"
 
 while [ $elapsed -lt $timeout ]; do
-  if curl -s --head http://localhost:4001/v3/api-docs | grep "200" > /dev/null; then
+  if curl -s --head http://localhost:8081/v3/api-docs | grep "200" > /dev/null; then
     echo "Backend is ready!"
     exit 0
   fi
@@ -18,4 +18,4 @@ while [ $elapsed -lt $timeout ]; do
 done
 
 echo "Backend failed to respond within $timeout seconds"
-exit 1 
+exit 1

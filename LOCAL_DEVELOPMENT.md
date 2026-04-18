@@ -10,7 +10,7 @@ This frontend expects the Spring backend from `/Users/admin/IdeaProjects/test-se
 | Spring backend | `test-secure-backend` | `./mvnw spring-boot:run -Dspring-boot.run.profiles=local` | Listens on `http://localhost:4001`. The local profile already points at the mock Ollama service. |
 | Ollama mock | `ollama-mock` | `./mvnw spring-boot:run` | Streams deterministic responses on `http://localhost:11434`. |
 
-If you do need containers later, the `docker-compose.yml` in this repo exposes pre-built images for the backend and the Ollama mock—run `docker compose up backend ollama-mock` from `vite-react-frontend` to mirror the same topology in Docker, but the default workflow keeps everything on the host for faster reloads.
+The `docker-compose.yml` in this repo is the Playwright/CI stack. It builds this frontend into its production nginx image, starts backend, Keycloak, and the Ollama mock, then exposes the app and backend API through an nginx gateway at `http://localhost:8081`.
 
 ## Step-by-step
 
@@ -47,12 +47,15 @@ If you do need containers later, the `docker-compose.yml` in this repo exposes p
 
 ## Optional docker-compose flow
 
-If you prefer to keep everything inside containers for a quick smoke test:
+If you prefer to keep everything inside containers for a quick smoke test or Playwright run:
 
 ```
 cd /Users/admin/IdeaProjects/vite-react-frontend
-docker compose up backend ollama-mock -d
-# frontend still runs via npm run dev on port 8081
+docker compose up -d
+./scripts/wait-for-backend.sh
+./scripts/wait-for-keycloak.sh
+./scripts/wait-for-frontend.sh
+npx playwright test
 ```
 
 Stop the stack with `docker compose down` when you are done. Remember to switch back to the host processes before resuming feature work so hot reload stays instant.
@@ -61,7 +64,7 @@ Stop the stack with `docker compose down` when you are done. Remember to switch 
 
 ```
 npm test             # Vitest (React Testing Library)
-npx playwright test  # E2E suite – requires the backend + mock + dev server above
+npx playwright test  # E2E suite - requires the docker compose gateway on :8081
 ```
 
 Playwright logs in through the API, relies on deterministic Ollama output, and opens the traffic monitor WebSocket, so keep an eye on the backend console if you are debugging.

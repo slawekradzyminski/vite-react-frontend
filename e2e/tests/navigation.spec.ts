@@ -1,4 +1,5 @@
 import { test, expect } from '../fixtures/auth.fixture';
+import { APP_BASE_URL } from '../config/constants';
 import { DesktopNavigation, MobileNavigation } from '../pages/navigation.page.object';
 
 test.describe('Navigation', () => {
@@ -8,7 +9,7 @@ test.describe('Navigation', () => {
   test.beforeEach(async ({ authenticatedPage }) => {
     desktopNav = new DesktopNavigation(authenticatedPage.page);
     mobileNav = new MobileNavigation(authenticatedPage.page);
-    await authenticatedPage.page.goto('http://localhost:8081/');
+    await authenticatedPage.page.goto(`${APP_BASE_URL}/`);
   });
 
   test('should handle logout in desktop view', async ({ authenticatedPage }) => {

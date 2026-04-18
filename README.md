@@ -66,6 +66,14 @@ src/
 
 The application will be available at http://localhost:8081.
 
+For the containerized training stack, run the same topology used by CI:
+
+```bash
+docker compose up -d
+```
+
+That builds this frontend into its production nginx image, keeps the backend on the internal Docker network, and publishes a gateway on `http://localhost:8081`.
+
 ## Runtime Profiles
 
 The frontend supports one codepath across these runtime shapes:
@@ -191,16 +199,15 @@ Run all checks before submitting changes:
 ```bash
 npm run build          # Type-check + Vite production build
 npm test               # Vitest suite
-npx playwright test    # E2E tests (requires backend on :4001, dev server on :8081, ollama-mock on :11434, and Keycloak on :8082 for SSO specs)
+npx playwright test    # E2E tests (requires docker compose gateway on :8081 and Keycloak on :8082)
 ```
 
 Before launching Playwright:
-1. Start the Spring backend (`./mvnw spring-boot:run`) so the frontend can authenticate and proxy to Ollama.
-2. Start the deterministic Ollama mock (`cd ../ollama-mock && ./mvnw spring-boot:run`) – it listens on `http://localhost:11434` and mirrors the frontend's `qwen3.5:2b` defaults when the local profile is active.
-3. Start Keycloak from the sibling LocalStack repo when running SSO specs: `cd ../awesome-localstack && docker compose -f lightweight-docker-compose.yml up keycloak`.
-4. Run `npm run dev` to serve the Vite app on `http://localhost:8081`.
+1. Run `docker compose up -d` from this repository. The compose stack builds the frontend nginx image and starts backend, Keycloak, Ollama mock, and the `8081` gateway.
+2. Wait for the stack with `./scripts/wait-for-backend.sh`, `./scripts/wait-for-keycloak.sh`, and `./scripts/wait-for-frontend.sh`.
+3. Run `npx playwright test`.
 
-Playwright exercises the full stack (e.g., the Tools tab triggers real streaming tool calls), so deterministic results come from that mock service. The tests still rely on the backend’s local email outbox endpoint, so run the backend with the `local` Spring profile or adapt helpers to pull tokens from Mailhog when using docker/localstack.
+Playwright exercises the full stack (e.g., the Tools tab triggers real streaming tool calls), so deterministic results come from the containerized mock service. Backend API calls go through the same gateway origin as the browser: `http://localhost:8081/api/...`.
 
 The SSO Playwright specs exercise two paths:
 
@@ -211,4 +218,4 @@ npx playwright test e2e/tests/sso.spec.ts e2e/tests/sso-fixture.spec.ts
 - `sso.spec.ts` drives the real browser redirect through Keycloak.
 - `sso-fixture.spec.ts` obtains a Keycloak ID token over HTTP, exchanges it with the backend, and starts the page with app-issued tokens already in local storage.
 
-The default frontend workflow uses host processes for backend and Vite. CI uses this repository's `docker-compose.yml`, so the backend image referenced there must already contain the SSO exchange endpoint. After backend changes, publish a new backend image from `../test-secure-backend` with `./build-multiarch.sh <version>`, then run frontend CI with `BACKEND_IMAGE=slawekradzyminski/backend:<version>` or update the compose default tag.
+CI uses this repository's `docker-compose.yml`, so the backend image referenced there must already contain the SSO exchange endpoint. After backend changes, publish a new backend image from `../test-secure-backend` with `./build-multiarch.sh <version>`, then run frontend CI with `BACKEND_IMAGE=slawekradzyminski/backend:<version>` or update the compose default tag.

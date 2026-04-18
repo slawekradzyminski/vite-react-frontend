@@ -8,6 +8,7 @@ This section points other automation or human teammates to the right document fo
 
 ## Full dockerised stack
 
+- [`docker-compose.yml`](./docker-compose.yml) – CI and Playwright stack for this frontend. It builds the production frontend nginx image, starts backend, Keycloak, and the Ollama mock, then exposes everything through an nginx gateway on `http://localhost:8081`.
 - [`awesome-localstack/README.md`](../awesome-localstack/README.md) – main reference describing every docker-compose flavour (full stack, CI slice, lightweight variant) plus helper scripts. It includes the monitoring/LLM notes that are reused during trainings.
 
 ## Deployment asset rule
