@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getAbsoluteApiUrl, getApiBaseUrl, getPasswordResetBaseUrl } from './runtimeConfig';
+import { getAbsoluteApiUrl, getApiBaseUrl, getPasswordResetBaseUrl, getSsoConfig } from './runtimeConfig';
 
 describe('runtimeConfig', () => {
   afterEach(() => {
@@ -52,5 +52,50 @@ describe('runtimeConfig', () => {
         { origin: 'https://awesome.byst.re' } as Location,
       ),
     ).toBe('https://awesome.byst.re/api/v1/ws-traffic');
+  });
+
+  it('returns null when SSO is explicitly disabled', () => {
+    expect(
+      getSsoConfig(
+        { VITE_SSO_ENABLED: 'false' },
+        { origin: 'https://awesome.byst.re' } as Location,
+      ),
+    ).toBeNull();
+  });
+
+  it('uses local training SSO defaults on the gateway origin', () => {
+    expect(
+      getSsoConfig(
+        {},
+        { origin: 'http://localhost:8081' } as Location,
+      ),
+    ).toEqual({
+      enabled: true,
+      authority: 'http://localhost:8082/realms/awesome-testing',
+      clientId: 'awesome-testing-frontend',
+      redirectUri: 'http://localhost:8081/auth/sso/callback',
+      postLogoutRedirectUri: 'http://localhost:8081/login',
+    });
+  });
+
+  it('normalizes SSO urls against the current origin', () => {
+    expect(
+      getSsoConfig(
+        {
+          VITE_SSO_ENABLED: 'true',
+          VITE_SSO_AUTHORITY: 'https://sso.example.com/',
+          VITE_SSO_CLIENT_ID: 'awesome-ui',
+          VITE_SSO_REDIRECT_URI: '/auth/sso/callback',
+          VITE_SSO_POST_LOGOUT_REDIRECT_URI: '/login',
+        },
+        { origin: 'https://awesome.byst.re' } as Location,
+      ),
+    ).toEqual({
+      enabled: true,
+      authority: 'https://sso.example.com',
+      clientId: 'awesome-ui',
+      redirectUri: 'https://awesome.byst.re/auth/sso/callback',
+      postLogoutRedirectUri: 'https://awesome.byst.re/login',
+    });
   });
 });

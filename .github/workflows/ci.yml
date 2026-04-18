@@ -55,9 +55,13 @@ jobs:
         run: |
           chmod +x ./scripts/wait-for-backend.sh
           chmod +x ./scripts/wait-for-frontend.sh
+          chmod +x ./scripts/wait-for-keycloak.sh
         
       - name: Wait for backend
         run: ./scripts/wait-for-backend.sh
+
+      - name: Wait for Keycloak
+        run: ./scripts/wait-for-keycloak.sh
         
       - name: Start dev server
         run: npm run dev &

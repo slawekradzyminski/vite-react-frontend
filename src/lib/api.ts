@@ -2,6 +2,7 @@ import axios, { type AxiosError, type AxiosRequestConfig } from 'axios';
 import type {
   LoginRequest,
   LoginResponse,
+  SsoExchangeRequest,
   RegisterRequest,
   User,
   UserEditDTO,
@@ -47,6 +48,7 @@ const PUBLIC_ENDPOINTS = [
   `${USERS_API}/refresh`,
   `${USERS_API}/password/forgot`,
   `${USERS_API}/password/reset`,
+  `${USERS_API}/sso/exchange`,
 ];
 
 interface RefreshableRequestConfig extends AxiosRequestConfig {
@@ -55,6 +57,7 @@ interface RefreshableRequestConfig extends AxiosRequestConfig {
 
 let refreshPromise: Promise<TokenPair> | null = null;
 const isRefreshEndpoint = (url?: string) => url?.includes(`${USERS_API}/refresh`);
+const isPublicEndpoint = (url?: string) => Boolean(url && PUBLIC_ENDPOINTS.includes(url));
 const readClientSessionIdHeader = (headers: unknown) => {
   if (!headers || typeof headers !== 'object') {
     return null;
@@ -88,7 +91,7 @@ api.interceptors.request.use((config) => {
   config.headers = config.headers ?? {};
   config.headers[CLIENT_SESSION_ID_HEADER] = authStorage.getClientSessionId();
 
-  if (config.url && PUBLIC_ENDPOINTS.includes(config.url)) {
+  if (isPublicEndpoint(config.url)) {
     return config;
   }
 
@@ -110,6 +113,10 @@ api.interceptors.response.use(
     if (originalRequest && isRefreshEndpoint(originalRequest.url)) {
       authStorage.clearTokens();
       window.location.href = '/login';
+      return Promise.reject(error);
+    }
+
+    if (originalRequest && isPublicEndpoint(originalRequest.url)) {
       return Promise.reject(error);
     }
 
@@ -194,6 +201,9 @@ export const auth = {
 
   resetPassword: (data: ResetPasswordRequest) =>
     api.post<void>(`${USERS_API}/password/reset`, data),
+
+  ssoExchange: (data: SsoExchangeRequest) =>
+    api.post<LoginResponse>(`${USERS_API}/sso/exchange`, data),
 };
 
 export const email = {

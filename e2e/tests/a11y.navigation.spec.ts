@@ -11,29 +11,39 @@ test.describe('Navigation keyboard accessibility', () => {
     const { page } = authenticatedPage;
     await page.goto('/');
 
-    const brandLink = page.getByTestId('brand-link');
-    const productsLink = page.getByTestId('desktop-menu-products');
-    const emailLink = page.getByTestId('desktop-menu-send-email');
-    const qrLink = page.getByTestId('desktop-menu-qr-code');
-    const llmLink = page.getByTestId('desktop-menu-llm');
-    const trafficLink = page.getByTestId('desktop-menu-traffic-monitor');
     const adminLink = page.getByTestId('desktop-menu-admin');
-    const cartButton = page.getByTestId('desktop-cart-icon');
-    const profileLink = page.getByTestId('username-profile-link');
-    const logoutButton = page.getByTestId('logout-button');
-    await brandLink.focus();
-    await expect(brandLink).toBeFocused();
-    await expectNextFocus(page, productsLink);
-    await expectNextFocus(page, emailLink);
-    await expectNextFocus(page, qrLink);
-    await expectNextFocus(page, llmLink);
-    await expectNextFocus(page, trafficLink);
+    const expectedTabOrder = [
+      'brand-link',
+      'desktop-menu-products',
+      'desktop-menu-send-email',
+      'desktop-menu-qr-code',
+      'desktop-menu-llm',
+      'desktop-menu-traffic-monitor',
+    ];
     if (await adminLink.count()) {
-      await expectNextFocus(page, adminLink);
+      expectedTabOrder.push('desktop-menu-admin');
     }
-    await expectNextFocus(page, cartButton);
-    await expectNextFocus(page, profileLink);
-    await expectNextFocus(page, logoutButton);
+    expectedTabOrder.push('desktop-cart-icon', 'username-profile-link', 'logout-button');
+
+    const actualTabOrder = await page
+      .locator('nav a, nav button')
+      .evaluateAll(elements =>
+        elements
+          .filter(element => {
+            const htmlElement = element as HTMLElement;
+            return !htmlElement.hidden && htmlElement.tabIndex >= 0 && htmlElement.offsetParent !== null;
+          })
+          .map(element => (element as HTMLElement).dataset.testid)
+          .filter(Boolean)
+      );
+
+    expect(actualTabOrder).toEqual(expectedTabOrder);
+
+    for (const testId of expectedTabOrder) {
+      const element = page.getByTestId(testId);
+      await element.focus();
+      await expect(element).toBeFocused();
+    }
   });
 
   test('supports keyboard access in mobile menu and closes after navigation', async ({ authenticatedPage }) => {

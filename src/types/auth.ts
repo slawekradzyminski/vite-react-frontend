@@ -21,6 +21,10 @@ export interface LoginResponse {
   roles: Role[];
 }
 
+export interface SsoExchangeRequest {
+  idToken: string;
+}
+
 export interface TokenPair {
   token: string;
   refreshToken: string;

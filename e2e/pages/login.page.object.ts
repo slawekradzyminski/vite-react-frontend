@@ -5,13 +5,15 @@ export class LoginPage {
   readonly usernameInput: Locator;
   readonly passwordInput: Locator;
   readonly signInButton: Locator;
+  readonly ssoButton: Locator;
   readonly toast: Locator;
   readonly registerLink: Locator;
 
   constructor(protected readonly page: Page) {
     this.usernameInput = page.getByLabel('Username');
     this.passwordInput = page.getByLabel('Password');
-    this.signInButton = page.getByRole('button', { name: 'Sign in' });
+    this.signInButton = page.getByTestId('login-submit-button');
+    this.ssoButton = page.getByTestId('login-sso-button');
     this.toast = page.locator('[data-state="open"]');
     this.registerLink = page.getByRole('button', { name: 'Register' });
   }
@@ -33,4 +35,4 @@ export class LoginPage {
   getMinLengthError(field: string, length: number): Locator {
     return this.page.getByText(`${field} must be at least ${length} characters`);
   }
-} 
+}

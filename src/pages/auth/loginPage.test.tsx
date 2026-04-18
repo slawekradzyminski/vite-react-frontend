@@ -23,6 +23,18 @@ vi.mock('../../hooks/useToast', () => ({
   useToast: () => ({ toast: mockToast }),
 }));
 
+const mockSso = vi.hoisted(() => ({
+  beginLogin: vi.fn(),
+  enabled: false,
+}));
+
+vi.mock('../../lib/sso', () => ({
+  sso: {
+    isEnabled: () => mockSso.enabled,
+    beginLogin: mockSso.beginLogin,
+  },
+}));
+
 // Variable declarations after all mocks
 const mockNavigate = vi.fn();
 const mockLocation = { state: null };
@@ -36,6 +48,7 @@ describe('LoginPage', () => {
     vi.clearAllMocks();
     user = userEvent.setup();
     mockLocation.state = null;
+    mockSso.enabled = false;
     
     // Mock localStorage
     Object.defineProperty(window, 'localStorage', {
@@ -61,6 +74,15 @@ describe('LoginPage', () => {
     expect(screen.getByTestId('login-submit-button')).toBeInTheDocument();
     expect(screen.getByTestId('login-register-link')).toBeInTheDocument();
     expect(screen.getByTestId('login-playground-notice')).toHaveTextContent('Public training playground only');
+    expect(screen.queryByTestId('login-sso-button')).not.toBeInTheDocument();
+  });
+
+  it('renders the SSO button when enabled', () => {
+    mockSso.enabled = true;
+
+    render(<LoginPage />);
+
+    expect(screen.getByTestId('login-sso-button')).toBeInTheDocument();
   });
 
   it('displays validation errors for empty fields', async () => {
@@ -206,6 +228,16 @@ describe('LoginPage', () => {
     
     // then
     expect(mockNavigate).toHaveBeenCalledWith('/register');
+  });
+
+  it('starts SSO login when the SSO button is clicked', async () => {
+    mockSso.enabled = true;
+
+    render(<LoginPage />);
+
+    await user.click(screen.getByTestId('login-sso-button'));
+
+    expect(mockSso.beginLogin).toHaveBeenCalled();
   });
 
   it('displays toast from location state if present', async () => {

@@ -11,12 +11,15 @@ import { LoginFormData, loginSchema } from '../../validators/auth';
 import { useToast } from '../../hooks/useToast';
 import { Surface } from '../../components/ui/surface';
 import { Badge } from '../../components/ui/badge';
+import { sso } from '../../lib/sso';
 
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
+  const [ssoLoading, setSsoLoading] = useState(false);
   const { toast } = useToast();
+  const ssoEnabled = sso.isEnabled();
 
   const {
     register,
@@ -60,6 +63,21 @@ export function LoginPage() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSsoLogin = async () => {
+    setSsoLoading(true);
+
+    try {
+      await sso.beginLogin();
+    } catch (err: any) {
+      toast({
+        variant: 'error',
+        title: 'Error',
+        description: err?.message || 'Failed to start SSO login',
+      });
+      setSsoLoading(false);
     }
   };
 
@@ -156,12 +174,35 @@ export function LoginPage() {
               <Button
                 type="submit"
                 className="h-11 w-full rounded-xl bg-slate-900 text-white hover:bg-slate-800"
-                disabled={loading}
+                disabled={loading || ssoLoading}
                 data-testid="login-submit-button"
               >
                 {loading ? 'Signing in...' : 'Sign in'}
               </Button>
             </div>
+
+            {ssoEnabled && (
+              <>
+                <div className="flex items-center gap-3 text-xs uppercase tracking-[0.24em] text-slate-400">
+                  <span className="h-px flex-1 bg-stone-200" />
+                  <span>or</span>
+                  <span className="h-px flex-1 bg-stone-200" />
+                </div>
+
+                <div data-testid="login-sso-button-container">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="h-11 w-full rounded-xl border border-slate-300 bg-white text-slate-800 hover:bg-slate-50"
+                    disabled={loading || ssoLoading}
+                    onClick={handleSsoLogin}
+                    data-testid="login-sso-button"
+                  >
+                    {ssoLoading ? 'Redirecting...' : 'Sign in with SSO'}
+                  </Button>
+                </div>
+              </>
+            )}
 
             <div className="rounded-[1.4rem] border border-stone-200 bg-stone-50 px-4 py-3 text-center text-sm text-slate-600" data-testid="login-register-link-container">
               <span>Don't have an account? </span>
