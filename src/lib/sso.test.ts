@@ -55,6 +55,41 @@ describe('sso helper', () => {
     );
   });
 
+  it('starts a social login redirect with kc_idp_hint', async () => {
+    const assign = vi.fn();
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { assign, origin: 'https://awesome.byst.re' } as unknown as Location,
+    });
+    vi.spyOn(crypto, 'randomUUID')
+      .mockReturnValueOnce('11111111-1111-4111-8111-111111111111')
+      .mockReturnValueOnce('22222222-2222-4222-8222-222222222222')
+      .mockReturnValueOnce('33333333-3333-4333-8333-333333333333')
+      .mockReturnValueOnce('44444444-4444-4444-8444-444444444444');
+
+    await sso.beginSocialLogin(
+      'google',
+      {
+        VITE_SSO_ENABLED: 'true',
+        VITE_SSO_AUTHORITY: 'https://sso.example.com/',
+        VITE_SSO_CLIENT_ID: 'awesome-ui',
+        VITE_SSO_REDIRECT_URI: '/auth/sso/callback',
+        VITE_SSO_POST_LOGOUT_REDIRECT_URI: '/login',
+      },
+      { origin: 'https://awesome.byst.re' } as Location,
+    );
+
+    expect(assign).toHaveBeenCalledWith(expect.stringContaining('https://sso.example.com/protocol/openid-connect/auth'));
+    const redirectUrl = new URL(assign.mock.calls[0][0]);
+    expect(redirectUrl.searchParams.get('kc_idp_hint')).toBe('google');
+    expect(redirectUrl.searchParams.get('client_id')).toBe('awesome-ui');
+    expect(redirectUrl.searchParams.get('redirect_uri')).toBe('https://awesome.byst.re/auth/sso/callback');
+    expect(redirectUrl.searchParams.get('response_type')).toBe('code');
+    expect(redirectUrl.searchParams.get('code_challenge')).toBeTruthy();
+    expect(redirectUrl.searchParams.get('code_challenge_method')).toBe('S256');
+    expect(sessionStorage.getItem('ssoState')).toBe('11111111-1111-4111-8111-111111111111');
+  });
+
   it('exchanges the authorization code and backend id token', async () => {
     sessionStorage.setItem('ssoState', 'state-123');
     sessionStorage.setItem('ssoNonce', 'nonce-456');

@@ -183,6 +183,43 @@ export const sso = {
     window.location.assign(authorizationUrl);
   },
 
+  beginSocialLogin: async (
+    provider: 'google' | 'github',
+    env: SsoEnv = import.meta.env,
+    location: RuntimeLocation = window.location,
+  ) => {
+    const config = getSsoConfig(env, location);
+    if (!config) {
+      throw new Error('SSO is not configured');
+    }
+
+    const state = randomValue();
+    const nonce = randomValue();
+    const codeVerifier = `${randomValue()}-${randomValue()}`;
+    const codeChallenge = await createCodeChallenge(codeVerifier);
+    safeSetItem(SSO_STATE_KEY, state);
+    safeSetItem(SSO_NONCE_KEY, nonce);
+    safeSetItem(SSO_CODE_VERIFIER_KEY, codeVerifier);
+
+    const authorizationUrl = createSsoUrl(
+      `${config.authority}/protocol/openid-connect/auth`,
+      {
+        client_id: config.clientId,
+        redirect_uri: config.redirectUri,
+        response_type: 'code',
+        scope: 'openid profile email',
+        prompt: 'login',
+        state,
+        nonce,
+        code_challenge: codeChallenge,
+        code_challenge_method: 'S256',
+        kc_idp_hint: provider,
+      },
+    );
+
+    window.location.assign(authorizationUrl);
+  },
+
   beginLogout: (env: SsoEnv = import.meta.env, location: RuntimeLocation = window.location) => {
     const config = getSsoConfig(env, location);
     authStorage.clearTokens();
