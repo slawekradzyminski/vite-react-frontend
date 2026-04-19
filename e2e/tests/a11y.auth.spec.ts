@@ -17,6 +17,8 @@ test.describe('Auth keyboard accessibility', () => {
     const forgotLink = page.getByTestId('login-forgot-link');
     const submitButton = page.getByTestId('login-submit-button');
     const ssoButton = page.getByTestId('login-sso-button');
+    const googleButton = page.getByTestId('login-google-button');
+    const githubButton = page.getByTestId('login-github-button');
     const registerLink = page.getByTestId('login-register-link');
     const blogLink = page.getByTestId('footer-blog-link');
 
@@ -29,6 +31,8 @@ test.describe('Auth keyboard accessibility', () => {
     await expectNextFocus(page, forgotLink);
     await expectNextFocus(page, submitButton);
     await expectNextFocus(page, ssoButton);
+    await expectNextFocus(page, googleButton);
+    await expectNextFocus(page, githubButton);
     await expectNextFocus(page, registerLink);
     await expectNextFocus(page, blogLink);
   });
