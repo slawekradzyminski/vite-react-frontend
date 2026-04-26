@@ -55,50 +55,33 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-[calc(100svh-7rem)] items-center py-6" data-testid="register-page">
-      <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(460px,0.9fr)]" data-testid="register-container">
-        <Surface as="section" variant="heroAccent" padding="auth" className="flex flex-col justify-between">
-          <div className="space-y-8">
-            <img
-              src="/branding/generated/at-transparent.png"
-              alt="Awesome Testing"
-              className="h-14 w-14 object-contain"
-            />
-            <div className="space-y-4" data-testid="register-header">
+    <div className="flex min-h-full items-center py-2 sm:py-3" data-testid="register-page">
+      <div className="mx-auto grid w-full max-w-6xl gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(460px,0.9fr)]" data-testid="register-container">
+        <Surface as="section" variant="heroAccent" padding="auth" className="relative overflow-hidden p-6 lg:p-7">
+          <div className="absolute inset-x-8 bottom-0 h-28 bg-[radial-gradient(circle_at_center,_rgba(14,165,233,0.10),_transparent_72%)]" aria-hidden="true" />
+          <div className="relative flex h-full flex-col justify-center">
+            <div className="space-y-8 lg:space-y-10" data-testid="register-header">
               <Badge tone="tracking" variant="outline" className="text-[11px] tracking-[0.26em]">Awesome Testing</Badge>
-              <h2 className="max-w-lg text-4xl font-semibold tracking-tight text-slate-950" data-testid="register-title">
-                Create your account
-              </h2>
-              <p className="max-w-xl text-base leading-7 text-slate-600">
-                Join the workspace and get immediate access to operations tooling, monitoring flows, and the AI surface.
-              </p>
+              <div className="space-y-5 lg:space-y-6">
+                <h2 className="max-w-lg text-4xl font-semibold tracking-tight text-slate-950" data-testid="register-title">
+                  Create your account
+                </h2>
+                <p className="max-w-xl text-base leading-7 text-slate-600">
+                  Join the workspace and get immediate access to operations tooling, monitoring flows, and the AI surface.
+                </p>
+              </div>
               <div
-                className="max-w-xl rounded-[1.4rem] border border-amber-200 bg-amber-50/90 px-4 py-3 text-sm leading-6 text-amber-950 shadow-[0_18px_40px_-32px_rgba(120,53,15,0.55)]"
+                className="max-w-xl rounded-[1.4rem] border border-amber-200 bg-amber-50/90 px-4 py-2.5 text-sm leading-6 text-amber-950 shadow-[0_18px_40px_-32px_rgba(120,53,15,0.55)]"
                 data-testid="register-playground-notice"
               >
                 Training environment only. Create throwaway accounts, use fake inputs, and assume demo data can be reset at any time.
               </div>
             </div>
           </div>
-
-          <div className="mt-10 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-[1.4rem] border border-stone-200 bg-white/80 p-4">
-              <p className="text-sm font-semibold text-slate-900">Fast start</p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">Create an account and move straight into the dashboard.</p>
-            </div>
-            <div className="rounded-[1.4rem] border border-stone-200 bg-white/80 p-4">
-              <p className="text-sm font-semibold text-slate-900">Managed access</p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">Client role defaults keep onboarding predictable.</p>
-            </div>
-            <div className="rounded-[1.4rem] border border-stone-200 bg-white/80 p-4">
-              <p className="text-sm font-semibold text-slate-900">Connected tools</p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">Products, email, QR, traffic, and LLM tools stay in one place.</p>
-            </div>
-          </div>
         </Surface>
 
-        <Surface as="section" variant="default" padding="auth" className="bg-white/88 shadow-[0_30px_90px_-55px_rgba(15,23,42,0.55)]">
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate data-testid="register-form">
+        <Surface as="section" variant="default" padding="auth" className="bg-white/88 p-6 lg:p-7 shadow-[0_30px_90px_-55px_rgba(15,23,42,0.55)]">
+          <form className="space-y-5" onSubmit={handleSubmit(onSubmit)} noValidate data-testid="register-form">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2" data-testid="register-username-field">
                 <Label htmlFor="username">Username</Label>

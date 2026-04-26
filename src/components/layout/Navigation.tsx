@@ -67,6 +67,12 @@ export function Navigation() {
   const isAdmin = user?.data?.roles?.includes(Role.ADMIN);
   const isActive = (path: string) =>
     path === '/' ? location.pathname === path : location.pathname.startsWith(path);
+  const authLinkClass = (path: '/login' | '/register') =>
+    `rounded-full px-4 py-2 text-sm font-medium transition ${
+      location.pathname === path
+        ? 'bg-slate-900 text-stone-50 hover:bg-slate-800'
+        : 'text-slate-600 hover:bg-white hover:text-slate-900'
+    }`;
 
   const authMenuItems = [
     { label: 'Products', path: '/products' },
@@ -188,14 +194,14 @@ export function Navigation() {
               <div className="flex items-center gap-2" data-testid="auth-actions">
                 <Link
                   to="/login"
-                  className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-white hover:text-slate-900"
+                  className={authLinkClass('/login')}
                   data-testid="login-link"
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
-                  className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-stone-50 transition hover:bg-slate-800"
+                  className={authLinkClass('/register')}
                   data-testid="register-link"
                 >
                   Register
