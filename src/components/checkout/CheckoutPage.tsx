@@ -1,30 +1,11 @@
-import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, Navigate } from 'react-router-dom';
-import { cart, products } from '../../lib/api';
+import { cart } from '../../lib/api';
 import { CheckoutForm } from './CheckoutForm';
-import { CartItem as CartItemType } from '../../types/cart';
 import { Surface } from '../ui/surface';
-
-interface RawCartResponse {
-  items?: Array<{
-    productId: number;
-    productName?: string;
-    name?: string;
-    quantity: number;
-    unitPrice?: number;
-    price?: number;
-    totalPrice?: number;
-  }>;
-  totalPrice?: number;
-  totalAmount?: number;
-  username?: string;
-  totalItems?: number;
-}
+import { useEnrichedCart, type RawCartResponse } from '../../hooks/useEnrichedCart';
 
 export function CheckoutPage() {
-  const [enrichedItems, setEnrichedItems] = useState<CartItemType[]>([]);
-  
   const { data: cartResponse, isLoading, error } = useQuery({
     queryKey: ['cart'],
     queryFn: cart.getCart,
@@ -33,47 +14,9 @@ export function CheckoutPage() {
   });
   
   const rawData = cartResponse?.data as RawCartResponse;
-  
-  useEffect(() => {
-    const fetchProductDetails = async () => {
-      if (!rawData?.items) return;
-      
-      const enrichedItemsPromises = rawData.items.map(async (item) => {
-        try {
-          const productResponse = await products.getProductById(item.productId);
-          const productData = productResponse.data;
-          
-          return {
-            productId: item.productId,
-            productName: item.productName || item.name || productData.name || 'Unknown Product',
-            quantity: item.quantity,
-            unitPrice: item.unitPrice || item.price || productData.price || 0,
-            totalPrice: item.totalPrice || (item.quantity * (item.unitPrice || item.price || productData.price || 0)) || 0,
-            imageUrl: productData.imageUrl || ''
-          };
-        } catch (error) {
-          console.error(`Error fetching details for product ${item.productId}:`, error);
-          return {
-            productId: item.productId,
-            productName: item.productName || item.name || 'Unknown Product',
-            quantity: item.quantity,
-            unitPrice: item.unitPrice || item.price || 0,
-            totalPrice: item.totalPrice || (item.quantity * (item.unitPrice || item.price || 0)) || 0,
-            imageUrl: ''
-          };
-        }
-      });
-      
-      const resolvedItems = await Promise.all(enrichedItemsPromises);
-      setEnrichedItems(resolvedItems);
-    };
-    
-    if (rawData?.items) {
-      fetchProductDetails();
-    }
-  }, [rawData]);
+  const { cartData, isEnriching } = useEnrichedCart(rawData);
 
-  if (isLoading) {
+  if (isLoading || isEnriching) {
     return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="checkout-loading">Loading checkout...</Surface>;
   }
 
@@ -93,8 +36,8 @@ export function CheckoutPage() {
     return <Navigate to="/cart" />;
   }
 
-  const totalPrice = rawData?.totalPrice || rawData?.totalAmount || 0;
-  const totalItems = rawData?.totalItems || enrichedItems.reduce((sum, item) => sum + item.quantity, 0);
+  const totalPrice = cartData.totalPrice;
+  const totalItems = cartData.totalItems;
 
   return (
     <div className="space-y-6 pb-10" data-testid="checkout-page">
@@ -161,7 +104,7 @@ export function CheckoutPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-200 bg-white/60 space-y-0" data-testid="checkout-items-list">
-                {enrichedItems.map((item) => (
+                {cartData.items.map((item) => (
                   <tr key={item.productId} data-testid={`checkout-item-${item.productId}`}>
                     <td className="whitespace-nowrap px-6 py-4" data-testid={`checkout-item-product-${item.productId}`}>
                       <div className="flex items-center">

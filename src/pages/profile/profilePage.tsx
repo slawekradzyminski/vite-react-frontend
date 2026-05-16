@@ -30,7 +30,7 @@ export function Profile() {
     register: registerChatPrompt,
     handleSubmit: handleChatPromptSubmit,
     setValue: setChatPromptValue,
-    formState: { errors: chatPromptErrors },
+    formState: { errors: chatPromptErrors, isDirty: isChatPromptDirty },
   } = useForm<SystemPromptFormData>({
     resolver: zodResolver(systemPromptSchema),
     defaultValues: {
@@ -43,7 +43,7 @@ export function Profile() {
     register: registerToolPrompt,
     handleSubmit: handleToolPromptSubmit,
     setValue: setToolPromptValue,
-    formState: { errors: toolPromptErrors },
+    formState: { errors: toolPromptErrors, isDirty: isToolPromptDirty },
   } = useForm<ToolSystemPromptFormData>({
     resolver: zodResolver(toolSystemPromptSchema),
     defaultValues: {
@@ -52,14 +52,14 @@ export function Profile() {
   });
 
   // Fetch chat system prompt
-  const { isLoading: isLoadingChatPrompt } = useQuery({
+  const { data: chatPromptResponse, isLoading: isLoadingChatPrompt } = useQuery({
     queryKey: ['chatSystemPrompt', username],
     queryFn: async () => prompts.chat.get(),
     enabled: !!username,
   });
 
   // Fetch tool system prompt
-  const { isLoading: isLoadingToolPrompt } = useQuery({
+  const { data: toolPromptResponse, isLoading: isLoadingToolPrompt } = useQuery({
     queryKey: ['toolSystemPrompt', username],
     queryFn: async () => prompts.tool.get(),
     enabled: !!username,
@@ -67,29 +67,17 @@ export function Profile() {
 
   // Effect to set chat prompt value when loaded
   useEffect(() => {
-    if (currentUser?.data?.username) {
-      prompts.chat.get()
-        .then(response => {
-          setChatPromptValue('systemPrompt', response.data.chatSystemPrompt || '');
-        })
-        .catch(error => {
-          console.error('Failed to fetch chat system prompt:', error);
-        });
+    if (chatPromptResponse && !isChatPromptDirty) {
+      setChatPromptValue('systemPrompt', chatPromptResponse.data.chatSystemPrompt || '');
     }
-  }, [currentUser?.data?.username, setChatPromptValue]);
+  }, [chatPromptResponse, isChatPromptDirty, setChatPromptValue]);
 
   // Effect to set tool prompt value when loaded
   useEffect(() => {
-    if (currentUser?.data?.username) {
-      prompts.tool.get()
-        .then(response => {
-          setToolPromptValue('toolSystemPrompt', response.data.toolSystemPrompt || '');
-        })
-        .catch(error => {
-          console.error('Failed to fetch tool system prompt:', error);
-        });
+    if (toolPromptResponse && !isToolPromptDirty) {
+      setToolPromptValue('toolSystemPrompt', toolPromptResponse.data.toolSystemPrompt || '');
     }
-  }, [currentUser?.data?.username, setToolPromptValue]);
+  }, [toolPromptResponse, isToolPromptDirty, setToolPromptValue]);
 
   // Update chat system prompt mutation
   const updateChatPromptMutation = useMutation({

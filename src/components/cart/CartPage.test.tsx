@@ -140,6 +140,47 @@ describe('CartPage', () => {
     });
   });
 
+  it('keeps loading state while non-empty cart items are being enriched', async () => {
+    let resolveProduct!: (value: AxiosResponse<Product>) => void;
+    vi.mocked(products.getProductById).mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveProduct = resolve;
+      })
+    );
+    vi.mocked(reactQuery.useQuery).mockReturnValue({
+      data: {
+        data: {
+          username: 'testuser',
+          items: [
+            {
+              productId: 1,
+              productName: 'Test Product 1',
+              quantity: 1,
+              unitPrice: 10,
+              totalPrice: 10,
+            },
+          ],
+          totalPrice: 10,
+          totalItems: 1,
+        },
+      },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    } as any);
+
+    renderWithProviders(<CartPage />);
+
+    expect(screen.getByText('Loading cart...')).toBeInTheDocument();
+    expect(screen.queryByText('Your cart is empty')).not.toBeInTheDocument();
+
+    resolveProduct(await defaultProductLookup(1));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Test Product 1/)).toBeInTheDocument();
+    });
+  });
+
   it('displays empty cart message when cart has no items', async () => {
     // given
     const emptyCart: Cart = {

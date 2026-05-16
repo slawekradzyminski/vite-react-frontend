@@ -1,13 +1,38 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor, fireEvent } from '@testing-library/react';
+import { screen, waitFor, fireEvent, render } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Profile } from './profilePage';
 import { auth, prompts, orders } from '../../lib/api';
 import { Role } from '../../types/auth';
 import { renderWithProviders } from '../../test/test-utils';
+import { ToastProvider } from '../../components/ui/ToastProvider';
 import type { AxiosResponse } from 'axios';
 import type { User } from '../../types/auth';
 
 const mockToast = vi.fn();
+
+const renderProfileWithQueryClient = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+
+  render(
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <ToastProvider>
+          <Profile />
+        </ToastProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
+
+  return queryClient;
+};
 
 vi.mock('../../hooks/useToast', async () => {
   const actual = await vi.importActual<typeof import('../../hooks/useToast')>('../../hooks/useToast');
@@ -259,6 +284,43 @@ describe('Profile', () => {
       title: 'Success',
       description: 'Chat system prompt updated successfully',
     });
+  });
+
+  it('does not overwrite unsaved system prompt edits after a query refetch', async () => {
+    vi.mocked(prompts.chat.get)
+      .mockResolvedValueOnce({
+        data: {
+          chatSystemPrompt: 'Initial system prompt',
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: { headers: {} } as any,
+      })
+      .mockResolvedValueOnce({
+        data: {
+          chatSystemPrompt: 'Server refetched prompt',
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: { headers: {} } as any,
+      });
+
+    const queryClient = renderProfileWithQueryClient();
+
+    const textarea = await screen.findByTestId('profile-prompt-input');
+    await waitFor(() => {
+      expect(textarea).toHaveValue('Initial system prompt');
+    });
+
+    fireEvent.change(textarea, { target: { value: 'Unsaved local prompt' } });
+    await queryClient.invalidateQueries({ queryKey: ['chatSystemPrompt'] });
+
+    await waitFor(() => {
+      expect(prompts.chat.get).toHaveBeenCalledTimes(2);
+    });
+    expect(textarea).toHaveValue('Unsaved local prompt');
   });
 
   it('shows error toast when system prompt update fails', async () => {

@@ -9,8 +9,10 @@ import { Badge } from '../../components/ui/badge';
 import { authStorage } from '../../lib/authStorage';
 import { Surface } from '../../components/ui/surface';
 
+type TrafficEventView = TrafficEventDto & { eventKey: string };
+
 export function TrafficMonitorPage() {
-  const [trafficEvents, setTrafficEvents] = useState<TrafficEventDto[]>([]);
+  const [trafficEvents, setTrafficEvents] = useState<TrafficEventView[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [statusMessage, setStatusMessage] = useState(() => {
     if (!authStorage.getAccessToken()) {
@@ -20,6 +22,7 @@ export function TrafficMonitorPage() {
   });
   const stompClientRef = useRef<Client | null>(null);
   const lastClearedAtRef = useRef<number>(0);
+  const eventSequenceRef = useRef<number>(0);
 
   const { data: trafficInfo, isLoading, error } = useQuery({
     queryKey: ['trafficInfo'],
@@ -39,7 +42,11 @@ export function TrafficMonitorPage() {
     const stompClient = new Client({
       webSocketFactory: () => socket,
       connectHeaders: { Authorization: `Bearer ${token}` },
-      debug: (str) => console.log('STOMP debug:', str),
+      debug: (str) => {
+        if (import.meta.env.DEV) {
+          console.log('STOMP debug:', str);
+        }
+      },
       onConnect: () => {
         setIsConnected(true);
         setStatusMessage('Connected to traffic monitor');
@@ -48,6 +55,11 @@ export function TrafficMonitorPage() {
           try {
             const event: TrafficEventDto = JSON.parse(message.body);
             const eventTimestamp = event.timestamp ? Date.parse(event.timestamp) : null;
+            eventSequenceRef.current += 1;
+            const eventWithKey: TrafficEventView = {
+              ...event,
+              eventKey: `${event.timestamp}-${event.method}-${event.path}-${event.status}-${eventSequenceRef.current}`,
+            };
             setTrafficEvents((prev) => {
               if (
                 eventTimestamp !== null &&
@@ -56,7 +68,7 @@ export function TrafficMonitorPage() {
               ) {
                 return prev;
               }
-              return [event, ...prev];
+              return [eventWithKey, ...prev];
             });
           } catch (err) {
             console.error('Failed to parse traffic event', err);
@@ -77,9 +89,10 @@ export function TrafficMonitorPage() {
     stompClientRef.current = stompClient;
 
     return () => {
-      if (stompClientRef.current?.connected) {
-        stompClientRef.current.deactivate();
+      if (stompClientRef.current === stompClient) {
+        stompClientRef.current = null;
       }
+      void stompClient.deactivate();
     };
   }, [trafficInfo?.data]);
 
@@ -163,7 +176,7 @@ export function TrafficMonitorPage() {
               </thead>
               <tbody className="divide-y divide-stone-200 bg-white/60" data-testid="traffic-events-table-body">
                 {trafficEvents.map((event, index) => (
-                  <tr key={index} className="hover:bg-stone-50/70" data-testid={`traffic-event-${index}`}>
+                  <tr key={event.eventKey} className="hover:bg-stone-50/70" data-testid={`traffic-event-${index}`}>
                     <td className="px-6 py-4 whitespace-nowrap" data-testid={`traffic-event-method-${index}`}>
                       <span className="font-mono text-slate-900">{event.method}</span>
                     </td>

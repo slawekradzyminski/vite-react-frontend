@@ -420,14 +420,48 @@ describe('API Client', () => {
       expect(localStorage.getItem('clientSessionId')).toBe('server-stream-session');
     });
 
-    it('clears auth and redirects when generate receives 401', async () => {
+    it('refreshes tokens and retries generate requests on 401', async () => {
+      const unauthorizedResponse = new Response(null, {
+        status: 401,
+        statusText: 'Unauthorized',
+      });
+      const okResponse = new Response('stream');
+      vi.mocked(global.fetch)
+        .mockResolvedValueOnce(unauthorizedResponse)
+        .mockResolvedValueOnce(okResponse);
+      localStorage.setItem('token', 'expired');
+      localStorage.setItem('refreshToken', 'refresh-token');
+      const refreshSpy = vi.spyOn(auth, 'refresh').mockResolvedValue({
+        data: {
+          token: 'new-stream-token',
+          refreshToken: 'new-refresh-token',
+        },
+      } as any);
+
+      const response = await ollama.generate(requestBody);
+
+      expect(refreshSpy).toHaveBeenCalledWith({ refreshToken: 'refresh-token' });
+      expect(response).toBe(okResponse);
+      expect(global.fetch).toHaveBeenLastCalledWith(
+        `${apiBase}/api/v1/ollama/generate`,
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: 'Bearer new-stream-token',
+          }),
+        })
+      );
+      expect(localStorage.getItem('token')).toBe('new-stream-token');
+      expect(localStorage.getItem('refreshToken')).toBe('new-refresh-token');
+      refreshSpy.mockRestore();
+    });
+
+    it('clears auth and redirects when generate receives 401 without a refresh token', async () => {
       const unauthorizedResponse = new Response(null, {
         status: 401,
         statusText: 'Unauthorized',
       });
       vi.mocked(global.fetch).mockResolvedValue(unauthorizedResponse);
       localStorage.setItem('token', 'abc');
-      localStorage.setItem('refreshToken', 'ref');
       const originalLocation = window.location;
       Object.defineProperty(window, 'location', {
         configurable: true,

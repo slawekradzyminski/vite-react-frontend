@@ -1,31 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { cart, products } from '../../lib/api';
+import { cart } from '../../lib/api';
 import { CartItem } from './CartItem';
 import { CartSummary } from './CartSummary';
-import { Cart as CartType, CartItem as CartItemType } from '../../types/cart';
 import { Surface } from '../ui/surface';
-
-interface RawCartResponse {
-  items?: Array<{
-    productId: number;
-    productName?: string;
-    name?: string;
-    quantity: number;
-    unitPrice?: number;
-    price?: number;
-    totalPrice?: number;
-  }>;
-  totalPrice?: number;
-  totalAmount?: number;
-  username?: string;
-  totalItems?: number;
-}
+import { useEnrichedCart, type RawCartResponse } from '../../hooks/useEnrichedCart';
 
 export function CartPage() {
   const [isUpdating, setIsUpdating] = useState(false);
-  const [enrichedItems, setEnrichedItems] = useState<CartItemType[]>([]);
   
   const { data: cartResponse, isLoading, error, refetch } = useQuery({
     queryKey: ['cart'],
@@ -35,45 +18,7 @@ export function CartPage() {
   });
   
   const rawData = cartResponse?.data as RawCartResponse;
-  
-  useEffect(() => {
-    const fetchProductDetails = async () => {
-      if (!rawData?.items) return;
-      
-      const enrichedItemsPromises = rawData.items.map(async (item) => {
-        try {
-          const productResponse = await products.getProductById(item.productId);
-          const productData = productResponse.data;
-          
-          return {
-            productId: item.productId,
-            productName: item.productName || item.name || productData.name || 'Unknown Product',
-            quantity: item.quantity,
-            unitPrice: item.unitPrice || item.price || productData.price || 0,
-            totalPrice: item.totalPrice || (item.quantity * (item.unitPrice || item.price || productData.price || 0)) || 0,
-            imageUrl: productData.imageUrl || ''
-          };
-        } catch (error) {
-          console.error(`Error fetching details for product ${item.productId}:`, error);
-          return {
-            productId: item.productId,
-            productName: item.productName || item.name || 'Unknown Product',
-            quantity: item.quantity,
-            unitPrice: item.unitPrice || item.price || 0,
-            totalPrice: item.totalPrice || (item.quantity * (item.unitPrice || item.price || 0)) || 0,
-            imageUrl: ''
-          };
-        }
-      });
-      
-      const resolvedItems = await Promise.all(enrichedItemsPromises);
-      setEnrichedItems(resolvedItems);
-    };
-    
-    if (rawData?.items) {
-      fetchProductDetails();
-    }
-  }, [rawData]);
+  const { cartData: safeCartData, isEnriching } = useEnrichedCart(rawData);
   
   const handleCartUpdate = async () => {
     setIsUpdating(true);
@@ -86,7 +31,7 @@ export function CartPage() {
     }
   };
   
-  if (isLoading || isUpdating) {
+  if (isLoading || isUpdating || isEnriching) {
     return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="cart-loading">Loading cart...</Surface>;
   }
   
@@ -104,16 +49,6 @@ export function CartPage() {
       </Surface>
     );
   }
-  
-  const derivedTotalItems = enrichedItems.reduce((sum, item) => sum + item.quantity, 0);
-  const derivedTotalPrice = enrichedItems.reduce((sum, item) => sum + item.totalPrice, 0);
-
-  const safeCartData: CartType = {
-    items: enrichedItems,
-    totalPrice: rawData?.totalPrice ?? rawData?.totalAmount ?? derivedTotalPrice,
-    username: rawData?.username || '',
-    totalItems: rawData?.totalItems ?? derivedTotalItems,
-  };
   
   const isEmpty = safeCartData.items.length === 0;
   

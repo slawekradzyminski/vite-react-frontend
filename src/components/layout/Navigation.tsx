@@ -4,8 +4,8 @@ import { Menu, X, ShoppingCart } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { auth, cart } from '../../lib/api';
 import { Button } from '../ui/button';
-import { Role } from '../../types/auth';
 import { authStorage } from '../../lib/authStorage';
+import { hasRole } from '../../lib/roles';
 
 const PRODUCT_NAME = 'Awesome Testing';
 
@@ -64,7 +64,7 @@ export function Navigation() {
     setIsOpen(false);
   }, [location.pathname]);
 
-  const isAdmin = user?.data?.roles?.includes(Role.ADMIN);
+  const isAdmin = hasRole(user?.data?.roles, 'ADMIN');
   const isActive = (path: string) =>
     path === '/' ? location.pathname === path : location.pathname.startsWith(path);
   const authLinkClass = (path: '/login' | '/register') =>

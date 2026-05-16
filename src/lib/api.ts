@@ -87,6 +87,11 @@ const enqueueRefresh = (refreshToken: string) => {
   return refreshPromise;
 };
 
+const redirectToLogin = () => {
+  authStorage.clearTokens();
+  window.location.href = '/login';
+};
+
 api.interceptors.request.use((config) => {
   config.headers = config.headers ?? {};
   config.headers[CLIENT_SESSION_ID_HEADER] = authStorage.getClientSessionId();
@@ -111,8 +116,7 @@ api.interceptors.response.use(
     const status = error.response?.status;
     const originalRequest = error.config as RefreshableRequestConfig | undefined;
     if (originalRequest && isRefreshEndpoint(originalRequest.url)) {
-      authStorage.clearTokens();
-      window.location.href = '/login';
+      redirectToLogin();
       return Promise.reject(error);
     }
 
@@ -132,38 +136,56 @@ api.interceptors.response.use(
           };
           return api(originalRequest);
         } catch (refreshError) {
-          authStorage.clearTokens();
-          window.location.href = '/login';
+          redirectToLogin();
           return Promise.reject(refreshError);
         }
       }
     }
 
     if (status === 401 || status === 403) {
-      authStorage.clearTokens();
-      window.location.href = '/login';
+      redirectToLogin();
     }
     return Promise.reject(error);
   }
 );
 
-const streamWithAuth = async (path: string, payload: unknown) => {
-  const response = await fetch(getAbsoluteApiUrl(path), {
+const buildStreamingHeaders = (token: string | null) => ({
+  'Content-Type': 'application/json',
+  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  [CLIENT_SESSION_ID_HEADER]: authStorage.getClientSessionId(),
+});
+
+const postStream = (path: string, payload: unknown, token: string | null) =>
+  fetch(getAbsoluteApiUrl(path), {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${authStorage.getAccessToken() ?? ''}`,
-      [CLIENT_SESSION_ID_HEADER]: authStorage.getClientSessionId(),
-    },
+    headers: buildStreamingHeaders(token),
     body: JSON.stringify(payload),
   });
 
+const streamWithAuth = async (path: string, payload: unknown) => {
+  let response = await postStream(path, payload, authStorage.getAccessToken());
+
   storeClientSessionId(response.headers.get(CLIENT_SESSION_ID_HEADER));
 
+  if (response.status === 401) {
+    const refreshToken = authStorage.getRefreshToken();
+    if (refreshToken) {
+      let tokens: TokenPair;
+      try {
+        tokens = await enqueueRefresh(refreshToken);
+      } catch {
+        redirectToLogin();
+        throw new Error('Failed to refresh session');
+      }
+
+      response = await postStream(path, payload, tokens.token);
+      storeClientSessionId(response.headers.get(CLIENT_SESSION_ID_HEADER));
+    }
+  }
+
   if (!response.ok) {
-    if (response.status === 401) {
-      authStorage.clearTokens();
-      window.location.href = '/login';
+    if (response.status === 401 || response.status === 403) {
+      redirectToLogin();
     }
     throw new Error(`Failed to fetch stream: ${response.statusText}`);
   }

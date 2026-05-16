@@ -2,15 +2,13 @@ import { Navigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { auth } from '../lib/api';
 import { authStorage } from '../lib/authStorage';
+import { hasRole } from '../lib/roles';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRole?: string;
   'data-testid'?: string;
 }
-
-// Define the possible role formats
-type Role = string | { authority: string };
 
 export function ProtectedRoute({ children, requiredRole, 'data-testid': dataTestId }: ProtectedRouteProps) {
   const token = authStorage.getAccessToken();
@@ -34,19 +32,9 @@ export function ProtectedRoute({ children, requiredRole, 'data-testid': dataTest
     );
   }
 
-  if (requiredRole && data?.data?.roles) {
-    const hasRequiredRole = Array.isArray(data.data.roles) 
-      ? data.data.roles.some((role: Role) => 
-          typeof role === 'string' 
-            ? role === `ROLE_${requiredRole}` || role === requiredRole
-            : role.authority === `ROLE_${requiredRole}` || role.authority === requiredRole)
-      : false;
-    
-    if (!hasRequiredRole) {
-      console.log('User does not have the required role, redirecting to home');
-      return <Navigate to="/" replace data-testid="protected-route-unauthorized" />;
-    }
+  if (requiredRole && !hasRole(data?.data?.roles, requiredRole)) {
+    return <Navigate to="/" replace data-testid="protected-route-unauthorized" />;
   }
 
-  return <div data-testid={dataTestId || "protected-route-content"}>{children}</div>;
+  return <div data-testid={dataTestId || 'protected-route-content'}>{children}</div>;
 } 
