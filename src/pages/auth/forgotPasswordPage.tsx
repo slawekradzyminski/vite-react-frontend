@@ -62,15 +62,16 @@ export function ForgotPasswordPage() {
   return (
     <div className="flex min-h-[calc(100svh-7rem)] items-center py-6" data-testid="forgot-page">
       <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(420px,0.8fr)]" data-testid="forgot-container">
-        <Surface as="section" variant="heroAccent" padding="auth" className="flex flex-col justify-between">
-          <div className="space-y-8">
+        <Surface as="section" variant="heroAccent" padding="auth" className="flex flex-col justify-between" data-testid="forgot-hero">
+          <div className="space-y-8" data-testid="forgot-hero-content">
             <img
               src="/branding/generated/at-transparent.png"
               alt="Awesome Testing"
               className="h-14 w-14 object-contain"
+              data-testid="forgot-brand-logo"
             />
             <div className="space-y-4">
-              <Badge tone="tracking" variant="outline" className="text-[11px] tracking-[0.26em]">Password recovery</Badge>
+              <Badge tone="tracking" variant="outline" className="text-[11px] tracking-[0.26em]" data-testid="forgot-brand-badge">Password recovery</Badge>
               <h2 className="max-w-lg text-4xl font-semibold tracking-tight text-slate-950" data-testid="forgot-title">
                 Forgot password
               </h2>
@@ -80,27 +81,27 @@ export function ForgotPasswordPage() {
             </div>
           </div>
 
-          <div className="mt-10 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-[1.4rem] border border-stone-200 bg-white/80 p-4">
-              <p className="text-sm font-semibold text-slate-900">Single step</p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">Request a reset with either username or e-mail.</p>
+          <div className="mt-10 grid gap-3 sm:grid-cols-3" data-testid="forgot-info-cards">
+            <div className="rounded-[1.4rem] border border-stone-200 bg-white/80 p-4" data-testid="forgot-info-single-step">
+              <p className="text-sm font-semibold text-slate-900" data-testid="forgot-info-single-step-title">Single step</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600" data-testid="forgot-info-single-step-description">Request a reset with either username or e-mail.</p>
             </div>
-            <div className="rounded-[1.4rem] border border-stone-200 bg-white/80 p-4">
-              <p className="text-sm font-semibold text-slate-900">Safe flow</p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">The response stays neutral even when an account does not exist.</p>
+            <div className="rounded-[1.4rem] border border-stone-200 bg-white/80 p-4" data-testid="forgot-info-safe-flow">
+              <p className="text-sm font-semibold text-slate-900" data-testid="forgot-info-safe-flow-title">Safe flow</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600" data-testid="forgot-info-safe-flow-description">The response stays neutral even when an account does not exist.</p>
             </div>
-            <div className="rounded-[1.4rem] border border-stone-200 bg-white/80 p-4">
-              <p className="text-sm font-semibold text-slate-900">Local dev</p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">Developer token output remains visible for local workflows.</p>
+            <div className="rounded-[1.4rem] border border-stone-200 bg-white/80 p-4" data-testid="forgot-info-local-dev">
+              <p className="text-sm font-semibold text-slate-900" data-testid="forgot-info-local-dev-title">Local dev</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600" data-testid="forgot-info-local-dev-description">Developer token output remains visible for local workflows.</p>
             </div>
           </div>
         </Surface>
 
-        <Surface as="section" variant="default" padding="auth" className="bg-white/88 shadow-[0_30px_90px_-55px_rgba(15,23,42,0.55)]">
+        <Surface as="section" variant="default" padding="auth" className="bg-white/88 shadow-[0_30px_90px_-55px_rgba(15,23,42,0.55)]" data-testid="forgot-card">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)} noValidate data-testid="forgot-form">
             <div className="space-y-4">
               <div data-testid="forgot-identifier-field">
-                <Label htmlFor="identifier">Username or email</Label>
+                <Label htmlFor="identifier" data-testid="forgot-identifier-label">Username or email</Label>
                 <Input
                   id="identifier"
                   placeholder="username or email"
@@ -117,7 +118,7 @@ export function ForgotPasswordPage() {
               </div>
             </div>
 
-            <div>
+            <div data-testid="forgot-submit-container">
               <Button
                 type="submit"
                 className="h-11 w-full rounded-xl bg-slate-900 text-white hover:bg-slate-800"
@@ -131,7 +132,7 @@ export function ForgotPasswordPage() {
 
           {rawToken && (
             <div className="mt-6 rounded-[1.2rem] border border-stone-200 bg-stone-50 p-4 text-sm text-slate-700" data-testid="forgot-token-container">
-              <p className="font-semibold">Developer token (local profile only):</p>
+              <p className="font-semibold" data-testid="forgot-token-label">Developer token (local profile only):</p>
               <Input
                 readOnly
                 className="mt-2"
@@ -142,7 +143,7 @@ export function ForgotPasswordPage() {
             </div>
           )}
 
-          <div className="mt-6 rounded-[1.4rem] border border-stone-200 bg-stone-50 px-4 py-3 text-center text-sm text-slate-600">
+          <div className="mt-6 rounded-[1.4rem] border border-stone-200 bg-stone-50 px-4 py-3 text-center text-sm text-slate-600" data-testid="forgot-back-to-login-container">
             <Button
               variant="link"
               type="button"

@@ -13,7 +13,7 @@ type SsoAuthenticatedPageFixtures = {
 };
 
 export const test = base.extend<SsoAuthenticatedPageFixtures>({
-  ssoAuthenticatedPage: async ({ page }, use) => {
+  ssoAuthenticatedPage: async ({ page }, runFixture) => {
     const idToken = await getKeycloakIdToken(page.context().request, {
       username: SSO_USERNAME,
       password: SSO_PASSWORD,
@@ -28,7 +28,7 @@ export const test = base.extend<SsoAuthenticatedPageFixtures>({
       refreshToken: loginResponse.refreshToken,
     });
 
-    await use({
+    await runFixture({
       page,
       username: loginResponse.username,
       token: loginResponse.token,

@@ -4,6 +4,7 @@ import { GenerateRequestDto } from '../types/ollama';
 import { processSSEResponse } from '../lib/sse';
 import { ollama } from '../lib/api';
 import { useInFlightRequest, useOllamaParams } from './useOllamaParams';
+import { DEFAULT_OLLAMA_MODEL } from '../lib/ollamaDefaults';
 
 interface OllamaGenerateResponse {
   model: string;
@@ -30,7 +31,7 @@ export function useOllamaGenerate(options?: UseOllamaGenerateOptions) {
     setTemperature,
     think,
     setThink,
-  } = useOllamaParams({ model: 'qwen3.5:2b', temperature: 0.8, think: false });
+  } = useOllamaParams({ model: DEFAULT_OLLAMA_MODEL, temperature: 0.8, think: false });
   const { toast } = useToast();
 
   const generate = async (prompt: string) => {

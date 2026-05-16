@@ -146,7 +146,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
         )}
       </div>
       <div className="flex grow flex-col p-5" data-testid="product-content">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start justify-between gap-3" data-testid="product-card-header">
           <h3 className="min-h-14 text-lg font-semibold leading-7 text-slate-950 line-clamp-2" data-testid="product-name">{product.name}</h3>
           <Badge className="text-sm font-semibold text-slate-900" data-testid="product-price">
             ${product.price.toFixed(2)}

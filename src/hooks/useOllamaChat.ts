@@ -4,6 +4,7 @@ import { ChatMessageDto, ChatRequestDto, ChatResponseDto } from '../types/ollama
 import { processSSEResponse } from '../lib/sse';
 import { ollama, prompts } from '../lib/api';
 import { useInFlightRequest, useOllamaParams } from './useOllamaParams';
+import { DEFAULT_OLLAMA_MODEL } from '../lib/ollamaDefaults';
 
 interface UseOllamaChatOptions {
   onError?: (error: Error) => void;
@@ -27,7 +28,7 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
     setTemperature,
     think,
     setThink
-  } = useOllamaParams({ model: 'qwen3.5:2b', temperature: 0.8, think: false });
+  } = useOllamaParams({ model: DEFAULT_OLLAMA_MODEL, temperature: 0.8, think: false });
   const { inFlight: isChatting, start, stop } = useInFlightRequest(false);
   const [isLoadingSystemPrompt, setIsLoadingSystemPrompt] = useState(true);
   

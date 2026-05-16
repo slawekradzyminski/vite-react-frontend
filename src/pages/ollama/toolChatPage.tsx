@@ -28,7 +28,7 @@ export function OllamaToolChatPage({ hideTitle = false }: OllamaToolChatPageProp
     setThink,
     toolDefinitions
   } = useOllamaToolChat();
-  const availableTools = toolDefinitions ?? [];
+  const availableTools = useMemo(() => toolDefinitions ?? [], [toolDefinitions]);
   const prettyToolDefinitions = useMemo(
     () => JSON.stringify(availableTools, null, 2),
     [availableTools]

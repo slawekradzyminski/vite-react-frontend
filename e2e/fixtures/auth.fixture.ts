@@ -37,7 +37,7 @@ export const test = base.extend<AuthenticatedPageFixtures>({
             refreshToken,
         });
 
-        await cleanupUser(page.context().request, user.username, token);
+        await cleanupUser(page.context().request, user.username);
     },
     
     adminPage: async ({ browser }, use) => {
@@ -81,7 +81,7 @@ export const test = base.extend<AuthenticatedPageFixtures>({
             refreshToken,
         });
 
-        await cleanupUser(context.request, user.username, token);
+        await cleanupUser(context.request, user.username);
         await context.close();
     }
 });

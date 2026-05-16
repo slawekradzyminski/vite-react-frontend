@@ -116,7 +116,7 @@ export function TrafficMonitorPage() {
       >
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Observability</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500" data-testid="traffic-eyebrow">Observability</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl" data-testid="traffic-title">Traffic Monitor</h1>
           </div>
           <Badge
@@ -150,18 +150,18 @@ export function TrafficMonitorPage() {
 
       {trafficEvents.length > 0 ? (
         <Surface variant="default" className="overflow-hidden" data-testid="traffic-events-table-container">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" data-testid="traffic-events-table-scroll">
             <table className="min-w-full divide-y divide-stone-200" data-testid="traffic-events-table">
-              <thead className="bg-stone-50/80">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Method</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Path</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Duration</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Time</th>
+              <thead className="bg-stone-50/80" data-testid="traffic-events-table-head">
+                <tr data-testid="traffic-events-header-row">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500" data-testid="traffic-events-method-header">Method</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500" data-testid="traffic-events-path-header">Path</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500" data-testid="traffic-events-status-header">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500" data-testid="traffic-events-duration-header">Duration</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500" data-testid="traffic-events-time-header">Time</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-200 bg-white/60">
+              <tbody className="divide-y divide-stone-200 bg-white/60" data-testid="traffic-events-table-body">
                 {trafficEvents.map((event, index) => (
                   <tr key={index} className="hover:bg-stone-50/70" data-testid={`traffic-event-${index}`}>
                     <td className="px-6 py-4 whitespace-nowrap" data-testid={`traffic-event-method-${index}`}>

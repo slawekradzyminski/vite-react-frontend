@@ -10,6 +10,7 @@ test.describe('Navigation keyboard accessibility', () => {
   test('supports sequential keyboard traversal on desktop', async ({ authenticatedPage }) => {
     const { page } = authenticatedPage;
     await page.goto('/');
+    await expect(page.getByTestId('desktop-menu-products')).toBeVisible();
 
     const adminLink = page.getByTestId('desktop-menu-admin');
     const expectedTabOrder = [

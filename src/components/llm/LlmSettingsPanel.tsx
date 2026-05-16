@@ -73,11 +73,11 @@ export function LlmSettingsPanel({
         data-testid={sidebarTestId}
       >
         <Surface variant="muted" padding="md" className="space-y-4" data-testid={settingsPanelTestId}>
-          <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-            <SettingsIcon className={theme.icon} />
-            Generation Settings
+          <div className="flex items-center gap-2 text-sm font-semibold text-slate-700" data-testid={`${settingsPanelTestId}-header`}>
+            <SettingsIcon className={theme.icon} testId={`${settingsPanelTestId}-header-icon`} />
+            <span data-testid={`${settingsPanelTestId}-header-title`}>Generation Settings</span>
           </div>
-          <div className={clsx('grid gap-4', gridCols)}>
+          <div className={clsx('grid gap-4', gridCols)} data-testid={`${settingsPanelTestId}-controls`}>
             <div className="space-y-1.5" data-testid="model-selection">
               <label htmlFor={modelInputId} className="block text-xs font-medium text-slate-600" data-testid="model-label">
                 Model
@@ -108,7 +108,7 @@ export function LlmSettingsPanel({
                 onChange={(e) => onTemperatureChange(parseFloat(e.target.value))}
                 data-testid="temperature-slider"
               />
-              <div className="flex justify-between text-[10px] text-slate-400">
+              <div className="flex justify-between text-[10px] text-slate-400" data-testid="temperature-scale">
                 <span data-testid="temperature-focused">Focused</span>
                 <span data-testid="temperature-creative">Creative</span>
               </div>
@@ -124,9 +124,9 @@ export function LlmSettingsPanel({
                     className={clsx('h-4 w-4 rounded border-slate-300', theme.checkbox)}
                     data-testid="thinking-checkbox"
                   />
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5" data-testid="thinking-label-content">
                     <ThinkingIcon />
-                    <span className="text-xs font-medium text-slate-700">Thinking</span>
+                    <span className="text-xs font-medium text-slate-700" data-testid="thinking-label-text">Thinking</span>
                   </div>
                 </label>
               </div>
@@ -179,16 +179,16 @@ export function SettingsToggleButton({
       )}
       data-testid={testId}
     >
-      <SettingsIcon className="h-3.5 w-3.5" />
-      {isOpen ? labelOpen : label}
-      {isOpen ? <ChevronLeft className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+      <SettingsIcon className="h-3.5 w-3.5" testId={`${testId}-icon`} />
+      <span data-testid={`${testId}-label`}>{isOpen ? labelOpen : label}</span>
+      {isOpen ? <ChevronLeft className="h-3 w-3" data-testid={`${testId}-collapse-icon`} /> : <ChevronRight className="h-3 w-3" data-testid={`${testId}-expand-icon`} />}
     </button>
   );
 }
 
-function SettingsIcon({ className }: { className?: string }) {
+function SettingsIcon({ className, testId }: { className?: string; testId?: string }) {
   return (
-    <svg className={clsx('h-4 w-4', className)} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <svg className={clsx('h-4 w-4', className)} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} data-testid={testId}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
       <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
     </svg>
@@ -197,7 +197,7 @@ function SettingsIcon({ className }: { className?: string }) {
 
 function ThinkingIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-amber-500">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-amber-500" data-testid="thinking-icon">
       <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55 1 1 1 1h6c.55 0 1-.45 1-1v-2.26C17.81 13.47 19 11.38 19 9c0-3.86-3.14-7-7-7z" />
     </svg>
   );

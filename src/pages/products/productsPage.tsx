@@ -37,7 +37,7 @@ export function ProductsPage() {
               Browse the live assortment, narrow by category, and move directly into product detail or cart actions.
             </p>
           </div>
-          <div className="rounded-[1.4rem] border border-stone-200 bg-white/80 px-4 py-3 text-sm text-slate-600">
+          <div className="rounded-[1.4rem] border border-stone-200 bg-white/80 px-4 py-3 text-sm text-slate-600" data-testid="products-count-summary">
             {allProducts.length} products across {categories.length || 1} categories
           </div>
         </div>
@@ -57,7 +57,7 @@ export function ProductsPage() {
             ) : (
               <div className="mt-5" data-testid="product-filter-category">
                 <ul className="space-y-2" data-testid="products-categories-list">
-                  <li>
+                  <li data-testid="products-category-item-all">
                     <button
                       className={`w-full rounded-2xl px-3 py-2 text-left text-sm font-medium transition ${
                         !selectedCategory
@@ -71,7 +71,7 @@ export function ProductsPage() {
                     </button>
                   </li>
                   {categories.map(category => (
-                    <li key={category}>
+                    <li key={category} data-testid={`products-category-item-${category.toLowerCase().replace(/\s+/g, '-')}`}>
                       <button
                         className={`w-full rounded-2xl px-3 py-2 text-left text-sm font-medium transition ${
                           selectedCategory === category

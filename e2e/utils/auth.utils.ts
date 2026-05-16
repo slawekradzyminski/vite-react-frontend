@@ -75,7 +75,7 @@ export async function createClientUser(request: APIRequestContext): Promise<Auth
     };
 }
 
-export async function cleanupUser(request: APIRequestContext, username: string, token: string): Promise<void> {
+export async function cleanupUser(request: APIRequestContext, username: string): Promise<void> {
     const adminToken = await getAdminToken(request);
     const { status } = await deleteUser(request, username, adminToken);
     if (status !== 204) {

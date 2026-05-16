@@ -5,6 +5,7 @@ import type { ChatMessageDto, ChatRequestDto, ChatResponseDto, OllamaToolDefinit
 import { processSSEResponse } from '../lib/sse';
 import { useToast } from './useToast';
 import { useInFlightRequest, useOllamaParams } from './useOllamaParams';
+import { DEFAULT_OLLAMA_MODEL } from '../lib/ollamaDefaults';
 
 interface UseOllamaToolChatOptions {
   onError?: (error: Error) => void;
@@ -70,7 +71,7 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
     setTemperature,
     think,
     setThink,
-  } = useOllamaParams({ model: 'qwen3.5:2b', temperature: 0.4, think: false });
+  } = useOllamaParams({ model: DEFAULT_OLLAMA_MODEL, temperature: 0.4, think: false });
   const [isLoadingSystemPrompt, setIsLoadingSystemPrompt] = useState(true);
   const [toolDefinitions, setToolDefinitions] = useState<OllamaToolDefinition[]>(DEFAULT_TOOL_DEFINITIONS);
 
@@ -238,7 +239,7 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
         stop();
       }
     },
-    [isChatting, messages, model, temperature, think, toast, toolDefinitions, options, start, stop]
+    [messages, model, temperature, think, toast, toolDefinitions, options, start, stop]
   );
 
   return {

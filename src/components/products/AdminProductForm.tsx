@@ -80,8 +80,8 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
 
   return (
     <Surface as="form" variant="default" padding="lg" onSubmit={handleSubmit(onSubmit)} className="space-y-6" data-testid="product-form">
-      <Surface variant="inset" padding="md">
-        <Label htmlFor="name">
+      <Surface variant="inset" padding="md" data-testid="product-name-field">
+        <Label htmlFor="name" data-testid="product-name-label">
           Product Name*
         </Label>
         <Input
@@ -97,8 +97,8 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
         )}
       </Surface>
 
-      <Surface variant="inset" padding="md">
-        <Label htmlFor="description">
+      <Surface variant="inset" padding="md" data-testid="product-description-field">
+        <Label htmlFor="description" data-testid="product-description-label">
           Description
         </Label>
         <Textarea
@@ -112,9 +112,9 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
         )}
       </Surface>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Surface variant="inset" padding="md">
-          <Label htmlFor="price">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-testid="product-price-stock-row">
+        <Surface variant="inset" padding="md" data-testid="product-price-field">
+          <Label htmlFor="price" data-testid="product-price-label">
             Price*
           </Label>
           <Input
@@ -136,8 +136,8 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
           )}
         </Surface>
 
-        <Surface variant="inset" padding="md">
-          <Label htmlFor="stockQuantity">
+        <Surface variant="inset" padding="md" data-testid="product-stock-field">
+          <Label htmlFor="stockQuantity" data-testid="product-stock-label">
             Stock Quantity*
           </Label>
           <Input
@@ -159,8 +159,8 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
         </Surface>
       </div>
 
-      <Surface variant="inset" padding="md">
-        <Label htmlFor="category">
+      <Surface variant="inset" padding="md" data-testid="product-category-field">
+        <Label htmlFor="category" data-testid="product-category-label">
           Category*
         </Label>
         <Input
@@ -176,8 +176,8 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
         )}
       </Surface>
 
-      <Surface variant="inset" padding="md">
-        <Label htmlFor="imageUrl">
+      <Surface variant="inset" padding="md" data-testid="product-image-field">
+        <Label htmlFor="imageUrl" data-testid="product-image-label">
           Image URL
         </Label>
         <Input
@@ -198,7 +198,7 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
         )}
       </Surface>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end" data-testid="product-form-actions">
         <Button
           type="submit"
           disabled={isSubmitting}

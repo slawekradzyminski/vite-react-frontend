@@ -50,23 +50,23 @@ function AppShell() {
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
   return (
-    <div className="flex min-h-screen flex-col bg-transparent text-slate-900">
+    <div className="flex min-h-screen flex-col bg-transparent text-slate-900" data-testid="app-shell">
       <Navigation />
-      <main className={`mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 lg:px-8 ${isAuthPage ? 'py-2' : 'py-6'}`}>
+      <main className={`mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 lg:px-8 ${isAuthPage ? 'py-2' : 'py-6'}`} data-testid="app-main">
         <AppRoutes />
       </main>
       <footer className="border-t border-stone-200/80 bg-stone-50/82" data-testid="app-footer">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <div className="space-y-1">
-            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8" data-testid="app-footer-content">
+          <div className="space-y-1" data-testid="app-footer-copy">
+            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500" data-testid="app-footer-eyebrow">
               Stay in touch
             </p>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600" data-testid="app-footer-description">
               Follow Awesome Testing blog, author&apos;s LinkedIn, or buy me a coffee.
             </p>
           </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-start lg:justify-end">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-start lg:justify-end" data-testid="app-footer-links">
             {footerLinks.map(({ label, href, icon: Icon, testId }) => (
               <Button
                 key={href}
@@ -81,21 +81,22 @@ function AppShell() {
                   data-testid={testId}
                 >
                   <span className="inline-flex items-center gap-3">
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-slate-600">
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-slate-600" data-testid={`${testId}-icon-wrap`}>
                       {Icon === 'blog' ? (
                         <img
                           src="/branding/generated/at-transparent.png"
                           alt=""
                           aria-hidden="true"
                           className="h-4.5 w-4.5 object-contain"
+                          data-testid="footer-blog-logo"
                         />
                       ) : (
-                        <Icon className="h-3.5 w-3.5" />
+                        <Icon className="h-3.5 w-3.5" data-testid={`${testId}-icon`} />
                       )}
                     </span>
-                    <span>{label}</span>
+                    <span data-testid={`${testId}-label`}>{label}</span>
                   </span>
-                  <ArrowUpRight className="ml-5 h-3.5 w-3.5 shrink-0" />
+                  <ArrowUpRight className="ml-5 h-3.5 w-3.5 shrink-0" data-testid={`${testId}-external-icon`} />
                 </a>
               </Button>
             ))}

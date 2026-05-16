@@ -57,16 +57,16 @@ export function RegisterPage() {
   return (
     <div className="flex min-h-full items-center py-2 sm:py-3" data-testid="register-page">
       <div className="mx-auto grid w-full max-w-6xl gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(460px,0.9fr)]" data-testid="register-container">
-        <Surface as="section" variant="heroAccent" padding="auth" className="relative overflow-hidden p-6 lg:p-7">
+        <Surface as="section" variant="heroAccent" padding="auth" className="relative overflow-hidden p-6 lg:p-7" data-testid="register-hero">
           <div className="absolute inset-x-8 bottom-0 h-28 bg-[radial-gradient(circle_at_center,_rgba(14,165,233,0.10),_transparent_72%)]" aria-hidden="true" />
-          <div className="relative flex h-full flex-col justify-center">
+          <div className="relative flex h-full flex-col justify-center" data-testid="register-hero-content">
             <div className="space-y-8 lg:space-y-10" data-testid="register-header">
-              <Badge tone="tracking" variant="outline" className="text-[11px] tracking-[0.26em]">Awesome Testing</Badge>
+              <Badge tone="tracking" variant="outline" className="text-[11px] tracking-[0.26em]" data-testid="register-brand-badge">Awesome Testing</Badge>
               <div className="space-y-5 lg:space-y-6">
                 <h2 className="max-w-lg text-4xl font-semibold tracking-tight text-slate-950" data-testid="register-title">
                   Create your account
                 </h2>
-                <p className="max-w-xl text-base leading-7 text-slate-600">
+                <p className="max-w-xl text-base leading-7 text-slate-600" data-testid="register-subtitle">
                   Join the workspace and get immediate access to operations tooling, monitoring flows, and the AI surface.
                 </p>
               </div>
@@ -80,11 +80,11 @@ export function RegisterPage() {
           </div>
         </Surface>
 
-        <Surface as="section" variant="default" padding="auth" className="bg-white/88 p-6 lg:p-7 shadow-[0_30px_90px_-55px_rgba(15,23,42,0.55)]">
+        <Surface as="section" variant="default" padding="auth" className="bg-white/88 p-6 lg:p-7 shadow-[0_30px_90px_-55px_rgba(15,23,42,0.55)]" data-testid="register-card">
           <form className="space-y-5" onSubmit={handleSubmit(onSubmit)} noValidate data-testid="register-form">
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2" data-testid="register-fields">
               <div className="sm:col-span-2" data-testid="register-username-field">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username" data-testid="register-username-label">Username</Label>
                 <Input
                   id="username"
                   className="mt-2"
@@ -98,7 +98,7 @@ export function RegisterPage() {
                 )}
               </div>
               <div className="sm:col-span-2" data-testid="register-email-field">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" data-testid="register-email-label">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -113,7 +113,7 @@ export function RegisterPage() {
                 )}
               </div>
               <div className="sm:col-span-2" data-testid="register-password-field">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" data-testid="register-password-label">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -128,7 +128,7 @@ export function RegisterPage() {
                 )}
               </div>
               <div data-testid="register-firstname-field">
-                <Label htmlFor="firstName">First Name</Label>
+                <Label htmlFor="firstName" data-testid="register-firstname-label">First Name</Label>
                 <Input
                   id="firstName"
                   className="mt-2"
@@ -142,7 +142,7 @@ export function RegisterPage() {
                 )}
               </div>
               <div data-testid="register-lastname-field">
-                <Label htmlFor="lastName">Last Name</Label>
+                <Label htmlFor="lastName" data-testid="register-lastname-label">Last Name</Label>
                 <Input
                   id="lastName"
                   className="mt-2"
