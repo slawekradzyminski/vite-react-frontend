@@ -100,7 +100,7 @@ export function Navigation() {
               data-testid="brand-link"
             >
               <img
-                src="/branding/generated/at-transparent.png"
+                src="/branding/generated/at-transparent.png?v=3.6.13"
                 alt={PRODUCT_NAME}
                 className="block h-11 w-11 object-contain sm:h-12 sm:w-12"
               />

@@ -84,7 +84,7 @@ function AppShell() {
                     <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-slate-600" data-testid={`${testId}-icon-wrap`}>
                       {Icon === 'blog' ? (
                         <img
-                          src="/branding/generated/at-transparent.png"
+                          src="/branding/generated/at-transparent.png?v=3.6.13"
                           alt=""
                           aria-hidden="true"
                           className="h-4.5 w-4.5 object-contain"
