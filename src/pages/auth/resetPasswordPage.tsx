@@ -10,6 +10,7 @@ import { useToast } from '../../hooks/useToast';
 import { ResetPasswordFormData, resetPasswordSchema } from '../../validators/auth';
 import { Surface } from '../../components/ui/surface';
 import { Badge } from '../../components/ui/badge';
+import { brandMarkSrc } from '../../lib/brandingAssets';
 
 export function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -66,7 +67,7 @@ export function ResetPasswordPage() {
         <Surface as="section" variant="heroAccent" padding="auth" className="flex flex-col justify-between" data-testid="reset-hero">
           <div className="space-y-8" data-testid="reset-hero-content">
             <img
-              src="/branding/generated/at-transparent.png?v=3.6.13"
+              src={brandMarkSrc}
               alt="Awesome Testing"
               className="h-14 w-14 object-contain"
               data-testid="reset-brand-logo"

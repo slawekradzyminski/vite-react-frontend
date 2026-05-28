@@ -6,6 +6,7 @@ import { auth, cart } from '../../lib/api';
 import { Button } from '../ui/button';
 import { authStorage } from '../../lib/authStorage';
 import { hasRole } from '../../lib/roles';
+import { brandMarkSrc } from '../../lib/brandingAssets';
 
 const PRODUCT_NAME = 'Awesome Testing';
 
@@ -100,7 +101,7 @@ export function Navigation() {
               data-testid="brand-link"
             >
               <img
-                src="/branding/generated/at-transparent.png?v=3.6.13"
+                src={brandMarkSrc}
                 alt={PRODUCT_NAME}
                 className="block h-11 w-11 object-contain sm:h-12 sm:w-12"
               />

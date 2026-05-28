@@ -5,6 +5,7 @@ import { AppRoutes } from './AppRoutes';
 import { ToastProvider } from './components/ui/ToastProvider';
 import { Navigation } from './components/layout/Navigation';
 import { Button } from './components/ui/button';
+import { brandMarkSrc } from './lib/brandingAssets';
 import { Theme } from '@radix-ui/themes';
 import '@radix-ui/themes/styles.css';
 
@@ -84,7 +85,7 @@ function AppShell() {
                     <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200 bg-stone-50 text-slate-600" data-testid={`${testId}-icon-wrap`}>
                       {Icon === 'blog' ? (
                         <img
-                          src="/branding/generated/at-transparent.png?v=3.6.13"
+                          src={brandMarkSrc}
                           alt=""
                           aria-hidden="true"
                           className="h-4.5 w-4.5 object-contain"
