@@ -1,6 +1,6 @@
 import { BrowserRouter, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ArrowUpRight, Coffee, Linkedin } from 'lucide-react';
+import { ArrowUpRight, Coffee, UserRound } from 'lucide-react';
 import { AppRoutes } from './AppRoutes';
 import { ToastProvider } from './components/ui/ToastProvider';
 import { Navigation } from './components/layout/Navigation';
@@ -21,7 +21,7 @@ const footerLinks = [
   {
     label: 'Follow on LinkedIn',
     href: 'https://www.linkedin.com/in/slawekradzyminski/?locale=en',
-    icon: Linkedin,
+    icon: UserRound,
     testId: 'footer-linkedin-link',
   },
   {
