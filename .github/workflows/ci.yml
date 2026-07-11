@@ -6,7 +6,7 @@ jobs:
   unit-tests-and-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -34,7 +34,7 @@ jobs:
         volumes:
           - /var/run/docker.sock:/var/run/docker.sock          
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       
       - name: Start backend with Docker Compose
         run: docker compose up -d
