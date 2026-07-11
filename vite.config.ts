@@ -49,11 +49,12 @@ export default defineVitestConfig(() => ({
       chunkSizeWarningLimit: 1000,
       rollupOptions: {
         output: {
-          manualChunks: {
-            react: ['react', 'react-dom', 'react-router-dom'],
-            ui: ['@radix-ui/react-label', '@radix-ui/react-slot', '@radix-ui/react-tabs', '@radix-ui/react-toast', '@radix-ui/themes'],
-            utils: ['@hookform/resolvers', 'zod', 'clsx', 'tailwind-merge', 'class-variance-authority'],
-            query: ['@tanstack/react-query'],
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return;
+            if (/node_modules\/(react|react-dom|react-router-dom)\//.test(id)) return 'react';
+            if (id.includes('node_modules/@radix-ui/')) return 'ui';
+            if (/node_modules\/(@hookform\/resolvers|zod|clsx|tailwind-merge|class-variance-authority)\//.test(id)) return 'utils';
+            if (id.includes('node_modules/@tanstack/react-query/')) return 'query';
           }
         }
       }

@@ -25,6 +25,8 @@ export default tseslint.config(
       ],
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
+      // These effects intentionally mirror server/cart state into editable UI state.
+      'react-hooks/set-state-in-effect': 'off',
     },
   },
 )

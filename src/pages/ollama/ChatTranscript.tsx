@@ -49,15 +49,15 @@ const ROLE_CONFIG: Record<
 };
 
 const parseToolPayload = (message: ChatMessageDto) => {
-  let formattedContent = message.content ?? '';
   let parsed: unknown = null;
 
   try {
     parsed = JSON.parse(message.content ?? '');
-    formattedContent = JSON.stringify(parsed, null, 2);
-  } catch {
-    formattedContent = message.content ?? '';
-  }
+  } catch { /* Preserve the original content when the payload is not JSON. */ }
+
+  const formattedContent = parsed === null
+    ? message.content ?? ''
+    : JSON.stringify(parsed, null, 2);
 
   const isError =
     typeof parsed === 'object' && parsed !== null && Object.prototype.hasOwnProperty.call(parsed, 'error');
