@@ -1,6 +1,6 @@
 services:
   backend:
-    image: ${BACKEND_IMAGE:-slawekradzyminski/backend:3.7.0}
+    image: ${BACKEND_IMAGE:-slawekradzyminski/backend:3.7.1}
     expose:
       - "4001"
     hostname: backend
