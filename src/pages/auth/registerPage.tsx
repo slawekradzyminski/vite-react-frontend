@@ -40,11 +40,18 @@ export function RegisterPage() {
       navigate('/login', { state: { toast: { variant: 'success', title: 'Success', description: 'Registration successful! You can now log in.' } } });
     } catch (err: any) {
       const errorMessage = err.response?.data?.message;
-      if (errorMessage?.toLowerCase().includes('already in use')) {
+      const normalizedErrorMessage = errorMessage?.toLowerCase();
+      if (normalizedErrorMessage?.includes('username') && normalizedErrorMessage.includes('already in use')) {
         toast({
           variant: 'error',
           title: 'Error',
           description: 'Username already exists',
+        });
+      } else if (normalizedErrorMessage?.includes('email') && normalizedErrorMessage.includes('already in use')) {
+        toast({
+          variant: 'error',
+          title: 'Error',
+          description: 'Email already exists',
         });
       } else {
         setSubmitError(errorMessage || 'Failed to register');

@@ -182,6 +182,36 @@ describe('RegisterPage', () => {
     });
   });
 
+  it('shows error toast when email is already in use', async () => {
+    // given
+    const { auth } = await import('../../lib/api');
+    vi.mocked(auth.register).mockRejectedValue({
+      response: {
+        data: {
+          message: 'Email is already in use'
+        }
+      }
+    });
+    render(<RegisterPage />);
+
+    // when
+    await user.type(screen.getByTestId('register-username-input'), 'newuser');
+    await user.type(screen.getByTestId('register-email-input'), 'existing@example.com');
+    await user.type(screen.getByTestId('register-password-input'), 'password123');
+    await user.type(screen.getByTestId('register-firstname-input'), 'Test');
+    await user.type(screen.getByTestId('register-lastname-input'), 'User');
+    await user.click(screen.getByTestId('register-submit-button'));
+
+    // then
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith({
+        variant: 'error',
+        title: 'Error',
+        description: 'Email already exists',
+      });
+    });
+  });
+
   it('shows general error message for other API errors', async () => {
     // given
     const { auth } = await import('../../lib/api');
