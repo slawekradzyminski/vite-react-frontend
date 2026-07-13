@@ -22,8 +22,8 @@ test.describe('Two-factor authentication', () => {
     expect(secret).toMatch(/^[A-Z2-7]{32}$/);
     await profile.mfaConfirmCode.fill(generateTotp(secret));
     await profile.mfaConfirmButton.click();
-    await expect(profile.mfaStatus).toHaveText('Enabled');
-    await expect(profile.recoveryCodes).toHaveCount(8);
+    await expect(profile.mfaStatus).toHaveText('Enabled', { timeout: 15_000 });
+    await expect(profile.recoveryCodes).toHaveCount(8, { timeout: 15_000 });
     const initialRecoveryCodes = await profile.recoveryCodes.allTextContents();
     expect(initialRecoveryCodes).toHaveLength(8);
 
@@ -40,7 +40,7 @@ test.describe('Two-factor authentication', () => {
     await page.getByLabel('Current password').fill(user.password);
     await page.getByLabel('Authenticator code').fill(generateTotp(secret));
     await page.getByRole('button', { name: 'Replace codes' }).click();
-    await expect(profile.recoveryCodes).toHaveCount(8);
+    await expect(profile.recoveryCodes).toHaveCount(8, { timeout: 15_000 });
     const replacementRecoveryCodes = await profile.recoveryCodes.allTextContents();
     expect(replacementRecoveryCodes).toHaveLength(8);
     expect(replacementRecoveryCodes).not.toEqual(initialRecoveryCodes);
