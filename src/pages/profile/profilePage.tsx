@@ -12,6 +12,7 @@ import { systemPromptSchema, SystemPromptFormData, toolSystemPromptSchema, ToolS
 import type { UserEditDTO } from '../../types/auth';
 import { OrderList } from '../../components/orders/OrderList';
 import { Surface } from '../../components/ui/surface';
+import { MfaSecurityPanel } from '../../components/user/MfaSecurityPanel';
 
 export function Profile() {
   const queryClient = useQueryClient();
@@ -263,6 +264,8 @@ export function Profile() {
           )}
         </Surface>
       </div>
+
+      <MfaSecurityPanel />
 
       <Surface as="section" variant="default" padding="lg" data-testid="profile-orders-section">
         <OrderList />

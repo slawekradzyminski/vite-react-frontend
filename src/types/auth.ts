@@ -12,13 +12,45 @@ export interface RegisterRequest extends RegisterFormData {
 export interface LoginRequest extends LoginFormData {}
 
 export interface LoginResponse {
-  token: string;
-  refreshToken: string;
+  token?: string | null;
+  refreshToken?: string | null;
   username: string;
   email: string;
   firstName: string;
   lastName: string;
   roles: Role[];
+  mfaRequired?: boolean;
+  challengeToken?: string | null;
+  challengeExpiresAt?: string | null;
+}
+
+export interface MfaChallengeRequest {
+  challengeToken: string;
+  code: string;
+}
+
+export interface MfaStatusResponse {
+  enabled: boolean;
+  unusedRecoveryCodes: number;
+}
+
+export interface MfaSetupResponse {
+  secret: string;
+  otpAuthUri: string;
+  qrCodeDataUri: string;
+  expiresAt: string;
+}
+
+export interface MfaCodeRequest {
+  code: string;
+}
+
+export interface MfaProtectedActionRequest extends MfaCodeRequest {
+  password: string;
+}
+
+export interface MfaRecoveryCodesResponse {
+  recoveryCodes: string[];
 }
 
 export interface SsoExchangeRequest {

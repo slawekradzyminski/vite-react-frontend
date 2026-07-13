@@ -8,6 +8,8 @@ export class LoginPage {
   readonly ssoButton: Locator;
   readonly toast: Locator;
   readonly registerLink: Locator;
+  readonly mfaCodeInput: Locator;
+  readonly mfaSubmitButton: Locator;
 
   constructor(protected readonly page: Page) {
     this.usernameInput = page.getByLabel('Username');
@@ -16,6 +18,8 @@ export class LoginPage {
     this.ssoButton = page.getByTestId('login-sso-button');
     this.toast = page.locator('[data-state="open"]');
     this.registerLink = page.getByRole('button', { name: 'Register' });
+    this.mfaCodeInput = page.getByTestId('login-mfa-code-input');
+    this.mfaSubmitButton = page.getByTestId('login-mfa-submit-button');
   }
 
   async goto() {
@@ -26,6 +30,11 @@ export class LoginPage {
     await this.usernameInput.fill(credentials.username);
     await this.passwordInput.fill(credentials.password);
     await this.signInButton.click();
+  }
+
+  async completeMfa(code: string) {
+    await this.mfaCodeInput.fill(code);
+    await this.mfaSubmitButton.click();
   }
 
   getValidationError(field: string): Locator {

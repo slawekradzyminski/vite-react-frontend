@@ -16,6 +16,14 @@ export class ProfilePage {
   readonly dateColumnHeader: Locator;
   readonly statusColumnHeader: Locator;
   readonly totalColumnHeader: Locator;
+  readonly mfaStatus: Locator;
+  readonly enableMfaButton: Locator;
+  readonly mfaManualKey: Locator;
+  readonly mfaConfirmCode: Locator;
+  readonly mfaConfirmButton: Locator;
+  readonly recoveryCodes: Locator;
+  readonly regenerateCodesButton: Locator;
+  readonly disableMfaButton: Locator;
 
   constructor(protected readonly page: Page) {
     this.heading = page.getByRole('heading', { name: 'Profile' });
@@ -33,6 +41,14 @@ export class ProfilePage {
     this.dateColumnHeader = page.getByRole('columnheader', { name: 'Date' });
     this.statusColumnHeader = page.getByRole('columnheader', { name: 'Status' });
     this.totalColumnHeader = page.getByRole('columnheader', { name: 'Total' });
+    this.mfaStatus = page.getByTestId('mfa-status-badge');
+    this.enableMfaButton = page.getByTestId('mfa-enable-button');
+    this.mfaManualKey = page.getByTestId('mfa-manual-key');
+    this.mfaConfirmCode = page.getByTestId('mfa-confirm-code');
+    this.mfaConfirmButton = page.getByTestId('mfa-confirm-button');
+    this.recoveryCodes = page.getByTestId('mfa-recovery-codes').locator('code');
+    this.regenerateCodesButton = page.getByTestId('mfa-regenerate-button');
+    this.disableMfaButton = page.getByTestId('mfa-disable-button');
   }
 
   async goto() {
@@ -53,4 +69,4 @@ export class ProfilePage {
   async hasOrders(): Promise<boolean> {
     return await this.ordersTable.count() > 0;
   }
-} 
+}

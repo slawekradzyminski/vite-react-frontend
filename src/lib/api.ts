@@ -12,6 +12,12 @@ import type {
   ForgotPasswordRequest,
   ForgotPasswordResponse,
   ResetPasswordRequest,
+  MfaChallengeRequest,
+  MfaStatusResponse,
+  MfaSetupResponse,
+  MfaCodeRequest,
+  MfaProtectedActionRequest,
+  MfaRecoveryCodesResponse,
 } from '../types/auth';
 import type { EmailDto, EmailResponse } from '../types/email';
 import type { CreateQrDto, QrCodeResponse } from '../types/qr';
@@ -44,6 +50,7 @@ const CLIENT_SESSION_ID_HEADER = 'X-Client-Session-Id';
 
 const PUBLIC_ENDPOINTS = [
   `${USERS_API}/signin`,
+  `${USERS_API}/signin/2fa`,
   `${USERS_API}/signup`,
   `${USERS_API}/refresh`,
   `${USERS_API}/password/forgot`,
@@ -196,6 +203,9 @@ const streamWithAuth = async (path: string, payload: unknown) => {
 export const auth = {
   login: (data: LoginRequest) => 
     api.post<LoginResponse>(`${USERS_API}/signin`, data),
+
+  completeMfaLogin: (data: MfaChallengeRequest) =>
+    api.post<LoginResponse>(`${USERS_API}/signin/2fa`, data),
   
   register: (data: RegisterRequest) =>
     api.post<string>(`${USERS_API}/signup`, data),
@@ -226,6 +236,17 @@ export const auth = {
 
   ssoExchange: (data: SsoExchangeRequest) =>
     api.post<LoginResponse>(`${USERS_API}/sso/exchange`, data),
+
+  mfa: {
+    status: () => api.get<MfaStatusResponse>(`${USERS_API}/2fa/status`),
+    setup: () => api.post<MfaSetupResponse>(`${USERS_API}/2fa/setup`),
+    confirm: (data: MfaCodeRequest) =>
+      api.post<MfaRecoveryCodesResponse>(`${USERS_API}/2fa/confirm`, data),
+    regenerateRecoveryCodes: (data: MfaProtectedActionRequest) =>
+      api.post<MfaRecoveryCodesResponse>(`${USERS_API}/2fa/recovery-codes`, data),
+    disable: (data: MfaProtectedActionRequest) =>
+      api.post<void>(`${USERS_API}/2fa/disable`, data),
+  },
 };
 
 export const email = {

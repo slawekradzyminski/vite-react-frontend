@@ -62,6 +62,10 @@ vi.mock('../../lib/api', () => ({
   },
 }));
 
+vi.mock('../../components/user/MfaSecurityPanel', () => ({
+  MfaSecurityPanel: () => <section data-testid="mfa-security-panel">Two-factor authentication</section>,
+}));
+
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
@@ -162,6 +166,7 @@ describe('Profile', () => {
     expect(screen.getByText('Profile')).toBeInTheDocument();
     expect(screen.getByText('Personal Information')).toBeInTheDocument();
     expect(screen.getByText('System Prompts')).toBeInTheDocument();
+    expect(screen.getByText('Two-factor authentication')).toBeInTheDocument();
     expect(screen.getByText('Your Orders')).toBeInTheDocument();
     
     // Check if user data is displayed

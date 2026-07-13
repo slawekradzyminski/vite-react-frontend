@@ -9,6 +9,7 @@ import { AxiosResponse } from 'axios';
 vi.mock('../../lib/api', () => ({
   auth: {
     login: vi.fn(),
+    completeMfaLogin: vi.fn(),
   },
 }));
 
@@ -190,6 +191,50 @@ describe('LoginPage', () => {
         title: 'Error',
         description: 'Invalid username/password',
       });
+    });
+  });
+
+  it('requires and completes a second-factor challenge without storing partial login data', async () => {
+    const { auth } = await import('../../lib/api');
+    vi.mocked(auth.login).mockResolvedValue({
+      data: {
+        username: 'validuser',
+        email: 'valid@example.com',
+        firstName: 'Valid',
+        lastName: 'User',
+        roles: [Role.CLIENT],
+        mfaRequired: true,
+        challengeToken: 'challenge-token',
+        challengeExpiresAt: '2026-07-13T12:05:00Z',
+      },
+    } as AxiosResponse);
+    vi.mocked(auth.completeMfaLogin).mockResolvedValue({
+      data: {
+        token: 'mfa-token',
+        refreshToken: 'mfa-refresh',
+        username: 'validuser',
+        email: 'valid@example.com',
+        firstName: 'Valid',
+        lastName: 'User',
+        roles: [Role.CLIENT],
+      },
+    } as AxiosResponse);
+    render(<LoginPage />);
+
+    await user.type(screen.getByTestId('login-username-input'), 'validuser');
+    await user.type(screen.getByTestId('login-password-input'), 'validpassword');
+    await user.click(screen.getByTestId('login-submit-button'));
+
+    expect(await screen.findByTestId('login-mfa-step')).toBeInTheDocument();
+    expect(window.localStorage.setItem).not.toHaveBeenCalled();
+    await user.type(screen.getByTestId('login-mfa-code-input'), '123456');
+    await user.click(screen.getByTestId('login-mfa-submit-button'));
+
+    await waitFor(() => {
+      expect(auth.completeMfaLogin).toHaveBeenCalledWith({ challengeToken: 'challenge-token', code: '123456' });
+      expect(window.localStorage.setItem).toHaveBeenNthCalledWith(1, 'token', 'mfa-token');
+      expect(window.localStorage.setItem).toHaveBeenNthCalledWith(2, 'refreshToken', 'mfa-refresh');
+      expect(mockNavigate).toHaveBeenCalledWith('/');
     });
   });
 

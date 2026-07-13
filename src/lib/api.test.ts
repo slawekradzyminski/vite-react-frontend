@@ -62,6 +62,31 @@ describe('auth API', () => {
         password: 'password123',
       });
     });
+
+    it('completes an MFA login challenge on the public endpoint', async () => {
+      await auth.completeMfaLogin({ challengeToken: 'challenge-123', code: '123456' });
+
+      expect(mockAxios.post).toHaveBeenCalledWith('/api/v1/users/signin/2fa', {
+        challengeToken: 'challenge-123',
+        code: '123456',
+      });
+    });
+  });
+
+  describe('MFA management', () => {
+    it('calls status, setup, confirmation, recovery replacement, and disable endpoints', async () => {
+      await auth.mfa.status();
+      await auth.mfa.setup();
+      await auth.mfa.confirm({ code: '123456' });
+      await auth.mfa.regenerateRecoveryCodes({ password: 'password', code: '234567' });
+      await auth.mfa.disable({ password: 'password', code: 'AAAA-BBBB-CCCC-DDDD-EEEE' });
+
+      expect(mockAxios.get).toHaveBeenCalledWith('/api/v1/users/2fa/status');
+      expect(mockAxios.post).toHaveBeenCalledWith('/api/v1/users/2fa/setup');
+      expect(mockAxios.post).toHaveBeenCalledWith('/api/v1/users/2fa/confirm', { code: '123456' });
+      expect(mockAxios.post).toHaveBeenCalledWith('/api/v1/users/2fa/recovery-codes', { password: 'password', code: '234567' });
+      expect(mockAxios.post).toHaveBeenCalledWith('/api/v1/users/2fa/disable', { password: 'password', code: 'AAAA-BBBB-CCCC-DDDD-EEEE' });
+    });
   });
 
   describe('register', () => {
@@ -193,6 +218,18 @@ describe('API Client', () => {
 
       expect(config.headers.Authorization).toBeUndefined();
       expect(config.headers['X-Client-Session-Id']).toEqual(expect.any(String));
+    });
+
+    it('treats MFA challenge completion as a public endpoint', () => {
+      const requestInterceptor = getRequestInterceptor();
+      localStorage.setItem('token', 'stale-token');
+
+      const config = requestInterceptor({
+        url: '/api/v1/users/signin/2fa',
+        headers: {},
+      });
+
+      expect(config.headers.Authorization).toBeUndefined();
     });
 
     it('reuses an existing client session id', () => {

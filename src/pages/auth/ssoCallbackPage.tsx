@@ -18,6 +18,9 @@ export function SsoCallbackPage() {
     const finish = async () => {
       try {
         const response = await sso.completeCallback();
+        if (!response.token || !response.refreshToken) {
+          throw new Error('Single sign-on tokens were not returned');
+        }
         authStorage.setTokens({
           token: response.token,
           refreshToken: response.refreshToken,

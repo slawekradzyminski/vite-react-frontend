@@ -12,6 +12,7 @@ import { useToast } from '../../hooks/useToast';
 import { Surface } from '../../components/ui/surface';
 import { Badge } from '../../components/ui/badge';
 import { sso } from '../../lib/sso';
+import type { LoginResponse } from '../../types/auth';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -21,6 +22,8 @@ export function LoginPage() {
   const { toast } = useToast();
   const ssoEnabled = sso.isEnabled();
   const [socialLoading, setSocialLoading] = useState<'google' | 'github' | null>(null);
+  const [mfaChallenge, setMfaChallenge] = useState<string | null>(null);
+  const [mfaCode, setMfaCode] = useState('');
 
   const {
     register,
@@ -43,11 +46,15 @@ export function LoginPage() {
 
     try {
       const response = await auth.login(data);
-      authStorage.setTokens({
-        token: response.data.token,
-        refreshToken: response.data.refreshToken,
-      });
-      navigate('/');
+      if (response.data.mfaRequired) {
+        if (!response.data.challengeToken) {
+          throw new Error('MFA challenge was not returned');
+        }
+        setMfaChallenge(response.data.challengeToken);
+        setMfaCode('');
+        return;
+      }
+      finishLogin(response.data);
     } catch (err: any) {
       if (err.response?.status === 422) {
         toast({
@@ -62,6 +69,37 @@ export function LoginPage() {
           description: err.response?.data?.message || 'Failed to login',
         });
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const finishLogin = (response: LoginResponse) => {
+    if (!response.token || !response.refreshToken) {
+      throw new Error('Login tokens were not returned');
+    }
+    authStorage.setTokens({ token: response.token, refreshToken: response.refreshToken });
+    navigate('/');
+  };
+
+  const handleMfaSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!mfaChallenge || mfaCode.trim().length < 6) {
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await auth.completeMfaLogin({
+        challengeToken: mfaChallenge,
+        code: mfaCode.trim(),
+      });
+      finishLogin(response.data);
+    } catch (err: any) {
+      toast({
+        variant: 'error',
+        title: 'Error',
+        description: err.response?.data?.message || err.message || 'Failed to verify the security code',
+      });
     } finally {
       setLoading(false);
     }
@@ -124,7 +162,58 @@ export function LoginPage() {
         </Surface>
 
         <Surface as="section" variant="default" padding="auth" className="bg-white/88 p-6 lg:p-7 shadow-[0_30px_90px_-55px_rgba(15,23,42,0.55)]" data-testid="login-card">
-          <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate data-testid="login-form">
+          <form
+            className="space-y-4"
+            onSubmit={mfaChallenge ? handleMfaSubmit : handleSubmit(onSubmit)}
+            noValidate
+            data-testid="login-form"
+          >
+            {mfaChallenge ? (
+              <div className="space-y-5" data-testid="login-mfa-step">
+                <div className="space-y-2">
+                  <Badge tone="tracking" variant="outline" className="text-[11px] tracking-[0.2em]">Second factor</Badge>
+                  <h3 className="text-2xl font-semibold tracking-tight text-slate-950">Verify your sign-in</h3>
+                  <p className="text-sm leading-6 text-slate-600">
+                    Enter the six-digit code from Microsoft Authenticator, or use one of your recovery codes.
+                  </p>
+                </div>
+                <div>
+                  <Label htmlFor="mfa-code">Authenticator or recovery code</Label>
+                  <Input
+                    id="mfa-code"
+                    className="mt-2 font-mono tracking-[0.16em]"
+                    value={mfaCode}
+                    onChange={(event) => setMfaCode(event.target.value)}
+                    autoComplete="one-time-code"
+                    autoFocus
+                    placeholder="123456"
+                    data-testid="login-mfa-code-input"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="h-11 w-full rounded-xl bg-slate-900 text-white hover:bg-slate-800"
+                  disabled={loading || mfaCode.trim().length < 6}
+                  data-testid="login-mfa-submit-button"
+                >
+                  {loading ? 'Verifying...' : 'Verify and sign in'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="h-11 w-full"
+                  disabled={loading}
+                  onClick={() => {
+                    setMfaChallenge(null);
+                    setMfaCode('');
+                  }}
+                  data-testid="login-mfa-back-button"
+                >
+                  Back to password
+                </Button>
+              </div>
+            ) : (
+              <>
             <div className="space-y-4">
               <div data-testid="login-username-field">
                 <Label htmlFor="username" data-testid="login-username-label">Username</Label>
@@ -247,6 +336,8 @@ export function LoginPage() {
                 Register
               </Button>
             </div>
+              </>
+            )}
           </form>
         </Surface>
       </div>
