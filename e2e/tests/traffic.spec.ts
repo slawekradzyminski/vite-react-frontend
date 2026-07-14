@@ -1,6 +1,7 @@
 import { BACKEND_URL } from '../config/constants';
 import { test, expect } from '../fixtures/auth.fixture';
 import { TrafficPage } from '../pages/traffic.page.object';
+import type { Page } from '@playwright/test';
 
 test.describe('Traffic Monitor Page', () => {
   let trafficPage: TrafficPage;
@@ -26,8 +27,9 @@ test.describe('Traffic Monitor Page', () => {
     
     // when
     await trafficPage.waitForConnection();
-    await request.get(`${BACKEND_URL}/api/v1/products`, authHeaders(token));
-    await request.get(`${BACKEND_URL}/api/v1/products/1`, authHeaders(token));
+    const clientSessionId = await getClientSessionId(page);
+    await request.get(`${BACKEND_URL}/api/v1/products`, authHeaders(token, clientSessionId));
+    await request.get(`${BACKEND_URL}/api/v1/products/1`, authHeaders(token, clientSessionId));
     await page.waitForTimeout(1000);
 
     // then
@@ -46,8 +48,9 @@ test.describe('Traffic Monitor Page', () => {
     const { page, token } = authenticatedPage;
 
     await trafficPage.waitForConnection();
-    await request.get(`${BACKEND_URL}/api/v1/products`, authHeaders(token));
-    await request.get(`${BACKEND_URL}/api/v1/products/1`, authHeaders(token));
+    const clientSessionId = await getClientSessionId(page);
+    await request.get(`${BACKEND_URL}/api/v1/products`, authHeaders(token, clientSessionId));
+    await request.get(`${BACKEND_URL}/api/v1/products/1`, authHeaders(token, clientSessionId));
     await page.waitForTimeout(1000);
     const methodElement1 = page.locator('td:has-text("/api/v1/products")').first();
     await expect(methodElement1).toBeVisible();
@@ -60,8 +63,15 @@ test.describe('Traffic Monitor Page', () => {
   });
 }); 
 
-const authHeaders = (token: string) => ({
+const getClientSessionId = async (page: Page) => {
+  const clientSessionId = await page.evaluate(() => localStorage.getItem('clientSessionId'));
+  expect(clientSessionId).toBeTruthy();
+  return clientSessionId!;
+};
+
+const authHeaders = (token: string, clientSessionId: string) => ({
     headers: {
         Authorization: `Bearer ${token}`,
+        'X-Client-Session-Id': clientSessionId,
     },
 });
