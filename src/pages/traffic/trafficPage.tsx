@@ -35,13 +35,17 @@ export function TrafficMonitorPage() {
     const { webSocketEndpoint, topic } = trafficInfo.data;
     const token = authStorage.getAccessToken();
     if (!token) return;
+    const clientSessionId = authStorage.getClientSessionId();
 
     const fullUrl = getAbsoluteApiUrl(webSocketEndpoint);
     const socket = new SockJS(fullUrl);
 
     const stompClient = new Client({
       webSocketFactory: () => socket,
-      connectHeaders: { Authorization: `Bearer ${token}` },
+      connectHeaders: {
+        Authorization: `Bearer ${token}`,
+        'X-Client-Session-Id': clientSessionId,
+      },
       debug: (str) => {
         if (import.meta.env.DEV) {
           console.log('STOMP debug:', str);

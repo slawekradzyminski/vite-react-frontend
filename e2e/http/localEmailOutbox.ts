@@ -4,6 +4,7 @@ import { postSignIn } from './postSignIn';
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME ?? 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'LocalDemoAdmin123!';
+const OUTBOX_ACCESS_KEY = process.env.LOCAL_EMAIL_OUTBOX_ACCESS_KEY;
 
 interface OutboxEmail {
   timestamp: string;
@@ -87,5 +88,6 @@ async function getAdminHeaders(request: APIRequestContext): Promise<Record<strin
 
   return {
     Authorization: `Bearer ${response.token}`,
+    ...(OUTBOX_ACCESS_KEY ? { 'X-Local-Outbox-Key': OUTBOX_ACCESS_KEY } : {}),
   };
 }
