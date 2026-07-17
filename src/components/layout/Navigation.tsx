@@ -80,6 +80,7 @@ export function Navigation() {
     { label: 'Send Email', path: '/email' },
     { label: 'QR Code', path: '/qr' },
     { label: 'LLM', path: '/llm' },
+    { label: 'AI Lab', path: '/learn' },
     { label: 'Traffic Monitor', path: '/traffic' },
   ];
 

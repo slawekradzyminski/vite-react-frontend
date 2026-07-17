@@ -129,7 +129,7 @@ describe('Navigation', () => {
     expect(window.location.pathname).toBe('/profile');
   });
 
-  it('shows LLM link when authenticated', async () => {
+  it('shows LLM and AI Lab links when authenticated', async () => {
     // given
     localStorage.setItem('token', 'fake-token');
     localStorage.setItem('refreshToken', 'fake-refresh');
@@ -154,6 +154,7 @@ describe('Navigation', () => {
     // then
     await waitFor(() => {
       expect(screen.getByText('LLM')).toBeInTheDocument();
+      expect(screen.getByTestId('desktop-menu-ai-lab')).toHaveAttribute('href', '/learn');
     });
   });
 
@@ -248,6 +249,7 @@ describe('Navigation', () => {
     expect(mobileMenu).toHaveTextContent('Cart');
     expect(mobileMenu).toHaveTextContent('Send Email');
     expect(mobileMenu).toHaveTextContent('LLM');
+    expect(screen.getByTestId('mobile-menu-ai-lab')).toHaveAttribute('href', '/learn');
     expect(mobileMenu).toHaveTextContent('Test User');
 
     // when

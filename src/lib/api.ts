@@ -21,7 +21,13 @@ import type {
 } from '../types/auth';
 import type { EmailDto, EmailResponse } from '../types/email';
 import type { CreateQrDto, QrCodeResponse } from '../types/qr';
-import type { GenerateRequestDto, ChatRequestDto, OllamaToolDefinition } from '../types/ollama';
+import type {
+  GenerateRequestDto,
+  ChatRequestDto,
+  LearningNextTokenRequest,
+  LearningNextTokenResponse,
+  OllamaToolDefinition,
+} from '../types/ollama';
 import type { ChatSystemPromptDto, ToolSystemPromptDto } from '../types/prompts';
 import type { Order, PageDtoOrderDto, Address, OrderStatus } from '../types/order';
 import type { Product, ProductCreateDto, ProductUpdateDto } from '../types/product';
@@ -281,6 +287,11 @@ export const ollama = {
 
   getToolDefinitions: async () => {
     const response = await api.get<OllamaToolDefinition[]>(`${OLLAMA_API}/chat/tools/definitions`);
+    return response.data;
+  },
+
+  getLearningNextToken: async (data: LearningNextTokenRequest) => {
+    const response = await api.post<LearningNextTokenResponse>(`${OLLAMA_API}/learning/next-token`, data);
     return response.data;
   },
 };

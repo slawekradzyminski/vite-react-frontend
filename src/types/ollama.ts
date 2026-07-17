@@ -97,3 +97,27 @@ export interface OllamaToolDefinition {
   type: 'function';
   function: OllamaToolFunction;
 }
+
+export interface LearningNextTokenRequest {
+  model: string;
+  prompt: string;
+  topK: number;
+}
+
+export interface LearningNextTokenCandidate {
+  token: string;
+  rank: number;
+  logprob: number;
+  probability: number;
+  normalizedProbability: number;
+}
+
+export interface LearningNextTokenResponse {
+  source: 'ollama-live';
+  modelLabel: string;
+  prompt: string;
+  generatedToken: string;
+  capturedProbabilityMass: number;
+  truncated: boolean;
+  candidates: LearningNextTokenCandidate[];
+}

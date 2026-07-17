@@ -23,6 +23,13 @@ import { AdminProductFormPage } from './pages/admin/productFormPage';
 import { AdminOrdersPage } from './pages/admin/ordersPage';
 import { TrafficMonitorPage } from './pages/traffic/trafficPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { LearningLayout } from './features/learning/LearningLayout';
+import { LearningHomePage } from './features/learning/LearningHomePage';
+import { PerceptronLabPage } from './features/learning/PerceptronLabPage';
+import { NextTokenLabPage } from './features/learning/NextTokenLabPage';
+import { ConvolutionLabPage } from './features/learning/ConvolutionLabPage';
+import { KvCacheLabPage } from './features/learning/KvCacheLabPage';
+import { DigitLabPage } from './features/learning/DigitLabPage';
 
 export function AppRoutes() {
   return (
@@ -121,6 +128,22 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/learn"
+        element={
+          <ProtectedRoute data-testid="learning-protected-route">
+            <LearningLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<LearningHomePage />} />
+        <Route path="perceptron" element={<PerceptronLabPage />} />
+        <Route path="next-token" element={<NextTokenLabPage />} />
+          <Route path="convolution" element={<ConvolutionLabPage />} />
+          <Route path="digits" element={<DigitLabPage />} />
+          <Route path="kv-cache" element={<KvCacheLabPage />} />
+        <Route path="*" element={<Navigate to="/learn" replace />} />
+      </Route>
       <Route
         path="/profile"
         element={
