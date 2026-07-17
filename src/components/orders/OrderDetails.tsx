@@ -122,7 +122,7 @@ export const OrderDetails = () => {
   }
 
   return (
-    <Surface variant="default" padding="lg" data-testid="order-details">
+    <Surface variant="default" padding="lg" className="min-w-0" data-testid="order-details">
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Order detail</p>
@@ -141,12 +141,12 @@ export const OrderDetails = () => {
         <h2 className="mb-3 text-lg font-semibold text-slate-950" data-testid="order-details-items-title">Items</h2>
         <div className="space-y-4" data-testid="order-details-items-list">
           {order.items.map((item) => (
-            <div key={item.id} className="flex justify-between items-center border-b border-stone-200 pb-3 last:border-b-0 last:pb-0" data-testid={`order-item-${item.id}`}>
-              <div>
-                <p className="font-medium text-slate-900" data-testid={`order-item-name-${item.id}`}>{item.productName}</p>
+            <div key={item.id} className="flex min-w-0 flex-col items-start gap-2 border-b border-stone-200 pb-3 last:border-b-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between" data-testid={`order-item-${item.id}`}>
+              <div className="min-w-0">
+                <p className="[overflow-wrap:anywhere] font-medium text-slate-900" data-testid={`order-item-name-${item.id}`}>{item.productName}</p>
                 <p className="text-sm text-slate-500" data-testid={`order-item-price-details-${item.id}`}>${item.unitPrice} x {item.quantity}</p>
               </div>
-              <p className="font-medium text-slate-900" data-testid={`order-item-total-${item.id}`}>${item.totalPrice.toFixed(2)}</p>
+              <p className="shrink-0 self-end font-medium text-slate-900 sm:self-auto" data-testid={`order-item-total-${item.id}`}>${item.totalPrice.toFixed(2)}</p>
             </div>
           ))}
         </div>
@@ -158,7 +158,7 @@ export const OrderDetails = () => {
 
       <Surface variant="inset" padding="md" className="mb-6" data-testid="order-details-shipping-section">
         <h2 className="mb-3 text-lg font-semibold text-slate-950" data-testid="order-details-shipping-title">Shipping Address</h2>
-        <div className="text-slate-700" data-testid="order-details-shipping-address">
+        <div className="[overflow-wrap:anywhere] text-slate-700" data-testid="order-details-shipping-address">
           <p data-testid="order-details-address-street">{order.shippingAddress.street}</p>
           <p data-testid="order-details-address-city-state">
             {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}
@@ -167,11 +167,11 @@ export const OrderDetails = () => {
         </div>
       </Surface>
 
-      <div className="flex justify-between items-center" data-testid="order-details-actions">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" data-testid="order-details-actions">
         {order.status === 'PENDING' && (
           <button
             onClick={handleCancelOrder}
-            className="rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100"
+            className="self-start rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100"
             disabled={cancelOrderMutation.isPending}
             data-testid="order-details-cancel-button"
           >
@@ -180,11 +180,11 @@ export const OrderDetails = () => {
         )}
 
         {isAdmin && (
-          <div className="flex items-center space-x-2 ml-auto" data-testid="order-details-admin-controls">
+          <div className="flex w-full flex-col gap-2 sm:ml-auto sm:w-auto sm:flex-row sm:items-center" data-testid="order-details-admin-controls">
             <select
               value={effectiveSelectedStatus ?? ''}
               onChange={handleStatusChange}
-              className="h-11 rounded-2xl border border-stone-200 bg-stone-50 px-4 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
+              className="h-11 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white sm:w-auto"
               disabled={updateStatusMutation.isPending}
               data-testid="order-details-status-select"
             >
@@ -196,7 +196,7 @@ export const OrderDetails = () => {
             </select>
             <button
               onClick={handleUpdateStatus}
-              className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-stone-50 transition hover:bg-slate-800 disabled:bg-stone-300"
+              className="w-full rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-stone-50 transition hover:bg-slate-800 disabled:bg-stone-300 sm:w-auto"
               disabled={isUpdateDisabled}
               data-testid="order-details-update-status-button"
             >

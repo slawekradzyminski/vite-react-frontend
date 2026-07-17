@@ -1,4 +1,8 @@
 import { test, expect } from '../fixtures/auth.fixture';
+import { cartMocks } from '../mocks/cartMocks';
+import { meMocks } from '../mocks/meMocks';
+import { orderMocks } from '../mocks/orderMocks';
+import { productsMocks } from '../mocks/productMocks';
 
 async function expectNoHorizontalOverflow(page: import('@playwright/test').Page) {
   const hasOverflow = await page.evaluate(() => {
@@ -55,6 +59,63 @@ test.describe('Responsive shell smoke checks', () => {
     await expect(page.getByTestId('traffic-monitor-page')).toBeVisible();
     await expect(page.getByTestId('traffic-title')).toBeVisible();
     await expect(page.getByTestId('app-footer')).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test('keeps long product details within the viewport on mobile', async ({ authenticatedPage }) => {
+    const { page, user } = authenticatedPage;
+    const productId = 987654;
+    await page.setViewportSize({ width: 375, height: 812 });
+    await productsMocks.mockGetProductDetailsSuccess(page, productId, {
+      id: productId,
+      name: 'Extremely Long Product Name Without Convenient Breakpoints ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+      description: 'A long product description used to verify responsive wrapping on narrow screens.',
+      price: 1234.56,
+      stockQuantity: 12,
+      category: 'VeryLongCategoryNameWithoutBreakpoints',
+      imageUrl: '',
+    });
+    await cartMocks.mockEmptyCart(page);
+    await meMocks.mockAdminUser(page, user);
+    await page.goto(`/products/${productId}`);
+
+    await expect(page.getByTestId('product-details')).toBeVisible();
+    await expect(page.getByTestId('product-title')).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test('keeps long order details and admin controls within the viewport on mobile', async ({ authenticatedPage }) => {
+    const { page, user } = authenticatedPage;
+    const order = {
+      id: 123456789,
+      username: user.username,
+      items: [{
+        id: 1,
+        productId: 1,
+        quantity: 12,
+        productName: 'Extremely Long Product Name Without Convenient Breakpoints ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        unitPrice: 1234.56,
+        totalPrice: 14814.72,
+      }],
+      totalAmount: 14814.72,
+      status: 'PENDING',
+      shippingAddress: {
+        street: '123 VeryLongStreetNameWithoutConvenientBreakpoints',
+        city: 'Long City',
+        state: 'State',
+        zipCode: '12345',
+        country: 'Country',
+      },
+      createdAt: '2026-07-15T00:00:00Z',
+      updatedAt: '2026-07-15T00:00:00Z',
+    };
+    await page.setViewportSize({ width: 375, height: 812 });
+    await orderMocks.mockOrderWithState(page, order);
+    await meMocks.mockAdminUser(page, user);
+    await page.goto(`/orders/${order.id}`);
+
+    await expect(page.getByTestId('order-details')).toBeVisible();
+    await expect(page.getByTestId('order-details-admin-controls')).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });
 });

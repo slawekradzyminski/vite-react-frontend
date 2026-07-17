@@ -149,10 +149,10 @@ export function ProductDetails() {
         </Link>
       </div>
       
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)]" data-testid="product-details-content">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)]" data-testid="product-details-content">
         <Surface
           variant="default"
-          className="overflow-hidden"
+          className="min-w-0 overflow-hidden"
           data-testid="product-image-container"
         >
           {productData.imageUrl ? (
@@ -172,12 +172,13 @@ export function ProductDetails() {
         <Surface
           variant="default"
           padding="lg"
+          className="min-w-0"
           data-testid="product-info-container"
         >
           <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
+            <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Product detail</p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950" data-testid="product-title">{productData.name}</h1>
+              <h1 className="mt-2 [overflow-wrap:anywhere] text-3xl font-semibold tracking-tight text-slate-950" data-testid="product-title">{productData.name}</h1>
             </div>
             <Badge className="px-4 py-2 text-xl font-semibold text-slate-950" data-testid="product-price">${productData.price.toFixed(2)}</Badge>
           </div>
@@ -185,13 +186,13 @@ export function ProductDetails() {
           <div className="mt-8 grid gap-6 md:grid-cols-2">
             <div data-testid="product-description-section">
               <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500" data-testid="product-description-title">Description</h2>
-              <p className="mt-3 text-sm leading-7 text-slate-600" data-testid="product-description">{productData.description}</p>
+              <p className="mt-3 [overflow-wrap:anywhere] text-sm leading-7 text-slate-600" data-testid="product-description">{productData.description}</p>
             </div>
             
             <div className="space-y-6">
               <div data-testid="product-category-section">
                 <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500" data-testid="product-category-title">Category</h2>
-                <p className="mt-3 text-sm font-medium text-slate-900" data-testid="product-category">{productData.category}</p>
+                <p className="mt-3 [overflow-wrap:anywhere] text-sm font-medium text-slate-900" data-testid="product-category">{productData.category}</p>
               </div>
               
               <div data-testid="product-availability-section">
