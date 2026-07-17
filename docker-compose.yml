@@ -31,7 +31,7 @@ services:
       - my-private-ntwk
 
   gateway:
-    image: nginx:1.29.7-perl
+    image: nginx:1.31.2-trixie
     depends_on:
       - frontend
       - backend
