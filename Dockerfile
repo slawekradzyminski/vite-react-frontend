@@ -12,6 +12,11 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# The model remains user-editable in the UI. This controls only the initial
+# value baked into the static frontend bundle.
+ARG VITE_DEFAULT_OLLAMA_MODEL=hf.co/prism-ml/Bonsai-27B-gguf:Q1_0
+ENV VITE_DEFAULT_OLLAMA_MODEL=${VITE_DEFAULT_OLLAMA_MODEL}
+
 # Build the application
 RUN npm run build
 

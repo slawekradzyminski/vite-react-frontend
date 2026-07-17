@@ -3,14 +3,14 @@ import { ArrowRight, MessageSquare, Sparkles, Workflow } from 'lucide-react';
 import { Surface } from '../../components/ui/surface';
 import { Badge } from '../../components/ui/badge';
 import { cn } from '../../lib/utils';
-import { DEFAULT_OLLAMA_MODEL } from '../../lib/ollamaDefaults';
+import { DEFAULT_OLLAMA_MODEL_LABEL } from '../../lib/ollamaDefaults';
 
 const MODES = [
   {
     id: 'generate',
     title: 'Generate',
     badge: 'Single-shot',
-    highlights: [DEFAULT_OLLAMA_MODEL, 'One-shot prompts', 'Markdown output'],
+    highlights: [DEFAULT_OLLAMA_MODEL_LABEL, 'One-shot prompts', 'Markdown output'],
     icon: Sparkles,
     to: '/llm/generate',
     iconBg: 'bg-slate-900 text-stone-50',
@@ -20,7 +20,7 @@ const MODES = [
     id: 'chat',
     title: 'Chat',
     badge: 'Conversation',
-    highlights: [DEFAULT_OLLAMA_MODEL, 'Custom system prompt', 'Thinking toggle'],
+    highlights: [DEFAULT_OLLAMA_MODEL_LABEL, 'Custom system prompt', 'Thinking toggle'],
     icon: MessageSquare,
     to: '/llm/chat',
     iconBg: 'bg-slate-900 text-stone-50',
@@ -30,7 +30,7 @@ const MODES = [
     id: 'tools',
     title: 'Chat + Tools',
     badge: 'Conversation + Tools',
-    highlights: [DEFAULT_OLLAMA_MODEL, 'Live tool output', 'Grounded responses'],
+    highlights: [DEFAULT_OLLAMA_MODEL_LABEL, 'Live tool output', 'Grounded responses'],
     icon: Workflow,
     to: '/llm/tools',
     iconBg: 'bg-slate-900 text-stone-50',

@@ -45,7 +45,7 @@ describe('useOllamaChat', () => {
     expect(result.current.messages).toEqual([
       { role: 'system', content: 'You are a helpful AI assistant. You must use the conversation history to answer questions.' }
     ]);
-    expect(result.current.model).toBe('qwen3.5:2b');
+    expect(result.current.model).toBe('hf.co/prism-ml/Bonsai-27B-gguf:Q1_0');
     expect(result.current.temperature).toBe(0.8);
   });
 

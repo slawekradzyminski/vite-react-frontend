@@ -47,7 +47,7 @@ test.describe('Ollama Tool Calling', () => {
     await toolChatPage.goto();
     await toolChatPage.expandSettings();
     await expect(toolChatPage.toolDefinitionJson).toContainText('get_product_snapshot');
-    await expect(toolChatPage.modelInput).toHaveValue('qwen3.5:2b');
+    await expect(toolChatPage.modelInput).toHaveValue('hf.co/prism-ml/Bonsai-27B-gguf:Q1_0');
     await expect(toolChatPage.thinkingCheckbox).not.toBeChecked();
   });
 
