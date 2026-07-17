@@ -82,7 +82,7 @@ describe('OllamaGeneratePage', () => {
       expect(screen.getByText('Hello World')).toBeInTheDocument();
     });
     expect(vi.mocked(ollama.generate)).toHaveBeenCalledWith(expect.objectContaining({
-      model: 'qwen3.5:2b'
+      model: 'hf.co/prism-ml/Bonsai-27B-gguf:Q1_0'
     }));
   });
 
@@ -217,7 +217,7 @@ describe('OllamaGeneratePage', () => {
     
     // then
     const modelInput = screen.getByTestId('model-input');
-    expect(modelInput).toHaveValue('qwen3.5:2b');
+    expect(modelInput).toHaveValue('hf.co/prism-ml/Bonsai-27B-gguf:Q1_0');
   });
 
   it('renders thinking checkbox unchecked by default', () => {

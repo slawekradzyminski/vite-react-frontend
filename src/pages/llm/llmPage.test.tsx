@@ -26,6 +26,7 @@ describe('LlmPage (landing)', () => {
     const toolsCard = screen.getByTestId('llm-mode-card-tools');
 
     expect(chatCard).toHaveTextContent('Chat');
+    expect(chatCard).toHaveTextContent('Bonsai 27B · 1-bit');
     expect(chatCard).toHaveAttribute('href', '/llm/chat');
     expect(generateCard).toHaveTextContent('Generate');
     expect(generateCard).toHaveAttribute('href', '/llm/generate');

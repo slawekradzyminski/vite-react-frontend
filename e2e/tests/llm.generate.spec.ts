@@ -20,10 +20,10 @@ test.describe('Ollama Generate', () => {
     await expect(generatePage.responseContent).toContainText('Release plan: mock Ollama service ready');
   });
 
-  test('uses qwen3.5:2b by default and allows editing the value', async () => {
+  test('uses Bonsai by default and allows editing the value', async () => {
     await generatePage.goto();
     await generatePage.expandSettings();
-    await expect(generatePage.modelInput).toHaveValue('qwen3.5:2b');
+    await expect(generatePage.modelInput).toHaveValue('hf.co/prism-ml/Bonsai-27B-gguf:Q1_0');
 
     await generatePage.modelInput.fill('custom-model');
     await expect(generatePage.modelInput).toHaveValue('custom-model');
