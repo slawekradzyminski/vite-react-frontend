@@ -2,10 +2,12 @@ import { auth } from './api';
 import { authStorage } from './authStorage';
 import { getSsoConfig } from './runtimeConfig';
 import type { LoginResponse } from '../types/auth';
+import { sanitizeReturnTo } from '@awesome-testing/platform-client';
 
 const SSO_STATE_KEY = 'ssoState';
 const SSO_NONCE_KEY = 'ssoNonce';
 const SSO_CODE_VERIFIER_KEY = 'ssoCodeVerifier';
+const SSO_RETURN_TO_KEY = 'ssoReturnTo';
 
 type SsoEnv = Parameters<typeof getSsoConfig>[0];
 type RuntimeLocation = Parameters<typeof getSsoConfig>[1];
@@ -151,6 +153,16 @@ export const sso = {
   isEnabled: (env: SsoEnv = import.meta.env, location: RuntimeLocation = window.location) =>
     Boolean(getSsoConfig(env, location)),
 
+  rememberLoginReturnTo: (returnTo: string) => {
+    safeSetItem(SSO_RETURN_TO_KEY, sanitizeReturnTo(returnTo));
+  },
+
+  consumeLoginReturnTo: () => {
+    const returnTo = sanitizeReturnTo(safeGetItem(SSO_RETURN_TO_KEY));
+    safeRemoveItem(SSO_RETURN_TO_KEY);
+    return returnTo;
+  },
+
   beginLogin: async (env: SsoEnv = import.meta.env, location: RuntimeLocation = window.location) => {
     const config = getSsoConfig(env, location);
     if (!config) {
@@ -267,5 +279,6 @@ export const sso = {
     safeRemoveItem(SSO_STATE_KEY);
     safeRemoveItem(SSO_NONCE_KEY);
     safeRemoveItem(SSO_CODE_VERIFIER_KEY);
+    safeRemoveItem(SSO_RETURN_TO_KEY);
   },
 };

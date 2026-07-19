@@ -14,20 +14,7 @@ import { Badge } from '../../components/ui/badge';
 import { sso } from '../../lib/sso';
 import type { LoginResponse } from '../../types/auth';
 import { readLoginReturnTo } from '@awesome-testing/platform-client';
-
-type Navigate = ReturnType<typeof useNavigate>;
-
-export function navigateAfterLogin(
-  returnTo: string,
-  navigate: Navigate,
-  documentNavigate: (url: string) => void = (url) => window.location.assign(url),
-) {
-  if (returnTo === '/learn' || returnTo.startsWith('/learn/')) {
-    documentNavigate(returnTo);
-    return;
-  }
-  navigate(returnTo);
-}
+import { navigateAfterLogin } from '../../lib/loginNavigation';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -124,6 +111,7 @@ export function LoginPage() {
     setSsoLoading(true);
 
     try {
+      sso.rememberLoginReturnTo(readLoginReturnTo(location.search));
       await sso.beginLogin();
     } catch (err: any) {
       toast({
@@ -139,6 +127,7 @@ export function LoginPage() {
     setSocialLoading(provider);
 
     try {
+      sso.rememberLoginReturnTo(readLoginReturnTo(location.search));
       await sso.beginSocialLogin(provider);
     } catch (err: any) {
       toast({

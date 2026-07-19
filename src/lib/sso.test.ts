@@ -55,6 +55,19 @@ describe('sso helper', () => {
     );
   });
 
+  it('stores, sanitizes, and consumes the post-SSO return target once', () => {
+    sso.rememberLoginReturnTo('/learn/agent-loop?mode=guided#exercise');
+
+    expect(sso.consumeLoginReturnTo()).toBe('/learn/agent-loop?mode=guided#exercise');
+    expect(sso.consumeLoginReturnTo()).toBe('/');
+
+    sso.rememberLoginReturnTo('https://attacker.example/steal');
+    expect(sso.consumeLoginReturnTo()).toBe('/');
+
+    sso.rememberLoginReturnTo('//attacker.example/steal');
+    expect(sso.consumeLoginReturnTo()).toBe('/');
+  });
+
   it('starts a social login redirect with kc_idp_hint', async () => {
     const assign = vi.fn();
     Object.defineProperty(window, 'location', {
