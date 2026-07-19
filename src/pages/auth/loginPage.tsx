@@ -13,6 +13,21 @@ import { Surface } from '../../components/ui/surface';
 import { Badge } from '../../components/ui/badge';
 import { sso } from '../../lib/sso';
 import type { LoginResponse } from '../../types/auth';
+import { readLoginReturnTo } from '@awesome-testing/platform-client';
+
+type Navigate = ReturnType<typeof useNavigate>;
+
+export function navigateAfterLogin(
+  returnTo: string,
+  navigate: Navigate,
+  documentNavigate: (url: string) => void = (url) => window.location.assign(url),
+) {
+  if (returnTo === '/learn' || returnTo.startsWith('/learn/')) {
+    documentNavigate(returnTo);
+    return;
+  }
+  navigate(returnTo);
+}
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -79,7 +94,7 @@ export function LoginPage() {
       throw new Error('Login tokens were not returned');
     }
     authStorage.setTokens({ token: response.token, refreshToken: response.refreshToken });
-    navigate('/');
+    navigateAfterLogin(readLoginReturnTo(location.search), navigate);
   };
 
   const handleMfaSubmit = async (event: React.FormEvent<HTMLFormElement>) => {

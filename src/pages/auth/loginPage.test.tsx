@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { LoginPage } from './loginPage';
+import { LoginPage, navigateAfterLogin } from './loginPage';
 import { Role } from '../../types/auth';
 import { AxiosResponse } from 'axios';
 
@@ -38,7 +38,7 @@ vi.mock('../../lib/sso', () => ({
 
 // Variable declarations after all mocks
 const mockNavigate = vi.fn();
-const mockLocation = { state: null };
+const mockLocation = { state: null, search: '' };
 const mockToast = vi.fn();
 
 describe('LoginPage', () => {
@@ -49,6 +49,7 @@ describe('LoginPage', () => {
     vi.clearAllMocks();
     user = userEvent.setup();
     mockLocation.state = null;
+    mockLocation.search = '';
     mockSso.enabled = false;
     
     // Mock localStorage
@@ -165,6 +166,15 @@ describe('LoginPage', () => {
       expect(window.localStorage.setItem).toHaveBeenNthCalledWith(2, 'refreshToken', 'test-refresh');
       expect(mockNavigate).toHaveBeenCalledWith('/');
     });
+  });
+
+  it('uses a document navigation when login returns to the standalone AI Lab', () => {
+    const documentNavigate = vi.fn();
+
+    navigateAfterLogin('/learn/next-token', mockNavigate, documentNavigate);
+
+    expect(documentNavigate).toHaveBeenCalledWith('/learn/next-token');
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 
   it('shows error toast on invalid credentials', async () => {
