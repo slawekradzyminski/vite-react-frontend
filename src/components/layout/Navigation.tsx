@@ -10,6 +10,12 @@ import { brandMarkSrc } from '../../lib/brandingAssets';
 
 const PRODUCT_NAME = 'Awesome Testing';
 
+type MenuItem = {
+  label: string;
+  path: string;
+  documentNavigation?: boolean;
+};
+
 export function Navigation() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -75,11 +81,12 @@ export function Navigation() {
         : 'text-slate-600 hover:bg-white hover:text-slate-900'
     }`;
 
-  const authMenuItems = [
+  const authMenuItems: MenuItem[] = [
     { label: 'Products', path: '/products' },
     { label: 'Send Email', path: '/email' },
     { label: 'QR Code', path: '/qr' },
     { label: 'LLM', path: '/llm' },
+    { label: 'AI Lab', path: '/learn/', documentNavigation: true },
     { label: 'Traffic Monitor', path: '/traffic' },
   ];
 
@@ -108,20 +115,17 @@ export function Navigation() {
             </Link>
 
             <div className="hidden lg:flex lg:items-center lg:gap-2" data-testid="desktop-menu">
-              {user?.data && authMenuItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`inline-flex items-center rounded-full px-3 py-2 text-sm font-medium transition ${
+              {user?.data && authMenuItems.map((item) => {
+                const className = `inline-flex items-center rounded-full px-3 py-2 text-sm font-medium transition ${
                     isActive(item.path)
                       ? 'bg-slate-900 text-stone-50 shadow-[0_10px_25px_-16px_rgba(15,23,42,0.75)]'
                       : 'text-slate-600 hover:bg-white hover:text-slate-900'
-                  }`}
-                  data-testid={`desktop-menu-${item.label.toLowerCase().replace(' ', '-')}`}
-                >
-                  {item.label}
-                </Link>
-              ))}
+                  }`;
+                const testId = `desktop-menu-${item.label.toLowerCase().replace(' ', '-')}`;
+                return item.documentNavigation
+                  ? <a key={item.path} href={item.path} className={className} data-testid={testId} data-navigation="document">{item.label}</a>
+                  : <Link key={item.path} to={item.path} className={className} data-testid={testId}>{item.label}</Link>;
+              })}
 
               {isAdmin && adminMenuItems.map((item) => (
                 <Link
@@ -215,21 +219,17 @@ export function Navigation() {
       {isOpen && user?.data && (
         <div className="border-t border-stone-200/80 bg-stone-50/95 px-4 pb-4 pt-3 lg:hidden" data-testid="mobile-menu">
           <div className="space-y-2">
-            {authMenuItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`block rounded-2xl px-4 py-3 text-base font-medium transition ${
+            {authMenuItems.map((item) => {
+              const className = `block rounded-2xl px-4 py-3 text-base font-medium transition ${
                   isActive(item.path)
                     ? 'bg-slate-900 text-stone-50'
                     : 'bg-white/80 text-slate-700 hover:bg-white hover:text-slate-900'
-                }`}
-                onClick={() => setIsOpen(false)}
-                data-testid={`mobile-menu-${item.label.toLowerCase().replace(' ', '-')}`}
-              >
-                {item.label}
-              </Link>
-            ))}
+                }`;
+              const testId = `mobile-menu-${item.label.toLowerCase().replace(' ', '-')}`;
+              return item.documentNavigation
+                ? <a key={item.path} href={item.path} className={className} onClick={() => setIsOpen(false)} data-testid={testId} data-navigation="document">{item.label}</a>
+                : <Link key={item.path} to={item.path} className={className} onClick={() => setIsOpen(false)} data-testid={testId}>{item.label}</Link>;
+            })}
 
             {isAdmin && adminMenuItems.map((item) => (
               <Link

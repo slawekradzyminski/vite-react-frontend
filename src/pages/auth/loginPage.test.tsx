@@ -2,6 +2,8 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { LoginPage } from './loginPage';
+import { navigateAfterLogin } from '../../lib/loginNavigation';
+import { readLoginReturnTo } from '@awesome-testing/platform-client';
 import { Role } from '../../types/auth';
 import { AxiosResponse } from 'axios';
 
@@ -26,6 +28,8 @@ vi.mock('../../hooks/useToast', () => ({
 
 const mockSso = vi.hoisted(() => ({
   beginLogin: vi.fn(),
+  beginSocialLogin: vi.fn(),
+  rememberLoginReturnTo: vi.fn(),
   enabled: false,
 }));
 
@@ -33,12 +37,14 @@ vi.mock('../../lib/sso', () => ({
   sso: {
     isEnabled: () => mockSso.enabled,
     beginLogin: mockSso.beginLogin,
+    beginSocialLogin: mockSso.beginSocialLogin,
+    rememberLoginReturnTo: mockSso.rememberLoginReturnTo,
   },
 }));
 
 // Variable declarations after all mocks
 const mockNavigate = vi.fn();
-const mockLocation = { state: null };
+const mockLocation = { state: null, search: '' };
 const mockToast = vi.fn();
 
 describe('LoginPage', () => {
@@ -49,6 +55,7 @@ describe('LoginPage', () => {
     vi.clearAllMocks();
     user = userEvent.setup();
     mockLocation.state = null;
+    mockLocation.search = '';
     mockSso.enabled = false;
     
     // Mock localStorage
@@ -167,6 +174,23 @@ describe('LoginPage', () => {
     });
   });
 
+  it('uses a document navigation when login returns to the standalone AI Lab', () => {
+    const documentNavigate = vi.fn();
+
+    navigateAfterLogin('/learn/next-token', mockNavigate, documentNavigate);
+
+    expect(documentNavigate).toHaveBeenCalledWith('/learn/next-token');
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    'https://attacker.example/steal',
+    '//attacker.example/steal',
+    'javascript:alert(1)',
+  ])('rejects an external login return target: %s', (returnTo) => {
+    expect(readLoginReturnTo(`?returnTo=${encodeURIComponent(returnTo)}`)).toBe('/');
+  });
+
   it('shows error toast on invalid credentials', async () => {
     // given
     const { auth } = await import('../../lib/api');
@@ -277,11 +301,13 @@ describe('LoginPage', () => {
 
   it('starts SSO login when the SSO button is clicked', async () => {
     mockSso.enabled = true;
+    mockLocation.search = '?returnTo=%2Flearn%2Fagent-loop%3Fmode%3Dguided';
 
     render(<LoginPage />);
 
     await user.click(screen.getByTestId('login-sso-button'));
 
+    expect(mockSso.rememberLoginReturnTo).toHaveBeenCalledWith('/learn/agent-loop?mode=guided');
     expect(mockSso.beginLogin).toHaveBeenCalled();
   });
 

@@ -6,6 +6,8 @@ const mockNavigate = vi.hoisted(() => vi.fn());
 const mockSetTokens = vi.hoisted(() => vi.fn());
 const mockClearCallbackState = vi.hoisted(() => vi.fn());
 const mockCompleteCallback = vi.hoisted(() => vi.fn());
+const mockConsumeLoginReturnTo = vi.hoisted(() => vi.fn());
+const mockNavigateAfterLogin = vi.hoisted(() => vi.fn());
 
 vi.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
@@ -21,12 +23,18 @@ vi.mock('../../lib/sso', () => ({
   sso: {
     completeCallback: mockCompleteCallback,
     clearCallbackState: mockClearCallbackState,
+    consumeLoginReturnTo: mockConsumeLoginReturnTo,
   },
+}));
+
+vi.mock('../../lib/loginNavigation', () => ({
+  navigateAfterLogin: mockNavigateAfterLogin,
 }));
 
 describe('SsoCallbackPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockConsumeLoginReturnTo.mockReturnValue('/');
   });
 
   it('exchanges the SSO token and redirects home', async () => {
@@ -48,7 +56,23 @@ describe('SsoCallbackPage', () => {
         token: 'test-token',
         refreshToken: 'test-refresh',
       });
-      expect(mockNavigate).toHaveBeenCalledWith('/', { replace: true });
+      expect(mockNavigateAfterLogin).toHaveBeenCalledWith('/', expect.any(Function));
+    });
+  });
+
+  it('consumes and forwards a deep AI Lab return after SSO', async () => {
+    mockConsumeLoginReturnTo.mockReturnValue('/learn/agent-loop');
+    mockCompleteCallback.mockResolvedValue({
+      token: 'test-token',
+      refreshToken: 'test-refresh',
+      roles: [],
+    });
+
+    render(<SsoCallbackPage />);
+
+    await waitFor(() => {
+      expect(mockConsumeLoginReturnTo).toHaveBeenCalledOnce();
+      expect(mockNavigateAfterLogin).toHaveBeenCalledWith('/learn/agent-loop', expect.any(Function));
     });
   });
 

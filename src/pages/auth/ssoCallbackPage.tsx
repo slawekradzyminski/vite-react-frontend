@@ -6,6 +6,7 @@ import { Spinner } from '../../components/ui/spinner';
 import { Surface } from '../../components/ui/surface';
 import { authStorage } from '../../lib/authStorage';
 import { sso } from '../../lib/sso';
+import { navigateAfterLogin } from '../../lib/loginNavigation';
 
 export function SsoCallbackPage() {
   const navigate = useNavigate();
@@ -31,7 +32,10 @@ export function SsoCallbackPage() {
         }
 
         setState('success');
-        navigate('/', { replace: true });
+        navigateAfterLogin(
+          sso.consumeLoginReturnTo(),
+          (returnTo) => navigate(returnTo, { replace: true }),
+        );
       } catch (err: any) {
         sso.clearCallbackState();
         if (!active) {

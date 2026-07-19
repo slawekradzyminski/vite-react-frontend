@@ -19,6 +19,7 @@ test.describe('Navigation keyboard accessibility', () => {
       'desktop-menu-send-email',
       'desktop-menu-qr-code',
       'desktop-menu-llm',
+      'desktop-menu-ai-lab',
       'desktop-menu-traffic-monitor',
     ];
     if (await adminLink.count()) {
