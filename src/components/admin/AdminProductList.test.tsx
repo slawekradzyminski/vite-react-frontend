@@ -191,9 +191,10 @@ describe('AdminProductList', () => {
     };
     
     (products.getAllProducts as jest.Mock).mockResolvedValue(mockProducts);
-    // Create a promise that won't resolve immediately
-    const deletePromise = new Promise((resolve) => {
-      setTimeout(() => resolve({}), 100);
+    // Keep the mutation pending until the deleting state has been asserted.
+    let resolveDelete: (value: object) => void = () => undefined;
+    const deletePromise = new Promise<object>((resolve) => {
+      resolveDelete = resolve;
     });
     (products.deleteProduct as jest.Mock).mockReturnValueOnce(deletePromise);
     
@@ -210,10 +211,11 @@ describe('AdminProductList', () => {
     
     // then
     expect(screen.getByText('Deleting...')).toBeInTheDocument();
-    
-    // wait for deletion to complete
+
+    resolveDelete({});
     await waitFor(() => {
       expect(products.deleteProduct).toHaveBeenCalledWith(1);
+      expect(screen.getByText('Delete')).toBeInTheDocument();
     });
   });
 
@@ -302,4 +304,4 @@ describe('AdminProductList', () => {
     consoleErrorSpy.mockRestore();
     alertSpy.mockRestore();
   });
-}); 
+});
