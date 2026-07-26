@@ -56,9 +56,9 @@ describe('sso helper', () => {
   });
 
   it('stores, sanitizes, and consumes the post-SSO return target once', () => {
-    sso.rememberLoginReturnTo('/learn/agent-loop?mode=guided#exercise');
+    sso.rememberLoginReturnTo('/products?view=featured#catalog');
 
-    expect(sso.consumeLoginReturnTo()).toBe('/learn/agent-loop?mode=guided#exercise');
+    expect(sso.consumeLoginReturnTo()).toBe('/products?view=featured#catalog');
     expect(sso.consumeLoginReturnTo()).toBe('/');
 
     sso.rememberLoginReturnTo('https://attacker.example/steal');

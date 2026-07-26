@@ -60,8 +60,8 @@ describe('SsoCallbackPage', () => {
     });
   });
 
-  it('consumes and forwards a deep AI Lab return after SSO', async () => {
-    mockConsumeLoginReturnTo.mockReturnValue('/learn/agent-loop');
+  it('consumes and forwards an internal return target after SSO', async () => {
+    mockConsumeLoginReturnTo.mockReturnValue('/products?view=featured');
     mockCompleteCallback.mockResolvedValue({
       token: 'test-token',
       refreshToken: 'test-refresh',
@@ -72,7 +72,7 @@ describe('SsoCallbackPage', () => {
 
     await waitFor(() => {
       expect(mockConsumeLoginReturnTo).toHaveBeenCalledOnce();
-      expect(mockNavigateAfterLogin).toHaveBeenCalledWith('/learn/agent-loop', expect.any(Function));
+      expect(mockNavigateAfterLogin).toHaveBeenCalledWith('/products?view=featured', expect.any(Function));
     });
   });
 
