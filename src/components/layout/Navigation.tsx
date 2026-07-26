@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Menu, X, ShoppingCart } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';

@@ -14,8 +14,8 @@ vi.mock('../../lib/api', () => ({
   },
 }));
 
-// Mock react-router-dom
-vi.mock('react-router-dom', () => ({
+// Mock react-router
+vi.mock('react-router', () => ({
   useNavigate: () => mockNavigate,
   useParams: () => ({ username: 'testuser' }),
 }));

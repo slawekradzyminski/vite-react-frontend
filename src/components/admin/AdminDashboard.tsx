@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { orders, products } from '../../lib/api';
 import { OrderStatus } from '../../types/order';
 import { Surface } from '../ui/surface';

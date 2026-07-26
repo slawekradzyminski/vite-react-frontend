@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { orders } from '../../lib/api';
 import { Order, OrderStatus } from '../../types/order';
 import { Badge } from '../ui/badge';

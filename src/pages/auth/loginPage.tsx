@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../../components/ui/button';
@@ -13,8 +13,7 @@ import { Surface } from '../../components/ui/surface';
 import { Badge } from '../../components/ui/badge';
 import { sso } from '../../lib/sso';
 import type { LoginResponse } from '../../types/auth';
-import { readLoginReturnTo } from '@awesome-testing/platform-client';
-import { navigateAfterLogin } from '../../lib/loginNavigation';
+import { navigateAfterLogin, readLoginReturnTo } from '../../lib/loginNavigation';
 
 export function LoginPage() {
   const navigate = useNavigate();

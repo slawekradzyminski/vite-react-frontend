@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router';
 import { cart } from '../../lib/api';
 import { CheckoutForm } from './CheckoutForm';
 import { Surface } from '../ui/surface';

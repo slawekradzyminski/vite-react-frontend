@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { AdminProductFormPage } from './productFormPage';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock the AdminProductForm component to isolate tests
@@ -13,16 +13,16 @@ vi.mock('../../components/products/AdminProductForm', () => ({
   )
 }));
 
-// Mock the react-router-dom hooks
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
+// Mock the react-router hooks
+vi.mock('react-router', async () => {
+  const actual = await vi.importActual('react-router');
   return {
     ...actual,
     useParams: vi.fn()
   };
 });
 
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 
 describe('AdminProductFormPage', () => {
   // given

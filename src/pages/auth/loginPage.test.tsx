@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { LoginPage } from './loginPage';
-import { readLoginReturnTo } from '@awesome-testing/platform-client';
+import { readLoginReturnTo } from '../../lib/loginNavigation';
 import { Role } from '../../types/auth';
 import { AxiosResponse } from 'axios';
 
@@ -14,8 +14,8 @@ vi.mock('../../lib/api', () => ({
   },
 }));
 
-// Mock react-router-dom
-vi.mock('react-router-dom', () => ({
+// Mock react-router
+vi.mock('react-router', () => ({
   useNavigate: () => mockNavigate,
   useLocation: () => mockLocation,
 }));

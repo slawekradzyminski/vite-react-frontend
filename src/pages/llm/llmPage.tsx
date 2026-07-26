@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { ArrowRight, MessageSquare, Sparkles, Workflow } from 'lucide-react';
 import { Surface } from '../../components/ui/surface';
 import { Badge } from '../../components/ui/badge';

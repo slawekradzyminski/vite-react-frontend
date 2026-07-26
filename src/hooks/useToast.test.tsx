@@ -3,11 +3,11 @@ import { renderHook } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { useToast } from './useToast';
 import { ToastProvider } from '../components/ui/ToastProvider';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 
-// Mock react-router-dom's useLocation
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
+// Mock react-router's useLocation
+vi.mock('react-router', async () => {
+  const actual = await vi.importActual('react-router');
   return {
     ...actual,
     useLocation: () => ({ pathname: '/test' }),

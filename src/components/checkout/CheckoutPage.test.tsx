@@ -5,8 +5,8 @@ import { CheckoutPage } from './CheckoutPage';
 import * as reactQuery from '@tanstack/react-query';
 import { Cart } from '../../types/cart';
 
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
+vi.mock('react-router', async () => {
+  const actual = await vi.importActual('react-router');
   return {
     ...actual,
     useNavigate: () => mockNavigate,

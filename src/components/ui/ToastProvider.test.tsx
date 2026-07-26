@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act, within } from '@testing-library/react';
 import { ToastProvider } from './ToastProvider';
 import { useToast } from '../../hooks/useToast';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 
 // Create a test component that uses the toast hook
 function TestComponent() {
