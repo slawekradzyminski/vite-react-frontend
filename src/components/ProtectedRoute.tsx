@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { auth } from '../lib/api';
 import { authStorage } from '../lib/authStorage';

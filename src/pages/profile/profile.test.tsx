@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor, fireEvent, render } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Profile } from './profilePage';
 import { auth, prompts, orders } from '../../lib/api';
@@ -66,8 +66,8 @@ vi.mock('../../components/user/MfaSecurityPanel', () => ({
   MfaSecurityPanel: () => <section data-testid="mfa-security-panel">Two-factor authentication</section>,
 }));
 
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
+vi.mock('react-router', async () => {
+  const actual = await vi.importActual('react-router');
   return {
     ...actual,
     useLocation: () => ({ pathname: '/profile' }),

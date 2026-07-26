@@ -1,8 +1,8 @@
 import { auth } from './api';
 import { authStorage } from './authStorage';
+import { sanitizeReturnTo } from './loginNavigation';
 import { getSsoConfig } from './runtimeConfig';
 import type { LoginResponse } from '../types/auth';
-import { sanitizeReturnTo } from '@awesome-testing/platform-client';
 
 const SSO_STATE_KEY = 'ssoState';
 const SSO_NONCE_KEY = 'ssoNonce';

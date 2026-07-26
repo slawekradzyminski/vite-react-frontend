@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import { OllamaChatPage } from '../ollama/chatPage';
 import { OllamaGeneratePage } from '../ollama/generatePage';

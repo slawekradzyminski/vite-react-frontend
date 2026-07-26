@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ToastPrimitive from '@radix-ui/react-toast';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { AlertCircle, CheckCircle2, Info, X } from 'lucide-react';
 import { ToastProps, ToastContext } from '../../hooks/useToast';
 import styles from './ToastProvider.module.css';

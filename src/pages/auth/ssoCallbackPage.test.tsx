@@ -9,7 +9,7 @@ const mockCompleteCallback = vi.hoisted(() => vi.fn());
 const mockConsumeLoginReturnTo = vi.hoisted(() => vi.fn());
 const mockNavigateAfterLogin = vi.hoisted(() => vi.fn());
 
-vi.mock('react-router-dom', () => ({
+vi.mock('react-router', () => ({
   useNavigate: () => mockNavigate,
 }));
 

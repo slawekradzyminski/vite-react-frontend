@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Product } from '../../types/product';
 import { cart } from '../../lib/api';
 import { CartItemDto, UpdateCartItemDto } from '../../types/cart';

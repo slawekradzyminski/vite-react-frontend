@@ -7,7 +7,7 @@ import { HomePage } from './homePage';
 const mockNavigate = vi.fn();
 
 // Mock dependencies
-vi.mock('react-router-dom', () => ({
+vi.mock('react-router', () => ({
   useNavigate: () => mockNavigate
 }));
 

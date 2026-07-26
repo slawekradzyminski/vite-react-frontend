@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { Activity, ArrowRight, Boxes, Mail, QrCode, Sparkles, UserRound, Users } from 'lucide-react';
 import { Button } from '../../components/ui/button';
