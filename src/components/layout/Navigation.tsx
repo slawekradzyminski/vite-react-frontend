@@ -13,7 +13,6 @@ const PRODUCT_NAME = 'Awesome Testing';
 type MenuItem = {
   label: string;
   path: string;
-  documentNavigation?: boolean;
 };
 
 export function Navigation() {
@@ -86,7 +85,6 @@ export function Navigation() {
     { label: 'Send Email', path: '/email' },
     { label: 'QR Code', path: '/qr' },
     { label: 'LLM', path: '/llm' },
-    { label: 'AI Lab', path: '/learn/', documentNavigation: true },
     { label: 'Traffic Monitor', path: '/traffic' },
   ];
 
@@ -122,9 +120,7 @@ export function Navigation() {
                       : 'text-slate-600 hover:bg-white hover:text-slate-900'
                   }`;
                 const testId = `desktop-menu-${item.label.toLowerCase().replace(' ', '-')}`;
-                return item.documentNavigation
-                  ? <a key={item.path} href={item.path} className={className} data-testid={testId} data-navigation="document">{item.label}</a>
-                  : <Link key={item.path} to={item.path} className={className} data-testid={testId}>{item.label}</Link>;
+                return <Link key={item.path} to={item.path} className={className} data-testid={testId}>{item.label}</Link>;
               })}
 
               {isAdmin && adminMenuItems.map((item) => (
@@ -226,9 +222,7 @@ export function Navigation() {
                     : 'bg-white/80 text-slate-700 hover:bg-white hover:text-slate-900'
                 }`;
               const testId = `mobile-menu-${item.label.toLowerCase().replace(' ', '-')}`;
-              return item.documentNavigation
-                ? <a key={item.path} href={item.path} className={className} onClick={() => setIsOpen(false)} data-testid={testId} data-navigation="document">{item.label}</a>
-                : <Link key={item.path} to={item.path} className={className} onClick={() => setIsOpen(false)} data-testid={testId}>{item.label}</Link>;
+              return <Link key={item.path} to={item.path} className={className} onClick={() => setIsOpen(false)} data-testid={testId}>{item.label}</Link>;
             })}
 
             {isAdmin && adminMenuItems.map((item) => (

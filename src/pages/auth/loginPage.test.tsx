@@ -2,7 +2,6 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { LoginPage } from './loginPage';
-import { navigateAfterLogin } from '../../lib/loginNavigation';
 import { readLoginReturnTo } from '@awesome-testing/platform-client';
 import { Role } from '../../types/auth';
 import { AxiosResponse } from 'axios';
@@ -174,15 +173,6 @@ describe('LoginPage', () => {
     });
   });
 
-  it('uses a document navigation when login returns to the standalone AI Lab', () => {
-    const documentNavigate = vi.fn();
-
-    navigateAfterLogin('/learn/next-token', mockNavigate, documentNavigate);
-
-    expect(documentNavigate).toHaveBeenCalledWith('/learn/next-token');
-    expect(mockNavigate).not.toHaveBeenCalled();
-  });
-
   it.each([
     'https://attacker.example/steal',
     '//attacker.example/steal',
@@ -301,13 +291,13 @@ describe('LoginPage', () => {
 
   it('starts SSO login when the SSO button is clicked', async () => {
     mockSso.enabled = true;
-    mockLocation.search = '?returnTo=%2Flearn%2Fagent-loop%3Fmode%3Dguided';
+    mockLocation.search = '?returnTo=%2Fproducts%3Fview%3Dfeatured';
 
     render(<LoginPage />);
 
     await user.click(screen.getByTestId('login-sso-button'));
 
-    expect(mockSso.rememberLoginReturnTo).toHaveBeenCalledWith('/learn/agent-loop?mode=guided');
+    expect(mockSso.rememberLoginReturnTo).toHaveBeenCalledWith('/products?view=featured');
     expect(mockSso.beginLogin).toHaveBeenCalled();
   });
 
