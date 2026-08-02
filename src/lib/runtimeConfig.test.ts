@@ -78,15 +78,54 @@ describe('runtimeConfig', () => {
     });
   });
 
+  it('uses local training SSO defaults on the loopback gateway origin', () => {
+    expect(
+      getSsoConfig(
+        {},
+        { origin: 'http://127.0.0.1:8081' } as Location,
+      ),
+    ).toEqual({
+      enabled: true,
+      authority: 'http://localhost:8082/realms/awesome-testing',
+      clientId: 'awesome-testing-frontend',
+      redirectUri: 'http://127.0.0.1:8081/auth/sso/callback',
+      postLogoutRedirectUri: 'http://127.0.0.1:8081/login',
+    });
+  });
+
+  it('does not implicitly enable training SSO on unrelated origins', () => {
+    expect(
+      getSsoConfig(
+        {},
+        { origin: 'https://awesome.byst.re' } as Location,
+      ),
+    ).toBeNull();
+  });
+
+  it('trims configured API values and repeated trailing slashes', () => {
+    expect(
+      getApiBaseUrl(
+        { VITE_API_BASE_URL: '  https://api.example.com///  ' },
+        window.location,
+      ),
+    ).toBe('https://api.example.com');
+    expect(
+      getPasswordResetBaseUrl(
+        { VITE_PASSWORD_RESET_BASE_URL: '  https://reset.example.com/reset///  ' },
+        window.location,
+      ),
+    ).toBe('https://reset.example.com/reset');
+  });
+
   it('normalizes SSO urls against the current origin', () => {
     expect(
       getSsoConfig(
         {
           VITE_SSO_ENABLED: 'true',
-          VITE_SSO_AUTHORITY: 'https://sso.example.com/',
-          VITE_SSO_CLIENT_ID: 'awesome-ui',
-          VITE_SSO_REDIRECT_URI: '/auth/sso/callback',
-          VITE_SSO_POST_LOGOUT_REDIRECT_URI: '/login',
+          VITE_SSO_AUTHORITY: '  https://sso.example.com///  ',
+          VITE_SSO_CLIENT_ID: '  awesome-ui  ',
+          VITE_SSO_REDIRECT_URI: '  /auth/sso/callback  ',
+          VITE_SSO_POST_LOGOUT_REDIRECT_URI: '  /login  ',
         },
         { origin: 'https://awesome.byst.re' } as Location,
       ),

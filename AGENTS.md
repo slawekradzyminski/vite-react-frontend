@@ -21,3 +21,10 @@ This section points other automation or human teammates to the right document fo
 ## LLM implementation notes
 
 - [`docs/function-calling-flow.md`](./docs/function-calling-flow.md) – diagrams the message flow for chat, generate, and tool calling, which helps when triaging SSE events or tool payloads.
+
+## Mutation-testing feedback
+
+- Run `npm test` first, then `npm run test:mutation` after changing SSO, runtime URL, SSE behavior, or their tests.
+- Treat `NoCoverage` as a reachability gap and `Survived` as an assertion gap. For each meaningful survivor, add a test that passes on the original code and fails on that mutant.
+- Prioritize authentication/PKCE invariants, callback failure paths, redirect safety, and lossless stream parsing. Do not add brittle implementation-detail assertions solely to increase the score.
+- The initial score is advisory. On pull requests, reject new meaningful survivors in changed high-risk code; keep broader mutation-score trend checks outside the fast test loop.
