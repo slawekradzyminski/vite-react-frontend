@@ -102,6 +102,21 @@ describe('runtimeConfig', () => {
     ).toBeNull();
   });
 
+  it('does not implicitly enable training SSO on unrelated loopback ports', () => {
+    expect(
+      getSsoConfig(
+        {},
+        { origin: 'http://localhost:5173' } as Location,
+      ),
+    ).toBeNull();
+    expect(
+      getSsoConfig(
+        {},
+        { origin: 'http://127.0.0.1:4001' } as Location,
+      ),
+    ).toBeNull();
+  });
+
   it('trims configured API values and repeated trailing slashes', () => {
     expect(
       getApiBaseUrl(
