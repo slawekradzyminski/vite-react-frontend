@@ -41,6 +41,65 @@ describe('processSSEResponse', () => {
     expect(processor.onComplete).toHaveBeenCalled();
   });
 
+  it('ignores empty SSE event blocks', async () => {
+    const response = new Response(
+      '\n\ndata: {"response":"Hello"}\n\n',
+      { headers: { 'Content-Type': 'text/event-stream' } },
+    );
+    const processor = createProcessor();
+
+    await processSSEResponse(response, processor);
+
+    expect(processor.onMessage).toHaveBeenCalledOnce();
+    expect(processor.onMessage).toHaveBeenCalledWith({ response: 'Hello' });
+    expect(processor.onError).not.toHaveBeenCalled();
+  });
+
+  it('preserves a UTF-8 character split across network chunks', async () => {
+    const encoded = encoder.encode('data: {"response":"ż"}\n\n');
+    const splitAt = encoded.indexOf(0xc5) + 1;
+    const reader = {
+      read: vi.fn()
+        .mockResolvedValueOnce({ value: encoded.slice(0, splitAt), done: false })
+        .mockResolvedValueOnce({ value: encoded.slice(splitAt), done: false })
+        .mockResolvedValueOnce({ value: undefined, done: true }),
+      cancel: vi.fn(),
+    };
+    const response = { body: { getReader: () => reader } } as unknown as Response;
+    const processor = createProcessor();
+
+    await processSSEResponse(response, processor);
+
+    expect(processor.onMessage).toHaveBeenCalledWith({ response: 'ż' });
+    expect(processor.onError).not.toHaveBeenCalled();
+  });
+
+  it('joins a JSON event split over multiple data lines', async () => {
+    const response = new Response(
+      'data: {"response":\ndata: "Hello"}\n\n',
+      { headers: { 'Content-Type': 'text/event-stream' } },
+    );
+    const processor = createProcessor();
+
+    await processSSEResponse(response, processor);
+
+    expect(processor.onMessage).toHaveBeenCalledWith({ response: 'Hello' });
+    expect(processor.onError).not.toHaveBeenCalled();
+  });
+
+  it('supports processors without optional completion and error callbacks', async () => {
+    const onMessage = vi.fn();
+
+    await expect(processSSEResponse(
+      new Response('data: {"response":"Hello"}\n\n'),
+      { onMessage },
+    )).resolves.toBeUndefined();
+    await expect(processSSEResponse(
+      new Response('data: invalid-json\n\n'),
+      { onMessage },
+    )).resolves.toBeUndefined();
+  });
+
   it('handles invalid JSON in SSE message', async () => {
     const mockResponse = new Response('data: invalid json\n\n', {
       headers: { 'Content-Type': 'text/event-stream' },

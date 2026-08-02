@@ -11,6 +11,8 @@ lerna-debug.log*
 
 test-results/
 playwright-report/
+reports/mutation/
+.stryker-tmp/
 
 node_modules
 dist
