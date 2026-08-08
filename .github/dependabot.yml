@@ -4,6 +4,7 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    open-pull-requests-limit: 1
     groups:
       production-dependencies:
         dependency-type: production
@@ -15,11 +16,32 @@ updates:
         update-types:
           - minor
           - patch
+    ignore:
+      # Node 26 is not adopted for this project yet.
+      - dependency-name: "@types/node"
+        versions:
+          - "^26.0.0"
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    open-pull-requests-limit: 1
+    groups:
+      github-actions:
+        patterns:
+          - "*"
   - package-ecosystem: docker
     directory: /
     schedule:
       interval: weekly
+    open-pull-requests-limit: 1
+    groups:
+      docker-images:
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # Keep the runtime on Node 24 until a deliberate LTS migration.
+      - dependency-name: node
+        versions:
+          - "~> 26.0"
