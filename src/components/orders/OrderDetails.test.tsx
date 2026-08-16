@@ -156,6 +156,7 @@ describe('OrderDetails', () => {
   it('cancels order when cancel button is clicked', async () => {
     // given
     global.confirm = vi.fn().mockReturnValue(true);
+    queryClient.invalidateQueries = vi.fn();
     renderWithProviders();
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /cancel order/i })).toBeInTheDocument();
@@ -168,6 +169,8 @@ describe('OrderDetails', () => {
     await waitFor(() => {
       expect(global.confirm).toHaveBeenCalled();
       expect(orders.cancelOrder).toHaveBeenCalledWith(1);
+      expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['products'] });
+      expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['inventory'] });
       expect(mockToast).toHaveBeenCalledWith({
         title: 'Order Cancelled',
         description: 'Order #1 has been cancelled successfully.',
@@ -270,6 +273,30 @@ describe('OrderDetails', () => {
         description: 'Order status has been updated to SHIPPED.',
         variant: 'success',
       });
+    });
+  });
+
+  it('refreshes stock views when an administrator changes status to cancelled', async () => {
+    vi.mocked(auth.me).mockResolvedValueOnce(
+      createAuthResponse({
+        username: 'admin',
+        email: 'admin@example.com',
+        firstName: 'Admin',
+        lastName: 'User',
+        roles: [Role.ADMIN],
+      })
+    );
+    queryClient.invalidateQueries = vi.fn();
+    renderWithProviders();
+
+    await waitFor(() => expect(screen.getByRole('combobox')).toBeInTheDocument());
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'CANCELLED' } });
+    fireEvent.click(screen.getByRole('button', { name: /update/i }));
+
+    await waitFor(() => {
+      expect(orders.updateOrderStatus).toHaveBeenCalledWith(1, 'CANCELLED');
+      expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['products'] });
+      expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['inventory'] });
     });
   });
 

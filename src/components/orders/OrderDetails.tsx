@@ -1,7 +1,7 @@
 import { useParams } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orders, auth } from '../../lib/api';
-import { OrderStatus } from '../../types/order';
+import type { OrderStatus } from '../../types/order';
 import { Role } from '../../types/auth';
 import { useState } from 'react';
 import { useToast } from '../../hooks/useToast';
@@ -38,6 +38,8 @@ export const OrderDetails = () => {
     mutationFn: (orderId: number) => orders.cancelOrder(orderId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['order', orderId] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
       toast({
         title: 'Order Cancelled',
         description: `Order #${orderId} has been cancelled successfully.`,
@@ -59,6 +61,10 @@ export const OrderDetails = () => {
       orders.updateOrderStatus(orderId, status),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['order', orderId] });
+      if (variables.status === 'CANCELLED') {
+        queryClient.invalidateQueries({ queryKey: ['products'] });
+        queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      }
       toast({
         title: 'Status Updated',
         description: `Order status has been updated to ${variables.status}.`,

@@ -8,6 +8,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Surface } from '../ui/surface';
+import axios from 'axios';
 
 interface CheckoutFormProps {
   cartTotal: number;
@@ -17,6 +18,7 @@ export function CheckoutForm({ cartTotal }: CheckoutFormProps) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
   
   const { register, handleSubmit, formState: { errors } } = useForm<AddressDto>({
     defaultValues: {
@@ -33,6 +35,8 @@ export function CheckoutForm({ cartTotal }: CheckoutFormProps) {
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
       
       if (response?.data?.id) {
         navigate(`/orders/${response.data.id}`);
@@ -50,10 +54,17 @@ export function CheckoutForm({ cartTotal }: CheckoutFormProps) {
     
     setIsSubmitting(true);
     try {
+      setAvailabilityError(null);
       await createOrderMutation.mutateAsync(data);
     } catch (error) {
       console.error('Failed to create order:', error);
-      alert('Failed to create order. Please try again.');
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        setAvailabilityError('Some items are no longer available in the requested quantity. Your cart was preserved; review it before trying again.');
+      } else {
+        alert('Failed to create order. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -64,6 +75,7 @@ export function CheckoutForm({ cartTotal }: CheckoutFormProps) {
       <h2 className="mb-4 text-xl font-semibold text-slate-950" data-testid="checkout-form-title">Shipping Information</h2>
       
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" data-testid="checkout-form">
+        {availabilityError && <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="alert" data-testid="checkout-availability-error">{availabilityError}</p>}
         <Surface variant="inset" padding="md" data-testid="checkout-street-field">
           <Label htmlFor="street" data-testid="checkout-street-label">
             Street Address

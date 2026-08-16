@@ -72,7 +72,7 @@ export function Navigation() {
 
   const isAdmin = hasRole(user?.data?.roles, 'ADMIN');
   const isActive = (path: string) =>
-    path === '/' ? location.pathname === path : location.pathname.startsWith(path);
+    path === '/' || path === '/admin' ? location.pathname === path : location.pathname.startsWith(path);
   const authLinkClass = (path: '/login' | '/register') =>
     `rounded-full px-4 py-2 text-sm font-medium transition ${
       location.pathname === path
