@@ -18,6 +18,7 @@ export function AdminProductList() {
     mutationFn: (productId: number) => products.deleteProduct(productId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
     },
   });
   

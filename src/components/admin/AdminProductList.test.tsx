@@ -169,6 +169,7 @@ describe('AdminProductList', () => {
     await waitFor(() => {
       expect(products.deleteProduct).toHaveBeenCalledWith(1);
       expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['products'] });
+      expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['inventory'] });
     });
   });
 

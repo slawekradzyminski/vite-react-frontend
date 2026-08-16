@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { auth, ollama, qr } from './api';
+import { auth, inventory, ollama, qr } from './api';
 import { Role } from '../types/auth';
 
 const mockAxios = vi.hoisted(() => {
@@ -15,6 +15,59 @@ const mockAxios = vi.hoisted(() => {
   instance.defaults = { baseURL: 'http://localhost:4001' };
   instance.create = vi.fn(() => instance);
   return instance;
+});
+
+describe('inventory API', () => {
+  beforeEach(() => {
+    mockAxios.get.mockReset();
+    mockAxios.post.mockReset();
+  });
+
+  it('lists inventory with the backend paging and filter parameters', async () => {
+    const params = {
+      page: 2,
+      size: 20,
+      search: 'cable',
+      category: 'Accessories',
+      status: 'LOW_STOCK' as const,
+      lowStockThreshold: 4,
+    };
+
+    await inventory.list(params);
+
+    expect(mockAxios.get).toHaveBeenCalledWith('/api/v1/admin/inventory', { params });
+  });
+
+  it('gets inventory detail with the selected low-stock threshold', async () => {
+    await inventory.get(42, 7);
+
+    expect(mockAxios.get).toHaveBeenCalledWith('/api/v1/admin/inventory/42', {
+      params: { lowStockThreshold: 7 },
+    });
+  });
+
+  it('posts a signed stock adjustment with its idempotency request id', async () => {
+    const adjustment = {
+      delta: -3,
+      reason: 'Damaged during handling',
+      requestId: '3e4b5ce0-822b-4d09-9f5a-bc6bc87a65cc',
+    };
+
+    await inventory.adjust(42, adjustment);
+
+    expect(mockAxios.post).toHaveBeenCalledWith(
+      '/api/v1/admin/inventory/42/adjustments',
+      adjustment
+    );
+  });
+
+  it('gets paged movement history with explicit defaults', async () => {
+    await inventory.movements(42);
+
+    expect(mockAxios.get).toHaveBeenCalledWith('/api/v1/admin/inventory/42/movements', {
+      params: { page: 0, size: 20 },
+    });
+  });
 });
 
 vi.mock('axios', () => ({

@@ -27,6 +27,13 @@ import type { Order, PageDtoOrderDto, Address, OrderStatus } from '../types/orde
 import type { Product, ProductCreateDto, ProductUpdateDto } from '../types/product';
 import type { Cart, CartItemDto, UpdateCartItemDto } from '../types/cart';
 import type { TrafficInfoDto } from '../types/traffic';
+import type {
+  InventoryAdjustmentRequest,
+  InventoryItem,
+  InventoryMovement,
+  PageDto,
+  StockStatus,
+} from '../types/inventory';
 import { authStorage } from './authStorage';
 import { getAbsoluteApiUrl, getApiBaseUrl } from './runtimeConfig';
 
@@ -46,6 +53,7 @@ const ORDERS_API = `${API_V1_PREFIX}/orders`;
 const PRODUCTS_API = `${API_V1_PREFIX}/products`;
 const CART_API = `${API_V1_PREFIX}/cart`;
 const TRAFFIC_API = `${API_V1_PREFIX}/traffic`;
+const INVENTORY_API = `${API_V1_PREFIX}/admin/inventory`;
 const CLIENT_SESSION_ID_HEADER = 'X-Client-Session-Id';
 
 const PUBLIC_ENDPOINTS = [
@@ -367,6 +375,27 @@ export const cart = {
 export const traffic = {
   getInfo: () => 
     api.get<TrafficInfoDto>(`${TRAFFIC_API}/info`),
+};
+
+export const inventory = {
+  list: (params: {
+    page?: number;
+    size?: number;
+    search?: string;
+    category?: string;
+    status?: StockStatus;
+    lowStockThreshold?: number;
+  } = {}) => api.get<PageDto<InventoryItem>>(INVENTORY_API, { params }),
+  get: (productId: number, lowStockThreshold?: number) =>
+    api.get<InventoryItem>(`${INVENTORY_API}/${productId}`, {
+      params: { lowStockThreshold },
+    }),
+  adjust: (productId: number, data: InventoryAdjustmentRequest) =>
+    api.post<InventoryMovement>(`${INVENTORY_API}/${productId}/adjustments`, data),
+  movements: (productId: number, page = 0, size = 20) =>
+    api.get<PageDto<InventoryMovement>>(`${INVENTORY_API}/${productId}/movements`, {
+      params: { page, size },
+    }),
 };
 
 export { getAbsoluteApiUrl, getApiBaseUrl } from './runtimeConfig';

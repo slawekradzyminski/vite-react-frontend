@@ -44,6 +44,7 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
     mutationFn: (data: ProductCreateDto) => products.createProduct(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
       reset();
       if (onSuccess) onSuccess();
     },
@@ -55,6 +56,8 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['product', productId] });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory-detail', productId] });
       if (onSuccess) onSuccess();
     },
   });

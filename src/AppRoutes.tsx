@@ -21,6 +21,7 @@ import { AdminDashboardPage } from './pages/admin/dashboardPage';
 import { AdminProductsPage } from './pages/admin/productsPage';
 import { AdminProductFormPage } from './pages/admin/productFormPage';
 import { AdminOrdersPage } from './pages/admin/ordersPage';
+import { AdminInventoryPage } from './pages/admin/inventoryPage';
 import { TrafficMonitorPage } from './pages/traffic/trafficPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -202,6 +203,22 @@ export function AppRoutes() {
         element={
           <ProtectedRoute requiredRole="ADMIN">
             <AdminOrdersPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/inventory"
+        element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <AdminInventoryPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/inventory/:productId"
+        element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <AdminInventoryPage />
           </ProtectedRoute>
         }
       />

@@ -74,6 +74,7 @@ describe('AdminProductForm', () => {
 
   it('submits form with correct data in create mode', async () => {
     // given
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
     renderWithProviders(<AdminProductForm />);
 
     // when
@@ -96,6 +97,7 @@ describe('AdminProductForm', () => {
         category: 'New Category',
         imageUrl: 'https://example.com/new-image.jpg',
       });
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['inventory'] });
     });
   });
 
@@ -118,6 +120,7 @@ describe('AdminProductForm', () => {
 
   it('submits form with correct data in edit mode', async () => {
     // given
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
     renderWithProviders(<AdminProductForm productId={1} />);
     
     // Wait for the product data to load
@@ -141,6 +144,8 @@ describe('AdminProductForm', () => {
         category: 'Test Category',
         imageUrl: 'https://example.com/image.jpg',
       });
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['inventory'] });
+      expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['inventory-detail', 1] });
     });
   });
 
@@ -161,4 +166,4 @@ describe('AdminProductForm', () => {
     
     expect(products.createProduct).not.toHaveBeenCalled();
   });
-}); 
+});

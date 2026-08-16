@@ -160,4 +160,32 @@ describe('CheckoutForm', () => {
       expect(submitButton).not.toBeDisabled();
     });
   });
+
+  it('shows an inline inventory conflict, preserves the cart flow, and refreshes stock views', async () => {
+    const conflict = Object.assign(new Error('inventory conflict'), {
+      isAxiosError: true,
+      response: { status: 409 },
+    });
+    vi.mocked(orders.createOrder).mockRejectedValueOnce(conflict);
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+    renderWithProviders();
+
+    fireEvent.change(screen.getByLabelText(/street address/i), { target: { value: '123 Test St' } });
+    fireEvent.change(screen.getByLabelText(/city/i), { target: { value: 'Test City' } });
+    fireEvent.change(screen.getByLabelText(/state\/province/i), { target: { value: 'Test State' } });
+    fireEvent.change(screen.getByLabelText(/zip\/postal code/i), { target: { value: '12345' } });
+    fireEvent.change(screen.getByLabelText(/country/i), { target: { value: 'Test Country' } });
+    fireEvent.click(screen.getByRole('button', { name: /place order/i }));
+
+    expect(await screen.findByTestId('checkout-availability-error')).toHaveTextContent(
+      'Your cart was preserved'
+    );
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['cart'] });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['products'] });
+    expect(screen.getByLabelText(/street address/i)).toHaveValue('123 Test St');
+
+    alertSpy.mockRestore();
+  });
 }); 

@@ -4,6 +4,7 @@ import { orders, products } from '../../lib/api';
 import { OrderStatus } from '../../types/order';
 import { Surface } from '../ui/surface';
 import { Badge } from '../ui/badge';
+import { AdminSectionNav } from './AdminSectionNav';
 
 export function AdminDashboard() {
   const { data: productsData, isLoading: isLoadingProducts } = useQuery({
@@ -18,7 +19,12 @@ export function AdminDashboard() {
   
   // Early return with partial data if available
   if (isLoadingProducts && isLoadingOrders) {
-    return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="admin-dashboard-loading">Loading dashboard data...</Surface>;
+    return (
+      <div className="space-y-6 pb-10">
+        <AdminSectionNav />
+        <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="admin-dashboard-loading">Loading dashboard data...</Surface>
+      </div>
+    );
   }
   
   const productList = productsData?.data || [];
@@ -42,6 +48,7 @@ export function AdminDashboard() {
   
   return (
     <div className="space-y-6 pb-10" data-testid="admin-dashboard">
+      <AdminSectionNav />
       <Surface as="section" variant="hero" padding="xl">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Admin</p>
         <div className="mt-3 space-y-2">
@@ -123,7 +130,7 @@ export function AdminDashboard() {
         <Surface variant="default" padding="lg" data-testid="admin-dashboard-low-stock">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-slate-950">Low Stock Products</h2>
-            <Link to="/admin/products" className="text-sm text-sky-700 hover:underline" data-testid="admin-dashboard-manage-inventory">
+            <Link to="/admin/inventory" className="text-sm text-sky-700 hover:underline" data-testid="admin-dashboard-manage-inventory">
               Manage Inventory
             </Link>
           </div>

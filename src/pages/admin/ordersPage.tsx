@@ -1,8 +1,10 @@
 import { AdminOrderList } from '../../components/admin/AdminOrderList';
+import { AdminSectionNav } from '../../components/admin/AdminSectionNav';
 
 export function AdminOrdersPage() {
   return (
-    <div data-testid="admin-orders-page">
+    <div className="space-y-6 pb-10" data-testid="admin-orders-page">
+      <AdminSectionNav />
       <AdminOrderList />
     </div>
   );

@@ -153,6 +153,8 @@ describe('AdminDashboard', () => {
       expect(screen.getByText('Low Stock Products')).toBeInTheDocument();
       expect(screen.getByText('Low Stock Product')).toBeInTheDocument();
       expect(screen.getByText('2 in stock')).toBeInTheDocument();
+      expect(screen.getByTestId('admin-section-inventory')).toHaveAttribute('href', '/admin/inventory');
+      expect(screen.getByTestId('admin-dashboard-manage-inventory')).toHaveAttribute('href', '/admin/inventory');
     });
   });
 
@@ -247,4 +249,4 @@ describe('AdminDashboard', () => {
       expect(zeroElement).toBeInTheDocument(); // Total products
     });
   });
-}); 
+});

@@ -186,6 +186,54 @@ describe('Navigation', () => {
     });
   });
 
+  it('keeps inventory out of global navigation and directs administrators through Admin', async () => {
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValue({
+      data: {
+        id: 1,
+        username: 'admin',
+        email: 'admin@example.com',
+        firstName: 'Admin',
+        lastName: 'User',
+        roles: [Role.ADMIN],
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+
+    renderWithProviders(<Navigation />);
+
+    const adminLink = await screen.findByTestId('desktop-menu-admin');
+    expect(adminLink).toHaveAttribute('href', '/admin');
+    expect(screen.queryByTestId('desktop-menu-inventory')).not.toBeInTheDocument();
+  });
+
+  it('does not show inventory navigation to clients', async () => {
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValue({
+      data: {
+        id: 1,
+        username: 'client',
+        email: 'client@example.com',
+        firstName: 'Client',
+        lastName: 'User',
+        roles: [Role.CLIENT],
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    });
+
+    renderWithProviders(<Navigation />);
+
+    await screen.findByText('Client User');
+    expect(screen.queryByTestId('desktop-menu-admin')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('desktop-menu-inventory')).not.toBeInTheDocument();
+  });
+
   it('handles logout correctly', async () => {
     // given
     localStorage.setItem('token', 'fake-token');

@@ -1,6 +1,7 @@
 import { useParams } from 'react-router';
 import { AdminProductForm } from '../../components/products/AdminProductForm';
 import { Surface } from '../../components/ui/surface';
+import { AdminSectionNav } from '../../components/admin/AdminSectionNav';
 
 export function AdminProductFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -9,6 +10,7 @@ export function AdminProductFormPage() {
 
   return (
     <div className="space-y-6 pb-10" data-testid="admin-product-form-page">
+      <AdminSectionNav />
       <Surface as="section" variant="hero" padding="xl">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Admin</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl" data-testid="admin-product-form-title">
