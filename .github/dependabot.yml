@@ -17,10 +17,10 @@ updates:
           - minor
           - patch
     ignore:
-      # Node 26 is not adopted for this project yet.
+      # Keep the type definitions aligned with the supported Node 24 runtime.
       - dependency-name: "@types/node"
-        versions:
-          - "^26.0.0"
+        update-types:
+          - "version-update:semver-major"
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -43,5 +43,5 @@ updates:
     ignore:
       # Keep the runtime on Node 24 until a deliberate LTS migration.
       - dependency-name: node
-        versions:
-          - "~> 26.0"
+        update-types:
+          - "version-update:semver-major"
