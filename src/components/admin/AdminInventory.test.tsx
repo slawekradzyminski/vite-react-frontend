@@ -1,3 +1,4 @@
+import { CommerceGraphQlError } from '../../lib/commerceGraphql';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -166,12 +167,12 @@ describe('AdminInventory', () => {
     expect(await screen.findByTestId('inventory-detail-error')).toHaveTextContent('Unable to load this product');
   });
 
-  it('validates adjustments and preserves the request id across a failed retry', async () => {
+  it.each([
+    Object.assign(new Error('conflict'), { isAxiosError: true, response: { status: 409 } }),
+    new CommerceGraphQlError([{ message: 'Conflict', extensions: { code: 'CONFLICT' } }]),
+  ])('preserves adjustment request IDs across a failed retry for %s', async conflict => {
+    // given
     const user = userEvent.setup();
-    const conflict = Object.assign(new Error('conflict'), {
-      isAxiosError: true,
-      response: { status: 409 },
-    });
     vi.mocked(inventory.adjust)
       .mockRejectedValueOnce(conflict)
       .mockResolvedValue({ data: movementPage.content[0] } as never);

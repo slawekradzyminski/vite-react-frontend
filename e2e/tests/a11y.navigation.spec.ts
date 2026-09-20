@@ -8,6 +8,7 @@ async function expectNextFocus(page: Page, locator: Locator) {
 
 test.describe('Navigation keyboard accessibility', () => {
   test('supports sequential keyboard traversal on desktop', async ({ authenticatedPage }) => {
+    // given
     const { page } = authenticatedPage;
     await page.goto('/');
     await expect(page.getByTestId('desktop-menu-products')).toBeVisible();
@@ -24,10 +25,10 @@ test.describe('Navigation keyboard accessibility', () => {
     if (await adminLink.count()) {
       expectedTabOrder.push('desktop-menu-admin');
     }
-    expectedTabOrder.push('desktop-cart-icon', 'username-profile-link', 'logout-button');
+    expectedTabOrder.push('commerce-transport', 'desktop-cart-icon', 'username-profile-link', 'logout-button');
 
     const actualTabOrder = await page
-      .locator('nav a, nav button')
+      .locator('nav a, nav button, nav select')
       .evaluateAll(elements =>
         elements
           .filter(element => {
@@ -40,14 +41,16 @@ test.describe('Navigation keyboard accessibility', () => {
 
     expect(actualTabOrder).toEqual(expectedTabOrder);
 
-    for (const testId of expectedTabOrder) {
-      const element = page.getByTestId(testId);
-      await element.focus();
-      await expect(element).toBeFocused();
+    // when / then
+    await page.getByTestId(expectedTabOrder[0]).focus();
+    await expect(page.getByTestId(expectedTabOrder[0])).toBeFocused();
+    for (const testId of expectedTabOrder.slice(1)) {
+      await expectNextFocus(page, page.getByTestId(testId));
     }
   });
 
   test('supports keyboard access in mobile menu and closes after navigation', async ({ authenticatedPage }) => {
+    // given
     const { page } = authenticatedPage;
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/');
@@ -62,8 +65,10 @@ test.describe('Navigation keyboard accessibility', () => {
     await expect(page.getByTestId('desktop-menu')).toBeHidden();
     await expect(menuToggle).toBeVisible();
 
+    // when
     await brandLink.focus();
     await expect(brandLink).toBeFocused();
+    await expectNextFocus(page, page.getByRole('combobox', { name: 'Shop API' }));
     await expectNextFocus(page, cartButton);
     await expectNextFocus(page, menuToggle);
 
@@ -74,6 +79,7 @@ test.describe('Navigation keyboard accessibility', () => {
     await expectNextFocus(page, emailLink);
     await page.keyboard.press('Enter');
 
+    // then
     await expect(page).toHaveURL(/\/email/);
     await expect(mobileMenu).toBeHidden();
   });

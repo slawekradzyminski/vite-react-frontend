@@ -1,4 +1,6 @@
-import { screen, waitFor } from '@testing-library/react';
+import { BrowserRouter } from 'react-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import { auth, cart } from '../../lib/api';
@@ -29,6 +31,27 @@ describe('Navigation', () => {
     vi.clearAllMocks();
     localStorage.clear();
     window.history.pushState({}, '', '/');
+  });
+
+  it('clears private caches when logging out before another user can sign in', async () => {
+    // given
+    localStorage.setItem('token', 'fake-token');
+    localStorage.setItem('refreshToken', 'fake-refresh');
+    vi.mocked(auth.me).mockResolvedValue({ data: {
+      username: 'alice', firstName: 'Alice', lastName: 'Tester', roles: [Role.CLIENT],
+    } } as never);
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    client.setQueryData(['orders'], { data: { content: [{ id: 42, username: 'alice' }] } });
+    client.setQueryData(['order', 42], { username: 'alice' });
+    client.setQueryData(['inventory'], { private: true });
+    render(<QueryClientProvider client={client}><BrowserRouter><Navigation /></BrowserRouter></QueryClientProvider>);
+    // when
+    await user.click(await screen.findByTestId('logout-button'));
+    // then
+    await waitFor(() => expect(localStorage.getItem('token')).toBeNull());
+    expect(client.getQueryData(['orders'])).toBeUndefined();
+    expect(client.getQueryData(['order', 42])).toBeUndefined();
+    expect(client.getQueryData(['inventory'])).toBeUndefined();
   });
 
   it('shows login link when user is not authenticated', () => {

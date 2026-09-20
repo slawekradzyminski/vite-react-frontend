@@ -42,6 +42,33 @@ test.describe('Traffic Monitor Page', () => {
     await expect(statusElement1).toBeVisible();
   });
 
+  test('shows GraphQL partial errors as failures even with HTTP 200', async ({ clientPage, request }) => {
+    // given
+    const { page, token } = clientPage;
+    const protocolTrafficPage = new TrafficPage(page);
+    await protocolTrafficPage.goto();
+    await protocolTrafficPage.waitForConnection();
+    const clientSessionId = await page.getByRole('textbox', { name: 'Traffic session ID' }).inputValue();
+
+    // when
+    const response = await request.post(`${BACKEND_URL}/api/v1/graphql`, {
+      ...authHeaders(token, clientSessionId),
+      data: { query: '{ products(limit:1){items{id}} cart(username:"another-customer"){totalItems} }' },
+    });
+    const correlationId = response.headers()['x-correlation-id'];
+
+    // then
+    expect(response.status()).toBe(200);
+    const body = await response.json();
+    expect(body.errors[0].extensions.code).toBe('FORBIDDEN');
+    const row = page.getByRole('row').filter({ hasText: correlationId });
+    await expect(row).toContainText('GraphQL');
+    await expect(row).toContainText('query cart,products');
+    await expect(row).toContainText('Partial error · HTTP 200');
+    await expect(row.locator('[data-testid^="traffic-event-status-"] span')).toHaveClass(/text-red-600/);
+    await expect(row).not.toContainText('another-customer');
+  });
+
   // given
   test('should clear events when clicking clear button', async ({ authenticatedPage, request }) => {
     // given

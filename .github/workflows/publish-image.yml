@@ -139,6 +139,10 @@ jobs:
       - name: Run Playwright tests (shard ${{ matrix.shard }}/3)
         run: npm run test:e2e -- --shard=${{ matrix.shard }}/3
 
+      - name: Verify REST and GraphQL commerce journeys
+        if: matrix.shard == 1
+        run: npm run test:e2e:commerce
+
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v7.0.1

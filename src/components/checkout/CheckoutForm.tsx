@@ -9,6 +9,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Surface } from '../ui/surface';
 import axios from 'axios';
+import { CommerceGraphQlError } from '../../lib/commerceGraphql';
 
 interface CheckoutFormProps {
   cartTotal: number;
@@ -60,7 +61,8 @@ export function CheckoutForm({ cartTotal }: CheckoutFormProps) {
       console.error('Failed to create order:', error);
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      if (axios.isAxiosError(error) && error.response?.status === 409) {
+      if (((axios.isAxiosError(error) && error.response?.status === 409)
+        || (error instanceof CommerceGraphQlError && error.code === 'CONFLICT'))) {
         setAvailabilityError('Some items are no longer available in the requested quantity. Your cart was preserved; review it before trying again.');
       } else {
         alert('Failed to create order. Please try again.');

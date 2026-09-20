@@ -14,6 +14,7 @@ interface RawCartItem {
 }
 
 export interface RawCartResponse {
+  enriched?: boolean;
   items?: RawCartItem[];
   totalPrice?: number;
   totalAmount?: number;
@@ -78,7 +79,16 @@ export function useEnrichedCart(rawData?: RawCartResponse) {
       }
 
       setIsEnriching(true);
-      const resolvedItems = await Promise.all(currentRawItems.map(enrichCartItem));
+      const resolvedItems = rawData?.enriched
+        ? currentRawItems.map(item => ({
+          productId: item.productId,
+          productName: item.productName ?? 'Unknown Product',
+          imageUrl: item.imageUrl ?? '',
+          quantity: item.quantity,
+          unitPrice: item.unitPrice ?? 0,
+          totalPrice: item.totalPrice ?? 0,
+        }))
+        : await Promise.all(currentRawItems.map(enrichCartItem));
 
       if (isActive) {
         setItems(resolvedItems);
