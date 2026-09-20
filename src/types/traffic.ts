@@ -1,4 +1,13 @@
+export interface ProtocolDetails {
+  protocol: 'GRAPHQL' | 'GRPC';
+  operation: string;
+  outcome: 'SUCCESS' | 'PARTIAL_ERROR' | 'ERROR';
+  codes: string[];
+  correlationId: string;
+}
+
 export interface TrafficEventDto {
+  protocolDetails?: ProtocolDetails;
   method: string;
   path: string;
   status: number;

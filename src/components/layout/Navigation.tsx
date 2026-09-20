@@ -7,6 +7,7 @@ import { Button } from '../ui/button';
 import { authStorage } from '../../lib/authStorage';
 import { hasRole } from '../../lib/roles';
 import { brandMarkSrc } from '../../lib/brandingAssets';
+import { CommerceTransportSelector } from './CommerceTransportSelector';
 
 const PRODUCT_NAME = 'Awesome Testing';
 
@@ -50,8 +51,7 @@ export function Navigation() {
       console.error('Failed to logout:', error);
     } finally {
       authStorage.clearTokens();
-      queryClient.removeQueries({ queryKey: ['me'], exact: true });
-      queryClient.removeQueries({ queryKey: ['cart'], exact: true });
+      queryClient.clear();
       navigate('/login');
     }
   }, [navigate, queryClient]);
@@ -143,6 +143,7 @@ export function Navigation() {
           <div className="flex items-center gap-2" data-testid="navigation-actions">
             {user?.data ? (
               <>
+                <CommerceTransportSelector />
                 <Link
                   to="/cart"
                   className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-stone-200 bg-white text-slate-600 shadow-[0_10px_25px_-20px_rgba(15,23,42,0.75)] transition hover:-translate-y-0.5 hover:border-stone-300 hover:text-slate-900"

@@ -6,8 +6,8 @@ export interface Product {
   stockQuantity: number;
   category: string;
   imageUrl: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ProductCreateDto {

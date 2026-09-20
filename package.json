@@ -1,7 +1,7 @@
 {
   "name": "vite",
   "private": true,
-  "version": "3.7.14",
+  "version": "3.8.0",
   "type": "module",
   "engines": {
     "node": ">=24.15.0 <25"
@@ -21,7 +21,8 @@
     "test:e2e:ai": "playwright test --reporter=list",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
-    "regression": "npm test && npm run build && npm run test:e2e:ai"
+    "regression": "npm test && npm run build && npm run test:e2e:ai",
+    "test:e2e:commerce": "playwright test --config=playwright.commerce.config.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
@@ -48,11 +49,11 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@stryker-mutator/core": "9.6.1",
-    "@stryker-mutator/vitest-runner": "9.6.1",
     "@eslint/js": "^10.0.1",
     "@faker-js/faker": "^10.5.0",
     "@playwright/test": "^1.62.1",
+    "@stryker-mutator/core": "9.6.1",
+    "@stryker-mutator/vitest-runner": "9.6.1",
     "@tailwindcss/postcss": "^4.3.3",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",
@@ -70,6 +71,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.3",
     "globals": "^17.9.0",
+    "graphql": "^17.0.2",
     "jsdom": "^30.0.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.66.0",

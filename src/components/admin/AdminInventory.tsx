@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router';
 import axios from 'axios';
+import { CommerceGraphQlError } from '../../lib/commerceGraphql';
 import { inventory } from '../../lib/api';
 import type { InventoryAdjustmentRequest, InventoryItem, StockStatus } from '../../types/inventory';
 import { Badge } from '../ui/badge';
@@ -28,7 +29,8 @@ const statusVariant: Record<StockStatus, 'success' | 'warning' | 'error'> = {
 };
 
 function isConflict(error: unknown) {
-  return axios.isAxiosError(error) && error.response?.status === 409;
+  return ((axios.isAxiosError(error) && error.response?.status === 409)
+        || (error instanceof CommerceGraphQlError && error.code === 'CONFLICT'));
 }
 
 export function AdminInventory() {

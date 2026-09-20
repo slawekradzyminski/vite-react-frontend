@@ -3,15 +3,14 @@ export default {
   testRunner: 'vitest',
   coverageAnalysis: 'perTest',
   mutate: [
+    'src/lib/commerceGraphql.ts',
+    'src/lib/commerceTransport.ts',
     'src/lib/runtimeConfig.ts',
     'src/lib/sse.ts',
     'src/lib/sso.ts',
+    'src/lib/trafficPresentation.ts',
   ],
-  testFiles: [
-    'src/lib/runtimeConfig.test.ts',
-    'src/lib/sse.test.ts',
-    'src/lib/sso.test.ts',
-  ],
+  vitest: { configFile: 'vitest.mutation.config.ts' },
   reporters: ['clear-text', 'html', 'json'],
   concurrency: 4,
   thresholds: {

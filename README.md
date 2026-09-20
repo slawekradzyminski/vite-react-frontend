@@ -219,3 +219,10 @@ npx playwright test e2e/tests/sso.spec.ts e2e/tests/sso-fixture.spec.ts
 - `sso-fixture.spec.ts` obtains a Keycloak ID token over HTTP, exchanges it with the backend, and starts the page with app-issued tokens already in local storage.
 
 CI uses this repository's `docker-compose.yml`, so the backend image referenced there must already contain the SSO exchange endpoint. After backend changes, publish a new backend image from `../test-secure-backend` with `./build-multiarch.sh <version>`, then run frontend CI with `BACKEND_IMAGE=slawekradzyminski/backend:<version>` or update the compose default tag.
+
+## Commerce transport
+
+The signed-in **Shop API** selector switches products, carts, orders, and admin
+inventory between REST and GraphQL. REST is the default; switching reloads the
+page and clears cached data. See [the storefront guide](docs/GRAPHQL_STOREFRONT.md)
+for scope, authentication behavior, and verification commands.

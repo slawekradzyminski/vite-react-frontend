@@ -6,6 +6,7 @@ import { getAbsoluteApiUrl, traffic } from '../../lib/api';
 import { TrafficEventDto } from '../../types/traffic';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
+import { trafficPresentation } from '../../lib/trafficPresentation';
 import { authStorage } from '../../lib/authStorage';
 import { Surface } from '../../components/ui/surface';
 
@@ -105,15 +106,6 @@ export function TrafficMonitorPage() {
     setTrafficEvents([]);
   };
 
-  const formatStatus = (status: number) => {
-    let colorClass = '';
-    if (status >= 200 && status < 300) colorClass = 'text-emerald-600';
-    else if (status >= 300 && status < 400) colorClass = 'text-sky-600';
-    else if (status >= 400 && status < 500) colorClass = 'text-orange-600';
-    else if (status >= 500) colorClass = 'text-red-600';
-
-    return <span className={colorClass}>{status}</span>;
-  };
 
   if (isLoading) {
     return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="traffic-loading">Loading traffic monitor...</Surface>;
@@ -149,8 +141,13 @@ export function TrafficMonitorPage() {
       <Surface variant="muted" padding="md" data-testid="traffic-status-container">
         <p className="text-slate-700" data-testid="traffic-status-message">{statusMessage}</p>
         <p className="mt-1 text-sm text-slate-500" data-testid="traffic-description">
-          {trafficInfo?.data?.description || 'Live HTTP request monitoring'}
+          Live REST, GraphQL, and gRPC operation monitoring
         </p>
+        <label className="mt-3 block text-sm text-slate-600">
+          Traffic session ID — use this as X-Client-Session-Id in GraphiQL or gRPC metadata
+          <input aria-label="Traffic session ID" readOnly value={authStorage.getClientSessionId()}
+            className="mt-1 block w-full rounded border border-stone-200 bg-white px-3 py-2 font-mono text-xs" />
+        </label>
       </Surface>
 
       <div className="mb-4 flex justify-between items-center" data-testid="traffic-events-header">
@@ -171,6 +168,7 @@ export function TrafficMonitorPage() {
             <table className="min-w-full divide-y divide-stone-200" data-testid="traffic-events-table">
               <thead className="bg-stone-50/80" data-testid="traffic-events-table-head">
                 <tr data-testid="traffic-events-header-row">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">Protocol / operation</th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500" data-testid="traffic-events-method-header">Method</th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500" data-testid="traffic-events-path-header">Path</th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500" data-testid="traffic-events-status-header">Status</th>
@@ -179,8 +177,14 @@ export function TrafficMonitorPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-200 bg-white/60" data-testid="traffic-events-table-body">
-                {trafficEvents.map((event, index) => (
-                  <tr key={event.eventKey} className="hover:bg-stone-50/70" data-testid={`traffic-event-${index}`}>
+                {trafficEvents.map((event, index) => {
+                  const presentation = trafficPresentation(event);
+                  return <tr key={event.eventKey} className="hover:bg-stone-50/70" data-testid={`traffic-event-${index}`}>
+                    <td className="px-6 py-4 text-sm" data-testid={`traffic-event-protocol-${index}`}>
+                      <span className="font-semibold">{presentation.protocol}</span>
+                      <div className="font-mono text-xs">{presentation.operation}</div>
+                      {presentation.correlationId && <div className="mt-1 font-mono text-xs text-slate-500" title="Correlation ID">{presentation.correlationId}</div>}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap" data-testid={`traffic-event-method-${index}`}>
                       <span className="font-mono text-slate-900">{event.method}</span>
                     </td>
@@ -188,7 +192,7 @@ export function TrafficMonitorPage() {
                       {event.path}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap" data-testid={`traffic-event-status-${index}`}>
-                      {formatStatus(event.status)}
+                      <span className={presentation.color}>{presentation.status}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500" data-testid={`traffic-event-duration-${index}`}>
                       {event.durationMs}ms
@@ -196,8 +200,8 @@ export function TrafficMonitorPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500" data-testid={`traffic-event-time-${index}`}>
                       {new Date(event.timestamp).toLocaleTimeString()}
                     </td>
-                  </tr>
-                ))}
+                  </tr>;
+                })}
               </tbody>
             </table>
           </div>

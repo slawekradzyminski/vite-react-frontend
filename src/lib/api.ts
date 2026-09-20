@@ -35,6 +35,8 @@ import type {
   StockStatus,
 } from '../types/inventory';
 import { authStorage } from './authStorage';
+import { commerceTransport } from './commerceTransport';
+import { createCommerceGraphql } from './commerceGraphql';
 import { getAbsoluteApiUrl, getApiBaseUrl } from './runtimeConfig';
 
 const api = axios.create({
@@ -310,7 +312,7 @@ export const prompts = {
   },
 };
 
-export const orders = {
+const restOrders = {
   getUserOrders: (page: number = 0, size: number = 10, status?: OrderStatus) =>
     api.get<PageDtoOrderDto>(ORDERS_API, {
       params: { page, size, status },
@@ -338,7 +340,7 @@ export const orders = {
     api.post<Order>(`${ORDERS_API}/${id}/cancel`),
 };
 
-export const products = {
+const restProducts = {
   getAllProducts: () => 
     api.get<Product[]>(PRODUCTS_API),
   
@@ -355,7 +357,7 @@ export const products = {
     api.delete(`${PRODUCTS_API}/${id}`),
 };
 
-export const cart = {
+const restCart = {
   getCart: () => 
     api.get<Cart>(CART_API),
   
@@ -377,7 +379,7 @@ export const traffic = {
     api.get<TrafficInfoDto>(`${TRAFFIC_API}/info`),
 };
 
-export const inventory = {
+const restInventory = {
   list: (params: {
     page?: number;
     size?: number;
@@ -397,6 +399,12 @@ export const inventory = {
       params: { page, size },
     }),
 };
+
+const graphqlCommerce = createCommerceGraphql(api);
+export const products = commerceTransport === 'graphql' ? graphqlCommerce.products : restProducts;
+export const cart = commerceTransport === 'graphql' ? graphqlCommerce.cart : restCart;
+export const orders = commerceTransport === 'graphql' ? graphqlCommerce.orders : restOrders;
+export const inventory = commerceTransport === 'graphql' ? graphqlCommerce.inventory : restInventory;
 
 export { getAbsoluteApiUrl, getApiBaseUrl } from './runtimeConfig';
 

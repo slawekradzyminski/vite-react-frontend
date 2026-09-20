@@ -1,3 +1,4 @@
+import { CommerceGraphQlError } from '../../lib/commerceGraphql';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { CheckoutForm } from './CheckoutForm';
@@ -161,11 +162,11 @@ describe('CheckoutForm', () => {
     });
   });
 
-  it('shows an inline inventory conflict, preserves the cart flow, and refreshes stock views', async () => {
-    const conflict = Object.assign(new Error('inventory conflict'), {
-      isAxiosError: true,
-      response: { status: 409 },
-    });
+  it.each([
+    Object.assign(new Error('inventory conflict'), { isAxiosError: true, response: { status: 409 } }),
+    new CommerceGraphQlError([{ message: 'Stock unavailable', extensions: { code: 'CONFLICT' } }]),
+  ])('shows an inline conflict and preserves the cart for %s', async conflict => {
+    // given
     vi.mocked(orders.createOrder).mockRejectedValueOnce(conflict);
     const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
     const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');

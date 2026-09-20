@@ -348,4 +348,24 @@ describe('TrafficMonitorPage', () => {
       expect(statusSpan).toHaveClass(event.className);
     });
   });
+
+  it('shows protocol outcomes and correlation IDs without treating HTTP 200 as GraphQL success', async () => {
+    // given
+    render(<QueryClientProvider client={queryClient}><TrafficMonitorPage /></QueryClientProvider>);
+    await screen.findByText('Connected to traffic monitor');
+    // when
+    act(() => {
+      (stompjs as any).__simulateMessage({ method: 'GRAPHQL', path: '/api/v1/graphql', status: 200,
+        durationMs: 12, timestamp: new Date().toISOString(), protocolDetails: {
+          protocol: 'GRAPHQL', operation: 'query cart,products', outcome: 'PARTIAL_ERROR', codes: ['FORBIDDEN'], correlationId: 'safe-correlation',
+        } });
+    });
+    // then
+    expect(screen.getByTestId('traffic-event-protocol-0')).toHaveTextContent('GraphQL');
+    expect(screen.getByTestId('traffic-event-protocol-0')).toHaveTextContent('query cart,products');
+    expect(screen.getByTestId('traffic-event-protocol-0')).toHaveTextContent('safe-correlation');
+    expect(screen.getByText('Partial error · HTTP 200')).toHaveClass('text-red-600');
+    expect(screen.getByLabelText('Traffic session ID')).toBeVisible();
+  });
+
 });
