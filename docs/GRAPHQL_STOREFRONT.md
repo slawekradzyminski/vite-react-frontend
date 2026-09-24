@@ -74,9 +74,9 @@ This avoids [Stryker 9.6.1's late activation of static mutants](https://github.c
 Framework mutations and the workspace semantic mutation lab remain separate gates.
 
 GraphiQL is available separately at `/api/v1/graphiql`; enter the access token in
-its Headers tab. Native gRPC inventory is now available through a separate optional backend
-listener; it is not a browser transport. GraphQL traffic-monitor presentation and deployment are
-separate planned increments. Swagger continues to document REST.
+its Headers tab. Native gRPC inventory is available through a separate optional
+backend listener; it is not a browser transport. The production release includes
+protocol-aware traffic monitoring. Swagger continues to document REST.
 
 ## Protocol traffic monitoring
 
@@ -84,4 +84,4 @@ Traffic Monitor now distinguishes REST, GraphQL, and native gRPC events.
 GraphQL errors are shown in red even with HTTP 200; gRPC uses native status codes.
 The page exposes the current traffic session ID for GraphiQL headers or grpcurl
 metadata. New protocol records contain safe operation metadata only. See the
-[protocol testing lab](../../awesome-localstack/docs/PROTOCOL_TESTING_LAB.md).
+[protocol testing lab](https://github.com/slawekradzyminski/awesome-localstack/blob/main/docs/PROTOCOL_TESTING_LAB.md).
