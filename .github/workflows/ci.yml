@@ -20,6 +20,9 @@ jobs:
       - name: Run unit tests
         run: npm run test
 
+      - name: Lint source and tests
+        run: npm run lint
+
       - name: Build the application
         run: npm run build
         

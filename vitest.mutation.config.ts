@@ -1,7 +1,6 @@
 import { defineConfig } from 'vitest/config';
 
-// Select tests here, not with Stryker's testFiles option: Stryker 9.6.1 activates
-// static mutants too late when testFiles creates a filter (stryker-js#6144).
+// Keep the focused mutation suite separate from the fast unit-test configuration.
 export default defineConfig({
   test: {
     globals: true,

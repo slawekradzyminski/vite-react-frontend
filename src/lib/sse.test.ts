@@ -100,6 +100,53 @@ describe('processSSEResponse', () => {
     )).resolves.toBeUndefined();
   });
 
+  it('completes a malformed final chunk without an optional error callback', async () => {
+    const onMessage = vi.fn();
+    const consoleDebugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+
+    await expect(processSSEResponse(
+      new Response('data: invalid-json'),
+      { onMessage },
+    )).resolves.toBeUndefined();
+
+    expect(onMessage).not.toHaveBeenCalled();
+    consoleDebugSpy.mockRestore();
+  });
+
+  it.each([
+    ['terminated', ' data: {"response":"unexpected"}\n\n'],
+    ['final', ' data: {"response":"unexpected"}'],
+  ])('rejects an SSE %s line whose data field does not start at column zero', async (_kind, body) => {
+    const processor = createProcessor();
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleDebugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+
+    await processSSEResponse(new Response(body), processor);
+
+    expect(processor.onMessage).not.toHaveBeenCalled();
+    expect(processor.onError).toHaveBeenCalledWith(expect.any(Error));
+    consoleErrorSpy.mockRestore();
+    consoleDebugSpy.mockRestore();
+  });
+
+  it('ignores an empty final data field', async () => {
+    const processor = createProcessor();
+
+    await processSSEResponse(new Response('data:'), processor);
+
+    expect(processor.onMessage).not.toHaveBeenCalled();
+    expect(processor.onError).not.toHaveBeenCalled();
+  });
+
+  it('propagates a reader failure without an optional error callback', async () => {
+    const failure = new Error('Stream failed');
+    const reader = { read: vi.fn().mockRejectedValue(failure), cancel: vi.fn() };
+    const response = { body: { getReader: () => reader } } as unknown as Response;
+
+    await expect(processSSEResponse(response, { onMessage: vi.fn() })).rejects.toBe(failure);
+    expect(reader.cancel).toHaveBeenCalled();
+  });
+
   it('handles invalid JSON in SSE message', async () => {
     const mockResponse = new Response('data: invalid json\n\n', {
       headers: { 'Content-Type': 'text/event-stream' },

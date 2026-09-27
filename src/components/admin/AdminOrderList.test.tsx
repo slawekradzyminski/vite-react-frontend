@@ -1,3 +1,4 @@
+import type { Mock } from 'vitest';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AdminOrderList } from './AdminOrderList';
@@ -38,7 +39,7 @@ describe('AdminOrderList', () => {
 
   it('renders loading state initially', () => {
     // given
-    (orders.getAllOrders as jest.Mock).mockReturnValue(new Promise(() => {}));
+    (orders.getAllOrders as Mock).mockReturnValue(new Promise(() => {}));
     
     // when
     renderWithProviders();
@@ -49,7 +50,7 @@ describe('AdminOrderList', () => {
 
   it('renders error state when API call fails', async () => {
     // given
-    (orders.getAllOrders as jest.Mock).mockRejectedValueOnce(new Error('Failed to fetch'));
+    (orders.getAllOrders as Mock).mockRejectedValueOnce(new Error('Failed to fetch'));
     
     // when
     renderWithProviders();
@@ -72,7 +73,7 @@ describe('AdminOrderList', () => {
       },
     };
     
-    (orders.getAllOrders as jest.Mock).mockResolvedValueOnce(mockOrders);
+    (orders.getAllOrders as Mock).mockResolvedValueOnce(mockOrders);
     
     // when
     renderWithProviders();
@@ -128,7 +129,7 @@ describe('AdminOrderList', () => {
       },
     };
     
-    (orders.getAllOrders as jest.Mock).mockResolvedValueOnce(mockOrders);
+    (orders.getAllOrders as Mock).mockResolvedValueOnce(mockOrders);
     
     // when
     renderWithProviders();
@@ -177,7 +178,7 @@ describe('AdminOrderList', () => {
       },
     };
     
-    (orders.getAllOrders as jest.Mock).mockResolvedValue(mockOrders);
+    (orders.getAllOrders as Mock).mockResolvedValue(mockOrders);
     
     // when
     renderWithProviders();
@@ -235,7 +236,7 @@ describe('AdminOrderList', () => {
       },
     };
     
-    (orders.getAllOrders as jest.Mock).mockResolvedValue(mockOrders);
+    (orders.getAllOrders as Mock).mockResolvedValue(mockOrders);
     
     // when
     renderWithProviders();
@@ -285,7 +286,7 @@ describe('AdminOrderList', () => {
       },
     };
     
-    (orders.getAllOrders as jest.Mock).mockResolvedValue(mockOrders);
+    (orders.getAllOrders as Mock).mockResolvedValue(mockOrders);
     
     // when
     renderWithProviders();
@@ -335,7 +336,7 @@ describe('AdminOrderList', () => {
       },
     };
     
-    (orders.getAllOrders as jest.Mock).mockResolvedValueOnce(mockOrders);
+    (orders.getAllOrders as Mock).mockResolvedValueOnce(mockOrders);
     
     // when
     renderWithProviders();
@@ -377,7 +378,7 @@ describe('AdminOrderList', () => {
       },
     };
     
-    (orders.getAllOrders as jest.Mock).mockResolvedValueOnce(mockOrders);
+    (orders.getAllOrders as Mock).mockResolvedValueOnce(mockOrders);
     
     // when
     renderWithProviders();

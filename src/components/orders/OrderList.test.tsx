@@ -1,3 +1,4 @@
+import type { Mock } from 'vitest';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { OrderList } from './OrderList';
@@ -38,7 +39,7 @@ describe('OrderList', () => {
 
   it('renders loading state initially', async () => {
     // given
-    (orders.getUserOrders as jest.Mock).mockReturnValue(new Promise(() => {}));
+    (orders.getUserOrders as Mock).mockReturnValue(new Promise(() => {}));
     
     // when
     renderWithProviders();
@@ -49,7 +50,7 @@ describe('OrderList', () => {
 
   it('renders error state when API call fails', async () => {
     // given
-    (orders.getUserOrders as jest.Mock).mockRejectedValueOnce(new Error('Failed to fetch'));
+    (orders.getUserOrders as Mock).mockRejectedValueOnce(new Error('Failed to fetch'));
     
     // when
     renderWithProviders();
@@ -62,7 +63,7 @@ describe('OrderList', () => {
 
   it('renders empty state when no orders are returned', async () => {
     // given
-    (orders.getUserOrders as jest.Mock).mockResolvedValueOnce({
+    (orders.getUserOrders as Mock).mockResolvedValueOnce({
       data: {
         content: [],
         totalPages: 0,
@@ -126,7 +127,7 @@ describe('OrderList', () => {
       },
     };
     
-    (orders.getUserOrders as jest.Mock).mockResolvedValueOnce(mockOrders);
+    (orders.getUserOrders as Mock).mockResolvedValueOnce(mockOrders);
     
     // when
     renderWithProviders();
@@ -164,7 +165,7 @@ describe('OrderList', () => {
       },
     };
     
-    (orders.getUserOrders as jest.Mock).mockResolvedValue(mockOrders);
+    (orders.getUserOrders as Mock).mockResolvedValue(mockOrders);
     
     // when
     renderWithProviders();
@@ -213,7 +214,7 @@ describe('OrderList', () => {
       },
     };
     
-    (orders.getUserOrders as jest.Mock).mockResolvedValue(mockOrders);
+    (orders.getUserOrders as Mock).mockResolvedValue(mockOrders);
     
     // when
     renderWithProviders();
@@ -274,7 +275,7 @@ describe('OrderList', () => {
       },
     };
     
-    (orders.getUserOrders as jest.Mock).mockResolvedValue(mockOrders);
+    (orders.getUserOrders as Mock).mockResolvedValue(mockOrders);
     
     // when
     renderWithProviders();
@@ -307,7 +308,7 @@ describe('OrderList', () => {
       },
     };
     
-    (orders.getUserOrders as jest.Mock).mockResolvedValue(mockOrders);
+    (orders.getUserOrders as Mock).mockResolvedValue(mockOrders);
     
     // when
     renderWithProviders();
@@ -351,7 +352,7 @@ describe('OrderList', () => {
       },
     };
     
-    (orders.getUserOrders as jest.Mock).mockResolvedValue(mockOrders);
+    (orders.getUserOrders as Mock).mockResolvedValue(mockOrders);
     
     // when
     renderWithProviders();

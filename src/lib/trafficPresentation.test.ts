@@ -35,6 +35,15 @@ describe('protocol traffic presentation', () => {
     expect(result).toEqual({ protocol: 'gRPC', status: `${code} (${status})`, color, operation: 'AdjustStock', correlationId: 'native' });
   });
 
+  it('keeps every gRPC code when the server reports more than one', () => {
+    const result = trafficPresentation({ ...event, status: 7, protocolDetails: {
+      protocol: 'GRPC', operation: 'AdjustStock', outcome: 'ERROR',
+      codes: ['PERMISSION_DENIED', 'INVALID_ARGUMENT'], correlationId: 'native',
+    } });
+
+    expect(result.status).toBe('PERMISSION_DENIED, INVALID_ARGUMENT (7)');
+  });
+
   it.each([
     [199, ''], [200, 'text-emerald-600'], [299, 'text-emerald-600'],
     [300, 'text-sky-600'], [399, 'text-sky-600'], [400, 'text-orange-600'],

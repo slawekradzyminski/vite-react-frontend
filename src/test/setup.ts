@@ -1,9 +1,6 @@
-import { expect, afterEach, beforeEach, vi } from 'vitest';
+import { afterEach, beforeEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
-import * as matchers from '@testing-library/jest-dom/matchers';
-import '@testing-library/jest-dom';
-
-expect.extend(matchers);
+import '@testing-library/jest-dom/vitest';
 
 const createLocalStorageMock = () => {
   const store = new Map<string, string>();
