@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import type { Mock } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { AdminProductFormPage } from './productFormPage';
 import { BrowserRouter } from 'react-router';
@@ -46,7 +47,7 @@ describe('AdminProductFormPage', () => {
 
   it('renders the new product form page when no ID is provided', () => {
     // given
-    (useParams as jest.Mock).mockReturnValue({ id: undefined });
+    (useParams as Mock).mockReturnValue({ id: undefined });
     
     // when
     renderAdminProductFormPage();
@@ -59,7 +60,7 @@ describe('AdminProductFormPage', () => {
 
   it('renders the edit product form page when ID is provided', () => {
     // given
-    (useParams as jest.Mock).mockReturnValue({ id: '42' });
+    (useParams as Mock).mockReturnValue({ id: '42' });
     
     // when
     renderAdminProductFormPage();
@@ -69,4 +70,4 @@ describe('AdminProductFormPage', () => {
     expect(screen.getByTestId('admin-product-form-title')).toHaveTextContent('Edit Product');
     expect(screen.getByTestId('admin-product-form-mock')).toHaveTextContent('for product 42');
   });
-}); 
+});

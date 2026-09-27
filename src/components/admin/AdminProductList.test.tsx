@@ -1,3 +1,4 @@
+import type { Mock } from 'vitest';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AdminProductList } from './AdminProductList';
@@ -40,7 +41,7 @@ describe('AdminProductList', () => {
 
   it('renders loading state initially', () => {
     // given
-    (products.getAllProducts as jest.Mock).mockReturnValue(new Promise(() => {}));
+    (products.getAllProducts as Mock).mockReturnValue(new Promise(() => {}));
     
     // when
     renderWithProviders();
@@ -51,7 +52,7 @@ describe('AdminProductList', () => {
 
   it('renders error state when API call fails', async () => {
     // given
-    (products.getAllProducts as jest.Mock).mockRejectedValueOnce(new Error('Failed to fetch'));
+    (products.getAllProducts as Mock).mockRejectedValueOnce(new Error('Failed to fetch'));
     
     // when
     renderWithProviders();
@@ -68,7 +69,7 @@ describe('AdminProductList', () => {
       data: [],
     };
     
-    (products.getAllProducts as jest.Mock).mockResolvedValueOnce(mockProducts);
+    (products.getAllProducts as Mock).mockResolvedValueOnce(mockProducts);
     
     // when
     renderWithProviders();
@@ -109,7 +110,7 @@ describe('AdminProductList', () => {
       ],
     };
     
-    (products.getAllProducts as jest.Mock).mockResolvedValueOnce(mockProducts);
+    (products.getAllProducts as Mock).mockResolvedValueOnce(mockProducts);
     
     // when
     renderWithProviders();
@@ -148,8 +149,8 @@ describe('AdminProductList', () => {
       ],
     };
     
-    (products.getAllProducts as jest.Mock).mockResolvedValue(mockProducts);
-    (products.deleteProduct as jest.Mock).mockResolvedValueOnce({});
+    (products.getAllProducts as Mock).mockResolvedValue(mockProducts);
+    (products.deleteProduct as Mock).mockResolvedValueOnce({});
     
     // Mock the invalidateQueries method
     queryClient.invalidateQueries = vi.fn();
@@ -191,13 +192,13 @@ describe('AdminProductList', () => {
       ],
     };
     
-    (products.getAllProducts as jest.Mock).mockResolvedValue(mockProducts);
+    (products.getAllProducts as Mock).mockResolvedValue(mockProducts);
     // Keep the mutation pending until the deleting state has been asserted.
     let resolveDelete: (value: object) => void = () => undefined;
     const deletePromise = new Promise<object>((resolve) => {
       resolveDelete = resolve;
     });
-    (products.deleteProduct as jest.Mock).mockReturnValueOnce(deletePromise);
+    (products.deleteProduct as Mock).mockReturnValueOnce(deletePromise);
     
     // when
     renderWithProviders();
@@ -238,9 +239,9 @@ describe('AdminProductList', () => {
       ],
     };
     
-    (products.getAllProducts as jest.Mock).mockResolvedValue(mockProducts);
+    (products.getAllProducts as Mock).mockResolvedValue(mockProducts);
     // Override the confirm mock to return false
-    (window.confirm as jest.Mock).mockReturnValueOnce(false);
+    (window.confirm as Mock).mockReturnValueOnce(false);
     
     // when
     renderWithProviders();
@@ -275,8 +276,8 @@ describe('AdminProductList', () => {
       ],
     };
     
-    (products.getAllProducts as jest.Mock).mockResolvedValue(mockProducts);
-    (products.deleteProduct as jest.Mock).mockRejectedValueOnce(new Error('Failed to delete'));
+    (products.getAllProducts as Mock).mockResolvedValue(mockProducts);
+    (products.deleteProduct as Mock).mockRejectedValueOnce(new Error('Failed to delete'));
     
     // Mock console.error to prevent test output pollution
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});

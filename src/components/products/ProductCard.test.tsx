@@ -44,21 +44,9 @@ vi.mock('@tanstack/react-query', async () => {
 
 vi.mock('../../lib/api', () => ({
   cart: {
-    addToCart: vi.fn().mockImplementation(() => {
-      return new Promise(resolve => {
-        setTimeout(() => resolve({ data: { id: 1 } }), 100);
-      });
-    }),
-    updateCartItem: vi.fn().mockImplementation(() => {
-      return new Promise(resolve => {
-        setTimeout(() => resolve({ data: { id: 1 } }), 100);
-      });
-    }),
-    removeFromCart: vi.fn().mockImplementation(() => {
-      return new Promise(resolve => {
-        setTimeout(() => resolve({ data: { id: 1 } }), 100);
-      });
-    }),
+    addToCart: vi.fn().mockResolvedValue({ data: { id: 1 } }),
+    updateCartItem: vi.fn().mockResolvedValue({ data: { id: 1 } }),
+    removeFromCart: vi.fn().mockResolvedValue({ data: { id: 1 } }),
     getCart: vi.fn()
   }
 }));
@@ -141,6 +129,10 @@ describe('ProductCard', () => {
 
   it('disables the Add to Cart button while adding to cart', async () => {
     // given
+    let finishUpdate!: () => void;
+    vi.mocked(cart.updateCartItem).mockImplementationOnce(() => new Promise(resolve => {
+      finishUpdate = () => resolve({} as Awaited<ReturnType<typeof cart.updateCartItem>>);
+    }));
     const user = userEvent.setup();
     renderWithProviders(<ProductCard product={mockProduct} />);
     
@@ -151,7 +143,8 @@ describe('ProductCard', () => {
     await waitFor(() => {
       expect(screen.getByText('Adding...')).toBeInTheDocument();
     });
-    
+
+    finishUpdate();
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /update cart/i })).not.toBeDisabled();
     });

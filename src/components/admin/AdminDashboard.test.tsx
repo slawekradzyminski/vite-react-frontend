@@ -1,3 +1,4 @@
+import type { Mock } from 'vitest';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { AdminDashboard } from './AdminDashboard';
@@ -41,8 +42,8 @@ describe('AdminDashboard', () => {
 
   it('renders loading state when both queries are loading', () => {
     // given
-    (orders.getAllOrders as jest.Mock).mockReturnValue(new Promise(() => {}));
-    (products.getAllProducts as jest.Mock).mockReturnValue(new Promise(() => {}));
+    (orders.getAllOrders as Mock).mockReturnValue(new Promise(() => {}));
+    (products.getAllProducts as Mock).mockReturnValue(new Promise(() => {}));
     
     // when
     renderWithProviders();
@@ -123,8 +124,8 @@ describe('AdminDashboard', () => {
       },
     };
     
-    (products.getAllProducts as jest.Mock).mockResolvedValueOnce(mockProducts);
-    (orders.getAllOrders as jest.Mock).mockResolvedValueOnce(mockOrders);
+    (products.getAllProducts as Mock).mockResolvedValueOnce(mockProducts);
+    (orders.getAllOrders as Mock).mockResolvedValueOnce(mockOrders);
     
     // when
     renderWithProviders();
@@ -174,8 +175,8 @@ describe('AdminDashboard', () => {
       },
     };
     
-    (products.getAllProducts as jest.Mock).mockResolvedValueOnce(mockProducts);
-    (orders.getAllOrders as jest.Mock).mockResolvedValueOnce(mockOrders);
+    (products.getAllProducts as Mock).mockResolvedValueOnce(mockProducts);
+    (orders.getAllOrders as Mock).mockResolvedValueOnce(mockOrders);
     
     // when
     renderWithProviders();
@@ -202,7 +203,7 @@ describe('AdminDashboard', () => {
 
   it('renders dashboard with partial data (products loading)', async () => {
     // given
-    (products.getAllProducts as jest.Mock).mockReturnValue(new Promise(() => {}));
+    (products.getAllProducts as Mock).mockReturnValue(new Promise(() => {}));
     
     const mockOrders = {
       data: {
@@ -231,7 +232,7 @@ describe('AdminDashboard', () => {
       },
     };
     
-    (orders.getAllOrders as jest.Mock).mockResolvedValueOnce(mockOrders);
+    (orders.getAllOrders as Mock).mockResolvedValueOnce(mockOrders);
     
     // when
     renderWithProviders();

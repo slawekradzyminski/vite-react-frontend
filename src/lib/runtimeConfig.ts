@@ -76,10 +76,6 @@ export const getSsoConfig = (
   const redirectUri = env.VITE_SSO_REDIRECT_URI?.trim() || `${origin}/auth/sso/callback`;
   const postLogoutRedirectUri = env.VITE_SSO_POST_LOGOUT_REDIRECT_URI?.trim() || `${origin}/login`;
 
-  if (!authority || !clientId || !redirectUri || !postLogoutRedirectUri) {
-    return null;
-  }
-
   const resolveUrl = (value: string) => new URL(value, `${origin}/`).toString();
 
   return {

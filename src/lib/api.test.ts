@@ -5,8 +5,11 @@ import { Role } from '../types/auth';
 const mockAxios = vi.hoisted(() => {
   const instance: any = vi.fn(() => Promise.resolve({ data: {} }));
   instance.interceptors = {
-    request: { use: vi.fn() },
-    response: { use: vi.fn() },
+    request: { use: vi.fn((onSuccess) => { instance.requestInterceptor = onSuccess; }) },
+    response: { use: vi.fn((onSuccess, onError) => {
+      instance.responseSuccessInterceptor = onSuccess;
+      instance.responseErrorInterceptor = onError;
+    }) },
   };
   instance.post = vi.fn();
   instance.get = vi.fn();
@@ -230,21 +233,17 @@ describe('API Client', () => {
 
   describe('axios interceptors', () => {
     const getRequestInterceptor = () => {
-      const calls = mockAxios.interceptors.request.use.mock.calls;
-      const call = calls[calls.length - 1];
-      if (!call) {
+      if (!mockAxios.requestInterceptor) {
         throw new Error('Request interceptor was not registered');
       }
-      return call[0];
+      return mockAxios.requestInterceptor;
     };
 
     const getErrorInterceptor = () => {
-      const calls = mockAxios.interceptors.response.use.mock.calls;
-      const call = calls[calls.length - 1];
-      if (!call) {
+      if (!mockAxios.responseErrorInterceptor) {
         throw new Error('Response interceptor was not registered');
       }
-      return call[1];
+      return mockAxios.responseErrorInterceptor;
     };
 
     it('attaches bearer token for protected requests', () => {
@@ -298,7 +297,7 @@ describe('API Client', () => {
     });
 
     it('stores client session id returned by the server', async () => {
-      const successInterceptor = mockAxios.interceptors.response.use.mock.calls.at(-1)?.[0];
+      const successInterceptor = mockAxios.responseSuccessInterceptor;
       if (!successInterceptor) {
         throw new Error('Success interceptor was not registered');
       }
