@@ -24,6 +24,7 @@ import { AdminOrdersPage } from './pages/admin/ordersPage';
 import { AdminInventoryPage } from './pages/admin/inventoryPage';
 import { TrafficMonitorPage } from './pages/traffic/trafficPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { WebMcpPage } from './features/webmcp/WebMcpPage';
 
 export function AppRoutes() {
   return (
@@ -42,6 +43,7 @@ export function AppRoutes() {
       } />
       
       {/* Protected routes */}
+      <Route path="/webmcp" element={<ProtectedRoute><WebMcpPage /></ProtectedRoute>} />
       <Route
         path="/products"
         element={
