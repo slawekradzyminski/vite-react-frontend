@@ -3,6 +3,7 @@ import { screen, waitFor, render } from '@testing-library/react';
 import { ProductList } from './ProductList';
 import { products } from '../../lib/api';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 vi.mock('../../lib/api', () => ({
@@ -109,7 +110,7 @@ describe('ProductList', () => {
     
     return render(
       <QueryClientProvider client={queryClient}>
-        <ProductList {...props} />
+        <MemoryRouter><ProductList {...props} /></MemoryRouter>
       </QueryClientProvider>
     );
   };

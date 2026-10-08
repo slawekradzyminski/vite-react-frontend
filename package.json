@@ -1,7 +1,7 @@
 {
   "name": "vite",
   "private": true,
-  "version": "3.8.1",
+  "version": "3.9.0",
   "type": "module",
   "engines": {
     "node": ">=24.15.0 <25"
@@ -22,7 +22,10 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
     "regression": "npm test && npm run build && npm run test:e2e:ai",
-    "test:e2e:commerce": "playwright test --config=playwright.commerce.config.ts"
+    "test:e2e:commerce": "playwright test --config=playwright.commerce.config.ts",
+    "typecheck": "tsc -b",
+    "demo:webmcp": "vite --config vite.webmcp.config.ts",
+    "test:e2e:webmcp": "playwright test --config playwright.webmcp.config.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
@@ -51,7 +54,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@faker-js/faker": "^10.6.0",
-    "@playwright/test": "^1.63.0",
+    "@playwright/test": "1.64.0",
     "@stryker-mutator/core": "^10.0.0",
     "@stryker-mutator/vitest-runner": "^10.0.0",
     "@tailwindcss/postcss": "^4.3.3",

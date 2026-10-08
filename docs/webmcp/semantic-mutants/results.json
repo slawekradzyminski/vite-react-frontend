@@ -1,0 +1,26 @@
+{
+  "testedAt": "2026-10-08T13:03:36.355Z",
+  "originalFocusedTestsPassed": true,
+  "candidates": [
+    {
+      "id": "quantity-as-target",
+      "contract": "add_to_cart adds the requested number of additional units; quantity is not a desired final total.",
+      "observable": "With two units already in the cart, adding two must submit two additional units, not zero.",
+      "compiles": true,
+      "outcome": "killed"
+    },
+    {
+      "id": "rejection-as-success",
+      "contract": "Application rejection must be returned with isError true so an agent cannot mistake it for successful execution.",
+      "observable": "A rejected stock write produces an error-shaped payload but is incorrectly reported as a successful tool result.",
+      "compiles": true,
+      "outcome": "killed"
+    }
+  ],
+  "counts": {
+    "killed": 2,
+    "survived": 0,
+    "invalid": 0,
+    "equivalent": 0
+  }
+}

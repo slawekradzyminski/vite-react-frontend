@@ -1,0 +1,11 @@
+--- a/src/features/webmcp/webmcp-model.ts
++++ b/src/features/webmcp/webmcp-model.ts
+@@ -149,7 +149,7 @@
+       try {
+         result = resultText(await run(input));
+       } catch (error) {
+-        result = { ...resultText({ error: error instanceof Error ? error.message : 'Application request failed.' }), isError: true };
++        result = resultText({ error: error instanceof Error ? error.message : 'Application request failed.' });
+       }
+       onCall({ name: definition.name, input, result });
+       return result;

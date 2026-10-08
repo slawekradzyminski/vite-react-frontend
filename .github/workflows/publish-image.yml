@@ -143,6 +143,10 @@ jobs:
         if: matrix.shard == 1
         run: npm run test:e2e:commerce
 
+      - name: Verify native WebMCP and shared shop state
+        if: matrix.shard == 1
+        run: npm run test:e2e:webmcp
+
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v7.0.1

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ProductList } from '../../components/products/ProductList';
 import { useQuery } from '@tanstack/react-query';
 import { products } from '../../lib/api';
@@ -7,6 +7,7 @@ import { Surface } from '../../components/ui/surface';
 
 export function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
+  const clearCategoryForAgent = useCallback(() => setSelectedCategory(undefined), []);
   
   const { data, isLoading, isError } = useQuery({
     queryKey: ['products'],
@@ -93,7 +94,7 @@ export function ProductsPage() {
         </aside>
         
         <div className="min-w-0" data-testid="products-content">
-          <ProductList category={selectedCategory} />
+          <ProductList category={selectedCategory} onAgentSearch={clearCategoryForAgent} />
         </div>
       </div>
     </div>

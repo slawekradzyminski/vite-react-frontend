@@ -1,0 +1,13 @@
+--- a/src/features/webmcp/webmcp-model.ts
++++ b/src/features/webmcp/webmcp-model.ts
+@@ -128,7 +128,9 @@
+           if (!other) throw new Error('Seed another available product in the same category to demonstrate this fault.');
+           productId = other.id;
+         }
+-        return reportCart(await services.addToCart(productId, quantity));
++        const current = await services.getCart();
++        const existing = current.items.find(item => item.productId === productId)?.quantity ?? 0;
++        return reportCart(await services.addToCart(productId, Math.max(0, quantity - existing)));
+       },
+     },
+     {

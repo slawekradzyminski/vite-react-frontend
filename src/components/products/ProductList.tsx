@@ -1,15 +1,28 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { products } from '../../lib/api';
 import { ProductCard } from './ProductCard';
+import { useShopWebMcp } from '../../features/webmcp/useShopWebMcp';
+import { filterProducts } from '../../features/webmcp/webmcp-model';
+import { ShopToolPanel } from '../../features/webmcp/ShopToolPanel';
 
 interface ProductListProps {
   category?: string;
+  onAgentSearch?: () => void;
 }
 
-export function ProductList({ category }: ProductListProps) {
+export function ProductList({ category, onAgentSearch }: ProductListProps) {
   const [sortOption, setSortOption] = useState<string>('name-asc');
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const onSearch = useCallback((query: string, stock: boolean) => {
+    onAgentSearch?.();
+    setSearchTerm(query);
+    setInStockOnly(stock);
+    setSortOption('price-asc');
+  }, [onAgentSearch]);
+  const params = new URLSearchParams(window.location.search);
+  const webmcp = useShopWebMcp(onSearch, params.get('tools') !== 'off');
 
   const { data: allProducts, isLoading, error } = useQuery({
     queryKey: ['products'],
@@ -19,18 +32,10 @@ export function ProductList({ category }: ProductListProps) {
   const filteredProducts = useMemo(() => {
     if (!allProducts?.data) return [];
 
-    let filtered = [...allProducts.data];
+    let filtered = filterProducts(allProducts.data, searchTerm, inStockOnly);
 
     if (category) {
       filtered = filtered.filter(product => product.category === category);
-    }
-
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(term) ||
-        product.description?.toLowerCase().includes(term)
-      );
     }
 
     switch (sortOption) {
@@ -39,19 +44,21 @@ export function ProductList({ category }: ProductListProps) {
       case 'name-desc':
         return filtered.sort((a, b) => b.name.localeCompare(a.name));
       case 'price-asc':
-        return filtered.sort((a, b) => a.price - b.price);
+        return filtered.sort((a, b) => a.price - b.price || a.id - b.id);
       case 'price-desc':
         return filtered.sort((a, b) => b.price - a.price);
       default:
         return filtered;
     }
-  }, [allProducts, category, searchTerm, sortOption]);
+  }, [allProducts, category, searchTerm, sortOption, inStockOnly]);
 
   const clearSearch = () => {
     setSearchTerm('');
   };
 
   const renderSearchAndSort = () => (
+    <>
+    <ShopToolPanel {...webmcp} initialOpen={params.get('inspect') === '1'} />
     <div
       className="mb-6 rounded-[1.75rem] border border-stone-200/80 bg-white/84 p-5 shadow-[0_24px_60px_-50px_rgba(15,23,42,0.45)]"
       data-testid="product-list-controls"
@@ -104,9 +111,14 @@ export function ProductList({ category }: ProductListProps) {
             <option value="price-desc">Price (High to Low)</option>
           </select>
           </div>
+          <label className="flex items-center gap-2 text-sm text-slate-600">
+            <input type="checkbox" checked={inStockOnly} onChange={event => setInStockOnly(event.target.checked)} data-testid="product-in-stock-only" />
+            In stock only
+          </label>
         </div>
       </div>
     </div>
+    </>
   );
 
   if (isLoading) {
