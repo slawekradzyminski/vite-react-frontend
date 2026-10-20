@@ -189,6 +189,8 @@ test('scenario switching replaces tool closures without duplicate registrations'
   // when
   await shop.page.getByTestId('webmcp-fault').selectOption('none');
   await expect(shop.page.getByTestId('webmcp-status')).toHaveText('3 native WebMCP tools registered');
+  await expect.poll(async () => (await shop.page.webmcp.tools()).map(tool => tool.name).sort())
+    .toEqual(['add_to_cart', 'get_cart', 'search_products']);
   await shop.page.webmcp.callTool('add_to_cart', { productId: shop.cheap.id, quantity: 2 });
 
   // then
