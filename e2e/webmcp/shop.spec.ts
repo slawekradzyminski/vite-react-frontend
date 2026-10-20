@@ -185,17 +185,23 @@ test('wrong displayed total disagrees with saved data', async ({ shop }) => {
 test('scenario switching replaces tool closures without duplicate registrations', async ({ shop }) => {
   // given
   await shop.open({ fault: 'stale-cart' });
+  await shop.saveOutsidePage(shop.cheap.id, 1);
+  expect(decode<Cart>(await shop.page.webmcp.callTool('get_cart')).totalItems).toBe(1);
+  await expect(shop.page.getByTestId('webmcp-cart-total')).toHaveText('$0.00');
 
   // when
   await shop.page.getByTestId('webmcp-fault').selectOption('none');
-  await expect(shop.page.getByTestId('webmcp-status')).toHaveText('3 native WebMCP tools registered');
-  await expect.poll(async () => (await shop.page.webmcp.tools()).map(tool => tool.name).sort())
-    .toEqual(['add_to_cart', 'get_cart', 'search_products']);
+  await expect(async () => {
+    const result = decode<Cart>(await shop.page.webmcp.callTool('get_cart'));
+    expect(result.totalItems).toBe(1);
+    expect(await shop.page.getByTestId('webmcp-cart-total').textContent()).toBe('$12.50');
+  }).toPass({ timeout: 5_000 });
   await shop.page.webmcp.callTool('add_to_cart', { productId: shop.cheap.id, quantity: 2 });
 
   // then
   expect(await shop.page.webmcp.tools()).toHaveLength(3);
-  await expect(shop.page.getByTestId('webmcp-cart-total')).toHaveText('$25.00');
+  await expect(shop.page.getByTestId('webmcp-cart-total')).toHaveText('$37.50');
+  expect(await shop.saved()).toMatchObject({ totalItems: 3, totalPrice: 37.5 });
 });
 
 test('small screens remain usable without horizontal overflow', async ({ shop }) => {
