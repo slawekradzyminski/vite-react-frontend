@@ -73,3 +73,18 @@ Playwright logs in through the API, relies on deterministic Ollama output, and o
 
 - `README.md` – high-level project overview plus testing guidelines.
 - `docs/function-calling-flow.md` – deep dive into the LLM routing and how tool payloads are streamed through the UI.
+
+## October 2026 runtime and dependency security maintenance
+
+Use `nvm install && nvm use` to select Node 24.22.1. The manifest requires
+`>=24.22.1 <25`; CI and image publication use that corrected baseline. The Docker
+build stage pins `node:24.22.1-alpine` by its reviewed multi-platform digest.
+The production container remains nginx and does not run Node.
+
+Vitest/coverage/UI use 4.1.12 and Vite uses a corrected 8.3.x release. Compatible
+transitive fixes and the typography selector-parser override remove the current
+npm advisories without downgrading the application. Both full and production-only
+audits report zero known vulnerabilities. Lint, typechecking, 533 coverage tests,
+production build and isolated nginx container route/asset checks passed.
+No auth, PKCE, SSE or commerce logic changed; mutation scopes are unchanged.
+The local source has not yet been published as a replacement application image.
