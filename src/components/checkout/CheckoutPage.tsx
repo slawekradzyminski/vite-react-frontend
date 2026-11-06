@@ -4,6 +4,7 @@ import { cart } from '../../lib/api';
 import { CheckoutForm } from './CheckoutForm';
 import { Surface } from '../ui/surface';
 import { useEnrichedCart, type RawCartResponse } from '../../hooks/useEnrichedCart';
+import { formatPrice } from '../../lib/format';
 
 export function CheckoutPage() {
   const { data: cartResponse, isLoading, error } = useQuery({
@@ -80,7 +81,7 @@ export function CheckoutPage() {
               
               <div data-testid="checkout-total">
                 <span className="block text-sm font-medium uppercase text-slate-500">Total</span>
-                <span className="text-xl font-bold text-slate-950" data-testid="checkout-total-value">${totalPrice.toFixed(2)}</span>
+                <span className="text-xl font-bold text-slate-950" data-testid="checkout-total-value">{formatPrice(totalPrice)}</span>
               </div>
             </div>
           </div>
@@ -124,13 +125,13 @@ export function CheckoutPage() {
                       </div>
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-500" data-testid={`checkout-item-price-${item.productId}`}>
-                      ${item.unitPrice.toFixed(2)}
+                      {formatPrice(item.unitPrice)}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-500" data-testid={`checkout-item-quantity-${item.productId}`}>
                       {item.quantity}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-900" data-testid={`checkout-item-total-${item.productId}`}>
-                      ${item.totalPrice.toFixed(2)}
+                      {formatPrice(item.totalPrice)}
                     </td>
                   </tr>
                 ))}

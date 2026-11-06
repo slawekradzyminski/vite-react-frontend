@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import { orders } from '../../lib/api';
 import { Order, OrderStatus } from '../../types/order';
 import { Badge } from '../ui/badge';
+import { formatPrice } from '../../lib/format';
 
 export function OrderList() {
   const [currentPage, setCurrentPage] = useState(0);
@@ -112,7 +113,7 @@ export function OrderList() {
             </div>
             
             <div className="mb-3">
-              <p className="font-medium text-slate-900" data-testid={`order-total-${order.id}`}>Total: ${order.totalAmount.toFixed(2)}</p>
+              <p className="font-medium text-slate-900" data-testid={`order-total-${order.id}`}>Total: {formatPrice(order.totalAmount)}</p>
               <p className="text-sm text-slate-600" data-testid={`order-items-count-${order.id}`}>{order.items.length} items</p>
             </div>
             

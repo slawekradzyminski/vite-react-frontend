@@ -6,6 +6,7 @@ import { OrderStatus } from '../../types/order';
 import { Button } from '../ui/button';
 import { Surface } from '../ui/surface';
 import { Badge } from '../ui/badge';
+import { formatPrice } from '../../lib/format';
 
 export function AdminOrderList() {
   const [currentPage, setCurrentPage] = useState(0); // Changed to 0-indexed to match API
@@ -128,7 +129,7 @@ export function AdminOrderList() {
                     {new Date(order.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500" data-testid={`admin-order-amount-${order.id}`}>
-                    ${order.totalAmount.toFixed(2)}
+                    {formatPrice(order.totalAmount)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap" data-testid={`admin-order-status-cell-${order.id}`}>
                     <Badge
