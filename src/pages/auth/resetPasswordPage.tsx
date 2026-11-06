@@ -11,8 +11,11 @@ import { ResetPasswordFormData, resetPasswordSchema } from '../../validators/aut
 import { Surface } from '../../components/ui/surface';
 import { Badge } from '../../components/ui/badge';
 import { brandMarkSrc } from '../../lib/brandingAssets';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { fieldErrorId } from '../../lib/fieldError';
 
 export function ResetPasswordPage() {
+  useDocumentTitle('Reset password');
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
@@ -74,9 +77,9 @@ export function ResetPasswordPage() {
             />
             <div className="space-y-4">
               <Badge tone="tracking" variant="outline" className="text-[11px] tracking-[0.26em]" data-testid="reset-brand-badge">Password recovery</Badge>
-              <h2 className="max-w-lg text-4xl font-semibold tracking-tight text-slate-950" data-testid="reset-title">
+              <h1 className="max-w-lg text-4xl font-semibold tracking-tight text-slate-950" data-testid="reset-title">
                 Reset password
-              </h2>
+              </h1>
               <p className="max-w-xl text-base leading-7 text-slate-600" data-testid="reset-subtitle">
                 Choose a new password for your account.
               </p>
@@ -113,7 +116,7 @@ export function ResetPasswordPage() {
                   data-testid="reset-token-input"
                 />
                 {errors.token?.message && (
-                  <p className="mt-1 text-sm text-red-600" role="alert" data-testid="reset-token-error">
+                  <p className="mt-1 text-sm text-red-600" role="alert" id={fieldErrorId('token')} data-testid="reset-token-error">
                     {errors.token.message}
                   </p>
                 )}
@@ -131,7 +134,7 @@ export function ResetPasswordPage() {
                   data-testid="reset-password-input"
                 />
                 {errors.newPassword?.message && (
-                  <p className="mt-1 text-sm text-red-600" role="alert" data-testid="reset-password-error">
+                  <p className="mt-1 text-sm text-red-600" role="alert" id={fieldErrorId('newPassword')} data-testid="reset-password-error">
                     {errors.newPassword.message}
                   </p>
                 )}
@@ -149,7 +152,7 @@ export function ResetPasswordPage() {
                   data-testid="reset-confirm-password-input"
                 />
                 {errors.confirmPassword?.message && (
-                  <p className="mt-1 text-sm text-red-600" role="alert" data-testid="reset-confirm-password-error">
+                  <p className="mt-1 text-sm text-red-600" role="alert" id={fieldErrorId('confirmPassword')} data-testid="reset-confirm-password-error">
                     {errors.confirmPassword.message}
                   </p>
                 )}

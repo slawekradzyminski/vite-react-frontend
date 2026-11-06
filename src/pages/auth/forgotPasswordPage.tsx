@@ -12,8 +12,11 @@ import { ForgotPasswordFormData, forgotPasswordSchema } from '../../validators/a
 import { Surface } from '../../components/ui/surface';
 import { Badge } from '../../components/ui/badge';
 import { brandMarkSrc } from '../../lib/brandingAssets';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { fieldErrorId } from '../../lib/fieldError';
 
 export function ForgotPasswordPage() {
+  useDocumentTitle('Forgot password');
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -73,9 +76,9 @@ export function ForgotPasswordPage() {
             />
             <div className="space-y-4">
               <Badge tone="tracking" variant="outline" className="text-[11px] tracking-[0.26em]" data-testid="forgot-brand-badge">Password recovery</Badge>
-              <h2 className="max-w-lg text-4xl font-semibold tracking-tight text-slate-950" data-testid="forgot-title">
+              <h1 className="max-w-lg text-4xl font-semibold tracking-tight text-slate-950" data-testid="forgot-title">
                 Forgot password
-              </h2>
+              </h1>
               <p className="max-w-xl text-base leading-7 text-slate-600" data-testid="forgot-subtitle">
                 Enter your username or e-mail and we will send a password reset link.
               </p>
@@ -112,7 +115,7 @@ export function ForgotPasswordPage() {
                   data-testid="forgot-identifier-input"
                 />
                 {errors.identifier?.message && (
-                  <p className="mt-1 text-sm text-red-600" role="alert" data-testid="forgot-identifier-error">
+                  <p className="mt-1 text-sm text-red-600" role="alert" id={fieldErrorId('identifier')} data-testid="forgot-identifier-error">
                     {errors.identifier.message}
                   </p>
                 )}

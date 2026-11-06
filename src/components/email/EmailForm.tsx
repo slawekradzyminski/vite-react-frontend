@@ -9,6 +9,7 @@ import { auth } from '../../lib/api';
 import { emailSchema } from '../../validators/email';
 import type { EmailFormData } from '../../types/email';
 import { Surface } from '../ui/surface';
+import { fieldErrorId } from '../../lib/fieldError';
 
 interface EmailFormProps {
   onSubmit: (data: EmailFormData) => void;
@@ -49,7 +50,7 @@ export function EmailForm({ onSubmit, isLoading = false }: EmailFormProps) {
           data-testid="email-to-input"
         />
         {errors.to?.message && (
-          <p className="mt-1 text-sm text-red-600" role="alert" data-testid="email-to-error">{errors.to.message}</p>
+          <p className="mt-1 text-sm text-red-600" role="alert" id={fieldErrorId('to')} data-testid="email-to-error">{errors.to.message}</p>
         )}
         <datalist id="users" data-testid="users-datalist">
           {users?.data && users?.data.map((user) => (
@@ -69,7 +70,7 @@ export function EmailForm({ onSubmit, isLoading = false }: EmailFormProps) {
           data-testid="email-subject-input"
         />
         {errors.subject?.message && (
-          <p className="mt-1 text-sm text-red-600" role="alert" data-testid="email-subject-error">{errors.subject.message}</p>
+          <p className="mt-1 text-sm text-red-600" role="alert" id={fieldErrorId('subject')} data-testid="email-subject-error">{errors.subject.message}</p>
         )}
       </Surface>
 
@@ -79,11 +80,12 @@ export function EmailForm({ onSubmit, isLoading = false }: EmailFormProps) {
           id="message"
           className="mt-2 min-h-[180px]"
           placeholder="Your message"
+          error={errors.message?.message}
           {...register('message')}
           data-testid="email-message-input"
         />
         {errors.message?.message && (
-          <p className="mt-1 text-sm text-red-600" role="alert" data-testid="email-message-error">{errors.message.message}</p>
+          <p className="mt-1 text-sm text-red-600" role="alert" id={fieldErrorId('message')} data-testid="email-message-error">{errors.message.message}</p>
         )}
       </Surface>
 

@@ -77,6 +77,21 @@ describe('EmailForm', () => {
   });
 
   // given
+  it('links each validation error to its own field', async () => {
+    // when
+    renderWithProviders(<EmailForm onSubmit={onSubmit} />);
+    await user.click(screen.getByRole('button', { name: 'Send Email' }));
+
+    // then
+    await screen.findByText('Message is required');
+    expect(screen.getByLabelText('To')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByLabelText('To')).toHaveAccessibleDescription('Recipient is required');
+    expect(screen.getByLabelText('Subject')).toHaveAccessibleDescription('Subject is required');
+    expect(screen.getByLabelText('Message')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByLabelText('Message')).toHaveAccessibleDescription('Message is required');
+  });
+
+  // given
   it('shows validation error for invalid email', async () => {
     // when
     renderWithProviders(<EmailForm onSubmit={onSubmit} />);

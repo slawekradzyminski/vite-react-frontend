@@ -11,8 +11,11 @@ import { RegisterFormData, registerSchema } from '../../validators/auth';
 import { useToast } from '../../hooks/useToast';
 import { Surface } from '../../components/ui/surface';
 import { Badge } from '../../components/ui/badge';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { fieldErrorId } from '../../lib/fieldError';
 
 export function RegisterPage() {
+  useDocumentTitle('Create account');
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -70,9 +73,9 @@ export function RegisterPage() {
             <div className="space-y-8 lg:space-y-10" data-testid="register-header">
               <Badge tone="tracking" variant="outline" className="text-[11px] tracking-[0.26em]" data-testid="register-brand-badge">Awesome Testing</Badge>
               <div className="space-y-5 lg:space-y-6">
-                <h2 className="max-w-lg text-4xl font-semibold tracking-tight text-slate-950" data-testid="register-title">
+                <h1 className="max-w-lg text-4xl font-semibold tracking-tight text-slate-950" data-testid="register-title">
                   Create your account
-                </h2>
+                </h1>
                 <p className="max-w-xl text-base leading-7 text-slate-600" data-testid="register-subtitle">
                   Join the workspace and get immediate access to operations tooling, monitoring flows, and the AI surface.
                 </p>
@@ -101,7 +104,7 @@ export function RegisterPage() {
                   data-testid="register-username-input"
                 />
                 {errors.username?.message && (
-                  <p className="mt-1 text-sm text-red-600" role="alert" data-testid="register-username-error">{errors.username.message}</p>
+                  <p className="mt-1 text-sm text-red-600" role="alert" id={fieldErrorId('username')} data-testid="register-username-error">{errors.username.message}</p>
                 )}
               </div>
               <div className="sm:col-span-2" data-testid="register-email-field">
@@ -116,7 +119,7 @@ export function RegisterPage() {
                   data-testid="register-email-input"
                 />
                 {errors.email?.message && (
-                  <p className="mt-1 text-sm text-red-600" role="alert" data-testid="register-email-error">{errors.email.message}</p>
+                  <p className="mt-1 text-sm text-red-600" role="alert" id={fieldErrorId('email')} data-testid="register-email-error">{errors.email.message}</p>
                 )}
               </div>
               <div className="sm:col-span-2" data-testid="register-password-field">
@@ -131,7 +134,7 @@ export function RegisterPage() {
                   data-testid="register-password-input"
                 />
                 {errors.password?.message && (
-                  <p className="mt-1 text-sm text-red-600" role="alert" data-testid="register-password-error">{errors.password.message}</p>
+                  <p className="mt-1 text-sm text-red-600" role="alert" id={fieldErrorId('password')} data-testid="register-password-error">{errors.password.message}</p>
                 )}
               </div>
               <div data-testid="register-firstname-field">
@@ -145,7 +148,7 @@ export function RegisterPage() {
                   data-testid="register-firstname-input"
                 />
                 {errors.firstName?.message && (
-                  <p className="mt-1 text-sm text-red-600" role="alert" data-testid="register-firstname-error">{errors.firstName.message}</p>
+                  <p className="mt-1 text-sm text-red-600" role="alert" id={fieldErrorId('firstName')} data-testid="register-firstname-error">{errors.firstName.message}</p>
                 )}
               </div>
               <div data-testid="register-lastname-field">
@@ -159,7 +162,7 @@ export function RegisterPage() {
                   data-testid="register-lastname-input"
                 />
                 {errors.lastName?.message && (
-                  <p className="mt-1 text-sm text-red-600" role="alert" data-testid="register-lastname-error">{errors.lastName.message}</p>
+                  <p className="mt-1 text-sm text-red-600" role="alert" id={fieldErrorId('lastName')} data-testid="register-lastname-error">{errors.lastName.message}</p>
                 )}
               </div>
             </div>
