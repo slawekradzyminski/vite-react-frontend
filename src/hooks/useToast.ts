@@ -9,6 +9,8 @@ export interface ToastProps {
 
 type ToastContextValue = {
   toast: (props: ToastProps) => void;
+  // Closes open error toasts once the action they reported has succeeded.
+  dismissErrors?: () => void;
 };
 
 export const ToastContext = React.createContext<ToastContextValue | undefined>(undefined);

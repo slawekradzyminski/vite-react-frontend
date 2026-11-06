@@ -95,7 +95,13 @@ function InternalToastProvider({ children }: { children: React.ReactNode }) {
     return () => window.clearTimeout(timeout);
   }, [toasts]);
 
-  const contextValue = React.useMemo(() => ({ toast: addToast }), [addToast]);
+  const dismissErrors = React.useCallback(() => {
+    setToasts((prev) => prev.map((toast) => (
+      toast.variant === 'error' ? { ...toast, open: false } : toast
+    )));
+  }, []);
+
+  const contextValue = React.useMemo(() => ({ toast: addToast, dismissErrors }), [addToast, dismissErrors]);
 
   return (
     <ToastContext.Provider value={contextValue}>

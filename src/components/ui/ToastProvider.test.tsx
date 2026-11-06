@@ -6,7 +6,7 @@ import { MemoryRouter } from 'react-router';
 
 // Create a test component that uses the toast hook
 function TestComponent() {
-  const { toast } = useToast();
+  const { toast, dismissErrors } = useToast();
   
   return (
     <div>
@@ -21,6 +21,9 @@ function TestComponent() {
         data-testid="show-error-toast-button"
       >
         Show Error Toast
+      </button>
+      <button onClick={() => dismissErrors?.()} data-testid="dismiss-errors-button">
+        Dismiss Errors
       </button>
     </div>
   );
@@ -173,4 +176,32 @@ describe('ToastProvider', () => {
     expect(reopenedToast).toHaveAttribute('data-state', 'open');
     expect(screen.getByTestId('toast-description')).toHaveTextContent('Error message');
   });
-}); 
+
+  it('closes only error toasts when errors are dismissed', () => {
+    // given
+    render(
+      <MemoryRouter>
+        <ToastProvider>
+          <TestComponent />
+        </ToastProvider>
+      </MemoryRouter>
+    );
+    act(() => {
+      screen.getByTestId('show-toast-button').click();
+      screen.getByTestId('show-error-toast-button').click();
+    });
+    expect(screen.getByText('Error message')).toBeInTheDocument();
+
+    // when
+    act(() => {
+      screen.getByTestId('dismiss-errors-button').click();
+    });
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+
+    // then
+    expect(screen.queryByText('Error message')).not.toBeInTheDocument();
+    expect(screen.getByText('Test Description')).toBeInTheDocument();
+  });
+});

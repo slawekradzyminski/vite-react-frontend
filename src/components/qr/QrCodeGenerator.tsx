@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { qr } from '../../lib/api';
 import { Button } from '../ui/button';
 import { useToast } from '../../hooks/useToast';
@@ -13,7 +13,25 @@ export function QrCodeGenerator() {
   const [statusMessage, setStatusMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const textInputRef = useRef<HTMLTextAreaElement>(null);
-  const { toast } = useToast();
+  const resultRef = useRef<HTMLDivElement>(null);
+  const { toast, dismissErrors } = useToast();
+
+  const discardQrCode = () => {
+    setEncodedText('');
+    setQrCode((current) => {
+      if (current) {
+        URL.revokeObjectURL(current);
+      }
+      return null;
+    });
+  };
+
+  useEffect(() => {
+    // On small screens the result renders below the fold.
+    if (qrCode) {
+      resultRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [qrCode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,10 +50,14 @@ export function QrCodeGenerator() {
     try {
       const response = await qr.create({ text });
       const imageUrl = URL.createObjectURL(response.data);
+      discardQrCode();
       setQrCode(imageUrl);
       setEncodedText(text);
       setStatusMessage('QR code generated');
+      dismissErrors?.();
     } catch {
+      // Never leave the code of the previous text next to the new one (BUG-010).
+      discardQrCode();
       toast({
         title: 'Error',
         description: 'Failed to generate QR code',
@@ -48,12 +70,8 @@ export function QrCodeGenerator() {
 
   const handleClear = () => {
     setText('');
-    setEncodedText('');
     setStatusMessage('');
-    if (qrCode) {
-      URL.revokeObjectURL(qrCode);
-      setQrCode(null);
-    }
+    discardQrCode();
     // Clear becomes disabled once the text is empty, so keep keyboard focus in the form.
     textInputRef.current?.focus();
   };
@@ -102,7 +120,7 @@ export function QrCodeGenerator() {
       <p role="status" className="sr-only" data-testid="qr-status">{statusMessage}</p>
 
       {qrCode && (
-        <div className="mt-8 flex justify-center" data-testid="qr-code-result">
+        <div ref={resultRef} className="mt-8 flex flex-col items-center gap-3" data-testid="qr-code-result">
           <Surface variant="inset" padding="sm" data-testid="qr-code-container">
             <img
               src={qrCode}
@@ -111,6 +129,15 @@ export function QrCodeGenerator() {
               data-testid="qr-code-image"
             />
           </Surface>
+          <p className="text-sm text-slate-600" data-testid="qr-code-caption">QR code generated</p>
+          <a
+            href={qrCode}
+            download="qr-code.png"
+            className="text-sm font-medium text-slate-900 underline-offset-4 hover:underline"
+            data-testid="qr-code-download"
+          >
+            Download PNG
+          </a>
         </div>
       )}
     </Surface>
