@@ -13,7 +13,7 @@ export class QrPage {
     this.textInput = page.getByRole('textbox');
     this.generateButton = page.getByRole('button', { name: /generate qr code/i });
     this.clearButton = page.getByRole('button', { name: /clear/i });
-    this.qrCodeImage = page.getByRole('img', { name: /generated qr code/i });
+    this.qrCodeImage = page.getByTestId('qr-code-image');
     this.toast = page.locator('[data-state="open"]');
   }
 
