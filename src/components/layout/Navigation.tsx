@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Menu, X, ShoppingCart } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { auth, cart } from '../../lib/api';
 import { Button } from '../ui/button';
 import { authStorage } from '../../lib/authStorage';
@@ -10,6 +10,7 @@ import { brandMarkSrc } from '../../lib/brandingAssets';
 import { CommerceTransportSelector } from './CommerceTransportSelector';
 
 const PRODUCT_NAME = 'Awesome Testing';
+const MOBILE_MENU_ID = 'mobile-main-menu';
 
 type MenuItem = {
   label: string;
@@ -21,6 +22,7 @@ export function Navigation() {
   const location = useLocation();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
+  const menuToggleRef = useRef<HTMLButtonElement>(null);
   
   const hasToken = !!authStorage.getAccessToken();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
@@ -69,6 +71,17 @@ export function Navigation() {
   useEffect(() => {
     setIsOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setIsOpen(false);
+      menuToggleRef.current?.focus();
+    };
+    document.addEventListener('keydown', closeOnEscape);
+    return () => document.removeEventListener('keydown', closeOnEscape);
+  }, [isOpen]);
 
   const isAdmin = hasRole(user?.data?.roles, 'ADMIN');
   const isActive = (path: string) =>
@@ -147,9 +160,10 @@ export function Navigation() {
                 <Link
                   to="/cart"
                   className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-stone-200 bg-white text-slate-600 shadow-[0_10px_25px_-20px_rgba(15,23,42,0.75)] transition hover:-translate-y-0.5 hover:border-stone-300 hover:text-slate-900"
+                  aria-label={cartItemCount > 0 ? `Cart, ${cartItemCount} ${cartItemCount === 1 ? 'item' : 'items'}` : 'Cart'}
                   data-testid="desktop-cart-icon"
                 >
-                  <ShoppingCart className="h-5 w-5" />
+                  <ShoppingCart className="h-5 w-5" aria-hidden="true" />
                   {cartItemCount > 0 && (
                     <span
                       className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-sky-600 text-xs font-bold text-white"
@@ -179,15 +193,19 @@ export function Navigation() {
                 </div>
                 <div className="flex items-center lg:hidden">
                   <button
+                    ref={menuToggleRef}
+                    type="button"
                     onClick={toggleMenu}
+                    aria-expanded={isOpen}
+                    aria-controls={MOBILE_MENU_ID}
                     className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-stone-200 bg-white text-slate-600 transition hover:border-stone-300 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-sky-600"
                     data-testid="mobile-menu-toggle"
                   >
-                    <span className="sr-only">Open main menu</span>
+                    <span className="sr-only">{isOpen ? 'Close main menu' : 'Open main menu'}</span>
                     {isOpen ? (
-                      <X className="block h-5 w-5" data-testid="mobile-menu-close-icon" />
+                      <X className="block h-5 w-5" aria-hidden="true" data-testid="mobile-menu-close-icon" />
                     ) : (
-                      <Menu className="block h-5 w-5" data-testid="mobile-menu-open-icon" />
+                      <Menu className="block h-5 w-5" aria-hidden="true" data-testid="mobile-menu-open-icon" />
                     )}
                   </button>
                 </div>
@@ -214,7 +232,7 @@ export function Navigation() {
         </div>
       </div>
       {isOpen && user?.data && (
-        <div className="border-t border-stone-200/80 bg-stone-50/95 px-4 pb-4 pt-3 lg:hidden" data-testid="mobile-menu">
+        <div className="border-t border-stone-200/80 bg-stone-50/95 px-4 pb-4 pt-3 lg:hidden" id={MOBILE_MENU_ID} data-testid="mobile-menu">
           <div className="space-y-2">
             {authMenuItems.map((item) => {
               const className = `block rounded-2xl px-4 py-3 text-base font-medium transition ${

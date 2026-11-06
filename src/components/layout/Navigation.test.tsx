@@ -494,4 +494,99 @@ describe('Navigation', () => {
     const badge = await screen.findByTestId('cart-item-count');
     expect(badge).toHaveTextContent('3');
   });
-}); 
+
+  describe('accessibility', () => {
+    const signedInUser = () => {
+      localStorage.setItem('token', 'fake-token');
+      vi.mocked(auth.me).mockResolvedValue({
+        data: { id: 1, username: 'testuser', email: 'test@example.com', firstName: 'Test', lastName: 'User', roles: [Role.CLIENT] },
+      } as never);
+    };
+
+    it('gives the cart icon link an accessible name with the item count', async () => {
+      // given
+      signedInUser();
+      vi.mocked(cart.getCart).mockResolvedValueOnce({ data: { items: [], totalItems: 3, totalPrice: 0 } } as never);
+
+      // when
+      renderWithProviders(<Navigation />);
+
+      // then
+      expect(await screen.findByRole('link', { name: 'Cart, 3 items' })).toHaveAttribute('href', '/cart');
+    });
+
+    it('names the cart icon link "Cart" when it is empty', async () => {
+      // given
+      signedInUser();
+      vi.mocked(cart.getCart).mockResolvedValue({ data: { items: [], totalItems: 0, totalPrice: 0 } } as never);
+
+      // when
+      renderWithProviders(<Navigation />);
+
+      // then
+      expect(await screen.findByRole('link', { name: 'Cart' })).toHaveAttribute('data-testid', 'desktop-cart-icon');
+    });
+
+    it('uses the singular for one cart item', async () => {
+      // given
+      signedInUser();
+      vi.mocked(cart.getCart).mockResolvedValueOnce({ data: { items: [], totalItems: 1, totalPrice: 0 } } as never);
+
+      // when
+      renderWithProviders(<Navigation />);
+
+      // then
+      expect(await screen.findByRole('link', { name: 'Cart, 1 item' })).toBeInTheDocument();
+    });
+
+    it('exposes the mobile menu state and controlled element on the toggle', async () => {
+      // given
+      signedInUser();
+      renderWithProviders(<Navigation />);
+      const toggle = await screen.findByRole('button', { name: 'Open main menu' });
+      expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      expect(toggle).toHaveAttribute('aria-controls', 'mobile-main-menu');
+
+      // when
+      await user.click(toggle);
+
+      // then
+      expect(toggle).toHaveAttribute('aria-expanded', 'true');
+      expect(toggle).toHaveAccessibleName('Close main menu');
+      expect(screen.getByTestId('mobile-menu')).toHaveAttribute('id', 'mobile-main-menu');
+    });
+
+    it('closes the mobile menu on Escape and returns focus to the toggle', async () => {
+      // given
+      signedInUser();
+      renderWithProviders(<Navigation />);
+      await user.click(await screen.findByRole('button', { name: 'Open main menu' }));
+      screen.getByTestId('mobile-menu-products').focus();
+
+      // when
+      await user.keyboard('{Escape}');
+
+      // then
+      expect(screen.queryByTestId('mobile-menu')).not.toBeInTheDocument();
+      const toggle = screen.getByTestId('mobile-menu-toggle');
+      expect(toggle).toHaveFocus();
+      expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      expect(toggle).toHaveAccessibleName('Open main menu');
+    });
+
+    it('ignores other keys while the mobile menu is open', async () => {
+      // given
+      signedInUser();
+      renderWithProviders(<Navigation />);
+      await user.click(await screen.findByRole('button', { name: 'Open main menu' }));
+
+      (document.activeElement as HTMLElement).blur();
+
+      // when
+      await user.keyboard('a{ArrowDown}');
+
+      // then
+      expect(screen.getByTestId('mobile-menu')).toBeInTheDocument();
+    });
+  });
+});
