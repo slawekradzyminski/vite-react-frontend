@@ -194,6 +194,26 @@ describe('ProductDetails', () => {
     
     // then
     expect(screen.getByText('Error loading product details')).toBeInTheDocument();
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveAttribute('data-testid', 'product-not-found');
+    expect(screen.getByRole('heading', { level: 1, name: 'Product not found' })).toBeInTheDocument();
+    expect(alert).toHaveTextContent('Error loading product details');
+    expect(document.title).toBe('Product not found – Awesome Testing');
+  });
+
+  it('names the quantity controls and announces the value', () => {
+    // given
+    renderWithProviders(<ProductDetails />);
+    const value = screen.getByTestId('quantity-value');
+
+    // when
+    fireEvent.click(screen.getByRole('button', { name: 'Increase quantity' }));
+
+    // then
+    expect(screen.getByRole('group', { name: 'Quantity' })).toContainElement(value);
+    expect(value).toHaveAttribute('aria-live', 'polite');
+    expect(value).toHaveTextContent('4');
+    expect(document.title).toBe('Test Product – Awesome Testing');
   });
 
   it('renders relative image paths without rewriting them', () => {
@@ -240,7 +260,7 @@ describe('ProductDetails', () => {
     renderWithProviders(<ProductDetails />);
     
     // when
-    const plusButton = screen.getByRole('button', { name: '+' });
+    const plusButton = screen.getByRole('button', { name: 'Increase quantity' });
     fireEvent.click(plusButton);
 
     // then
@@ -252,7 +272,7 @@ describe('ProductDetails', () => {
     renderWithProviders(<ProductDetails />);
     
     // when
-    const minusButton = screen.getByRole('button', { name: '-' });
+    const minusButton = screen.getByRole('button', { name: 'Decrease quantity' });
     fireEvent.click(minusButton);
 
     // then
@@ -264,7 +284,7 @@ describe('ProductDetails', () => {
     renderWithProviders(<ProductDetails />);
     
     // when
-    const minusButton = screen.getByRole('button', { name: '-' });
+    const minusButton = screen.getByRole('button', { name: 'Decrease quantity' });
     fireEvent.click(minusButton); // 3 -> 2
     fireEvent.click(minusButton); // 2 -> 1
     fireEvent.click(minusButton); // 1 -> 0
@@ -296,7 +316,7 @@ describe('ProductDetails', () => {
     const { cart } = await import('../../lib/api');
     
     renderWithProviders(<ProductDetails />);
-    const minusButton = screen.getByRole('button', { name: '-' });
+    const minusButton = screen.getByRole('button', { name: 'Decrease quantity' });
     fireEvent.click(minusButton); // 3 -> 2
     fireEvent.click(minusButton); // 2 -> 1
     fireEvent.click(minusButton); // 1 -> 0

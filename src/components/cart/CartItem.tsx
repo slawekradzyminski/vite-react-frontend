@@ -85,17 +85,20 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
       </td>
       <td className="px-6 py-4 whitespace-nowrap" data-testid={`cart-item-quantity-cell-${safeItem.productId}`}>
         <div className="flex flex-col sm:flex-row items-start sm:items-center">
-          <div className="flex items-center mb-2 sm:mb-0" data-testid={`cart-item-quantity-controls-${safeItem.productId}`}>
+          <div className="flex items-center mb-2 sm:mb-0" role="group" aria-label={`Quantity of ${safeItem.productName}`} data-testid={`cart-item-quantity-controls-${safeItem.productId}`}>
             <button 
-              className="h-9 rounded-l-2xl border border-stone-200 bg-stone-50 px-3 text-slate-700 transition hover:bg-white"
+              className="h-9 rounded-l-2xl border border-stone-200 bg-stone-50 px-3 text-slate-700 transition hover:bg-white disabled:cursor-not-allowed disabled:text-slate-400 disabled:hover:bg-stone-50"
               onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
-              disabled={isUpdating}
+              disabled={isUpdating || quantity <= 1}
+              aria-label={`Decrease quantity of ${safeItem.productName}`}
               data-testid={`cart-item-decrease-${safeItem.productId}`}
             >
               -
             </button>
             <span 
               className="flex h-9 min-w-[44px] items-center justify-center border-y border-stone-200 bg-white px-4 text-center text-sm font-medium text-slate-900"
+              aria-live="polite"
+              aria-atomic="true"
               data-testid={`cart-item-quantity-${safeItem.productId}`}
             >
               {quantity}
@@ -104,6 +107,7 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
               className="h-9 rounded-r-2xl border border-stone-200 bg-stone-50 px-3 text-slate-700 transition hover:bg-white"
               onClick={() => setQuantity(prev => prev + 1)}
               disabled={isUpdating}
+              aria-label={`Increase quantity of ${safeItem.productName}`}
               data-testid={`cart-item-increase-${safeItem.productId}`}
             >
               +
@@ -115,6 +119,7 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
               className="ml-0 text-sm font-medium text-sky-700 transition hover:text-sky-800 sm:ml-2"
               onClick={handleQuantityChange}
               disabled={isUpdating}
+              aria-label={`Update quantity of ${safeItem.productName}`}
               data-testid={`cart-item-update-${safeItem.productId}`}
             >
               {isUpdating ? 'Updating...' : 'Update'}
@@ -130,6 +135,7 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
           className="text-red-700 transition hover:text-red-800"
           onClick={handleRemove}
           disabled={isRemoving}
+          aria-label={`Remove ${safeItem.productName} from cart`}
           data-testid={`cart-item-remove-${safeItem.productId}`}
         >
           {isRemoving ? 'Removing...' : 'Remove'}

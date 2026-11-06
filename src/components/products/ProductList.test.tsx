@@ -132,6 +132,14 @@ describe('ProductList', () => {
     expect(screen.getByTestId('product-card-4')).toBeInTheDocument();
   });
 
+  it('labels the search field for assistive technology', () => {
+    // when
+    renderProductList();
+
+    // then
+    expect(screen.getByRole('textbox', { name: 'Search products' })).toHaveAttribute('data-testid', 'product-search');
+  });
+
   it('filters products by search term', async () => {
     // given
     const user = userEvent.setup();

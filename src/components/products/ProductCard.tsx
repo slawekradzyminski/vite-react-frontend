@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useState, useEffect, useId } from 'react';
+import { Link, useNavigate } from 'react-router';
 import { Product } from '../../types/product';
 import { cart } from '../../lib/api';
 import { CartItemDto, UpdateCartItemDto } from '../../types/cart';
@@ -19,6 +19,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const nameId = useId();
 
   const { data: cartData } = useQuery({
     queryKey: ['cart'],
@@ -121,8 +122,13 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
     }
   };
 
-  const navigateToProductDetails = () => {
-    navigate(`/products/${product.id}`);
+  const productPath = `/products/${product.id}`;
+
+  // The whole card stays clickable for pointer users; the product name link is
+  // the keyboard and screen reader entry point and navigates on its own.
+  const navigateToProductDetails = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('a')) return;
+    navigate(productPath);
   };
 
   return (
@@ -147,7 +153,11 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
       </div>
       <div className="flex grow flex-col p-5" data-testid="product-content">
         <div className="flex items-start justify-between gap-3" data-testid="product-card-header">
-          <h3 className="min-h-14 text-lg font-semibold leading-7 text-slate-950 line-clamp-2" data-testid="product-name">{product.name}</h3>
+          <h3 className="min-h-14 text-lg font-semibold leading-7 text-slate-950 line-clamp-2" id={nameId} data-testid="product-name">
+            <Link to={productPath} className="rounded-md underline-offset-4 hover:underline">
+              {product.name}
+            </Link>
+          </h3>
           <Badge className="text-sm font-semibold text-slate-900" data-testid="product-price">
             ${product.price.toFixed(2)}
           </Badge>
@@ -158,24 +168,26 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
         <p className="mt-3 grow text-sm leading-6 text-slate-600 line-clamp-3" data-testid="product-description">{product.description}</p>
         <div className="mt-5 border-t border-stone-200/80 pt-4" data-testid="product-controls">
           <div className="mb-3 flex items-center justify-between gap-3" data-testid="product-quantity-container">
-            <div className="flex items-center" data-testid="product-quantity-controls">
+            <div className="flex items-center" role="group" aria-label={`Quantity of ${product.name}`} data-testid="product-quantity-controls">
               <button 
                 className="h-10 rounded-l-2xl border border-stone-200 bg-stone-50 px-3 text-slate-700 transition hover:bg-white"
                 onClick={(e) => {
                   e.stopPropagation();
                   setQuantity(prev => Math.max(0, prev - 1));
                 }}
+                aria-label={`Decrease quantity of ${product.name}`}
                 data-testid="product-decrease-quantity"
               >
                 -
               </button>
-              <span className="flex h-10 min-w-[52px] items-center justify-center border-y border-stone-200 bg-white px-4 text-sm font-medium text-slate-900" data-testid="product-quantity-value">{quantity}</span>
+              <span className="flex h-10 min-w-[52px] items-center justify-center border-y border-stone-200 bg-white px-4 text-sm font-medium text-slate-900" aria-live="polite" aria-atomic="true" data-testid="product-quantity-value">{quantity}</span>
               <button 
                 className="h-10 rounded-r-2xl border border-stone-200 bg-stone-50 px-3 text-slate-700 transition hover:bg-white"
                 onClick={(e) => {
                   e.stopPropagation();
                   setQuantity(prev => Math.min(product.stockQuantity, prev + 1));
                 }}
+                aria-label={`Increase quantity of ${product.name}`}
                 data-testid="product-increase-quantity"
               >
                 +
@@ -194,7 +206,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
                   className="flex min-w-[96px] items-center justify-center rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100 disabled:border-stone-200 disabled:bg-stone-100 disabled:text-slate-400"
                   onClick={handleRemoveFromCart}
                   disabled={isLoading}
-                  aria-label="Remove from cart"
+                  aria-label={`Remove ${product.name} from cart`}
                   data-testid="product-remove-button"
                 >
                   {isLoading ? '...' : 'Remove'}
@@ -204,6 +216,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
                 className="flex min-w-[128px] items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-stone-50 transition hover:bg-slate-800 disabled:bg-stone-300"
                 onClick={handleAddToCart}
                 disabled={isLoading || product.stockQuantity < 1 || (quantity === 0 && !cartQuantity)}
+                aria-describedby={nameId}
                 data-testid="product-add-button"
               >
                 {isLoading ? 'Adding...' : cartQuantity > 0 ? (quantity === 0 ? 'Remove' : 'Update Cart') : 'Add to Cart'}

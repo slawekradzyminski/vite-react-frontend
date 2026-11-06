@@ -244,4 +244,21 @@ describe('ProductsPage', () => {
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Office')).toBeInTheDocument();
   });
-}); 
+
+  it('exposes the selected category as a pressed toggle and sets the page title', async () => {
+    // given
+    renderWithProviders(<ProductsPage />);
+    const all = screen.getByRole('button', { name: 'All Products' });
+    const electronics = screen.getByRole('button', { name: 'Electronics' });
+    expect(all).toHaveAttribute('aria-pressed', 'true');
+    expect(electronics).toHaveAttribute('aria-pressed', 'false');
+
+    // when
+    await user.click(electronics);
+
+    // then
+    expect(electronics).toHaveAttribute('aria-pressed', 'true');
+    expect(all).toHaveAttribute('aria-pressed', 'false');
+    expect(document.title).toBe('Products – Awesome Testing');
+  });
+});

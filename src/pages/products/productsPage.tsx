@@ -4,8 +4,10 @@ import { useQuery } from '@tanstack/react-query';
 import { products } from '../../lib/api';
 import type { Product } from '../../types/product';
 import { Surface } from '../../components/ui/surface';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 export function ProductsPage() {
+  useDocumentTitle('Products');
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
   const clearCategoryForAgent = useCallback(() => setSelectedCategory(undefined), []);
   
@@ -66,6 +68,7 @@ export function ProductsPage() {
                           : 'text-slate-600 hover:bg-stone-100 hover:text-slate-900'
                       }`}
                       onClick={() => setSelectedCategory(undefined)}
+                      aria-pressed={!selectedCategory}
                       data-testid="products-category-all"
                     >
                       All Products
@@ -80,6 +83,7 @@ export function ProductsPage() {
                             : 'text-slate-600 hover:bg-stone-100 hover:text-slate-900'
                         }`}
                         onClick={() => setSelectedCategory(category)}
+                        aria-pressed={selectedCategory === category}
                         value={category}
                         data-testid={`products-category-${category.toLowerCase().replace(/\s+/g, '-')}`}
                       >
