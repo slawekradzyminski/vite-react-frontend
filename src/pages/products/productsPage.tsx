@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
+import { useSearchParams } from 'react-router';
 import { ProductList } from '../../components/products/ProductList';
 import { useQuery } from '@tanstack/react-query';
 import { products } from '../../lib/api';
@@ -8,8 +9,20 @@ import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 export function ProductsPage() {
   useDocumentTitle('Products');
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
-  const clearCategoryForAgent = useCallback(() => setSelectedCategory(undefined), []);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedCategory = searchParams.get('category') ?? undefined;
+  const setSelectedCategory = useCallback((category: string | undefined) => {
+    setSearchParams(previous => {
+      const next = new URLSearchParams(previous);
+      if (category) {
+        next.set('category', category);
+      } else {
+        next.delete('category');
+      }
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+  const clearCategoryForAgent = useCallback(() => setSelectedCategory(undefined), [setSelectedCategory]);
   
   const { data, isLoading, isError } = useQuery({
     queryKey: ['products'],

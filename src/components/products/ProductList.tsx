@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { products } from '../../lib/api';
 import { ProductCard } from './ProductCard';
@@ -6,21 +7,34 @@ import { useShopWebMcp } from '../../features/webmcp/useShopWebMcp';
 import { filterProducts } from '../../features/webmcp/webmcp-model';
 import { ShopToolPanel } from '../../features/webmcp/ShopToolPanel';
 
+const DEFAULT_SORT = 'name-asc';
+const SORT_OPTIONS = ['name-asc', 'name-desc', 'price-asc', 'price-desc'];
+
 interface ProductListProps {
   category?: string;
   onAgentSearch?: () => void;
 }
 
 export function ProductList({ category, onAgentSearch }: ProductListProps) {
-  const [sortOption, setSortOption] = useState<string>('name-asc');
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [inStockOnly, setInStockOnly] = useState(false);
+  // Filters live in the URL so refresh, Back and shared links keep the view.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const sortOption = SORT_OPTIONS.includes(searchParams.get('sort') ?? '') ? searchParams.get('sort')! : DEFAULT_SORT;
+  const searchTerm = searchParams.get('q') ?? '';
+  const inStockOnly = searchParams.get('inStock') === '1';
+  const updateFilters = useCallback((changes: Record<string, string | null>) => {
+    setSearchParams(previous => {
+      const next = new URLSearchParams(previous);
+      Object.entries(changes).forEach(([key, value]) => (value ? next.set(key, value) : next.delete(key)));
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+  const setSearchTerm = (value: string) => updateFilters({ q: value || null });
+  const setSortOption = (value: string) => updateFilters({ sort: value === DEFAULT_SORT ? null : value });
+  const setInStockOnly = (value: boolean) => updateFilters({ inStock: value ? '1' : null });
   const onSearch = useCallback((query: string, stock: boolean) => {
     onAgentSearch?.();
-    setSearchTerm(query);
-    setInStockOnly(stock);
-    setSortOption('price-asc');
-  }, [onAgentSearch]);
+    updateFilters({ q: query || null, inStock: stock ? '1' : null, sort: 'price-asc' });
+  }, [onAgentSearch, updateFilters]);
   const params = new URLSearchParams(window.location.search);
   const webmcp = useShopWebMcp(onSearch, params.get('tools') !== 'off');
 

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createShopTools, filterProducts, readFault, registerShopTools } from './webmcp-model';
+import { createShopTools, filterProducts, normalizeSearchText, readFault, registerShopTools } from './webmcp-model';
 import type { ShopServices, ShopTool, ToolResult } from './webmcp-model';
 import type { Product } from '../../types/product';
 
@@ -154,5 +154,24 @@ describe('Shop tool contracts', () => {
     expect(readFault(null)).toBe('none');
     expect(readFault('toString')).toBe('none');
     expect(readFault('broken-button')).toBe('broken-button');
+  });
+});
+
+describe('diacritics-insensitive search', () => {
+  const polish = { id: 21, name: 'Zażółć gęślą jaźń', category: 'Books', description: 'Łódź edition', price: 10, stockQuantity: 1 } as Product;
+  const plain = { id: 22, name: 'Clean Code', category: 'Books', description: '', price: 20, stockQuantity: 1 } as Product;
+
+  it('matches Polish names typed without diacritics, including ł', () => {
+    expect(filterProducts([polish, plain], 'zazolc', false).map(value => value.id)).toEqual([21]);
+    expect(filterProducts([polish, plain], 'GESLA JAZN', false).map(value => value.id)).toEqual([21]);
+    expect(filterProducts([polish, plain], 'lodz', false).map(value => value.id)).toEqual([21]);
+  });
+
+  it('still matches the original spelling', () => {
+    expect(filterProducts([polish, plain], 'Zażółć', false).map(value => value.id)).toEqual([21]);
+  });
+
+  it('normalizes upper and lower case ł', () => {
+    expect(normalizeSearchText('ŁÓDŹ łąka')).toBe('lodz laka');
   });
 });

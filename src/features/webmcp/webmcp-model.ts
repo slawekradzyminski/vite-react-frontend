@@ -45,10 +45,21 @@ export function getModelContext(): ModelContext | undefined {
   return (document as Document & { modelContext?: ModelContext }).modelContext;
 }
 
+// Users often type Polish names without diacritics ("zazolc" should find "Zażółć").
+// "ł" has no Unicode decomposition, so it is mapped explicitly.
+export function normalizeSearchText(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .replace(/ł/g, 'l')
+    .replace(/Ł/g, 'L')
+    .toLocaleLowerCase();
+}
+
 export function filterProducts(products: Product[], query: string, inStockOnly: boolean) {
-  const term = query.trim().toLocaleLowerCase();
+  const term = normalizeSearchText(query.trim());
   return products.filter(product =>
-    [product.name, product.category, product.description ?? ""].some(value => value.toLocaleLowerCase().includes(term))
+    [product.name, product.category, product.description ?? ""].some(value => normalizeSearchText(value).includes(term))
     && (!inStockOnly || product.stockQuantity > 0),
   ).sort((a, b) => a.price - b.price || a.id - b.id);
 }
