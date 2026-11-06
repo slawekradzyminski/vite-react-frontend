@@ -228,6 +228,7 @@ export function LoginPage() {
                   className="mt-2"
                   placeholder="Username"
                   error={errors.username?.message}
+                  autoComplete="username"
                   {...register('username')}
                   data-testid="login-username-input"
                 />
@@ -243,6 +244,7 @@ export function LoginPage() {
                   className="mt-2"
                   placeholder="Password"
                   error={errors.password?.message}
+                  autoComplete="current-password"
                   {...register('password')}
                   data-testid="login-password-input"
                 />

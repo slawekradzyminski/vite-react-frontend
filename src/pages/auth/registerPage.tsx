@@ -100,6 +100,7 @@ export function RegisterPage() {
                   className="mt-2"
                   placeholder="Username"
                   error={errors.username?.message}
+                  autoComplete="username"
                   {...register('username')}
                   data-testid="register-username-input"
                 />
@@ -115,6 +116,7 @@ export function RegisterPage() {
                   className="mt-2"
                   placeholder="Email"
                   error={errors.email?.message}
+                  autoComplete="email"
                   {...register('email')}
                   data-testid="register-email-input"
                 />
@@ -130,6 +132,7 @@ export function RegisterPage() {
                   className="mt-2"
                   placeholder="Password"
                   error={errors.password?.message}
+                  autoComplete="new-password"
                   {...register('password')}
                   data-testid="register-password-input"
                 />
@@ -144,6 +147,7 @@ export function RegisterPage() {
                   className="mt-2"
                   placeholder="First Name"
                   error={errors.firstName?.message}
+                  autoComplete="given-name"
                   {...register('firstName')}
                   data-testid="register-firstname-input"
                 />
@@ -158,6 +162,7 @@ export function RegisterPage() {
                   className="mt-2"
                   placeholder="Last Name"
                   error={errors.lastName?.message}
+                  autoComplete="family-name"
                   {...register('lastName')}
                   data-testid="register-lastname-input"
                 />

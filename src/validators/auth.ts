@@ -23,7 +23,9 @@ export const registerSchema = z.object({
 });
 
 export const loginSchema = z.object({
+  // Pasted usernames often carry surrounding spaces; the backend expects the bare name.
   username: z.string()
+    .trim()
     .min(1, 'Username is required')
     .min(4, 'Username must be at least 4 characters')
     .max(255, 'Username must be at most 255 characters'),

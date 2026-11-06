@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router';
+import { Navigate, useLocation } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { auth } from '../lib/api';
 import { authStorage } from '../lib/authStorage';
@@ -11,6 +11,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requiredRole, 'data-testid': dataTestId }: ProtectedRouteProps) {
+  const location = useLocation();
   const token = authStorage.getAccessToken();
 
   const { data, isLoading, isError } = useQuery({
@@ -21,7 +22,7 @@ export function ProtectedRoute({ children, requiredRole, 'data-testid': dataTest
   });
 
   if (!token || isError) {
-    return <Navigate to="/login" replace data-testid="protected-route-redirect" />;
+    return <Navigate to={loginRedirectTarget(location.pathname, location.search)} replace data-testid="protected-route-redirect" />;
   }
 
   if (isLoading) {
@@ -38,3 +39,9 @@ export function ProtectedRoute({ children, requiredRole, 'data-testid': dataTest
 
   return <div data-testid={dataTestId || 'protected-route-content'}>{children}</div>;
 } 
+
+// Preserves deep links such as a shared /products/:id across the login redirect.
+function loginRedirectTarget(pathname: string, search: string) {
+  const returnTo = `${pathname}${search}`;
+  return returnTo === '/' ? '/login' : `/login?returnTo=${encodeURIComponent(returnTo)}`;
+}

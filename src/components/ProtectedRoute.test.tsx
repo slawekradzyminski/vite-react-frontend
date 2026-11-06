@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProtectedRoute } from './ProtectedRoute';
 import { auth } from '../lib/api';
@@ -24,6 +24,16 @@ const queryClient = new QueryClient({
 
 const TestComponent = () => <div>Protected Content</div>;
 
+const LoginProbe = () => {
+  const location = useLocation();
+  return (
+    <div>
+      <p>Login Page</p>
+      <p data-testid="login-search">{location.search}</p>
+    </div>
+  );
+};
+
 const renderWithProviders = (
   children: React.ReactNode,
   initialEntries: string[] = ['/protected']
@@ -32,9 +42,10 @@ const renderWithProviders = (
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={initialEntries}>
         <Routes>
-          <Route path="/login" element={<div>Login Page</div>} />
+          <Route path="/login" element={<LoginProbe />} />
           <Route path="/" element={<div data-testid="home-page">Home</div>} />
           <Route path="/protected" element={children} />
+          <Route path="/products/:id" element={children} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>
@@ -80,6 +91,19 @@ const fulfillAuth = (
 
     // then
     expect(screen.getByText('Login Page')).toBeInTheDocument();
+  });
+
+  it('keeps the requested deep link as returnTo when redirecting to login', () => {
+    // when
+    renderWithProviders(
+      <ProtectedRoute>
+        <TestComponent />
+      </ProtectedRoute>,
+      ['/products/7?ref=share']
+    );
+
+    // then
+    expect(screen.getByTestId('login-search')).toHaveTextContent(`?returnTo=${encodeURIComponent('/products/7?ref=share')}`);
   });
 
   // given

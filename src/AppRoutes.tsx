@@ -24,14 +24,15 @@ import { AdminOrdersPage } from './pages/admin/ordersPage';
 import { AdminInventoryPage } from './pages/admin/inventoryPage';
 import { TrafficMonitorPage } from './pages/traffic/trafficPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { RedirectIfAuthenticated } from './components/RedirectIfAuthenticated';
 import { WebMcpPage } from './features/webmcp/WebMcpPage';
 
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/login" element={<RedirectIfAuthenticated><LoginPage /></RedirectIfAuthenticated>} />
       <Route path="/auth/sso/callback" element={<SsoCallbackPage />} />
-      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/register" element={<RedirectIfAuthenticated><RegisterPage /></RedirectIfAuthenticated>} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset" element={<ResetPasswordPage />} />
       

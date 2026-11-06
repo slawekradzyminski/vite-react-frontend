@@ -274,4 +274,16 @@ describe('RegisterPage', () => {
     // then
     expect(mockNavigate).toHaveBeenCalledWith('/login');
   });
-}); 
+
+  it('lets browsers and password managers fill every field', () => {
+    // when
+    render(<RegisterPage />);
+
+    // then
+    expect(screen.getByTestId('register-username-input')).toHaveAttribute('autocomplete', 'username');
+    expect(screen.getByTestId('register-email-input')).toHaveAttribute('autocomplete', 'email');
+    expect(screen.getByTestId('register-password-input')).toHaveAttribute('autocomplete', 'new-password');
+    expect(screen.getByTestId('register-firstname-input')).toHaveAttribute('autocomplete', 'given-name');
+    expect(screen.getByTestId('register-lastname-input')).toHaveAttribute('autocomplete', 'family-name');
+  });
+});

@@ -348,4 +348,13 @@ describe('LoginPage', () => {
     expect(mockToast).toHaveBeenCalledWith((mockLocation.state as any)?.toast);
     expect(window.history.replaceState).toHaveBeenCalled();
   });
-}); 
+
+  it('lets browsers and password managers fill the credentials', () => {
+    // when
+    render(<LoginPage />);
+
+    // then
+    expect(screen.getByTestId('login-username-input')).toHaveAttribute('autocomplete', 'username');
+    expect(screen.getByTestId('login-password-input')).toHaveAttribute('autocomplete', 'current-password');
+  });
+});
