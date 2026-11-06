@@ -1,16 +1,25 @@
 import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { CartItem } from './CartItem';
-import { cart } from '../../lib/api';
+import { cart, products } from '../../lib/api';
 import { renderWithProviders } from '../../test/test-utils';
 import { CartItem as CartItemType } from '../../types/cart';
-import { AxiosResponse } from 'axios';
+import { AxiosError, AxiosHeaders, AxiosResponse } from 'axios';
 
 vi.mock('../../lib/api', () => ({
   cart: {
     updateCartItem: vi.fn(),
     removeFromCart: vi.fn()
-  }
+  },
+  products: {
+    getProductById: vi.fn(),
+  },
+}));
+
+const mockToast = vi.fn();
+vi.mock('../../hooks/useToast', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../hooks/useToast')>()),
+  useToast: () => ({ toast: mockToast }),
 }));
 
 vi.mock('react-router', () => {
@@ -25,6 +34,18 @@ vi.mock('react-router', () => {
   };
 });
 
+
+// Distinct product ids per scenario, because the shared test QueryClient caches product queries.
+const STOCK_BY_ID: Record<number, number> = { 31: 3, 32: 3, 35: 3, 36: 3 };
+
+const conflict = (status = 409) =>
+  new AxiosError('conflict', 'ERR_BAD_REQUEST', undefined, undefined, {
+    status,
+    statusText: 'Conflict',
+    headers: {},
+    config: { headers: new AxiosHeaders() },
+    data: { message: 'Insufficient stock for product 32' },
+  });
 
 describe("CartItem", () => {
   const mockItem: CartItemType = {
@@ -49,6 +70,9 @@ describe("CartItem", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(products.getProductById).mockImplementation(async (id: number) => ({
+      data: { id, name: `Product ${id}`, price: 10, description: '', category: 'Books', stockQuantity: STOCK_BY_ID[id] ?? 99 },
+    }) as AxiosResponse);
   });
 
   it("renders the cart item correctly", () => {
@@ -211,5 +235,112 @@ describe("CartItem", () => {
       expect(screen.getByText("2")).toBeInTheDocument();
     });
     consoleErrorSpy.mockRestore();
+  });
+
+  it('stops "+" at the available stock (BUG-007)', async () => {
+    // given
+    renderCartItem({ ...mockItem, productId: 31, quantity: 2 });
+    const plus = screen.getByTestId('cart-item-increase-31');
+    await waitFor(() => expect(products.getProductById).toHaveBeenCalledWith(31));
+
+    // when
+    fireEvent.click(plus); // 2 -> 3
+    await waitFor(() => expect(plus).toBeDisabled());
+    fireEvent.click(plus);
+
+    // then
+    expect(screen.getByTestId('cart-item-quantity-31')).toHaveTextContent('3');
+  });
+
+  it('explains a stock conflict instead of silently reverting', async () => {
+    // given
+    vi.mocked(cart.updateCartItem).mockRejectedValue(conflict());
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    renderCartItem({ ...mockItem, productId: 32, quantity: 2 });
+    await waitFor(() => expect(products.getProductById).toHaveBeenCalledWith(32));
+    fireEvent.click(screen.getByTestId('cart-item-increase-32'));
+
+    // when
+    fireEvent.click(screen.getByTestId('cart-item-update-32'));
+
+    // then
+    await waitFor(() => expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
+      variant: 'error',
+      description: 'Only 3 left in stock.',
+    })));
+    expect(screen.getByTestId('cart-item-quantity-32')).toHaveTextContent('2');
+  });
+
+  it('confirms a saved quantity and a removal with toasts', async () => {
+    // given
+    vi.mocked(cart.updateCartItem).mockResolvedValue({ data: {} } as AxiosResponse);
+    vi.mocked(cart.removeFromCart).mockResolvedValue({ data: {} } as AxiosResponse);
+    renderCartItem({ ...mockItem, productId: 33, quantity: 2 });
+    fireEvent.click(screen.getByTestId('cart-item-increase-33'));
+
+    // when
+    fireEvent.click(screen.getByTestId('cart-item-update-33'));
+    await waitFor(() => expect(mockOnUpdate).toHaveBeenCalled());
+    fireEvent.click(screen.getByTestId('cart-item-remove-33'));
+
+    // then
+    await waitFor(() => expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Removed from cart' })));
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Cart updated', description: 'Test Product quantity set to 3' }));
+  });
+
+  it('reports an unsaved quantity and clears it once in sync', async () => {
+    // given
+    const onPendingChange = vi.fn();
+    renderWithProviders(
+      <table>
+        <tbody>
+          <CartItem item={{ ...mockItem, productId: 34 }} onUpdate={mockOnUpdate} onPendingChange={onPendingChange} />
+        </tbody>
+      </table>
+    );
+
+    // when
+    fireEvent.click(screen.getByTestId('cart-item-increase-34'));
+
+    // then
+    await waitFor(() => expect(onPendingChange).toHaveBeenLastCalledWith(34, 3));
+    fireEvent.click(screen.getByTestId('cart-item-decrease-34'));
+    await waitFor(() => expect(onPendingChange).toHaveBeenLastCalledWith(34, null));
+  });
+
+  it('keeps the generic message without a stock lookup for other update failures', async () => {
+    // given
+    vi.mocked(cart.updateCartItem).mockRejectedValue(conflict(500));
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    renderCartItem({ ...mockItem, productId: 35, quantity: 1 });
+    await waitFor(() => expect(products.getProductById).toHaveBeenCalledTimes(1));
+    fireEvent.click(screen.getByTestId('cart-item-increase-35'));
+
+    // when
+    fireEvent.click(screen.getByTestId('cart-item-update-35'));
+
+    // then
+    await waitFor(() => expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
+      variant: 'error',
+      description: 'Failed to update cart. Please try again.',
+    })));
+    expect(products.getProductById).toHaveBeenCalledTimes(1);
+  });
+
+  it('explains a failed removal', async () => {
+    // given
+    vi.mocked(cart.removeFromCart).mockRejectedValue(conflict(404));
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    renderCartItem({ ...mockItem, productId: 36 });
+
+    // when
+    fireEvent.click(screen.getByTestId('cart-item-remove-36'));
+
+    // then
+    await waitFor(() => expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
+      variant: 'error',
+      description: 'This product is no longer available.',
+    })));
+    expect(mockOnUpdate).not.toHaveBeenCalled();
   });
 });

@@ -272,4 +272,31 @@ describe('CartPage', () => {
     expect(screen.getByTestId('cart-item-total-99')).toHaveTextContent('$25.00');
     consoleErrorSpy.mockRestore();
   });
-}); 
+
+  it('saves only the changed-but-unsaved quantities before checkout', async () => {
+    // given
+    const { cart } = await import('../../lib/api');
+    vi.mocked(cart.updateCartItem).mockResolvedValue(createAxiosResponse({}) as never);
+    vi.mocked(reactQuery.useQuery).mockReturnValue({
+      data: { data: mockCartData },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    } as any);
+    window.history.replaceState({}, '', '/cart');
+    const user = userEvent.setup();
+    renderWithProviders(<CartPage />);
+    await screen.findByTestId('cart-item-increase-1');
+
+    // when
+    await user.click(screen.getByTestId('cart-item-increase-1')); // 2 -> 3, unsaved
+    await user.click(screen.getByTestId('cart-item-increase-2')); // 1 -> 2
+    await user.click(screen.getByTestId('cart-item-decrease-2')); // back to 1, in sync again
+    await user.click(screen.getByTestId('cart-checkout-button'));
+
+    // then
+    await waitFor(() => expect(window.location.pathname).toBe('/checkout'));
+    expect(cart.updateCartItem).toHaveBeenCalledTimes(1);
+    expect(cart.updateCartItem).toHaveBeenCalledWith(1, { quantity: 3 });
+  });
+});

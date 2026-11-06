@@ -2,14 +2,20 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Cart } from '../../types/cart';
 import { cart } from '../../lib/api';
+import { useToast } from '../../hooks/useToast';
+import { formatPrice } from '../../lib/format';
+import { describeCartError } from '../../lib/requestErrors';
 
 interface CartSummaryProps {
   cartData: Cart;
   onUpdate: () => void;
+  beforeCheckout?: () => Promise<void>;
 }
 
-export function CartSummary({ cartData, onUpdate }: CartSummaryProps) {
+export function CartSummary({ cartData, onUpdate, beforeCheckout }: CartSummaryProps) {
   const [isClearing, setIsClearing] = useState(false);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   // Ensure we have valid cart data with defaults
@@ -26,15 +32,41 @@ export function CartSummary({ cartData, onUpdate }: CartSummaryProps) {
     setIsClearing(true);
     try {
       await cart.clearCart();
+      toast({
+        variant: 'success',
+        title: 'Cart cleared',
+        description: 'All items have been removed from your cart',
+      });
       onUpdate();
     } catch (error) {
       console.error('Failed to clear cart:', error);
+      toast({
+        variant: 'error',
+        title: 'Error',
+        description: 'Failed to clear cart. Please try again.',
+      });
     } finally {
       setIsClearing(false);
     }
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
+    if (beforeCheckout) {
+      setIsCheckingOut(true);
+      try {
+        await beforeCheckout();
+      } catch (error) {
+        console.error('Failed to save cart changes before checkout:', error);
+        toast({
+          variant: 'error',
+          title: 'Error',
+          description: describeCartError(error, 'Failed to save your cart changes. Please try again.'),
+        });
+        setIsCheckingOut(false);
+        onUpdate();
+        return;
+      }
+    }
     navigate('/checkout');
   };
 
@@ -52,7 +84,7 @@ export function CartSummary({ cartData, onUpdate }: CartSummaryProps) {
             
             <div data-testid="cart-summary-total">
               <span className="block text-sm font-medium uppercase text-slate-500">Total</span>
-              <span className="text-xl font-bold text-slate-950" data-testid="cart-summary-total-price">${safeCartData.totalPrice.toFixed(2)}</span>
+              <span className="text-xl font-bold text-slate-950" data-testid="cart-summary-total-price">{formatPrice(safeCartData.totalPrice)}</span>
             </div>
           </div>
         </div>
@@ -61,10 +93,10 @@ export function CartSummary({ cartData, onUpdate }: CartSummaryProps) {
           <button
             className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-stone-50 transition hover:bg-slate-800 disabled:bg-stone-300 disabled:cursor-not-allowed"
             onClick={handleCheckout}
-            disabled={safeCartData.items.length === 0}
+            disabled={isCheckingOut || safeCartData.items.length === 0}
             data-testid="cart-checkout-button"
           >
-            Proceed to Checkout
+            {isCheckingOut ? 'Saving changes...' : 'Proceed to Checkout'}
           </button>
           
           <button
