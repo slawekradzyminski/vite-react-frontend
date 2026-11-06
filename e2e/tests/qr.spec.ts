@@ -23,6 +23,7 @@ test.describe('QR Code Page', () => {
 
     // then
     await expect(qrPage.qrCodeImage).toBeVisible();
+    await expect(qrPage.qrCodeImage).toHaveAttribute('alt', 'QR code for test text');
   });
 
   test('should show error when submitting empty text', async () => {

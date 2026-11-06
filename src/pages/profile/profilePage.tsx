@@ -13,8 +13,11 @@ import type { UserEditDTO } from '../../types/auth';
 import { OrderList } from '../../components/orders/OrderList';
 import { Surface } from '../../components/ui/surface';
 import { MfaSecurityPanel } from '../../components/user/MfaSecurityPanel';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { fieldErrorId } from '../../lib/fieldError';
 
 export function Profile() {
+  useDocumentTitle('Profile');
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -213,11 +216,12 @@ export function Profile() {
                   id="systemPrompt"
                   className="mt-2 h-32"
                   placeholder="Enter your system prompt here..."
+                  error={chatPromptErrors.systemPrompt?.message}
                   {...registerChatPrompt('systemPrompt')}
                   data-testid="profile-prompt-input"
                 />
                 {chatPromptErrors.systemPrompt?.message && (
-                  <p className="mt-1 text-sm text-red-600" role="alert" data-testid="profile-prompt-error">{chatPromptErrors.systemPrompt.message}</p>
+                  <p className="mt-1 text-sm text-red-600" role="alert" id={fieldErrorId('systemPrompt')} data-testid="profile-prompt-error">{chatPromptErrors.systemPrompt.message}</p>
                 )}
               </div>
 
@@ -243,11 +247,12 @@ export function Profile() {
                   id="toolSystemPrompt"
                   className="mt-2 h-32"
                   placeholder="Enter your tool prompt here..."
+                  error={toolPromptErrors.toolSystemPrompt?.message}
                   {...registerToolPrompt('toolSystemPrompt')}
                   data-testid="profile-tool-prompt-input"
                 />
                 {toolPromptErrors.toolSystemPrompt?.message && (
-                  <p className="mt-1 text-sm text-red-600" role="alert" data-testid="profile-tool-prompt-error">{toolPromptErrors.toolSystemPrompt.message}</p>
+                  <p className="mt-1 text-sm text-red-600" role="alert" id={fieldErrorId('toolSystemPrompt')} data-testid="profile-tool-prompt-error">{toolPromptErrors.toolSystemPrompt.message}</p>
                 )}
               </div>
 

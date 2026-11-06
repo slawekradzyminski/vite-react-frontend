@@ -1,7 +1,9 @@
 import { QrCodeGenerator } from '../../components/qr/QrCodeGenerator';
 import { Surface } from '../../components/ui/surface';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 export function QrCodePage() {
+  useDocumentTitle('QR Code Generator');
   return (
     <div className="space-y-6 pb-10" data-testid="qr-code-page">
       <Surface as="section" variant="hero" padding="xl" data-testid="qr-code-header">

@@ -14,8 +14,11 @@ import { Badge } from '../../components/ui/badge';
 import { sso } from '../../lib/sso';
 import type { LoginResponse } from '../../types/auth';
 import { navigateAfterLogin, readLoginReturnTo } from '../../lib/loginNavigation';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { fieldErrorId } from '../../lib/fieldError';
 
 export function LoginPage() {
+  useDocumentTitle('Sign in');
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
@@ -147,9 +150,9 @@ export function LoginPage() {
             <div className="space-y-8 lg:space-y-10" data-testid="login-header">
               <Badge tone="tracking" variant="outline" className="text-[11px] tracking-[0.26em]" data-testid="login-brand-badge">Awesome Testing</Badge>
               <div className="space-y-5 lg:space-y-6">
-                <h2 className="max-w-lg text-4xl font-semibold tracking-tight text-slate-950" data-testid="login-title">
+                <h1 className="max-w-lg text-4xl font-semibold tracking-tight text-slate-950" data-testid="login-title">
                   Sign in to your account
-                </h2>
+                </h1>
                 <p className="max-w-xl text-base leading-7 text-slate-600" data-testid="login-subtitle">
                   Step into the operations workspace for product management, live monitoring, and AI-assisted testing flows.
                 </p>
@@ -175,7 +178,7 @@ export function LoginPage() {
               <div className="space-y-5" data-testid="login-mfa-step">
                 <div className="space-y-2">
                   <Badge tone="tracking" variant="outline" className="text-[11px] tracking-[0.2em]">Second factor</Badge>
-                  <h3 className="text-2xl font-semibold tracking-tight text-slate-950">Verify your sign-in</h3>
+                  <h2 className="text-2xl font-semibold tracking-tight text-slate-950">Verify your sign-in</h2>
                   <p className="text-sm leading-6 text-slate-600">
                     Enter the six-digit code from Microsoft Authenticator, or use one of your recovery codes.
                   </p>
@@ -229,7 +232,7 @@ export function LoginPage() {
                   data-testid="login-username-input"
                 />
                 {errors.username?.message && (
-                  <p className="mt-1 text-sm text-red-600" role="alert" data-testid="login-username-error">{errors.username.message}</p>
+                  <p className="mt-1 text-sm text-red-600" role="alert" id={fieldErrorId('username')} data-testid="login-username-error">{errors.username.message}</p>
                 )}
               </div>
               <div data-testid="login-password-field">
@@ -244,7 +247,7 @@ export function LoginPage() {
                   data-testid="login-password-input"
                 />
                 {errors.password?.message && (
-                  <p className="mt-1 text-sm text-red-600" role="alert" data-testid="login-password-error">{errors.password.message}</p>
+                  <p className="mt-1 text-sm text-red-600" role="alert" id={fieldErrorId('password')} data-testid="login-password-error">{errors.password.message}</p>
                 )}
               </div>
             </div>
@@ -274,7 +277,7 @@ export function LoginPage() {
 
             {ssoEnabled && (
               <>
-                <div className="flex items-center gap-3 text-xs uppercase tracking-[0.24em] text-slate-400" data-testid="login-sso-divider">
+                <div className="flex items-center gap-3 text-xs uppercase tracking-[0.24em] text-slate-600" data-testid="login-sso-divider">
                   <span className="h-px flex-1 bg-stone-200" data-testid="login-sso-divider-left" />
                   <span data-testid="login-sso-divider-label">or</span>
                   <span className="h-px flex-1 bg-stone-200" data-testid="login-sso-divider-right" />

@@ -51,6 +51,32 @@ describe('RegisterPage', () => {
     expect(screen.getByTestId('register-playground-notice')).toHaveTextContent('Training environment only');
   });
 
+  it('exposes the page title as the only h1 and sets the document title', () => {
+    // when
+    render(<RegisterPage />);
+
+    // then
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Create your account');
+    expect(document.title).toBe('Create account – Awesome Testing');
+  });
+
+  it('links each validation error to its field', async () => {
+    // given
+    render(<RegisterPage />);
+
+    // when
+    await user.click(screen.getByTestId('register-submit-button'));
+
+    // then
+    for (const field of ['username', 'email', 'password', 'firstname', 'lastname']) {
+      const input = screen.getByTestId(`register-${field}-input`);
+      const error = await screen.findByTestId(`register-${field}-error`);
+      expect(input).toHaveAttribute('aria-invalid', 'true');
+      expect(input).toHaveAttribute('aria-describedby', error.id);
+      expect(input).toHaveAccessibleDescription(error.textContent!);
+    }
+  });
+
   it('displays validation errors for empty fields', async () => {
     // given
     render(<RegisterPage />);

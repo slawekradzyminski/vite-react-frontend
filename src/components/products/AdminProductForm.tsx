@@ -8,6 +8,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { Surface } from '../ui/surface';
+import { fieldErrorId } from '../../lib/fieldError';
 
 interface AdminProductFormProps {
   productId?: number;
@@ -91,12 +92,12 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
           id="name"
           type="text"
           className="mt-2"
-          error={errors.name?.message as string | undefined}
+          error={errors.name ? ((errors.name.message as string | undefined) || 'Name must be between 3 and 100 characters') : undefined}
           {...register('name', { required: 'Product name is required', minLength: 3, maxLength: 100 })}
           data-testid="product-name-input"
         />
         {errors.name && (
-          <p className="mt-1 text-sm text-red-600" data-testid="product-name-error">{errors.name.message || 'Name must be between 3 and 100 characters'}</p>
+          <p className="mt-1 text-sm text-red-600" id={fieldErrorId('name')} data-testid="product-name-error">{errors.name.message || 'Name must be between 3 and 100 characters'}</p>
         )}
       </Surface>
 
@@ -107,11 +108,12 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
         <Textarea
           id="description"
           className="mt-2 min-h-[140px]"
+          error={errors.description ? 'Description must be less than 1000 characters' : undefined}
           {...register('description', { maxLength: 1000 })}
           data-testid="product-description-input"
         />
         {errors.description && (
-          <p className="mt-1 text-sm text-red-600" data-testid="product-description-error">Description must be less than 1000 characters</p>
+          <p className="mt-1 text-sm text-red-600" id={fieldErrorId('description')} data-testid="product-description-error">Description must be less than 1000 characters</p>
         )}
       </Surface>
 
@@ -135,7 +137,7 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
             data-testid="product-price-input"
           />
           {errors.price && (
-            <p className="mt-1 text-sm text-red-600" data-testid="product-price-error">{errors.price.message}</p>
+            <p className="mt-1 text-sm text-red-600" id={fieldErrorId('price')} data-testid="product-price-error">{errors.price.message}</p>
           )}
         </Surface>
 
@@ -157,7 +159,7 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
             data-testid="product-stock-input"
           />
           {errors.stockQuantity && (
-            <p className="mt-1 text-sm text-red-600" data-testid="product-stock-error">{errors.stockQuantity.message}</p>
+            <p className="mt-1 text-sm text-red-600" id={fieldErrorId('stockQuantity')} data-testid="product-stock-error">{errors.stockQuantity.message}</p>
           )}
         </Surface>
       </div>
@@ -175,7 +177,7 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
           data-testid="product-category-input"
         />
         {errors.category && (
-          <p className="mt-1 text-sm text-red-600" data-testid="product-category-error">{errors.category.message}</p>
+          <p className="mt-1 text-sm text-red-600" id={fieldErrorId('category')} data-testid="product-category-error">{errors.category.message}</p>
         )}
       </Surface>
 
@@ -197,7 +199,7 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
           data-testid="product-image-input"
         />
         {errors.imageUrl && (
-          <p className="mt-1 text-sm text-red-600" data-testid="product-image-error">{errors.imageUrl.message}</p>
+          <p className="mt-1 text-sm text-red-600" id={fieldErrorId('imageUrl')} data-testid="product-image-error">{errors.imageUrl.message}</p>
         )}
       </Surface>
 

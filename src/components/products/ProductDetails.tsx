@@ -7,6 +7,7 @@ import { useToast } from '../../hooks/useToast';
 import { authStorage } from '../../lib/authStorage';
 import { Surface } from '../ui/surface';
 import { Badge } from '../ui/badge';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 export function ProductDetails() {
   const { id } = useParams<{ id: string }>();
@@ -34,6 +35,9 @@ export function ProductDetails() {
     enabled: !!authStorage.getAccessToken(),
     retry: false
   });
+
+  const loadFailed = !isLoading && (!!error || !product?.data);
+  useDocumentTitle(isLoading ? 'Product details' : loadFailed ? 'Product not found' : product?.data?.name);
 
   const cartItem = cartData?.data?.items?.find(item => item.productId === Number(id));
   const cartQuantity = cartItem?.quantity || 0;
@@ -130,8 +134,9 @@ export function ProductDetails() {
 
   if (error || !product?.data) {
     return (
-      <Surface variant="danger" padding="message" className="text-center" data-testid="product-not-found">
-        <p className="mb-4 text-red-600">Error loading product details</p>
+      <Surface variant="danger" padding="message" className="text-center" role="alert" data-testid="product-not-found">
+        <h1 className="mb-2 text-2xl font-semibold text-red-800">Product not found</h1>
+        <p className="mb-4 text-red-700">Error loading product details</p>
         <Link to="/products" className="text-sm font-medium text-slate-900 underline-offset-4 hover:underline">
           Back to Products
         </Link>
@@ -213,19 +218,21 @@ export function ProductDetails() {
           
           {productData.stockQuantity > 0 && (
             <div className="mt-8 border-t border-stone-200/80 pt-6" data-testid="product-quantity-section">
-              <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500" data-testid="product-quantity-title">Quantity</h2>
-              <div className="mt-3 flex items-center" data-testid="product-quantity-controls">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500" id="product-quantity-title" data-testid="product-quantity-title">Quantity</h2>
+              <div className="mt-3 flex items-center" role="group" aria-labelledby="product-quantity-title" data-testid="product-quantity-controls">
                 <button 
                   className="h-11 rounded-l-2xl border border-stone-200 bg-stone-50 px-4 text-slate-700 transition hover:bg-white"
                   onClick={() => setQuantity(prev => Math.max(0, prev - 1))}
+                  aria-label="Decrease quantity"
                   data-testid="decrease-quantity"
                 >
                   -
                 </button>
-                <span className="flex h-11 min-w-[64px] items-center justify-center border-y border-stone-200 bg-white px-6 text-sm font-medium text-slate-900" data-testid="quantity-value">{quantity}</span>
+                <span className="flex h-11 min-w-[64px] items-center justify-center border-y border-stone-200 bg-white px-6 text-sm font-medium text-slate-900" aria-live="polite" aria-atomic="true" data-testid="quantity-value">{quantity}</span>
                 <button 
                   className="h-11 rounded-r-2xl border border-stone-200 bg-stone-50 px-4 text-slate-700 transition hover:bg-white"
                   onClick={() => setQuantity(prev => Math.min(productData.stockQuantity, prev + 1))}
+                  aria-label="Increase quantity"
                   data-testid="increase-quantity"
                 >
                   +

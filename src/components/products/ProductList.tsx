@@ -74,8 +74,9 @@ export function ProductList({ category, onAgentSearch }: ProductListProps) {
           <div className="relative min-w-[220px] flex-1" data-testid="product-search-container">
           <input
             type="text"
+            aria-label="Search products"
             placeholder="Search products..."
-            className="h-11 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 pr-10 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-300 focus:bg-white"
+            className="h-11 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 pr-10 text-sm text-slate-900 outline-none transition placeholder:text-slate-500 focus:border-slate-300 focus:bg-white"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             data-testid="product-search"

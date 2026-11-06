@@ -4,8 +4,10 @@ import { Activity, ArrowRight, Boxes, Mail, QrCode, Sparkles, UserRound, Users }
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { auth } from '../../lib/api';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 export function HomePage() {
+  useDocumentTitle('Home');
   const navigate = useNavigate();
   const { data: user } = useQuery({
     queryKey: ['me'],
@@ -163,7 +165,7 @@ export function HomePage() {
 
             <Button
               onClick={() => navigate('/llm')}
-              className="mt-6 w-full bg-sky-600 text-white hover:bg-sky-500"
+              className="mt-6 w-full bg-sky-700 text-white hover:bg-sky-800"
               data-testid="home-llm-button"
             >
               Open AI Assistant

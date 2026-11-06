@@ -156,10 +156,56 @@ describe('ProductCard', () => {
     renderWithProviders(<ProductCard product={mockProduct} />);
     
     // when
-    await user.click(screen.getByText('Test Product'));
+    await user.click(screen.getByText('Test Description'));
     
     // then
     expect(mockNavigate).toHaveBeenCalledWith(`/products/${mockProduct.id}`);
+  });
+
+  it('exposes the product name as a keyboard reachable link to the details page', async () => {
+    // given
+    const user = userEvent.setup();
+    renderWithProviders(<ProductCard product={mockProduct} />);
+    const link = screen.getByRole('link', { name: 'Test Product' });
+
+    // when
+    await user.tab();
+
+    // then
+    expect(link).toHaveFocus();
+    expect(link).toHaveAttribute('href', '/products/1');
+    expect(screen.getByTestId('product-name')).toContainElement(link);
+  });
+
+  it('lets the name link navigate without triggering the card handler', async () => {
+    // given
+    const user = userEvent.setup();
+    renderWithProviders(<ProductCard product={mockProduct} />);
+
+    // when
+    await user.click(screen.getByRole('link', { name: 'Test Product' }));
+
+    // then
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(window.location.pathname).toBe('/products/1');
+  });
+
+  it('names quantity and cart controls after the product', async () => {
+    // given
+    const user = userEvent.setup();
+    renderWithProviders(<ProductCard product={mockProduct} />);
+    const quantity = screen.getByTestId('product-quantity-value');
+
+    // when
+    await user.click(screen.getByRole('button', { name: 'Increase quantity of Test Product' }));
+
+    // then
+    expect(screen.getByRole('group', { name: 'Quantity of Test Product' })).toContainElement(quantity);
+    expect(quantity).toHaveAttribute('aria-live', 'polite');
+    expect(quantity).toHaveTextContent('3');
+    expect(screen.getByRole('button', { name: 'Decrease quantity of Test Product' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Remove Test Product from cart' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Update Cart' })).toHaveAccessibleDescription('Test Product');
   });
 
   it('prevents navigation when Add to Cart button is clicked', async () => {
@@ -192,13 +238,13 @@ describe('ProductCard', () => {
     renderWithProviders(<ProductCard product={mockProduct} />);
     
     // when
-    await user.click(screen.getByRole('button', { name: /\+/i }));
+    await user.click(screen.getByRole('button', { name: /increase quantity/i }));
     
     // then
     expect(mockNavigate).not.toHaveBeenCalled();
     
     // when
-    await user.click(screen.getByRole('button', { name: /-/i }));
+    await user.click(screen.getByRole('button', { name: /decrease quantity/i }));
     
     // then
     expect(mockNavigate).not.toHaveBeenCalled();

@@ -7,6 +7,7 @@ import type { ReactNode } from 'react';
 import { Surface } from '../../components/ui/surface';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 interface LlmModeLayoutProps {
   badge: string;
@@ -16,6 +17,7 @@ interface LlmModeLayoutProps {
 }
 
 function LlmModeLayout({ badge, title, children, testId }: LlmModeLayoutProps) {
+  useDocumentTitle(title);
   return (
     <div className="min-h-screen py-12" data-testid={testId}>
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">

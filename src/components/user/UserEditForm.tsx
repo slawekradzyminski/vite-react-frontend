@@ -6,6 +6,7 @@ import { Label } from '../ui/label';
 import type { User, UserEditDTO } from '../../types/auth';
 import { userEditSchema, UserEditFormData } from '../../validators/user';
 import { Surface } from '../ui/surface';
+import { fieldErrorId } from '../../lib/fieldError';
 
 interface UserEditFormProps {
   user: User;
@@ -48,7 +49,7 @@ export function UserEditForm({ user, onSave, isUpdating = false }: UserEditFormP
           {...register('email')}
         />
         {errors.email?.message && (
-          <p className="mt-1 text-sm text-red-600" role="alert" data-testid="user-edit-email-error">{errors.email.message}</p>
+          <p className="mt-1 text-sm text-red-600" role="alert" id={fieldErrorId('email')} data-testid="user-edit-email-error">{errors.email.message}</p>
         )}
       </div>
 
@@ -62,7 +63,7 @@ export function UserEditForm({ user, onSave, isUpdating = false }: UserEditFormP
           {...register('firstName')}
         />
         {errors.firstName?.message && (
-          <p className="mt-1 text-sm text-red-600" role="alert" data-testid="user-edit-firstName-error">{errors.firstName.message}</p>
+          <p className="mt-1 text-sm text-red-600" role="alert" id={fieldErrorId('firstName')} data-testid="user-edit-firstName-error">{errors.firstName.message}</p>
         )}
       </div>
 
@@ -76,7 +77,7 @@ export function UserEditForm({ user, onSave, isUpdating = false }: UserEditFormP
           {...register('lastName')}
         />
         {errors.lastName?.message && (
-          <p className="mt-1 text-sm text-red-600" role="alert" data-testid="user-edit-lastName-error">{errors.lastName.message}</p>
+          <p className="mt-1 text-sm text-red-600" role="alert" id={fieldErrorId('lastName')} data-testid="user-edit-lastName-error">{errors.lastName.message}</p>
         )}
       </div>
 

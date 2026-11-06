@@ -4,8 +4,10 @@ import { EmailForm } from '../../components/email/EmailForm';
 import type { EmailFormData } from '../../types/email';
 import { useToast } from '../../hooks/useToast';
 import { Surface } from '../../components/ui/surface';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 export function EmailPage() {
+  useDocumentTitle('Send Email');
   const { toast } = useToast();
 
   const { mutate } = useMutation({

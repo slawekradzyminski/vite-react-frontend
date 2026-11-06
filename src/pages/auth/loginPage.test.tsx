@@ -84,6 +84,33 @@ describe('LoginPage', () => {
     expect(screen.queryByTestId('login-sso-button')).not.toBeInTheDocument();
   });
 
+  it('exposes the page title as the only h1 and sets the document title', () => {
+    // when
+    render(<LoginPage />);
+
+    // then
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Sign in to your account');
+    expect(document.title).toBe('Sign in – Awesome Testing');
+  });
+
+  it('links validation errors to the username and password fields', async () => {
+    // given
+    render(<LoginPage />);
+    const username = screen.getByRole('textbox', { name: 'Username' });
+    const password = screen.getByLabelText('Password');
+    expect(username).not.toHaveAttribute('aria-invalid');
+
+    // when
+    await user.click(screen.getByTestId('login-submit-button'));
+
+    // then
+    await waitFor(() => expect(username).toHaveAttribute('aria-invalid', 'true'));
+    expect(username).toHaveAccessibleDescription(screen.getByTestId('login-username-error').textContent!);
+    expect(password).toHaveAttribute('aria-invalid', 'true');
+    expect(password).toHaveAttribute('aria-describedby', screen.getByTestId('login-password-error').id);
+    expect(password).toHaveAccessibleDescription(screen.getByTestId('login-password-error').textContent!);
+  });
+
   it('renders the SSO button when enabled', () => {
     mockSso.enabled = true;
 

@@ -6,8 +6,10 @@ import type { Product } from '../../types/product';
 import { createShopTools, faults, filterProducts, getModelContext, readFault, registerShopTools } from './webmcp-model';
 import type { ToolCall } from './webmcp-model';
 import styles from './WebMcpPage.module.css';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 export function WebMcpPage() {
+  useDocumentTitle('WebMCP Shop');
   const [params, setParams] = useSearchParams();
   const fault = readFault(params.get('fault'));
   const toolsEnabled = params.get('tools') !== 'off';

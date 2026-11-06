@@ -97,6 +97,26 @@ describe("CartItem", () => {
     // then
     expect(screen.getByText("1")).toBeInTheDocument();
     expect(screen.queryByText("Update")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Decrease quantity of Test Product" })).toBeDisabled();
+  });
+
+  it("names row controls after the product and announces the quantity", () => {
+    // given
+    renderCartItem();
+    const quantity = screen.getByTestId("cart-item-quantity-1");
+    const decrease = screen.getByRole("button", { name: "Decrease quantity of Test Product" });
+
+    // when
+    fireEvent.click(decrease);
+
+    // then
+    expect(screen.getByRole("group", { name: "Quantity of Test Product" })).toContainElement(quantity);
+    expect(quantity).toHaveAttribute("aria-live", "polite");
+    expect(quantity).toHaveTextContent("1");
+    expect(decrease).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Increase quantity of Test Product" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Update quantity of Test Product" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove Test Product from cart" })).toBeInTheDocument();
   });
 
   it("calls updateCartItem when Update button is clicked", async () => {
