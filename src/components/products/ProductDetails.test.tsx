@@ -170,6 +170,19 @@ describe('ProductDetails', () => {
     
     // then
     expect(screen.getByText('Loading product details...')).toBeInTheDocument();
+    expect(document.title).toBe('Product details – Awesome Testing');
+  });
+
+  it('treats a response without product data as not found', () => {
+    // given
+    (useQuery as any).mockImplementation(() => ({ data: null, isLoading: false, error: null }));
+
+    // when
+    renderWithProviders(<ProductDetails />);
+
+    // then
+    expect(screen.getByRole('alert')).toHaveTextContent('Product not found');
+    expect(document.title).toBe('Product not found – Awesome Testing');
   });
 
   it('shows error message when product fetch fails', () => {

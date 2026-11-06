@@ -574,6 +574,39 @@ describe('Navigation', () => {
       expect(toggle).toHaveAccessibleName('Open main menu');
     });
 
+    it('does not react to Escape once the menu has been closed', async () => {
+      // given
+      signedInUser();
+      renderWithProviders(<Navigation />);
+      const toggle = await screen.findByRole('button', { name: 'Open main menu' });
+      await user.click(toggle);
+      await user.click(toggle);
+      const brandLink = screen.getByTestId('brand-link');
+      brandLink.focus();
+
+      // when
+      await user.keyboard('{Escape}');
+
+      // then
+      expect(brandLink).toHaveFocus();
+      expect(screen.queryByTestId('mobile-menu')).not.toBeInTheDocument();
+    });
+
+    it('does not move focus on Escape when the menu was never opened', async () => {
+      // given
+      signedInUser();
+      renderWithProviders(<Navigation />);
+      await screen.findByRole('button', { name: 'Open main menu' });
+      const brandLink = screen.getByTestId('brand-link');
+      brandLink.focus();
+
+      // when
+      await user.keyboard('{Escape}');
+
+      // then
+      expect(brandLink).toHaveFocus();
+    });
+
     it('ignores other keys while the mobile menu is open', async () => {
       // given
       signedInUser();

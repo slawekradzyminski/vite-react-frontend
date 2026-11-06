@@ -78,6 +78,7 @@ describe('QrCodeGenerator', () => {
 
     // then
     expect(qr.create).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
     resolveCreate({ type: 'image/png', data: new Blob(['x']) } as Awaited<ReturnType<typeof qr.create>>);
     await waitFor(() => expect(screen.getByRole('button', { name: 'Generate QR Code' })).not.toHaveAttribute('aria-disabled', 'true'));
   });
@@ -96,6 +97,22 @@ describe('QrCodeGenerator', () => {
     expect(await screen.findByRole('img', { name: 'QR code for https://www.awesome-testing.com' })).toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('QR code generated');
     expect(screen.getByRole('button', { name: 'Generate QR Code' })).toHaveFocus();
+  });
+
+  // given
+  it('clears the previous success message when a new code is requested', async () => {
+    vi.mocked(qr.create).mockResolvedValueOnce({ type: 'image/png', data: new Blob(['test']) });
+    renderComponent();
+    await user.type(screen.getByRole('textbox'), 'first');
+    await user.click(screen.getByRole('button', { name: /generate/i }));
+    await screen.findByText('QR code generated');
+    vi.mocked(qr.create).mockReturnValueOnce(new Promise(() => {}));
+
+    // when
+    await user.click(screen.getByRole('button', { name: /generate/i }));
+
+    // then
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
   // given
