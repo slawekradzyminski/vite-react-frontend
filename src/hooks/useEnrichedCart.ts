@@ -11,6 +11,7 @@ interface RawCartItem {
   price?: number;
   totalPrice?: number;
   imageUrl?: string;
+  stockQuantity?: number;
 }
 
 export interface RawCartResponse {
@@ -38,6 +39,7 @@ const enrichCartItem = async (item: RawCartItem): Promise<CartItem> => {
       unitPrice,
       totalPrice: item.totalPrice ?? item.quantity * unitPrice,
       imageUrl: item.imageUrl ?? productData.imageUrl ?? '',
+      stockQuantity: productData.stockQuantity,
     };
   } catch (error) {
     console.error(`Error fetching details for product ${item.productId}:`, error);
@@ -87,6 +89,7 @@ export function useEnrichedCart(rawData?: RawCartResponse) {
           quantity: item.quantity,
           unitPrice: item.unitPrice ?? 0,
           totalPrice: item.totalPrice ?? 0,
+          stockQuantity: item.stockQuantity,
         }))
         : await Promise.all(currentRawItems.map(enrichCartItem));
 

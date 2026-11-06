@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
-import { useQuery } from '@tanstack/react-query';
 import { CartItem as CartItemType } from '../../types/cart';
 import { cart, products } from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
 import { formatPrice } from '../../lib/format';
-import { describeCartError, responseStatus, retryServerErrors } from '../../lib/requestErrors';
+import { describeCartError, responseStatus } from '../../lib/requestErrors';
 
 interface CartItemProps {
   item: CartItemType;
@@ -30,14 +29,9 @@ export function CartItem({ item, onUpdate, onPendingChange }: CartItemProps) {
   const [quantity, setQuantity] = useState(safeItem.quantity);
   const { toast } = useToast();
 
-  // Stock is not part of the cart payload; the product query caps "+" (BUG-007).
-  const { data: productResponse, refetch: refetchProduct } = useQuery({
-    queryKey: ['product', String(safeItem.productId)],
-    queryFn: () => products.getProductById(safeItem.productId),
-    enabled: safeItem.productId > 0,
-    retry: retryServerErrors,
-  });
-  const stock = productResponse?.data?.stockQuantity;
+  // Stock arrives with the cart (GraphQL product field or REST enrichment), so the
+  // row needs no request of its own to cap "+" (BUG-007).
+  const stock = item?.stockQuantity;
   const maxQuantity = stock === undefined ? Infinity : Math.max(stock, 1);
   
   useEffect(() => {
@@ -67,10 +61,12 @@ export function CartItem({ item, onUpdate, onPendingChange }: CartItemProps) {
       console.error('Failed to update cart item:', error);
       let description = describeCartError(error, 'Failed to update cart. Please try again.');
       if (responseStatus(error) === 409) {
-        const { data: refreshed } = await refetchProduct();
-        const freshStock = refreshed?.data?.stockQuantity;
-        if (freshStock !== undefined) {
-          description = freshStock > 0 ? `Only ${freshStock} left in stock.` : `${safeItem.productName} is now out of stock.`;
+        // The stock may have changed since the cart was loaded; report the current value.
+        try {
+          const { data: fresh } = await products.getProductById(safeItem.productId);
+          description = fresh.stockQuantity > 0 ? `Only ${fresh.stockQuantity} left in stock.` : `${safeItem.productName} is now out of stock.`;
+        } catch {
+          // Keep the generic stock message when the product cannot be read.
         }
       }
       toast({ variant: 'error', title: 'Error', description });

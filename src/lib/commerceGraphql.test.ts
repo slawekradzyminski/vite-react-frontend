@@ -72,7 +72,7 @@ describe('GraphQL commerce contracts', () => {
     const expectedProduct = { ...product, id: 42, price: 999.99 };
     expect(products.map(response => response.data)).toEqual([[expectedProduct], expectedProduct, expectedProduct, expectedProduct]);
     for (const response of carts) expect(response.data).toMatchObject({ username: 'alice', enriched: true, totalItems: 3, totalPrice: 2999.97,
-      items: [{ productId: 42, productName: 'Book', imageUrl: 'book.png', quantity: 3, unitPrice: 999.99, totalPrice: 2999.97 }] });
+      items: [{ productId: 42, productName: 'Book', imageUrl: 'book.png', quantity: 3, unitPrice: 999.99, totalPrice: 2999.97, stockQuantity: 8 }] });
     const expectedOrder = { ...order, id: 7, totalAmount: 2999.97,
       items: [{ ...order.items[0], id: 8, productId: 42, unitPrice: 999.99, totalPrice: 2999.97 }] };
     for (const response of orders) expect(response.data).toEqual(expectedOrder);
@@ -92,7 +92,7 @@ describe('GraphQL commerce contracts', () => {
     const result = await api.cart.getCart();
     // then
     expect(result.data).toEqual({ username: 'alice', enriched: true, totalItems: 3, totalPrice: 2999.97,
-      items: [{ productId: 42, productName: 'Book', quantity: 3, unitPrice: 999.99, totalPrice: 2999.97, imageUrl: 'book.png' }] });
+      items: [{ productId: 42, productName: 'Book', quantity: 3, unitPrice: 999.99, totalPrice: 2999.97, imageUrl: 'book.png', stockQuantity: 8 }] });
     expect(post).toHaveBeenCalledOnce();
     expect(post).toHaveBeenCalledWith('/api/v1/graphql', expect.objectContaining({ variables: {} }));
   });

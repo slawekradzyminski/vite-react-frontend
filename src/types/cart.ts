@@ -5,6 +5,8 @@ export interface CartItem {
   unitPrice: number;
   totalPrice: number;
   imageUrl?: string;
+  // Current product stock, when the cart source provides it.
+  stockQuantity?: number;
 }
 
 export interface Cart {

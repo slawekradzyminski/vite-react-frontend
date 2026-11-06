@@ -35,7 +35,7 @@ vi.mock('react-router', () => {
 });
 
 
-// Distinct product ids per scenario, because the shared test QueryClient caches product queries.
+// Stock returned by the product lookup after a 409.
 const STOCK_BY_ID: Record<number, number> = { 31: 3, 32: 3, 35: 3, 36: 3 };
 
 const conflict = (status = 409) =>
@@ -239,9 +239,8 @@ describe("CartItem", () => {
 
   it('stops "+" at the available stock (BUG-007)', async () => {
     // given
-    renderCartItem({ ...mockItem, productId: 31, quantity: 2 });
+    renderCartItem({ ...mockItem, productId: 31, quantity: 2, stockQuantity: 3 });
     const plus = screen.getByTestId('cart-item-increase-31');
-    await waitFor(() => expect(products.getProductById).toHaveBeenCalledWith(31));
 
     // when
     fireEvent.click(plus); // 2 -> 3
@@ -256,8 +255,7 @@ describe("CartItem", () => {
     // given
     vi.mocked(cart.updateCartItem).mockRejectedValue(conflict());
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    renderCartItem({ ...mockItem, productId: 32, quantity: 2 });
-    await waitFor(() => expect(products.getProductById).toHaveBeenCalledWith(32));
+    renderCartItem({ ...mockItem, productId: 32, quantity: 2, stockQuantity: 5 });
     fireEvent.click(screen.getByTestId('cart-item-increase-32'));
 
     // when
@@ -268,7 +266,25 @@ describe("CartItem", () => {
       variant: 'error',
       description: 'Only 3 left in stock.',
     })));
+    expect(products.getProductById).toHaveBeenCalledWith(32);
     expect(screen.getByTestId('cart-item-quantity-32')).toHaveTextContent('2');
+  });
+
+  it('caps "+" from the cart data without requesting the product (GraphQL single-query contract)', () => {
+    // when
+    renderCartItem({ ...mockItem, productId: 37, quantity: 2, stockQuantity: 2 });
+
+    // then
+    expect(screen.getByTestId('cart-item-increase-37')).toBeDisabled();
+    expect(products.getProductById).not.toHaveBeenCalled();
+  });
+
+  it('leaves "+" uncapped when the cart source has no stock', () => {
+    // when
+    renderCartItem({ ...mockItem, productId: 38, quantity: 2 });
+
+    // then
+    expect(screen.getByTestId('cart-item-increase-38')).toBeEnabled();
   });
 
   it('confirms a saved quantity and a removal with toasts', async () => {
@@ -312,8 +328,7 @@ describe("CartItem", () => {
     // given
     vi.mocked(cart.updateCartItem).mockRejectedValue(conflict(500));
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    renderCartItem({ ...mockItem, productId: 35, quantity: 1 });
-    await waitFor(() => expect(products.getProductById).toHaveBeenCalledTimes(1));
+    renderCartItem({ ...mockItem, productId: 35, quantity: 1, stockQuantity: 3 });
     fireEvent.click(screen.getByTestId('cart-item-increase-35'));
 
     // when
@@ -324,7 +339,7 @@ describe("CartItem", () => {
       variant: 'error',
       description: 'Failed to update cart. Please try again.',
     })));
-    expect(products.getProductById).toHaveBeenCalledTimes(1);
+    expect(products.getProductById).not.toHaveBeenCalled();
   });
 
   it('explains a failed removal', async () => {
