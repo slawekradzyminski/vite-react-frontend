@@ -7,8 +7,10 @@ import { Surface } from '../../components/ui/surface';
 import { authStorage } from '../../lib/authStorage';
 import { sso } from '../../lib/sso';
 import { navigateAfterLogin } from '../../lib/loginNavigation';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 export function SsoCallbackPage() {
+  useDocumentTitle('Signing in');
   const navigate = useNavigate();
   const [state, setState] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('Completing single sign-on...');

@@ -6,8 +6,10 @@ import { auth } from '../../lib/api';
 import type { User } from '../../types/auth';
 import { Role } from '../../types/auth';
 import { Surface } from '../../components/ui/surface';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 export function UsersPage() {
+  useDocumentTitle('Users');
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deleteError, setDeleteError] = useState<string | null>(null);

@@ -7,8 +7,10 @@ import { Label } from '../../components/ui/label';
 import { auth } from '../../lib/api';
 import { Role, type User } from '../../types/auth';
 import { Surface } from '../../components/ui/surface';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 export function EditUserPage() {
+  useDocumentTitle('Edit User');
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();

@@ -9,10 +9,12 @@ import { Badge } from '../../components/ui/badge';
 import { trafficPresentation } from '../../lib/trafficPresentation';
 import { authStorage } from '../../lib/authStorage';
 import { Surface } from '../../components/ui/surface';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 type TrafficEventView = TrafficEventDto & { eventKey: string };
 
 export function TrafficMonitorPage() {
+  useDocumentTitle('Traffic Monitor');
   const [trafficEvents, setTrafficEvents] = useState<TrafficEventView[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [statusMessage, setStatusMessage] = useState(() => {

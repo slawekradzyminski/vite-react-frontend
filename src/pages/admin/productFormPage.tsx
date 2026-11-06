@@ -2,11 +2,13 @@ import { useParams } from 'react-router';
 import { AdminProductForm } from '../../components/products/AdminProductForm';
 import { Surface } from '../../components/ui/surface';
 import { AdminSectionNav } from '../../components/admin/AdminSectionNav';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 export function AdminProductFormPage() {
   const { id } = useParams<{ id: string }>();
   const productId = id ? parseInt(id, 10) : undefined;
   const isEditing = !!productId;
+  useDocumentTitle(isEditing ? 'Edit Product' : 'Add New Product');
 
   return (
     <div className="space-y-6 pb-10" data-testid="admin-product-form-page">

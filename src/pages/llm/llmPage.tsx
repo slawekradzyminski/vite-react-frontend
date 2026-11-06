@@ -4,6 +4,7 @@ import { Surface } from '../../components/ui/surface';
 import { Badge } from '../../components/ui/badge';
 import { cn } from '../../lib/utils';
 import { DEFAULT_OLLAMA_MODEL_LABEL } from '../../lib/ollamaDefaults';
+import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 
 const MODES = [
   {
@@ -39,6 +40,7 @@ const MODES = [
 ];
 
 export function LlmPage() {
+  useDocumentTitle('LLM Assistant');
   return (
     <div className="min-h-screen py-12" data-testid="llm-page">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
