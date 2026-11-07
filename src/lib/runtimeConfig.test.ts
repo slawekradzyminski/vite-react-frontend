@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getAbsoluteApiUrl, getApiBaseUrl, getPasswordResetBaseUrl, getSsoConfig } from './runtimeConfig';
+import { getAbsoluteApiUrl, getApiBaseUrl, getSsoConfig } from './runtimeConfig';
 
 describe('runtimeConfig', () => {
   afterEach(() => {
@@ -27,21 +27,6 @@ describe('runtimeConfig', () => {
         { origin: 'https://awesome.byst.re' } as Location,
       ),
     ).toBe('https://awesome.byst.re');
-  });
-
-  it('defaults password reset links to same-origin reset route', () => {
-    expect(
-      getPasswordResetBaseUrl(
-        { DEV: false },
-        { origin: 'https://awesome.byst.re' } as Location,
-      ),
-    ).toBe('https://awesome.byst.re/reset');
-  });
-
-  it('prefers configured password reset base URL when provided', () => {
-    vi.stubEnv('VITE_PASSWORD_RESET_BASE_URL', 'https://reset.example.com/reset/');
-
-    expect(getPasswordResetBaseUrl(import.meta.env, window.location)).toBe('https://reset.example.com/reset');
   });
 
   it('builds absolute websocket URLs from the resolved API origin', () => {
@@ -124,12 +109,6 @@ describe('runtimeConfig', () => {
         window.location,
       ),
     ).toBe('https://api.example.com');
-    expect(
-      getPasswordResetBaseUrl(
-        { VITE_PASSWORD_RESET_BASE_URL: '  https://reset.example.com/reset///  ' },
-        window.location,
-      ),
-    ).toBe('https://reset.example.com/reset');
   });
 
   it('normalizes SSO urls against the current origin', () => {

@@ -454,6 +454,139 @@ describe('API Client', () => {
         value: originalLocation,
       });
     });
+
+    it('does not attach an Authorization header when there is no access token', () => {
+      const config = getRequestInterceptor()({
+        url: '/api/v1/orders',
+        headers: {},
+      });
+
+      expect(config.headers.Authorization).toBeUndefined();
+    });
+
+    it('keeps the client session id when a response carries none', () => {
+      const successInterceptor = mockAxios.responseSuccessInterceptor;
+      if (!successInterceptor) {
+        throw new Error('Success interceptor was not registered');
+      }
+      localStorage.setItem('clientSessionId', 'existing-session');
+
+      successInterceptor({ headers: { 'x-client-session-id': '   ' } });
+      successInterceptor({ headers: undefined });
+
+      expect(localStorage.getItem('clientSessionId')).toBe('existing-session');
+    });
+
+    it('shares one token refresh between parallel 401 responses', async () => {
+      const errorInterceptor = getErrorInterceptor();
+      localStorage.setItem('refreshToken', 'refresh-123');
+      let resolveRefresh: (value: unknown) => void = () => {};
+      const refreshSpy = vi.spyOn(auth, 'refresh').mockReturnValue(
+        new Promise((resolve) => {
+          resolveRefresh = resolve;
+        }) as any
+      );
+      mockAxios.mockResolvedValue({ data: { ok: true } });
+
+      const first = errorInterceptor({
+        config: { url: '/api/v1/orders', headers: {} },
+        response: { status: 401 },
+      } as any);
+      const second = errorInterceptor({
+        config: { url: '/api/v1/cart', headers: {} },
+        response: { status: 401 },
+      } as any);
+      resolveRefresh({ data: { token: 'new-token', refreshToken: 'new-refresh' } });
+      await Promise.all([first, second]);
+
+      expect(refreshSpy).toHaveBeenCalledTimes(1);
+      expect(mockAxios).toHaveBeenCalledTimes(2);
+      expect(mockAxios).toHaveBeenCalledWith(expect.objectContaining({
+        url: '/api/v1/cart',
+        _retry: true,
+        headers: expect.objectContaining({ Authorization: 'Bearer new-token' }),
+      }));
+      refreshSpy.mockRestore();
+      mockAxios.mockReset();
+    });
+
+    it('redirects instead of refreshing again when a retried request is still unauthorized', async () => {
+      const errorInterceptor = getErrorInterceptor();
+      localStorage.setItem('token', 'new-token');
+      localStorage.setItem('refreshToken', 'refresh-123');
+      const refreshSpy = vi.spyOn(auth, 'refresh');
+      const originalLocation = window.location;
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: { href: 'http://localhost/' } as Location,
+      });
+
+      const error = {
+        config: { url: '/api/v1/orders', headers: {}, _retry: true },
+        response: { status: 401 },
+      };
+      await expect(errorInterceptor(error as any)).rejects.toBe(error as any);
+
+      expect(refreshSpy).not.toHaveBeenCalled();
+      expect(localStorage.getItem('token')).toBeNull();
+      expect(window.location.href).toBe('/login');
+      refreshSpy.mockRestore();
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    });
+
+    it('does not attempt a refresh for a 401 when no refresh token is stored', async () => {
+      const errorInterceptor = getErrorInterceptor();
+      localStorage.setItem('token', 'expired-token');
+      const refreshSpy = vi.spyOn(auth, 'refresh');
+      const originalLocation = window.location;
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: { href: 'http://localhost/' } as Location,
+      });
+
+      const error = {
+        config: { url: '/api/v1/orders', headers: {} },
+        response: { status: 401 },
+      };
+      await expect(errorInterceptor(error as any)).rejects.toBe(error as any);
+
+      expect(refreshSpy).not.toHaveBeenCalled();
+      expect(window.location.href).toBe('/login');
+      refreshSpy.mockRestore();
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    });
+
+    it('redirects on 403 without trying to refresh the token', async () => {
+      const errorInterceptor = getErrorInterceptor();
+      localStorage.setItem('token', 'valid-token');
+      localStorage.setItem('refreshToken', 'refresh-123');
+      const refreshSpy = vi.spyOn(auth, 'refresh');
+      const originalLocation = window.location;
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: { href: 'http://localhost/' } as Location,
+      });
+
+      const error = {
+        config: { url: '/api/v1/orders/admin', headers: {} },
+        response: { status: 403 },
+      };
+      await expect(errorInterceptor(error as any)).rejects.toBe(error as any);
+
+      expect(refreshSpy).not.toHaveBeenCalled();
+      expect(window.location.href).toBe('/login');
+      refreshSpy.mockRestore();
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    });
   });
 
   describe('ollama API', () => {
@@ -564,6 +697,81 @@ describe('API Client', () => {
       expect(localStorage.getItem('refreshToken')).toBeNull();
       expect(window.location.href).toBe('/login');
 
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    });
+
+    it('does not retry a stream with the stale token when the refresh fails', async () => {
+      vi.mocked(global.fetch).mockResolvedValue(
+        new Response(null, { status: 401, statusText: 'Unauthorized' })
+      );
+      localStorage.setItem('token', 'expired');
+      localStorage.setItem('refreshToken', 'revoked-refresh-token');
+      const refreshSpy = vi.spyOn(auth, 'refresh').mockRejectedValue(new Error('refresh rejected'));
+      const originalLocation = window.location;
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: { href: 'http://localhost/' } as Location,
+      });
+
+      await expect(ollama.generate(requestBody)).rejects.toThrow('Failed to refresh session');
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(refreshSpy).toHaveBeenCalledWith({ refreshToken: 'revoked-refresh-token' });
+      expect(localStorage.getItem('token')).toBeNull();
+      expect(localStorage.getItem('refreshToken')).toBeNull();
+      expect(window.location.href).toBe('/login');
+
+      refreshSpy.mockRestore();
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    });
+
+    it('clears auth and redirects when a stream is forbidden', async () => {
+      vi.mocked(global.fetch).mockResolvedValue(
+        new Response(null, { status: 403, statusText: 'Forbidden' })
+      );
+      localStorage.setItem('token', 'abc');
+      const originalLocation = window.location;
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: { href: 'http://localhost/' } as Location,
+      });
+
+      await expect(ollama.generate(requestBody)).rejects.toThrow('Failed to fetch stream: Forbidden');
+      expect(localStorage.getItem('token')).toBeNull();
+      expect(window.location.href).toBe('/login');
+
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    });
+
+    it('keeps the session when a stream fails with a server error', async () => {
+      vi.mocked(global.fetch).mockResolvedValue(
+        new Response(null, { status: 500, statusText: 'Internal Server Error' })
+      );
+      localStorage.setItem('token', 'abc');
+      localStorage.setItem('refreshToken', 'refresh-token');
+      const refreshSpy = vi.spyOn(auth, 'refresh');
+      const originalLocation = window.location;
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: { href: 'http://localhost/' } as Location,
+      });
+
+      await expect(ollama.generate(requestBody)).rejects.toThrow(
+        'Failed to fetch stream: Internal Server Error'
+      );
+      expect(refreshSpy).not.toHaveBeenCalled();
+      expect(localStorage.getItem('token')).toBe('abc');
+      expect(window.location.href).toBe('http://localhost/');
+
+      refreshSpy.mockRestore();
       Object.defineProperty(window, 'location', {
         configurable: true,
         value: originalLocation,

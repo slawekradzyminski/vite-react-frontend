@@ -7,16 +7,19 @@ type AuthenticatedPageFixtures = {
         page: Page;
         user: User;
         token: string;
+        refreshToken: string;
     };
     adminPage: {
         page: Page;
         user: User;
         token: string;
+        refreshToken: string;
     };
     clientPage: {
         page: Page;
         user: User;
         token: string;
+        refreshToken: string;
     };
 };
 

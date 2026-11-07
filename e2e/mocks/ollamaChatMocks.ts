@@ -1,9 +1,6 @@
 import { Page, Route } from '@playwright/test';
 import { BACKEND_URL } from '../config/constants';
-
-function createMockEventStream(chunks: any[]): string {
-  return chunks.map(chunk => `data: ${JSON.stringify(chunk)}\n\n`).join('');
-}
+import { eventStream } from './backendContract';
 
 export const ollamaChatMocks = {
   async mockSuccess(page: Page, onRequest?: (route: Route) => void) {
@@ -12,7 +9,7 @@ export const ollamaChatMocks = {
       await route.fulfill({
         status: 200,
         headers: { 'content-type': 'text/event-stream' },
-        body: createMockEventStream([
+        body: eventStream('ChatResponseDto', [
           {
             message: { content: "The Ollama mock is up on port 11434 and ready to serve deterministic responses.", role: 'assistant' },
             done: false
@@ -36,7 +33,7 @@ export const ollamaChatMocks = {
       await route.fulfill({
         status: 200,
         headers: { 'content-type': 'text/event-stream' },
-        body: createMockEventStream([
+        body: eventStream('ChatResponseDto', [
           {
             message: { content: "Love is emotion.", role: 'assistant' },
             done: false
@@ -56,7 +53,7 @@ export const ollamaChatMocks = {
       await route.fulfill({
         status: 200,
         headers: { 'content-type': 'text/event-stream' },
-        body: createMockEventStream([
+        body: eventStream('ChatResponseDto', [
           {
             message: { 
               content: "The Ollama mock is up on port 11434 and ready to serve deterministic responses.",
@@ -90,7 +87,7 @@ export const ollamaChatMocks = {
       await route.fulfill({
         status: 200,
         headers: { 'content-type': 'text/event-stream' },
-        body: createMockEventStream([
+        body: eventStream('ChatResponseDto', [
           {
             message: {
               role: 'assistant',
@@ -141,7 +138,7 @@ export const ollamaChatMocks = {
       await route.fulfill({
         status: 200,
         headers: { 'content-type': 'text/event-stream' },
-        body: createMockEventStream([
+        body: eventStream('ChatResponseDto', [
           {
             message: {
               role: 'assistant',
@@ -176,7 +173,7 @@ export const ollamaChatMocks = {
       await route.fulfill({
         status: 200,
         headers: { 'content-type': 'text/event-stream' },
-        body: createMockEventStream([
+        body: eventStream('ChatResponseDto', [
           {
             message: {
               role: 'assistant',
@@ -210,7 +207,7 @@ export const ollamaChatMocks = {
       await route.fulfill({
         status: 200,
         headers: { 'content-type': 'text/event-stream' },
-        body: createMockEventStream([
+        body: eventStream('ChatResponseDto', [
           {
             message: {
               role: 'assistant',

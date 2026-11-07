@@ -24,13 +24,21 @@ This section points other automation or human teammates to the right document fo
 - Suffix repeated list items with a stable key, for example `inventory-movement-${movement.id}`.
 - [`src/test/testIdCoverage.test.ts`](./src/test/testIdCoverage.test.ts) fails when one is missing. Components that spread props or render through `asChild` pass the caller's ID through and are skipped.
 
+## Backend API contract
+
+- [`openapi/backend-api-docs.json`](./openapi/backend-api-docs.json) is the OpenAPI document of the backend image pinned in `docker-compose.yml`. `src/types/generated/backend-api.ts` is generated from it; never edit either by hand.
+- When you bump the backend pin, start the stack and run `npm run api:snapshot`, then fix every error `npm run typecheck` reports. CI fails the E2E job when the pinned backend no longer matches the snapshot (`npm run api:check`) and the unit job when the generated types are stale.
+- [`src/types/apiContract.test.ts`](./src/types/apiContract.test.ts) checks the hand-written types in `src/types` against the snapshot at compile time. Add a mapping there when you add an API type.
+- Playwright mocks serve bodies through [`e2e/mocks/backendContract.ts`](./e2e/mocks/backendContract.ts), so a mock cannot invent fields the backend does not send. Type new mocks the same way.
+
 ## LLM implementation notes
 
 - [`docs/function-calling-flow.md`](./docs/function-calling-flow.md) – diagrams the message flow for chat, generate, and tool calling, which helps when triaging SSE events or tool payloads.
 
 ## Mutation-testing feedback
 
-- Run `npm test` first, then `npm run test:mutation` after changing SSO, runtime URL, SSE behavior, or their tests.
+- Run `npm test` first, then `npm run test:mutation` after changing SSO, runtime URL, SSE behavior, the API client and token refresh, auth storage, role checks, route protection, or their tests.
+- Stryker runs incrementally and keeps its state in `reports/stryker-incremental.json`, so repeat runs only re-test changed code and tests. Run `npx stryker run --force` for a full baseline.
 - Treat `NoCoverage` as a reachability gap and `Survived` as an assertion gap. For each meaningful survivor, add a test that passes on the original code and fails on that mutant.
 - Prioritize authentication/PKCE invariants, callback failure paths, redirect safety, and lossless stream parsing. Do not add brittle implementation-detail assertions solely to increase the score.
 - The initial score is advisory. On pull requests, reject new meaningful survivors in changed high-risk code; keep broader mutation-score trend checks outside the fast test loop.

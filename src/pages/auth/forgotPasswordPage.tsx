@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router';
@@ -7,7 +7,6 @@ import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { auth } from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
-import { getPasswordResetBaseUrl } from '../../lib/runtimeConfig';
 import { ForgotPasswordFormData, forgotPasswordSchema } from '../../validators/auth';
 import { Surface } from '../../components/ui/surface';
 import { Badge } from '../../components/ui/badge';
@@ -22,11 +21,6 @@ export function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [rawToken, setRawToken] = useState<string | null>(null);
 
-  const resetDestination = useMemo(
-    () => getPasswordResetBaseUrl(),
-    []
-  );
-
   const {
     register,
     handleSubmit,
@@ -40,11 +34,8 @@ export function ForgotPasswordPage() {
     setLoading(true);
     setRawToken(null);
     try {
-      const payload = {
-        identifier: data.identifier,
-        resetBaseUrl: resetDestination,
-      };
-      const response = await auth.requestPasswordReset(payload);
+      // The backend builds the reset link from its own PASSWORD_RESET_FRONTEND_BASE_URL setting.
+      const response = await auth.requestPasswordReset({ identifier: data.identifier });
       setRawToken(response.data.token ?? null);
       toast({
         variant: 'success',

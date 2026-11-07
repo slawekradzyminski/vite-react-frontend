@@ -1,114 +1,74 @@
 import { Page } from "@playwright/test";
+import { fulfillWithSchema, type BackendSchema } from "./backendContract";
+
+// The backend cart only holds product ids and quantities; the frontend looks up names, prices,
+// and images per product. A fixture keeps both halves together so each mock serves the same data.
+export interface CartFixtureItem {
+  productId: number;
+  name: string;
+  quantity: number;
+  unitPrice: number;
+  imageUrl?: string;
+}
+
+export interface CartFixture {
+  username: string;
+  items: CartFixtureItem[];
+}
+
+const PLACEHOLDER_IMAGE = "https://via.placeholder.com/150";
+
+export const toCartDto = (cart: CartFixture): BackendSchema<"CartDto"> => ({
+  username: cart.username,
+  items: cart.items.map(({ productId, quantity }) => ({ productId, quantity })),
+  totalPrice: Number(cart.items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0).toFixed(2)),
+  totalItems: cart.items.reduce((sum, item) => sum + item.quantity, 0),
+});
+
+const toProductDto = (item: CartFixtureItem): BackendSchema<"ProductDto"> => ({
+  id: item.productId,
+  name: item.name,
+  price: item.unitPrice,
+  imageUrl: item.imageUrl ?? PLACEHOLDER_IMAGE,
+  description: "Test description",
+  stockQuantity: 10,
+  category: "Test Category",
+});
+
+const mockProductsOf = async (page: Page, cart: CartFixture) => {
+  for (const item of cart.items) {
+    await page.route(`**/api/v1/products/${item.productId}`, async (route) => {
+      await fulfillWithSchema(route, "ProductDto", toProductDto(item));
+    });
+  }
+};
+
+const emptyCart = (cart: CartFixture) => {
+  cart.items = [];
+};
 
 export const cartMocks = {
   async mockEmptyCart(page: Page) {
     await page.route("**/api/v1/cart", async (route) => {
-      await route.fulfill({
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          items: [],
-          totalPrice: 0,
-          totalItems: 0,
-        }),
-      });
+      await fulfillWithSchema(route, "CartDto", { items: [], totalPrice: 0, totalItems: 0 });
     });
   },
 
   async mockCartWithItems(page: Page) {
-    await page.route("**/api/v1/cart", async (route) => {
-      await route.fulfill({
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: "testuser",
-          items: [
-            {
-              productId: 1,
-              productName: "Test Product 1",
-              quantity: 2,
-              unitPrice: 19.99,
-              totalPrice: 39.98,
-              imageUrl: "https://via.placeholder.com/150"
-            },
-            {
-              productId: 2,
-              productName: "Test Product 2",
-              quantity: 1,
-              unitPrice: 29.99,
-              totalPrice: 29.99,
-              imageUrl: "https://via.placeholder.com/150"
-            },
-          ],
-          totalPrice: 69.97,
-          totalItems: 3,
-        }),
-      });
-    });
-
-    // Mock product API calls for image URLs
-    await page.route("**/api/v1/products/1", async (route) => {
-      await route.fulfill({
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: 1,
-          name: "Test Product 1",
-          price: 19.99,
-          imageUrl: "https://via.placeholder.com/150",
-          description: "Test description",
-          stockQuantity: 10,
-          category: "Test Category"
-        }),
-      });
-    });
-
-    await page.route("**/api/v1/products/2", async (route) => {
-      await route.fulfill({
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: 2,
-          name: "Test Product 2",
-          price: 29.99,
-          imageUrl: "https://via.placeholder.com/150",
-          description: "Test description",
-          stockQuantity: 10,
-          category: "Test Category"
-        }),
-      });
+    await cartMocks.mockCartWithState(page, {
+      username: "testuser",
+      items: [
+        { productId: 1, name: "Test Product 1", quantity: 2, unitPrice: 19.99 },
+        { productId: 2, name: "Test Product 2", quantity: 1, unitPrice: 29.99 },
+      ],
     });
   },
 
-  async mockCartWithState(page: Page, cartState: any) {
+  async mockCartWithState(page: Page, cart: CartFixture) {
     await page.route("**/api/v1/cart", async (route) => {
-      await route.fulfill({
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(cartState),
-      });
+      await fulfillWithSchema(route, "CartDto", toCartDto(cart));
     });
-
-    // Mock product API calls for image URLs
-    for (const item of cartState.items || []) {
-      await page.route(`**/api/v1/products/${item.productId}`, async (route) => {
-        await route.fulfill({
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: item.productId,
-            name: item.productName,
-            price: item.unitPrice,
-            imageUrl: item.imageUrl || "https://via.placeholder.com/150",
-            description: "Test description",
-            stockQuantity: 10,
-            category: "Test Category"
-          }),
-        });
-      });
-    }
+    await mockProductsOf(page, cart);
   },
 
   async mockAddCartItem(page: Page) {
@@ -129,94 +89,39 @@ export const cartMocks = {
     });
   },
 
-  async mockUpdateCartState(page: Page, cartState: any) {
+  async mockUpdateCartState(page: Page, cart: CartFixture) {
     await page.route("**/api/v1/cart/items/1", async (route) => {
       if (route.request().method() === "PUT") {
-        cartState.items[0].quantity = 2;
-        cartState.items[0].totalPrice = cartState.items[0].unitPrice * 2;
-        cartState.totalItems = 2;
-        cartState.totalPrice = cartState.items[0].totalPrice;
-
-        await route.fulfill({
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(cartState),
-        });
+        cart.items[0].quantity = 2;
+        await fulfillWithSchema(route, "CartDto", toCartDto(cart));
       }
     });
   },
 
-  async mockRemoveCartItem(page: Page, cartState: any) {
+  async mockRemoveCartItem(page: Page, cart: CartFixture) {
     await page.route("**/api/v1/cart/items/1", async (route) => {
       if (route.request().method() === "DELETE") {
-        cartState.items = [];
-        cartState.totalPrice = 0;
-        cartState.totalItems = 0;
-
-        await route.fulfill({
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(cartState),
-        });
+        emptyCart(cart);
+        await fulfillWithSchema(route, "CartDto", toCartDto(cart));
       }
     });
   },
 
-  async mockRemoveCart(page: Page, cartState: any) {
-    await page.route("**/api/v1/cart", async (route) => {
-      if (route.request().method() === "DELETE") {
-        cartState.items = [];
-        cartState.totalPrice = 0;
-        cartState.totalItems = 0;
-        await route.fulfill({
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
-      } else {
-        await route.continue();
-      }
-    });
-  },
-
-  async mockCartForClearTest(page: Page, cartState: any) {
+  async mockCartForClearTest(page: Page, cart: CartFixture) {
     await page.route("**/api/v1/cart", async (route) => {
       const method = route.request().method();
       if (method === "DELETE") {
-        cartState.items = [];
-        cartState.totalPrice = 0;
-        cartState.totalItems = 0;
+        emptyCart(cart);
         await route.fulfill({
           status: 200,
           headers: { "Content-Type": "application/json" }
         });
       } else if (method === "GET") {
-        await route.fulfill({
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(cartState)
-        });
+        await fulfillWithSchema(route, "CartDto", toCartDto(cart));
       } else {
         await route.continue();
       }
     });
-
-    // Mock product API calls for image URLs
-    for (const item of cartState.items || []) {
-      await page.route(`**/api/v1/products/${item.productId}`, async (route) => {
-        await route.fulfill({
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: item.productId,
-            name: item.productName,
-            price: item.unitPrice,
-            imageUrl: item.imageUrl || "https://via.placeholder.com/150",
-            description: "Test description",
-            stockQuantity: 10,
-            category: "Test Category"
-          }),
-        });
-      });
-    }
+    await mockProductsOf(page, cart);
   },
 };

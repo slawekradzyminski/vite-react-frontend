@@ -1,5 +1,5 @@
 import { test, expect } from "../fixtures/auth.fixture";
-import { cartMocks } from "../mocks/cartMocks";
+import { cartMocks, type CartFixture } from "../mocks/cartMocks";
 import { CartPage } from "../pages/cart.page.object";
 
 test.describe("Cart Page", () => {
@@ -51,20 +51,17 @@ test.describe("Cart Page", () => {
 
   test("should update cart item quantity", async ({ authenticatedPage }) => {
     // given
-    const initialCartState = {
+    const initialCartState: CartFixture = {
       username: "testuser",
       items: [
         {
           productId: 1,
-          productName: "Test Product 1",
+          name: "Test Product 1",
           quantity: 1,
           unitPrice: 19.99,
-          totalPrice: 19.99,
           imageUrl: "test-image-1.jpg"
         },
       ],
-      totalPrice: 19.99,
-      totalItems: 1,
     };
 
     await cartMocks.mockCartWithState(authenticatedPage.page, initialCartState);
@@ -85,20 +82,17 @@ test.describe("Cart Page", () => {
 
   test("should remove item from cart", async ({ authenticatedPage }) => {
     // given
-    const initialCartState = {
+    const initialCartState: CartFixture = {
       username: "testuser",
       items: [
         {
           productId: 1,
-          productName: "Test Product 1",
+          name: "Test Product 1",
           quantity: 1,
           unitPrice: 19.99,
-          totalPrice: 19.99,
           imageUrl: "test-image-1.jpg"
         },
       ],
-      totalPrice: 19.99,
-      totalItems: 1,
     };
 
     await cartMocks.mockCartWithState(authenticatedPage.page, initialCartState);
@@ -118,20 +112,17 @@ test.describe("Cart Page", () => {
 
   test("should clear cart", async ({ authenticatedPage }) => {
     // given
-    const cartState = {
+    const cartState: CartFixture = {
       username: "testuser",
       items: [
         {
           productId: 1,
-          productName: "Test Product 1",
+          name: "Test Product 1",
           quantity: 1,
           unitPrice: 19.99,
-          totalPrice: 19.99,
           imageUrl: "test-image-1.jpg"
         },
       ],
-      totalPrice: 19.99,
-      totalItems: 1,
     };
 
     await cartMocks.mockCartForClearTest(authenticatedPage.page, cartState);

@@ -24,6 +24,9 @@
     "regression": "npm test && npm run build && npm run test:e2e:ai",
     "test:e2e:commerce": "playwright test --config=playwright.commerce.config.ts",
     "typecheck": "tsc -b",
+    "api:snapshot": "node scripts/api-contract.mjs snapshot && npm run api:generate",
+    "api:generate": "openapi-typescript openapi/backend-api-docs.json --output src/types/generated/backend-api.ts",
+    "api:check": "node scripts/api-contract.mjs check",
     "demo:webmcp": "vite --config vite.webmcp.config.ts",
     "test:e2e:webmcp": "playwright test --config playwright.webmcp.config.ts"
   },
@@ -75,6 +78,7 @@
     "globals": "^17.12.0",
     "graphql": "^17.0.2",
     "jsdom": "^30.1.1",
+    "openapi-typescript": "7.13.0",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.70.1",
     "vite": "^8.3.5",
@@ -84,6 +88,9 @@
     "qs": "6.17.1",
     "@tailwindcss/typography": {
       "postcss-selector-parser": "7.1.7"
+    },
+    "openapi-typescript": {
+      "typescript": "$typescript"
     }
   }
 }

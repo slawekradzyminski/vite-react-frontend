@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { Role, RegisterRequest } from '../../src/types/auth';
+import { RegisterRequest } from '../../src/types/auth';
 
 const MAX_ATTEMPTS = 20;
 
@@ -9,7 +9,6 @@ export const getRandomUser = (): RegisterRequest => ({
   password: drawValidValue(() => faker.internet.password(), 8, 255),
   firstName: drawValidValue(() => faker.person.firstName(), 4, 255),
   lastName: drawValidValue(() => faker.person.lastName(), 4, 255),
-  roles: [Role.CLIENT, Role.ADMIN],
 });
 
 const drawValidValue = (draw: () => string, min: number, max: number): string => {

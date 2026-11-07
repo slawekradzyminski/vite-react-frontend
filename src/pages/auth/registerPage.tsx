@@ -6,7 +6,6 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { auth } from '../../lib/api';
-import { Role } from '../../types/auth';
 import { RegisterFormData, registerSchema } from '../../validators/auth';
 import { useToast } from '../../hooks/useToast';
 import { Surface } from '../../components/ui/surface';
@@ -35,10 +34,7 @@ export function RegisterPage() {
     setSubmitError('');
 
     try {
-      await auth.register({
-        ...data,
-        roles: [Role.CLIENT],
-      });
+      await auth.register(data);
       
       navigate('/login', { state: { toast: { variant: 'success', title: 'Success', description: 'Registration successful! You can now log in.' } } });
     } catch (err: any) {

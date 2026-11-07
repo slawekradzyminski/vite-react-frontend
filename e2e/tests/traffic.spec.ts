@@ -30,14 +30,11 @@ test.describe('Traffic Monitor Page', () => {
     const clientSessionId = await getClientSessionId(page);
     await request.get(`${BACKEND_URL}/api/v1/products`, authHeaders(token, clientSessionId));
     await request.get(`${BACKEND_URL}/api/v1/products/1`, authHeaders(token, clientSessionId));
-    await page.waitForTimeout(1000);
 
     // then
     await expect(trafficPage.trafficEventsTable).toBeVisible();
-    const methodElement1 = page.locator('td:has-text("/api/v1/products")').first();
-    await expect(methodElement1).toBeVisible();
-    const methodElement2 = page.locator('td:has-text("/api/v1/products/1")').first();
-    await expect(methodElement2).toBeVisible();
+    await expect(pathCell(page, '/api/v1/products').first()).toBeVisible();
+    await expect(pathCell(page, '/api/v1/products/1').first()).toBeVisible();
     const statusElement1 = page.locator('td:has-text("200")').first();
     await expect(statusElement1).toBeVisible();
   });
@@ -78,9 +75,9 @@ test.describe('Traffic Monitor Page', () => {
     const clientSessionId = await getClientSessionId(page);
     await request.get(`${BACKEND_URL}/api/v1/products`, authHeaders(token, clientSessionId));
     await request.get(`${BACKEND_URL}/api/v1/products/1`, authHeaders(token, clientSessionId));
-    await page.waitForTimeout(1000);
-    const methodElement1 = page.locator('td:has-text("/api/v1/products")').first();
-    await expect(methodElement1).toBeVisible();
+    // Both events must have arrived before clearing, or a late one would refill the table.
+    await expect(pathCell(page, '/api/v1/products').first()).toBeVisible();
+    await expect(pathCell(page, '/api/v1/products/1').first()).toBeVisible();
     
     // when
     await trafficPage.clearEvents();
@@ -89,6 +86,12 @@ test.describe('Traffic Monitor Page', () => {
     await expect(trafficPage.noEventsMessage).toBeVisible();
   });
 }); 
+
+// Matches the path cell exactly, so '/api/v1/products' does not also match '/api/v1/products/1'.
+const pathCell = (page: Page, path: string) =>
+  page.locator('[data-testid^="traffic-event-path-"]').filter({
+    hasText: new RegExp(`^${path}$`),
+  });
 
 const getClientSessionId = async (page: Page) => {
   const clientSessionId = await page.evaluate(() => localStorage.getItem('clientSessionId'));

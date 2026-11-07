@@ -5,9 +5,7 @@ export enum Role {
   CLIENT = 'ROLE_CLIENT',
 }
 
-export interface RegisterRequest extends RegisterFormData {
-  roles: Role[];
-}
+export interface RegisterRequest extends RegisterFormData {}
 
 export interface LoginRequest extends LoginFormData {}
 
@@ -83,12 +81,9 @@ export interface UserEditDTO {
   email: string;
   firstName?: string;
   lastName?: string;
-  roles?: Role[];
 }
 
-export interface ForgotPasswordRequest extends ForgotPasswordFormData {
-  resetBaseUrl?: string;
-}
+export interface ForgotPasswordRequest extends ForgotPasswordFormData {}
 
 export interface ForgotPasswordResponse {
   message: string;

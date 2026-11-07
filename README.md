@@ -90,12 +90,10 @@ The frontend expects the backend business API only under `/api/v1/...`. There is
 
 ## Environment Contract
 
-The frontend runtime behavior is controlled by three environment variables:
+The frontend runtime behavior is controlled by two environment variables:
 
 - `VITE_API_BASE_URL`
   Optional. Overrides the resolved API origin completely. Use this only when the frontend must call a non-default backend origin.
-- `VITE_PASSWORD_RESET_BASE_URL`
-  Optional. Controls the absolute reset page URL sent in forgot-password requests. Defaults to `${window.location.origin}/reset`.
 - `VITE_DOCKER`
   Dev-only flag. When `true`, Vite development mode targets `http://host.docker.internal:4001` instead of `http://localhost:4001`.
 
@@ -183,7 +181,7 @@ Business API calls from this frontend now target:
 
 The frontend now exposes:
 
-- `/forgot-password` – allows anonymous users to request a reset using their username or e-mail. The reset link base URL defaults to `${window.location.origin}/reset` and can be overridden via the optional `VITE_PASSWORD_RESET_BASE_URL` env variable.
+- `/forgot-password` – allows anonymous users to request a reset using their username or e-mail. The backend builds the reset link from its own `PASSWORD_RESET_FRONTEND_BASE_URL` setting.
 - `/reset` – consumes the token delivered via e-mail and lets the user pick a new password.
 
 For local development you can retrieve reset links in two ways:

@@ -27,7 +27,8 @@ test.describe('Password Reset Flow', () => {
       token = await forgotPage.tokenField.inputValue();
     } else {
       const data = await getLatestResetToken(request).catch((error: Error) => {
-        if (error.message.includes('(401)')) {
+        // Locally the outbox may be disabled; in CI the stack exposes it, so a 401 is a real failure.
+        if (error.message.includes('(401)') && !process.env.CI) {
           test.skip(true, 'Local email outbox is not exposed in this environment');
         }
         throw error;
