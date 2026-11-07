@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor, render } from '@testing-library/react';
+import { act, screen, waitFor, render } from '@testing-library/react';
 import { ProductList } from './ProductList';
 import { products } from '../../lib/api';
 import userEvent from '@testing-library/user-event';
@@ -27,6 +27,18 @@ vi.mock('react-router', async () => {
   return {
     ...actual,
     useNavigate: () => vi.fn(),
+  };
+});
+
+const agentSearch = vi.hoisted(() => ({ onSearch: undefined as undefined | ((query: string, inStockOnly: boolean) => void) }));
+
+vi.mock('../../features/webmcp/useShopWebMcp', async () => {
+  const actual = await vi.importActual<typeof import('../../features/webmcp/useShopWebMcp')>('../../features/webmcp/useShopWebMcp');
+  return {
+    useShopWebMcp: (onSearch: (query: string, inStockOnly: boolean) => void, enabled?: boolean) => {
+      agentSearch.onSearch = onSearch;
+      return actual.useShopWebMcp(onSearch, enabled);
+    },
   };
 });
 
@@ -408,6 +420,18 @@ describe('ProductList', () => {
     // then
     await waitFor(() => expect(screen.getByTestId('location-search')).toHaveTextContent('?category=Books'));
     expect(screen.getByTestId('location-search').textContent).toBe('?category=Books');
+  });
+
+  it('clears the category in the same URL update as an agent search', async () => {
+    // given
+    renderProductList({ category: 'Books' }, '/products?category=Books&sort=name-desc');
+
+    // when
+    act(() => agentSearch.onSearch?.('phone', true));
+
+    // then
+    await waitFor(() => expect(screen.getByTestId('location-search').textContent).toBe('?sort=price-asc&q=phone&inStock=1'));
+    expect(screen.getByTestId('product-search')).toHaveValue('phone');
   });
 
   it('falls back to the default sort for an unknown sort value', () => {

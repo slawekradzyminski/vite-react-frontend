@@ -97,7 +97,7 @@ export function WebMcpPage() {
     <div className={styles.page} data-testid="webmcp-page">
       <header className={styles.header}>
         <div><h1>WebMCP shop lab</h1><p>One shop. A human interface and three tools for agents.</p></div>
-        <Link to="/products">Open the regular shop ↗</Link>
+        <Link to="/products" data-testid="webmcp-shop-link">Open the regular shop ↗</Link>
       </header>
       <section className={styles.experiment} aria-label="Experiment controls">
         <label>Application scenario<select value={fault} onChange={event => {
@@ -106,15 +106,15 @@ export function WebMcpPage() {
         <p role="status" data-testid="webmcp-status">{status}</p>
         {fault !== 'none' && <p className={styles.notice}>A deliberate fault is active on this demonstration page.</p>}
       </section>
-      {error && <p role="alert" className={styles.error}>{error}</p>}
+      {error && <p role="alert" className={styles.error} data-testid="webmcp-error">{error}</p>}
       <div className={styles.workspace}>
         <section className={styles.catalogue} aria-labelledby="catalogue-title">
           <h2 id="catalogue-title">Catalogue</h2>
           <div className={styles.filters}>
             <label>Search products<input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Name, category or description" data-testid="webmcp-search" /></label>
-            <label className={styles.checkbox}><input type="checkbox" checked={inStockOnly} onChange={event => setInStockOnly(event.target.checked)} />In stock only</label>
+            <label className={styles.checkbox}><input type="checkbox" checked={inStockOnly} onChange={event => setInStockOnly(event.target.checked)} data-testid="webmcp-in-stock" />In stock only</label>
           </div>
-          <p className={styles.muted}>{visible.length} products · lowest price first</p>
+          <p className={styles.muted} data-testid="webmcp-result-count">{visible.length} products · lowest price first</p>
           <div className={styles.productList}>
             {visible.map(product => <article key={product.id} className={styles.product} data-testid={`webmcp-product-${product.id}`}>
               <div className={styles.productInfo}><h3>{product.name}</h3><p>{product.category} · {product.stockQuantity} in stock</p><strong>{formatPrice(product.price)}</strong></div>
@@ -124,13 +124,13 @@ export function WebMcpPage() {
               </div>
             </article>)}
           </div>
-          {savedCart && visible.length === 0 && <p>No products match this search.</p>}
+          {savedCart && visible.length === 0 && <p data-testid="webmcp-no-results">No products match this search.</p>}
         </section>
         <aside className={styles.side}>
           <section className={styles.cart} aria-labelledby="cart-title">
-            <div className={styles.sectionHeader}><h2 id="cart-title">Your cart</h2><button className={styles.secondary} onClick={() => void clearCart()} disabled={pending || !savedCart?.items.length}>Clear cart</button></div>
-            {!savedCart ? <p>Loading cart…</p> : <>
-              {savedCart.items.length === 0 ? <p className={styles.muted}>Your cart is empty. Add a product to begin.</p> : <ul>{savedCart.items.map(item => <li key={item.productId} data-testid={`webmcp-cart-item-${item.productId}`}><span>{catalogue.find(product => product.id === item.productId)?.name ?? `Product ${item.productId}`}</span><strong>× {item.quantity}</strong></li>)}</ul>}
+            <div className={styles.sectionHeader}><h2 id="cart-title">Your cart</h2><button className={styles.secondary} onClick={() => void clearCart()} disabled={pending || !savedCart?.items.length} data-testid="webmcp-clear-cart">Clear cart</button></div>
+            {!savedCart ? <p data-testid="webmcp-cart-loading">Loading cart…</p> : <>
+              {savedCart.items.length === 0 ? <p className={styles.muted} data-testid="webmcp-cart-empty">Your cart is empty. Add a product to begin.</p> : <ul>{savedCart.items.map(item => <li key={item.productId} data-testid={`webmcp-cart-item-${item.productId}`}><span>{catalogue.find(product => product.id === item.productId)?.name ?? `Product ${item.productId}`}</span><strong>× {item.quantity}</strong></li>)}</ul>}
               <div className={styles.total}><span><span data-testid="webmcp-cart-count">{savedCart.totalItems}</span> items</span><strong data-testid="webmcp-cart-total">{formatPrice(displayedTotal)}</strong></div>
               <p className={styles.muted}>Cart changes are saved to the training backend.</p>
             </>}
@@ -138,9 +138,9 @@ export function WebMcpPage() {
           <section className={styles.inspector} aria-labelledby="tools-title">
             <h2 id="tools-title">Agent interface</h2>
             <p className={styles.muted}>Tools belong to this page and its signed-in user.</p>
-            {tools.map(tool => <details key={tool.name}><summary><code>{tool.name}</code></summary><p>{tool.description}</p><pre>{JSON.stringify(tool.inputSchema, null, 2)}</pre></details>)}
+            {tools.map(tool => <details key={tool.name} data-testid={`webmcp-tool-${tool.name}`}><summary><code>{tool.name}</code></summary><p>{tool.description}</p><pre>{JSON.stringify(tool.inputSchema, null, 2)}</pre></details>)}
             <h3>Tool calls</h3>
-            {calls.length === 0 ? <p className={styles.muted}>No tool calls yet. Connect an agent or run the Playwright examples.</p> : <ol className={styles.calls}>{calls.map((call, index) => <li key={index}><div><code>{call.name}</code><span>{call.result.isError ? 'Error' : 'Completed'}</span></div><details><summary>Arguments and result</summary><pre>{JSON.stringify({ input: call.input, result: call.result }, null, 2)}</pre></details></li>)}</ol>}
+            {calls.length === 0 ? <p className={styles.muted} data-testid="webmcp-calls-empty">No tool calls yet. Connect an agent or run the Playwright examples.</p> : <ol className={styles.calls}>{calls.map((call, index) => <li key={index} data-testid={`webmcp-call-${index}`}><div><code>{call.name}</code><span>{call.result.isError ? 'Error' : 'Completed'}</span></div><details><summary>Arguments and result</summary><pre>{JSON.stringify({ input: call.input, result: call.result }, null, 2)}</pre></details></li>)}</ol>}
           </section>
         </aside>
       </div>

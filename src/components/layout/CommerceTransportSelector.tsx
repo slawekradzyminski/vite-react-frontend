@@ -32,7 +32,7 @@ export function CommerceTransportSelector() {
           <option value="graphql">GraphQL</option>
         </select>
       </label>
-      {error && <p role="alert">{error}</p>}
+      {error && <p role="alert" data-testid="commerce-transport-error">{error}</p>}
     </div>
   );
 }

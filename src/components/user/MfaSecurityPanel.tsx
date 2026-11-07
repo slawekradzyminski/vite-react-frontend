@@ -153,13 +153,13 @@ export function MfaSecurityPanel() {
         {statusQuery.isLoading && <p className="text-sm text-slate-500">Loading security settings...</p>}
 
         {statusQuery.isError && (
-          <div className="space-y-3" role="alert">
+          <div className="space-y-3" role="alert" data-testid="mfa-status-error">
             <p className="text-sm text-slate-700">
               {queryStatus === 409
                 ? 'Two-factor authentication for this account is managed by its identity provider.'
                 : 'Security settings could not be loaded.'}
             </p>
-            {queryStatus !== 409 && <Button type="button" variant="secondary" onClick={() => statusQuery.refetch()}>Try again</Button>}
+            {queryStatus !== 409 && <Button type="button" variant="secondary" onClick={() => statusQuery.refetch()} data-testid="mfa-status-retry">Try again</Button>}
           </div>
         )}
 
@@ -189,13 +189,13 @@ export function MfaSecurityPanel() {
                 <Label htmlFor="mfa-manual-key">Manual setup key</Label>
                 <div className="mt-2 flex gap-2">
                   <Input id="mfa-manual-key" value={setup.secret} readOnly className="font-mono tracking-[0.12em]" data-testid="mfa-manual-key" />
-                  <Button type="button" variant="secondary" aria-label="Copy manual setup key" onClick={() => copyText(setup.secret, 'Setup key')}>
+                  <Button type="button" variant="secondary" aria-label="Copy manual setup key" onClick={() => copyText(setup.secret, 'Setup key')} data-testid="mfa-copy-manual-key">
                     <Copy className="h-4 w-4" aria-hidden="true" />
                   </Button>
                 </div>
                 <p className="mt-2 text-xs text-slate-500">Setup expires {new Date(setup.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.</p>
               </div>
-              <form className="space-y-3" onSubmit={confirmSetup}>
+              <form className="space-y-3" onSubmit={confirmSetup} data-testid="mfa-confirm-form">
                 <div>
                   <Label htmlFor="mfa-confirm-code">2. Enter the current six-digit code</Label>
                   <Input
@@ -213,7 +213,7 @@ export function MfaSecurityPanel() {
                   <Button type="submit" disabled={code.length !== 6 || busyAction !== null} data-testid="mfa-confirm-button">
                     {busyAction === 'confirm' ? 'Verifying...' : 'Verify and enable'}
                   </Button>
-                  <Button type="button" variant="secondary" disabled={busyAction !== null} onClick={resetAction}>Cancel</Button>
+                  <Button type="button" variant="secondary" disabled={busyAction !== null} onClick={resetAction} data-testid="mfa-setup-cancel">Cancel</Button>
                 </div>
               </form>
             </div>
@@ -284,20 +284,20 @@ export function MfaSecurityPanel() {
               <p className="mt-1 text-sm leading-6 text-slate-600">Each code works once. They will not be shown again after you leave this page.</p>
             </div>
             <div className="flex gap-2">
-              <Button type="button" variant="secondary" onClick={() => copyText(recoveryCodes.join('\n'), 'Recovery codes')}>
+              <Button type="button" variant="secondary" onClick={() => copyText(recoveryCodes.join('\n'), 'Recovery codes')} data-testid="mfa-recovery-copy">
                 <Copy className="mr-2 h-4 w-4" aria-hidden="true" /> Copy all
               </Button>
-              <Button type="button" variant="secondary" onClick={downloadRecoveryCodes}>
+              <Button type="button" variant="secondary" onClick={downloadRecoveryCodes} data-testid="mfa-recovery-download">
                 <Download className="mr-2 h-4 w-4" aria-hidden="true" /> Download
               </Button>
             </div>
           </div>
-          <div className="mt-4 grid gap-x-8 gap-y-2 rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:grid-cols-2" aria-label="Recovery codes">
+          <div className="mt-4 grid gap-x-8 gap-y-2 rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:grid-cols-2" aria-label="Recovery codes" data-testid="mfa-recovery-code-list">
             {recoveryCodes.map((recoveryCode) => (
-              <code key={recoveryCode} className="font-mono text-sm tracking-[0.12em] text-amber-950">{recoveryCode}</code>
+              <code key={recoveryCode} className="font-mono text-sm tracking-[0.12em] text-amber-950" data-testid="mfa-recovery-code">{recoveryCode}</code>
             ))}
           </div>
-          <Button type="button" variant="link" className="mt-3 px-0" onClick={() => setRecoveryCodes(null)}>I saved these codes</Button>
+          <Button type="button" variant="link" className="mt-3 px-0" onClick={() => setRecoveryCodes(null)} data-testid="mfa-recovery-acknowledge">I saved these codes</Button>
         </div>
       )}
     </Surface>
@@ -330,18 +330,18 @@ function ProtectedActionForm({ title, description, codeLabel, submitLabel, busy,
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <Label htmlFor={`${testId}-password`}>Current password</Label>
-          <Input id={`${testId}-password`} type="password" value={password} onChange={(event) => onPasswordChange(event.target.value)} autoComplete="current-password" className="mt-2" />
+          <Input id={`${testId}-password`} type="password" value={password} onChange={(event) => onPasswordChange(event.target.value)} autoComplete="current-password" className="mt-2" data-testid={`${testId}-password`} />
         </div>
         <div>
           <Label htmlFor={`${testId}-code`}>{codeLabel}</Label>
-          <Input id={`${testId}-code`} value={code} onChange={(event) => onCodeChange(event.target.value.trim().slice(0, 32))} autoComplete="one-time-code" className="mt-2 font-mono tracking-[0.12em]" />
+          <Input id={`${testId}-code`} value={code} onChange={(event) => onCodeChange(event.target.value.trim().slice(0, 32))} autoComplete="one-time-code" className="mt-2 font-mono tracking-[0.12em]" data-testid={`${testId}-code`} />
         </div>
       </div>
       <div className="flex flex-wrap gap-2">
-        <Button type="submit" variant={danger ? 'destructive' : 'default'} disabled={!password || code.length < 6 || busy}>
+        <Button type="submit" variant={danger ? 'destructive' : 'default'} disabled={!password || code.length < 6 || busy} data-testid={`${testId}-submit`}>
           {busy ? 'Working...' : submitLabel}
         </Button>
-        <Button type="button" variant="secondary" disabled={busy} onClick={onCancel}>Cancel</Button>
+        <Button type="button" variant="secondary" disabled={busy} onClick={onCancel} data-testid={`${testId}-cancel`}>Cancel</Button>
       </div>
     </form>
   );

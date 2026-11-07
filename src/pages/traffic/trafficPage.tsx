@@ -147,7 +147,7 @@ export function TrafficMonitorPage() {
         </p>
         <label className="mt-3 block text-sm text-slate-600">
           Traffic session ID — use this as X-Client-Session-Id in GraphiQL or gRPC metadata
-          <input aria-label="Traffic session ID" readOnly value={authStorage.getClientSessionId()}
+          <input aria-label="Traffic session ID" readOnly value={authStorage.getClientSessionId()} data-testid="traffic-session-id"
             className="mt-1 block w-full rounded border border-stone-200 bg-white px-3 py-2 font-mono text-xs" />
         </label>
       </Surface>

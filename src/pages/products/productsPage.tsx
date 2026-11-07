@@ -22,7 +22,6 @@ export function ProductsPage() {
       return next;
     }, { replace: true });
   }, [setSearchParams]);
-  const clearCategoryForAgent = useCallback(() => setSelectedCategory(undefined), [setSelectedCategory]);
   
   const { data, isLoading, isError } = useQuery({
     queryKey: ['products'],
@@ -111,7 +110,7 @@ export function ProductsPage() {
         </aside>
         
         <div className="min-w-0" data-testid="products-content">
-          <ProductList category={selectedCategory} onAgentSearch={clearCategoryForAgent} />
+          <ProductList category={selectedCategory} />
         </div>
       </div>
     </div>

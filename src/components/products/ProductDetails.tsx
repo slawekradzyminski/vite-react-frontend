@@ -147,7 +147,7 @@ export function ProductDetails() {
             ? 'This product does not exist or may have been removed.'
             : 'Error loading product details'}
         </p>
-        <Link to="/products" className="text-sm font-medium text-slate-900 underline-offset-4 hover:underline">
+        <Link to="/products" className="text-sm font-medium text-slate-900 underline-offset-4 hover:underline" data-testid="product-not-found-back-link">
           Back to Products
         </Link>
       </Surface>
