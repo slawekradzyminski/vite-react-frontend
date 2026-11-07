@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useParams, Link } from 'react-router';
+import { useParams, Link, useLocation } from 'react-router';
 import { products, cart } from '../../lib/api';
 import { CartItemDto, UpdateCartItemDto } from '../../types/cart';
 import { useToast } from '../../hooks/useToast';
@@ -8,26 +8,31 @@ import { authStorage } from '../../lib/authStorage';
 import { Surface } from '../ui/surface';
 import { Badge } from '../ui/badge';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { formatPrice } from '../../lib/format';
+import { describeCartError, responseStatus, retryServerErrors } from '../../lib/requestErrors';
+
+const parseProductId = (value: string | undefined) => (value && /^[1-9]\d*$/.test(value) ? Number(value) : null);
 
 export function ProductDetails() {
   const { id } = useParams<{ id: string }>();
+  const productId = parseProductId(id);
+  const location = useLocation();
+  const productsSearch = typeof location.state?.productsSearch === 'string' ? location.state.productsSearch : '';
+  const productsPath = `/products${productsSearch.startsWith('?') ? productsSearch : ''}`;
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isRemovingFromCart, setIsRemovingFromCart] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: product, isLoading, error } = useQuery({
+  const { data: product, isLoading, error, refetch: refetchProduct } = useQuery({
     queryKey: ['product', id],
-    queryFn: () => products.getProductById(Number(id)),
-    enabled: !!id,
-    retry: (failureCount, error: any) => {
-      if (error.response?.status === 404) {
-        return false;
-      }
-      return failureCount < 3;
-    },
+    queryFn: () => products.getProductById(productId as number),
+    enabled: productId !== null,
+    retry: retryServerErrors,
   });
+  // Only a failed request other than 404 is a loading problem; everything else means the product does not exist.
+  const productMissing = productId === null || responseStatus(error) === 404 || (!error && !isLoading && !product?.data);
 
   const { data: cartData } = useQuery({
     queryKey: ['cart'],
@@ -37,9 +42,9 @@ export function ProductDetails() {
   });
 
   const loadFailed = !isLoading && (!!error || !product?.data);
-  useDocumentTitle(isLoading ? 'Product details' : loadFailed ? 'Product not found' : product?.data?.name);
+  useDocumentTitle(isLoading ? 'Product details' : loadFailed ? (productMissing ? 'Product not found' : 'Product unavailable') : product?.data?.name);
 
-  const cartItem = cartData?.data?.items?.find(item => item.productId === Number(id));
+  const cartItem = cartData?.data?.items?.find(item => item.productId === productId);
   const cartQuantity = cartItem?.quantity || 0;
 
   useEffect(() => {
@@ -56,26 +61,16 @@ export function ProductDetails() {
     setIsAddingToCart(true);
     try {
       if (cartQuantity > 0) {
-        if (quantity === 0) {
-          await cart.removeFromCart(product.data.id);
-          
-          toast({
-            variant: 'success',
-            title: 'Removed from cart',
-            description: `${product.data.name} has been removed from your cart`
-          });
-        } else {
-          const updateData: UpdateCartItemDto = {
-            quantity
-          };
-          await cart.updateCartItem(product.data.id, updateData);
-          
-          toast({
-            variant: 'success',
-            title: 'Cart updated',
-            description: `${product.data.name} quantity set to ${quantity}`
-          });
-        }
+        const updateData: UpdateCartItemDto = {
+          quantity
+        };
+        await cart.updateCartItem(product.data.id, updateData);
+        
+        toast({
+          variant: 'success',
+          title: 'Cart updated',
+          description: `${product.data.name} quantity set to ${quantity}`
+        });
       } else {
         // Add new item to cart
         const cartItem: CartItemDto = {
@@ -94,9 +89,20 @@ export function ProductDetails() {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
     } catch (error) {
       console.error('Failed to update cart:', error);
+      let description = describeCartError(error, 'Failed to update cart. Please try again.');
+      if (responseStatus(error) === 409) {
+        // Show the current availability instead of the stale stock the page was opened with.
+        const { data: refreshed } = await refetchProduct();
+        const stock = refreshed?.data?.stockQuantity;
+        if (stock !== undefined) {
+          description = stock > 0 ? `Only ${stock} left in stock.` : 'This product is now out of stock.';
+          setQuantity((current) => Math.max(1, Math.min(current, stock)));
+        }
+      }
       toast({
         variant: 'error',
-        description: 'Failed to update cart. Please try again.'
+        title: 'Error',
+        description
       });
     } finally {
       setIsAddingToCart(false);
@@ -135,8 +141,12 @@ export function ProductDetails() {
   if (error || !product?.data) {
     return (
       <Surface variant="danger" padding="message" className="text-center" role="alert" data-testid="product-not-found">
-        <h1 className="mb-2 text-2xl font-semibold text-red-800">Product not found</h1>
-        <p className="mb-4 text-red-700">Error loading product details</p>
+        <h1 className="mb-2 text-2xl font-semibold text-red-800">{productMissing ? 'Product not found' : 'Product unavailable'}</h1>
+        <p className="mb-4 text-red-700">
+          {productMissing
+            ? 'This product does not exist or may have been removed.'
+            : 'Error loading product details'}
+        </p>
         <Link to="/products" className="text-sm font-medium text-slate-900 underline-offset-4 hover:underline">
           Back to Products
         </Link>
@@ -149,7 +159,7 @@ export function ProductDetails() {
   return (
     <div className="space-y-6 pb-10" data-testid="product-details">
       <div data-testid="product-back-link-container">
-        <Link to="/products" className="text-sm font-medium text-slate-600 underline-offset-4 transition hover:text-slate-900 hover:underline" data-testid="product-back-link">
+        <Link to={productsPath} className="text-sm font-medium text-slate-600 underline-offset-4 transition hover:text-slate-900 hover:underline" data-testid="product-back-link">
           ← Back to Products
         </Link>
       </div>
@@ -185,7 +195,7 @@ export function ProductDetails() {
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Product detail</p>
               <h1 className="mt-2 [overflow-wrap:anywhere] text-3xl font-semibold tracking-tight text-slate-950" data-testid="product-title">{productData.name}</h1>
             </div>
-            <Badge className="px-4 py-2 text-xl font-semibold text-slate-950" data-testid="product-price">${productData.price.toFixed(2)}</Badge>
+            <Badge className="px-4 py-2 text-xl font-semibold text-slate-950" data-testid="product-price">{formatPrice(productData.price)}</Badge>
           </div>
           
           <div className="mt-8 grid gap-6 md:grid-cols-2">
@@ -221,8 +231,9 @@ export function ProductDetails() {
               <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500" id="product-quantity-title" data-testid="product-quantity-title">Quantity</h2>
               <div className="mt-3 flex items-center" role="group" aria-labelledby="product-quantity-title" data-testid="product-quantity-controls">
                 <button 
-                  className="h-11 rounded-l-2xl border border-stone-200 bg-stone-50 px-4 text-slate-700 transition hover:bg-white"
-                  onClick={() => setQuantity(prev => Math.max(0, prev - 1))}
+                  className="h-11 rounded-l-2xl border border-stone-200 bg-stone-50 px-4 text-slate-700 transition hover:bg-white disabled:cursor-not-allowed disabled:text-slate-400"
+                  onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                  disabled={quantity <= 1}
                   aria-label="Decrease quantity"
                   data-testid="decrease-quantity"
                 >
@@ -230,8 +241,9 @@ export function ProductDetails() {
                 </button>
                 <span className="flex h-11 min-w-[64px] items-center justify-center border-y border-stone-200 bg-white px-6 text-sm font-medium text-slate-900" aria-live="polite" aria-atomic="true" data-testid="quantity-value">{quantity}</span>
                 <button 
-                  className="h-11 rounded-r-2xl border border-stone-200 bg-stone-50 px-4 text-slate-700 transition hover:bg-white"
+                  className="h-11 rounded-r-2xl border border-stone-200 bg-stone-50 px-4 text-slate-700 transition hover:bg-white disabled:cursor-not-allowed disabled:text-slate-400"
                   onClick={() => setQuantity(prev => Math.min(productData.stockQuantity, prev + 1))}
+                  disabled={quantity >= productData.stockQuantity}
                   aria-label="Increase quantity"
                   data-testid="increase-quantity"
                 >
@@ -256,15 +268,13 @@ export function ProductDetails() {
             <button
               className={`${cartQuantity > 0 ? 'flex-1' : 'w-full'} rounded-full bg-slate-900 px-6 py-3 text-sm font-medium text-stone-50 transition hover:bg-slate-800 disabled:bg-stone-300`}
               onClick={handleAddToCart}
-              disabled={isAddingToCart || isRemovingFromCart || productData.stockQuantity < 1 || (quantity === 0 && !cartQuantity)}
+              disabled={isAddingToCart || isRemovingFromCart || productData.stockQuantity < 1}
               data-testid="add-to-cart"
             >
               {isAddingToCart 
                 ? 'Adding to Cart...' 
                 : cartQuantity > 0 
-                  ? quantity === 0 
-                    ? 'Remove from Cart' 
-                    : 'Update Cart' 
+                  ? 'Update Cart' 
                   : 'Add to Cart'
               }
             </button>

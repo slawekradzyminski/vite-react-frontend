@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { cart } from '../../lib/api';
@@ -9,6 +9,21 @@ import { useEnrichedCart, type RawCartResponse } from '../../hooks/useEnrichedCa
 
 export function CartPage() {
   const [isUpdating, setIsUpdating] = useState(false);
+  const pendingQuantities = useRef(new Map<number, number>());
+  const trackPendingChange = useCallback((productId: number, quantity: number | null) => {
+    if (quantity === null) {
+      pendingQuantities.current.delete(productId);
+    } else {
+      pendingQuantities.current.set(productId, quantity);
+    }
+  }, []);
+
+  // Quantities changed with +/- but not confirmed with "Update" are saved
+  // before checkout so the order matches what the cart shows.
+  const savePendingChanges = useCallback(async () => {
+    const changes = [...pendingQuantities.current.entries()];
+    await Promise.all(changes.map(([productId, quantity]) => cart.updateCartItem(productId, { quantity })));
+  }, []);
   
   const { data: cartResponse, isLoading, error, refetch } = useQuery({
     queryKey: ['cart'],
@@ -87,6 +102,7 @@ export function CartPage() {
             <CartSummary
               cartData={safeCartData}
               onUpdate={handleCartUpdate}
+              beforeCheckout={savePendingChanges}
             />
           </Surface>
 
@@ -122,6 +138,7 @@ export function CartPage() {
                       key={item.productId}
                       item={item}
                       onUpdate={handleCartUpdate}
+                      onPendingChange={trackPendingChange}
                     />
                   ))}
                 </tbody>

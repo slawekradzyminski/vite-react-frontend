@@ -1,15 +1,19 @@
 import { z } from 'zod';
 import type { EmailFormData } from '../types/email';
 
+// Trimming makes whitespace-only fields fail with their own field error instead of an API toast.
 export const emailSchema = z.object({
   to: z.string()
+    .trim()
     .min(1, 'Recipient is required')
     .email('Invalid email address'),
   subject: z.string()
+    .trim()
     .min(1, 'Subject is required')
     .min(3, 'Subject must be at least 3 characters')
     .max(100, 'Subject must be at most 100 characters'),
   message: z.string()
+    .trim()
     .min(1, 'Message is required')
     .min(10, 'Message must be at least 10 characters')
     .max(1000, 'Message must be at most 1000 characters'),

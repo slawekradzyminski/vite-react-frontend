@@ -146,4 +146,90 @@ describe('CartSummary', () => {
       expect(mockOnUpdate).toHaveBeenCalled();
     });
   });
-}); 
+
+  it('saves unsaved quantities before opening checkout', async () => {
+    // given
+    let saved = false;
+    const beforeCheckout = vi.fn(async () => { saved = true; });
+    mockNavigate.mockImplementation(() => expect(saved).toBe(true));
+    renderWithProviders(<CartSummary cartData={mockCartData} onUpdate={mockOnUpdate} beforeCheckout={beforeCheckout} />);
+
+    // when
+    fireEvent.click(screen.getByTestId('cart-checkout-button'));
+
+    // then
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/checkout'));
+    expect(beforeCheckout).toHaveBeenCalledTimes(1);
+  });
+
+  it('stays on the cart and explains why when saving changes fails', async () => {
+    // given
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const beforeCheckout = vi.fn().mockRejectedValue(new Error('network'));
+    renderWithProviders(<CartSummary cartData={mockCartData} onUpdate={mockOnUpdate} beforeCheckout={beforeCheckout} />);
+
+    // when
+    fireEvent.click(screen.getByTestId('cart-checkout-button'));
+
+    // then
+    expect(await screen.findByText('Failed to save your cart changes. Please try again.')).toBeInTheDocument();
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(mockOnUpdate).toHaveBeenCalled();
+  });
+
+  it('confirms a cleared cart with a toast', async () => {
+    // given
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    vi.mocked(cart.clearCart).mockResolvedValue({} as never);
+    renderWithProviders(<CartSummary cartData={mockCartData} onUpdate={mockOnUpdate} />);
+
+    // when
+    fireEvent.click(screen.getByTestId('cart-clear-button'));
+
+    // then
+    expect(await screen.findByText('All items have been removed from your cart')).toBeInTheDocument();
+  });
+
+  it('disables checkout while unsaved changes are being saved', async () => {
+    // given
+    let finishSaving: () => void = () => {};
+    const beforeCheckout = vi.fn(() => new Promise<void>((resolve) => { finishSaving = resolve; }));
+    renderWithProviders(<CartSummary cartData={mockCartData} onUpdate={mockOnUpdate} beforeCheckout={beforeCheckout} />);
+
+    // when
+    fireEvent.click(screen.getByTestId('cart-checkout-button'));
+
+    // then
+    expect(await screen.findByRole('button', { name: 'Saving changes...' })).toBeDisabled();
+    finishSaving();
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/checkout'));
+  });
+
+  it('re-enables checkout after a failed save', async () => {
+    // given
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    renderWithProviders(<CartSummary cartData={mockCartData} onUpdate={mockOnUpdate} beforeCheckout={vi.fn().mockRejectedValue(new Error('x'))} />);
+
+    // when
+    fireEvent.click(screen.getByTestId('cart-checkout-button'));
+
+    // then
+    expect(await screen.findByText('Failed to save your cart changes. Please try again.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Proceed to Checkout' })).toBeEnabled();
+  });
+
+  it('explains a failed Clear Cart', async () => {
+    // given
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(cart.clearCart).mockRejectedValue(new Error('500'));
+    renderWithProviders(<CartSummary cartData={mockCartData} onUpdate={mockOnUpdate} />);
+
+    // when
+    fireEvent.click(screen.getByTestId('cart-clear-button'));
+
+    // then
+    expect(await screen.findByText('Failed to clear cart. Please try again.')).toBeInTheDocument();
+    expect(mockOnUpdate).not.toHaveBeenCalled();
+  });
+});

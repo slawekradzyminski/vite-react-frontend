@@ -25,7 +25,6 @@ export function Navigation() {
   const menuToggleRef = useRef<HTMLButtonElement>(null);
   
   const hasToken = !!authStorage.getAccessToken();
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
   const { data: user } = useQuery({
     queryKey: ['me'],
@@ -57,12 +56,6 @@ export function Navigation() {
       navigate('/login');
     }
   }, [navigate, queryClient]);
-
-  useEffect(() => {
-    if (hasToken && isAuthPage) {
-      handleLogout();
-    }
-  }, [handleLogout, hasToken, isAuthPage]);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);

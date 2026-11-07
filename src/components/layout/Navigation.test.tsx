@@ -63,7 +63,7 @@ describe('Navigation', () => {
     expect(screen.queryByText('Logout')).not.toBeInTheDocument();
   });
 
-  it('logs out automatically when visiting auth pages while authenticated', async () => {
+  it('keeps the session when an auth page is rendered while authenticated (BUG-003)', async () => {
     // given
     localStorage.setItem('token', 'fake-token');
     localStorage.setItem('refreshToken', 'fake-refresh');
@@ -87,10 +87,10 @@ describe('Navigation', () => {
     renderWithProviders(<Navigation />);
 
     // then
-    await waitFor(() => expect(auth.logout).toHaveBeenCalledWith({ refreshToken: 'fake-refresh' }));
-    expect(localStorage.getItem('token')).toBeNull();
-    expect(localStorage.getItem('refreshToken')).toBeNull();
-    expect(screen.getByText('Login')).toBeInTheDocument();
+    expect(await screen.findByText('Logout')).toBeInTheDocument();
+    expect(auth.logout).not.toHaveBeenCalled();
+    expect(localStorage.getItem('token')).toBe('fake-token');
+    expect(localStorage.getItem('refreshToken')).toBe('fake-refresh');
   });
 
   it('shows user info and logout button when authenticated', async () => {

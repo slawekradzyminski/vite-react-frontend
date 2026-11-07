@@ -39,6 +39,9 @@ vi.mock('@tanstack/react-query', async () => {
 });
 
 import { useQuery } from '@tanstack/react-query';
+import { useLocation } from 'react-router';
+
+const LocationProbe = () => <output data-testid="location-search">{useLocation().search}</output>;
 
 describe('ProductList', () => {
   const mockProducts = [
@@ -99,7 +102,7 @@ describe('ProductList', () => {
     });
   });
 
-  const renderProductList = (props = {}) => {
+  const renderProductList = (props = {}, initialEntry = '/products') => {
     const queryClient = new QueryClient({
       defaultOptions: {
         queries: {
@@ -110,7 +113,10 @@ describe('ProductList', () => {
     
     return render(
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter><ProductList {...props} /></MemoryRouter>
+        <MemoryRouter initialEntries={[initialEntry]}>
+          <ProductList {...props} />
+          <LocationProbe />
+        </MemoryRouter>
       </QueryClientProvider>
     );
   };
@@ -371,4 +377,70 @@ describe('ProductList', () => {
     expect(screen.queryByTestId('product-card-3')).not.toBeInTheDocument();
     expect(screen.getByTestId('product-card-4')).toBeInTheDocument();
   });
-}); 
+
+  it('restores search, sort and stock filters from the URL', () => {
+    // when
+    renderProductList({}, '/products?q=product&sort=price-desc&inStock=1');
+
+    // then
+    expect(screen.getByRole('textbox', { name: 'Search products' })).toHaveValue('product');
+    expect(screen.getByTestId('product-sort')).toHaveValue('price-desc');
+    expect(screen.getByTestId('product-in-stock-only')).toBeChecked();
+    expect(screen.getAllByTestId(/^product-card-/).map(card => card.textContent?.slice(0, 9))).toEqual(['Product 2', 'Product 3', 'Product 1']);
+  });
+
+  it('writes filter changes to the URL and drops defaults', async () => {
+    // given
+    const user = userEvent.setup();
+    renderProductList({}, '/products?category=Books');
+
+    // when
+    await user.type(screen.getByRole('textbox', { name: 'Search products' }), 'phone');
+    await user.selectOptions(screen.getByTestId('product-sort'), 'price-asc');
+
+    // then
+    await waitFor(() => expect(screen.getByTestId('location-search')).toHaveTextContent('?category=Books&q=phone&sort=price-asc'));
+
+    // when
+    await user.selectOptions(screen.getByTestId('product-sort'), 'name-asc');
+    await user.clear(screen.getByRole('textbox', { name: 'Search products' }));
+
+    // then
+    await waitFor(() => expect(screen.getByTestId('location-search')).toHaveTextContent('?category=Books'));
+    expect(screen.getByTestId('location-search').textContent).toBe('?category=Books');
+  });
+
+  it('falls back to the default sort for an unknown sort value', () => {
+    // when
+    renderProductList({}, '/products?sort=bogus');
+
+    // then
+    expect(screen.getByTestId('product-sort')).toHaveValue('name-asc');
+  });
+
+  it('stores the in-stock filter in the URL', async () => {
+    // given
+    const user = userEvent.setup();
+    renderProductList({}, '/products');
+
+    // when
+    await user.click(screen.getByTestId('product-in-stock-only'));
+
+    // then
+    await waitFor(() => expect(screen.getByTestId('location-search')).toHaveTextContent('?inStock=1'));
+
+    // when
+    await user.click(screen.getByTestId('product-in-stock-only'));
+
+    // then
+    await waitFor(() => expect(screen.getByTestId('location-search')).toBeEmptyDOMElement());
+  });
+
+  it('treats any inStock value other than 1 as off', () => {
+    // when
+    renderProductList({}, '/products?inStock=0');
+
+    // then
+    expect(screen.getByTestId('product-in-stock-only')).not.toBeChecked();
+  });
+});

@@ -20,20 +20,20 @@ export function HomePage() {
         className="overflow-hidden rounded-[2rem] border border-stone-200/80 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.16),_transparent_30%),linear-gradient(135deg,_rgba(255,255,255,0.95),_rgba(244,240,235,0.98))] shadow-[0_30px_90px_-55px_rgba(15,23,42,0.55)]"
         data-testid="home-welcome-section"
       >
-        <div className="grid gap-8 px-6 py-8 md:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)] md:px-8 md:py-10">
+        <div className="grid grid-cols-1 gap-8 px-6 py-8 md:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)] md:px-8 md:py-10">
           <div className="space-y-5">
             <Badge variant="outline" tone="tracking" className="gap-2 text-[11px] tracking-[0.28em]">
               <span className="h-2 w-2 rounded-full bg-sky-600" />
               Awesome Testing
             </Badge>
             <div className="space-y-3">
-              <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-slate-950 md:text-5xl" data-testid="home-welcome-title">
+              <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-slate-950 wrap-anywhere md:text-5xl" data-testid="home-welcome-title">
                 Welcome, {user?.data.firstName}!
               </h1>
               <p className="max-w-2xl text-base leading-7 text-slate-600">
                 Run product operations, inspect live traffic, and open the AI workspace from one control surface.
               </p>
-              <p className="text-sm font-medium uppercase tracking-[0.24em] text-slate-500" data-testid="home-user-email">
+              <p className="text-sm font-medium uppercase tracking-[0.24em] text-slate-500 wrap-anywhere" data-testid="home-user-email">
                 {user?.data.email}
               </p>
             </div>

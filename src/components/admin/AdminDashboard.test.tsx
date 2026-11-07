@@ -250,4 +250,125 @@ describe('AdminDashboard', () => {
       expect(zeroElement).toBeInTheDocument(); // Total products
     });
   });
+
+  const order = (id: number, status: OrderStatus, totalAmount = 10) => ({
+    id,
+    username: 'client',
+    items: [],
+    totalAmount,
+    status,
+    shippingAddress: { street: 's', city: 'c', state: 'st', zipCode: '00-001', country: 'PL' },
+    createdAt: `2026-01-${String((id % 28) + 1).padStart(2, '0')}T10:00:00Z`,
+    updatedAt: '2026-01-01T10:00:00Z',
+  });
+  const page = (content: unknown[], pageNumber: number, totalElements: number, totalPages: number) => ({
+    data: { content, pageNumber, pageSize: 50, totalElements, totalPages },
+  });
+
+  it('counts orders from every page, not only the first (BUG-011)', async () => {
+    // given
+    (products.getAllProducts as Mock).mockResolvedValue({ data: [] });
+    (orders.getAllOrders as Mock).mockImplementation(async (pageNumber: number) =>
+      pageNumber === 0
+        ? page(Array.from({ length: 50 }, (_, index) => order(index + 1, 'PENDING')), 0, 52, 2)
+        : page([order(51, 'PENDING', 25), order(52, 'CANCELLED', 999)], 1, 52, 2),
+    );
+
+    // when
+    renderWithProviders();
+
+    // then
+    expect(await screen.findByTestId('admin-dashboard-orders-count')).toHaveTextContent('52');
+    expect(screen.getByTestId('admin-dashboard-pending-count')).toHaveTextContent('51');
+    expect(screen.getByTestId('admin-dashboard-revenue-amount')).toHaveTextContent('$525.00');
+    expect(orders.getAllOrders).toHaveBeenCalledWith(0, 50);
+    expect(orders.getAllOrders).toHaveBeenCalledWith(1, 50);
+    expect(screen.queryByTestId('admin-dashboard-orders-partial')).not.toBeInTheDocument();
+  });
+
+  it('labels the order metrics as partial beyond the page limit', async () => {
+    // given
+    (products.getAllProducts as Mock).mockResolvedValue({ data: [] });
+    (orders.getAllOrders as Mock).mockImplementation(async (pageNumber: number) =>
+      page([order(pageNumber + 1, 'PAID')], pageNumber, 2500, 50),
+    );
+
+    // when
+    renderWithProviders();
+
+    // then
+    expect(await screen.findByTestId('admin-dashboard-orders-partial')).toHaveTextContent('first 20 of 2500 orders');
+    expect(orders.getAllOrders).toHaveBeenCalledTimes(20);
+    expect(screen.getByTestId('admin-dashboard-orders-count')).toHaveTextContent('2500');
+  });
+
+  it('marks product metrics unavailable and keeps order data when products fail (BUG-013)', async () => {
+    // given
+    (products.getAllProducts as Mock).mockRejectedValue(new Error('500'));
+    (orders.getAllOrders as Mock).mockResolvedValue(page([order(1, 'PENDING', 12.5)], 0, 1, 1));
+
+    // when
+    renderWithProviders();
+
+    // then
+    expect(await screen.findByTestId('admin-dashboard-products-error')).toHaveTextContent('Product data could not be loaded');
+    expect(screen.getByTestId('admin-dashboard-products-count')).toHaveTextContent('—');
+    expect(screen.getByTestId('admin-dashboard-low-stock-unavailable')).toBeInTheDocument();
+    expect(screen.queryByTestId('admin-dashboard-no-low-stock')).not.toBeInTheDocument();
+    expect(screen.getByTestId('admin-dashboard-orders-count')).toHaveTextContent('1');
+    expect(screen.getByTestId('admin-dashboard-revenue-amount')).toHaveTextContent('$12.50');
+  });
+
+  it('marks order metrics unavailable and offers a retry when orders fail (BUG-013)', async () => {
+    // given
+    (products.getAllProducts as Mock).mockResolvedValue({ data: [] });
+    (orders.getAllOrders as Mock).mockRejectedValueOnce(new Error('500'));
+
+    // when
+    renderWithProviders();
+
+    // then
+    const error = await screen.findByTestId('admin-dashboard-orders-error');
+    expect(error).toHaveAttribute('role', 'alert');
+    for (const testId of ['admin-dashboard-orders-count', 'admin-dashboard-pending-count', 'admin-dashboard-revenue-amount']) {
+      expect(screen.getByTestId(testId)).toHaveTextContent('—');
+    }
+    expect(screen.getByTestId('admin-dashboard-orders-unavailable')).toBeInTheDocument();
+    expect(screen.queryByTestId('admin-dashboard-no-orders')).not.toBeInTheDocument();
+
+    (orders.getAllOrders as Mock).mockResolvedValue(page([order(1, 'PENDING')], 0, 1, 1));
+    screen.getByTestId('admin-dashboard-orders-error-retry').click();
+    await waitFor(() => expect(screen.getByTestId('admin-dashboard-orders-count')).toHaveTextContent('1'));
+  });
+
+  it('does not label exactly the page limit as partial', async () => {
+    // given
+    (products.getAllProducts as Mock).mockResolvedValue({ data: [] });
+    (orders.getAllOrders as Mock).mockImplementation(async (pageNumber: number) =>
+      page([order(pageNumber + 1, 'PAID')], pageNumber, 20, 20),
+    );
+
+    // when
+    renderWithProviders();
+
+    // then
+    expect(await screen.findByTestId('admin-dashboard-orders-count')).toHaveTextContent('20');
+    expect(orders.getAllOrders).toHaveBeenCalledTimes(20);
+    expect(screen.queryByTestId('admin-dashboard-orders-partial')).not.toBeInTheDocument();
+  });
+
+  it('reloads products when the product section retry is used', async () => {
+    // given
+    (products.getAllProducts as Mock).mockRejectedValueOnce(new Error('500'));
+    (orders.getAllOrders as Mock).mockResolvedValue(page([], 0, 0, 1));
+    renderWithProviders();
+    const retry = await screen.findByTestId('admin-dashboard-products-error-retry');
+    (products.getAllProducts as Mock).mockResolvedValue({ data: [{ id: 5, name: 'Low', price: 1, stockQuantity: 2, category: 'x', description: '' }] });
+
+    // when
+    retry.click();
+
+    // then
+    await waitFor(() => expect(screen.getByTestId('admin-dashboard-products-count')).toHaveTextContent('1'));
+  });
 });

@@ -1,14 +1,20 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { CartItem as CartItemType } from '../../types/cart';
-import { cart } from '../../lib/api';
+import { cart, products } from '../../lib/api';
+import { useToast } from '../../hooks/useToast';
+import { formatPrice } from '../../lib/format';
+import { describeCartError, responseStatus } from '../../lib/requestErrors';
 
 interface CartItemProps {
   item: CartItemType;
   onUpdate: () => void;
+  // Reports a quantity changed in the row but not saved yet (null when in sync),
+  // so checkout can save it instead of silently dropping it.
+  onPendingChange?: (productId: number, quantity: number | null) => void;
 }
 
-export function CartItem({ item, onUpdate }: CartItemProps) {
+export function CartItem({ item, onUpdate, onPendingChange }: CartItemProps) {
   const safeItem = {
     productId: item?.productId || 0,
     quantity: item?.quantity || 1,
@@ -21,7 +27,18 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
   const [quantity, setQuantity] = useState(safeItem.quantity);
+  const { toast } = useToast();
+
+  // Stock arrives with the cart (GraphQL product field or REST enrichment), so the
+  // row needs no request of its own to cap "+" (BUG-007).
+  const stock = item?.stockQuantity;
+  const maxQuantity = stock === undefined ? Infinity : Math.max(stock, 1);
   
+  useEffect(() => {
+    onPendingChange?.(safeItem.productId, quantity === safeItem.quantity ? null : quantity);
+    return () => onPendingChange?.(safeItem.productId, null);
+  }, [onPendingChange, quantity, safeItem.productId, safeItem.quantity]);
+
   // Reset quantity when item changes (after parent refresh)
   useEffect(() => {
     setQuantity(safeItem.quantity);
@@ -33,10 +50,26 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
     setIsUpdating(true);
     try {
       await cart.updateCartItem(safeItem.productId, { quantity });
+      toast({
+        variant: 'success',
+        title: 'Cart updated',
+        description: `${safeItem.productName} quantity set to ${quantity}`,
+      });
       // Refresh cart data from backend
       onUpdate();
     } catch (error) {
       console.error('Failed to update cart item:', error);
+      let description = describeCartError(error, 'Failed to update cart. Please try again.');
+      if (responseStatus(error) === 409) {
+        // The stock may have changed since the cart was loaded; report the current value.
+        try {
+          const { data: fresh } = await products.getProductById(safeItem.productId);
+          description = fresh.stockQuantity > 0 ? `Only ${fresh.stockQuantity} left in stock.` : `${safeItem.productName} is now out of stock.`;
+        } catch {
+          // Keep the generic stock message when the product cannot be read.
+        }
+      }
+      toast({ variant: 'error', title: 'Error', description });
       setQuantity(safeItem.quantity);
     } finally {
       setIsUpdating(false);
@@ -47,9 +80,19 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
     setIsRemoving(true);
     try {
       await cart.removeFromCart(safeItem.productId);
+      toast({
+        variant: 'success',
+        title: 'Removed from cart',
+        description: `${safeItem.productName} has been removed from your cart`,
+      });
       onUpdate();
     } catch (error) {
       console.error('Failed to remove item from cart:', error);
+      toast({
+        variant: 'error',
+        title: 'Error',
+        description: describeCartError(error, 'Failed to remove from cart. Please try again.'),
+      });
     } finally {
       setIsRemoving(false);
     }
@@ -81,7 +124,7 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600" data-testid={`cart-item-price-${safeItem.productId}`}>
-        ${safeItem.unitPrice.toFixed(2)}
+        {formatPrice(safeItem.unitPrice)}
       </td>
       <td className="px-6 py-4 whitespace-nowrap" data-testid={`cart-item-quantity-cell-${safeItem.productId}`}>
         <div className="flex flex-col sm:flex-row items-start sm:items-center">
@@ -104,9 +147,9 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
               {quantity}
             </span>
             <button 
-              className="h-9 rounded-r-2xl border border-stone-200 bg-stone-50 px-3 text-slate-700 transition hover:bg-white"
-              onClick={() => setQuantity(prev => prev + 1)}
-              disabled={isUpdating}
+              className="h-9 rounded-r-2xl border border-stone-200 bg-stone-50 px-3 text-slate-700 transition hover:bg-white disabled:cursor-not-allowed disabled:text-slate-400 disabled:hover:bg-stone-50"
+              onClick={() => setQuantity(prev => Math.min(maxQuantity, prev + 1))}
+              disabled={isUpdating || quantity >= maxQuantity}
               aria-label={`Increase quantity of ${safeItem.productName}`}
               data-testid={`cart-item-increase-${safeItem.productId}`}
             >
@@ -128,7 +171,7 @@ export function CartItem({ item, onUpdate }: CartItemProps) {
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900" data-testid={`cart-item-total-${safeItem.productId}`}>
-        ${safeItem.totalPrice.toFixed(2)}
+        {formatPrice(safeItem.totalPrice)}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
         <button

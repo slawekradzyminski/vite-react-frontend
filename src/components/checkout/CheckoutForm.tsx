@@ -11,6 +11,7 @@ import { Surface } from '../ui/surface';
 import axios from 'axios';
 import { CommerceGraphQlError } from '../../lib/commerceGraphql';
 import { fieldErrorId } from '../../lib/fieldError';
+import { formatPrice } from '../../lib/format';
 
 interface CheckoutFormProps {
   cartTotal: number;
@@ -171,7 +172,7 @@ export function CheckoutForm({ cartTotal }: CheckoutFormProps) {
         <Surface variant="inset" padding="md" className="mt-6" data-testid="checkout-summary">
           <div className="flex justify-between items-center mb-4" data-testid="checkout-total">
             <span className="font-semibold text-slate-700" data-testid="checkout-total-label">Order Total:</span>
-            <span className="text-lg font-bold text-slate-950" data-testid="checkout-total-amount">${cartTotal.toFixed(2)}</span>
+            <span className="text-lg font-bold text-slate-950" data-testid="checkout-total-amount">{formatPrice(cartTotal)}</span>
           </div>
           
           <Button

@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { email } from '../../lib/api';
 import { EmailForm } from '../../components/email/EmailForm';
@@ -9,14 +10,16 @@ import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 export function EmailPage() {
   useDocumentTitle('Send Email');
   const { toast } = useToast();
+  // isPending only flips after a re-render; the ref also blocks a fast double click (BUG-012).
+  const inFlight = useRef(false);
 
-  const { mutate } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: (data: EmailFormData) => email.send(data),
     onSuccess: () => {
       toast({
         variant: 'success',
         title: 'Success',
-        description: 'Email sent successfully',
+        description: 'Email queued for delivery',
       });
     },
     onError: (error: any) => {
@@ -26,7 +29,16 @@ export function EmailPage() {
         description: error.response?.data?.message || 'Failed to send email',
       });
     },
+    onSettled: () => {
+      inFlight.current = false;
+    },
   });
+
+  const sendEmail = (data: EmailFormData) => {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    mutate(data);
+  };
 
   return (
     <div className="space-y-6 pb-10" data-testid="email-page">
@@ -49,7 +61,7 @@ export function EmailPage() {
 
       <div className="mx-auto max-w-3xl" data-testid="email-content">
         <Surface variant="default" padding="lg" data-testid="email-card">
-          <EmailForm onSubmit={mutate} />
+          <EmailForm onSubmit={sendEmail} isLoading={isPending} />
         </Surface>
       </div>
     </div>

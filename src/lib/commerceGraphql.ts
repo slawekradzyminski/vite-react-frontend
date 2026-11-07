@@ -73,7 +73,7 @@ const cart = (value: WireCart): Cart & { enriched: true } => ({
   ...value, enriched: true, totalPrice: money(value.totalPrice),
   items: value.items.map(item => ({
     productId: id(item.product.id), productName: item.product.name, imageUrl: item.product.imageUrl ?? '',
-    quantity: item.quantity, unitPrice: money(item.unitPrice),
+    quantity: item.quantity, unitPrice: money(item.unitPrice), stockQuantity: item.product.stockQuantity,
     totalPrice: Math.round(money(item.unitPrice) * 100) * item.quantity / 100,
   })),
 });

@@ -2,9 +2,12 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { ProductDetails } from './ProductDetails';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useLocation, useParams } from 'react-router';
+import { AxiosError, AxiosHeaders } from 'axios';
 
 vi.mock('react-router', () => ({
   useParams: vi.fn().mockReturnValue({ id: '1' }),
+  useLocation: vi.fn().mockReturnValue({ pathname: '/products/1', search: '', state: null }),
   Link: ({ to, children }: { to: string; children: React.ReactNode }) => (
     <a href={to}>{children}</a>
   ),
@@ -209,9 +212,9 @@ describe('ProductDetails', () => {
     expect(screen.getByText('Error loading product details')).toBeInTheDocument();
     const alert = screen.getByRole('alert');
     expect(alert).toHaveAttribute('data-testid', 'product-not-found');
-    expect(screen.getByRole('heading', { level: 1, name: 'Product not found' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Product unavailable' })).toBeInTheDocument();
     expect(alert).toHaveTextContent('Error loading product details');
-    expect(document.title).toBe('Product not found – Awesome Testing');
+    expect(document.title).toBe('Product unavailable – Awesome Testing');
   });
 
   it('names the quantity controls and announces the value', () => {
@@ -292,7 +295,7 @@ describe('ProductDetails', () => {
     expect(screen.getByText('2')).toBeInTheDocument();
   });
 
-  it('allows decreasing quantity to 0', () => {
+  it('does not decrease quantity below 1', () => {
     // given
     renderWithProviders(<ProductDetails />);
     
@@ -300,12 +303,11 @@ describe('ProductDetails', () => {
     const minusButton = screen.getByRole('button', { name: 'Decrease quantity' });
     fireEvent.click(minusButton); // 3 -> 2
     fireEvent.click(minusButton); // 2 -> 1
-    fireEvent.click(minusButton); // 1 -> 0
 
     // then
-    expect(screen.getByText('0')).toBeInTheDocument();
-    const removeButtons = screen.getAllByRole('button', { name: /remove from cart/i });
-    expect(removeButtons.length).toBe(2);
+    expect(screen.getByTestId('quantity-value')).toHaveTextContent('1');
+    expect(minusButton).toBeDisabled();
+    expect(screen.getByTestId('add-to-cart')).toHaveTextContent('Update Cart');
   });
 
   it('updates cart item when Update Cart button is clicked for product already in cart', async () => {
@@ -324,7 +326,7 @@ describe('ProductDetails', () => {
     });
   });
 
-  it('removes product from cart when quantity is set to 0 and Update Cart button is clicked', async () => {
+  it('updates instead of removing when Update Cart is clicked at quantity 1', async () => {
     // given
     const { cart } = await import('../../lib/api');
     
@@ -332,23 +334,15 @@ describe('ProductDetails', () => {
     const minusButton = screen.getByRole('button', { name: 'Decrease quantity' });
     fireEvent.click(minusButton); // 3 -> 2
     fireEvent.click(minusButton); // 2 -> 1
-    fireEvent.click(minusButton); // 1 -> 0
     
     // when
     fireEvent.click(screen.getByTestId('add-to-cart'));
 
     // then
     await waitFor(() => {
-      expect(cart.removeFromCart).toHaveBeenCalledWith(1);
-      expect(cart.updateCartItem).not.toHaveBeenCalled();
+      expect(cart.updateCartItem).toHaveBeenCalledWith(1, { quantity: 1 });
     });
-
-    await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
-        variant: 'success',
-        title: 'Removed from cart'
-      }));
-    });
+    expect(cart.removeFromCart).not.toHaveBeenCalled();
   });
 
   it('removes product from cart when Remove from Cart button is clicked', async () => {
@@ -603,4 +597,176 @@ describe('ProductDetails', () => {
     const quantityElement = screen.getByText('3');
     expect(quantityElement).toBeInTheDocument();
   });
-}); 
+
+  const httpError = (status: number) =>
+    new AxiosError('failed', 'ERR', undefined, undefined, {
+      status,
+      statusText: '',
+      headers: {},
+      config: { headers: new AxiosHeaders() },
+      data: {},
+    });
+
+  it.each(['abc', '1.5', '0', '1abc', '-3'])('shows "not found" for the invalid id %s without requesting it (BUG-006)', (id) => {
+    // given
+    vi.mocked(useParams).mockReturnValueOnce({ id });
+    (useQuery as any).mockImplementation(({ queryKey }) => (
+      queryKey[0] === 'product'
+        ? { data: undefined, isLoading: false, error: null }
+        : { data: null, isLoading: false, error: null }
+    ));
+
+    // when
+    renderWithProviders(<ProductDetails />);
+
+    // then
+    const productQuery = (useQuery as any).mock.calls.find(([options]) => options.queryKey[0] === 'product')[0];
+    expect(productQuery.enabled).toBe(false);
+    expect(productQuery.retry(0, httpError(400))).toBe(false);
+    expect(screen.getByRole('heading', { level: 1, name: 'Product not found' })).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('This product does not exist or may have been removed.');
+  });
+
+  it('reports a 404 as a missing product, not a loading error', () => {
+    // given
+    (useQuery as any).mockImplementation(({ queryKey }) => (
+      queryKey[0] === 'product'
+        ? { data: undefined, isLoading: false, error: httpError(404) }
+        : { data: null, isLoading: false, error: null }
+    ));
+
+    // when
+    renderWithProviders(<ProductDetails />);
+
+    // then
+    expect(screen.getByRole('alert')).toHaveTextContent('This product does not exist or may have been removed.');
+    expect(screen.queryByText('Error loading product details')).not.toBeInTheDocument();
+  });
+
+  it('explains a stock conflict with the refreshed availability', async () => {
+    // given
+    const { cart } = await import('../../lib/api');
+    vi.mocked(cart.updateCartItem).mockRejectedValueOnce(httpError(409));
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const refetch = vi.fn().mockResolvedValue({ data: { data: { ...mockProduct.data, stockQuantity: 2 } } });
+    (useQuery as any).mockImplementation(({ queryKey }) => {
+      if (queryKey[0] === 'product') {
+        return { data: mockProduct, isLoading: false, error: null, refetch };
+      }
+      return { data: { data: { items: [{ productId: 1, quantity: 3 }] } }, isLoading: false, error: null };
+    });
+    renderWithProviders(<ProductDetails />);
+
+    // when
+    fireEvent.click(screen.getByTestId('add-to-cart'));
+
+    // then
+    await waitFor(() => expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
+      variant: 'error',
+      description: 'Only 2 left in stock.',
+    })));
+    expect(refetch).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('quantity-value')).toHaveTextContent('2');
+  });
+
+  it('returns to the product list with the filters it was opened from', () => {
+    // given
+    // Re-renders after the cart quantity effect read the location again, so this cannot be a one-off value.
+    vi.mocked(useLocation).mockReturnValue({ pathname: '/products/1', search: '', state: { productsSearch: '?category=Books&sort=price-desc' } } as never);
+
+    // when
+    renderWithProviders(<ProductDetails />);
+
+    // then
+    expect(screen.getByRole('link', { name: '← Back to Products' })).toHaveAttribute('href', '/products?category=Books&sort=price-desc');
+    vi.mocked(useLocation).mockReturnValue({ pathname: '/products/1', search: '', state: null } as never);
+  });
+
+  it('ignores a back-link state that is not a query string', () => {
+    // given
+    vi.mocked(useLocation).mockReturnValue({ pathname: '/products/1', search: '', state: { productsSearch: '//evil.example' } } as never);
+
+    // when
+    renderWithProviders(<ProductDetails />);
+
+    // then
+    expect(screen.getByRole('link', { name: '← Back to Products' })).toHaveAttribute('href', '/products');
+    vi.mocked(useLocation).mockReturnValue({ pathname: '/products/1', search: '', state: null } as never);
+  });
+
+  it('formats prices with thousands separators', () => {
+    // given
+    (useQuery as any).mockImplementation(({ queryKey }) => (
+      queryKey[0] === 'product'
+        ? { data: { data: { ...mockProduct.data, price: 1999.99 } }, isLoading: false, error: null }
+        : { data: null, isLoading: false, error: null }
+    ));
+
+    // when
+    renderWithProviders(<ProductDetails />);
+
+    // then
+    expect(screen.getByTestId('product-price')).toHaveTextContent('$1,999.99');
+  });
+
+  it('requests a valid multi-digit id and stops "+" at the stock', () => {
+    // given
+    vi.mocked(useParams).mockReturnValue({ id: '12' });
+    (useQuery as any).mockImplementation(({ queryKey }) => (
+      queryKey[0] === 'product'
+        ? { data: { data: { ...mockProduct.data, id: 12, stockQuantity: 1 } }, isLoading: false, error: null }
+        : { data: null, isLoading: false, error: null }
+    ));
+
+    // when
+    renderWithProviders(<ProductDetails />);
+
+    // then
+    const productQuery = (useQuery as any).mock.calls.find(([options]) => options.queryKey[0] === 'product')[0];
+    expect(productQuery.enabled).toBe(true);
+    expect(screen.getByRole('button', { name: 'Increase quantity' })).toBeDisabled();
+    expect(screen.getByTestId('add-to-cart')).toBeEnabled();
+    vi.mocked(useParams).mockReturnValue({ id: '1' });
+  });
+
+  it('says the product sold out when the conflict leaves no stock', async () => {
+    // given
+    const { cart } = await import('../../lib/api');
+    vi.mocked(cart.updateCartItem).mockRejectedValueOnce(httpError(409));
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const refetch = vi.fn().mockResolvedValue({ data: { data: { ...mockProduct.data, stockQuantity: 0 } } });
+    (useQuery as any).mockImplementation(({ queryKey }) => (
+      queryKey[0] === 'product'
+        ? { data: mockProduct, isLoading: false, error: null, refetch }
+        : { data: { data: { items: [{ productId: 1, quantity: 3 }] } }, isLoading: false, error: null }
+    ));
+    renderWithProviders(<ProductDetails />);
+
+    // when
+    fireEvent.click(screen.getByTestId('add-to-cart'));
+
+    // then
+    await waitFor(() => expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ description: 'This product is now out of stock.' })));
+  });
+
+  it('keeps the generic message and does not refetch for other cart failures', async () => {
+    // given
+    const { cart } = await import('../../lib/api');
+    vi.mocked(cart.updateCartItem).mockRejectedValueOnce(httpError(500));
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const refetch = vi.fn();
+    (useQuery as any).mockImplementation(({ queryKey }) => (
+      queryKey[0] === 'product'
+        ? { data: mockProduct, isLoading: false, error: null, refetch }
+        : { data: { data: { items: [{ productId: 1, quantity: 3 }] } }, isLoading: false, error: null }
+    ));
+    renderWithProviders(<ProductDetails />);
+
+    // when
+    fireEvent.click(screen.getByTestId('add-to-cart'));
+
+    // then
+    await waitFor(() => expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ description: 'Failed to update cart. Please try again.' })));
+    expect(refetch).not.toHaveBeenCalled();
+  });
+});

@@ -7,6 +7,7 @@ import { createShopTools, faults, filterProducts, getModelContext, readFault, re
 import type { ToolCall } from './webmcp-model';
 import styles from './WebMcpPage.module.css';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { formatPrice } from '../../lib/format';
 
 export function WebMcpPage() {
   useDocumentTitle('WebMCP Shop');
@@ -116,7 +117,7 @@ export function WebMcpPage() {
           <p className={styles.muted}>{visible.length} products · lowest price first</p>
           <div className={styles.productList}>
             {visible.map(product => <article key={product.id} className={styles.product} data-testid={`webmcp-product-${product.id}`}>
-              <div className={styles.productInfo}><h3>{product.name}</h3><p>{product.category} · {product.stockQuantity} in stock</p><strong>${product.price.toFixed(2)}</strong></div>
+              <div className={styles.productInfo}><h3>{product.name}</h3><p>{product.category} · {product.stockQuantity} in stock</p><strong>{formatPrice(product.price)}</strong></div>
               <div className={styles.productActions}>
                 <label>Quantity<input type="number" min="1" max={product.stockQuantity || 1} value={quantities[product.id] ?? 1} onChange={event => setQuantities(current => ({ ...current, [product.id]: Number(event.target.value) }))} data-testid={`webmcp-quantity-${product.id}`} /></label>
                 <button disabled={pending || product.stockQuantity < 1 || !Number.isSafeInteger(quantities[product.id] ?? 1) || (quantities[product.id] ?? 1) < 1} onClick={() => void addFromUi(product)} data-testid={`webmcp-add-${product.id}`}>Add to cart</button>
@@ -130,7 +131,7 @@ export function WebMcpPage() {
             <div className={styles.sectionHeader}><h2 id="cart-title">Your cart</h2><button className={styles.secondary} onClick={() => void clearCart()} disabled={pending || !savedCart?.items.length}>Clear cart</button></div>
             {!savedCart ? <p>Loading cart…</p> : <>
               {savedCart.items.length === 0 ? <p className={styles.muted}>Your cart is empty. Add a product to begin.</p> : <ul>{savedCart.items.map(item => <li key={item.productId} data-testid={`webmcp-cart-item-${item.productId}`}><span>{catalogue.find(product => product.id === item.productId)?.name ?? `Product ${item.productId}`}</span><strong>× {item.quantity}</strong></li>)}</ul>}
-              <div className={styles.total}><span><span data-testid="webmcp-cart-count">{savedCart.totalItems}</span> items</span><strong data-testid="webmcp-cart-total">${displayedTotal.toFixed(2)}</strong></div>
+              <div className={styles.total}><span><span data-testid="webmcp-cart-count">{savedCart.totalItems}</span> items</span><strong data-testid="webmcp-cart-total">{formatPrice(displayedTotal)}</strong></div>
               <p className={styles.muted}>Cart changes are saved to the training backend.</p>
             </>}
           </section>

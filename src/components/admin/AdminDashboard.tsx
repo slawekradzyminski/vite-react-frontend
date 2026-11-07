@@ -1,20 +1,57 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { orders, products } from '../../lib/api';
-import { OrderStatus } from '../../types/order';
+import type { Order, OrderStatus } from '../../types/order';
+import { formatPrice } from '../../lib/format';
 import { Surface } from '../ui/surface';
 import { Badge } from '../ui/badge';
 import { AdminSectionNav } from './AdminSectionNav';
 
+const ORDERS_PAGE_SIZE = 50;
+// Upper bound on dashboard requests; beyond it the metrics are labelled as partial.
+const MAX_ORDER_PAGES = 20;
+
+// The metrics must cover every order, not only the first page (BUG-011).
+async function fetchAllOrders() {
+  const first = (await orders.getAllOrders(0, ORDERS_PAGE_SIZE)).data;
+  const pageCount = Math.min(first.totalPages, MAX_ORDER_PAGES);
+  const rest = await Promise.all(
+    Array.from({ length: Math.max(pageCount - 1, 0) }, (_, index) =>
+      orders.getAllOrders(index + 1, ORDERS_PAGE_SIZE).then((response) => response.data.content),
+    ),
+  );
+  const content: Order[] = [...first.content, ...rest.flat()];
+  return {
+    content,
+    totalElements: first.totalElements,
+    partial: first.totalPages > MAX_ORDER_PAGES,
+  };
+}
+
+function UnavailableValue({ testId }: { testId: string }) {
+  return <p className="text-3xl font-bold text-slate-400" data-testid={testId}>—</p>;
+}
+
+function SectionError({ message, onRetry, testId }: { message: string; onRetry: () => void; testId: string }) {
+  return (
+    <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700" data-testid={testId}>
+      <p>{message}</p>
+      <button type="button" onClick={onRetry} className="mt-2 font-medium text-slate-900 underline-offset-4 hover:underline" data-testid={`${testId}-retry`}>
+        Try again
+      </button>
+    </div>
+  );
+}
+
 export function AdminDashboard() {
-  const { data: productsData, isLoading: isLoadingProducts } = useQuery({
+  const { data: productsData, isLoading: isLoadingProducts, isError: productsFailed, refetch: refetchProducts } = useQuery({
     queryKey: ['products'],
     queryFn: products.getAllProducts,
   });
   
-  const { data: ordersData, isLoading: isLoadingOrders } = useQuery({
-    queryKey: ['admin-orders', 0, 50],
-    queryFn: () => orders.getAllOrders(0, 50),
+  const { data: ordersData, isLoading: isLoadingOrders, isError: ordersFailed, refetch: refetchOrders } = useQuery({
+    queryKey: ['admin-orders', 'dashboard'],
+    queryFn: fetchAllOrders,
   });
   
   // Early return with partial data if available
@@ -28,11 +65,12 @@ export function AdminDashboard() {
   }
   
   const productList = productsData?.data || [];
-  const orderList = ordersData?.data?.content || [];
+  const orderList = ordersData?.content || [];
+  const ordersPartial = ordersData?.partial ?? false;
   
   // Calculate dashboard metrics
   const totalProducts = productList.length;
-  const totalOrders = orderList.length;
+  const totalOrders = ordersData?.totalElements ?? orderList.length;
   const pendingOrders = orderList.filter(order => order.status === 'PENDING').length;
   const totalRevenue = orderList
     .filter(order => order.status !== 'CANCELLED')
@@ -58,11 +96,27 @@ export function AdminDashboard() {
           </p>
         </div>
       </Surface>
+
+      {(productsFailed || ordersFailed) && (
+        <div className="space-y-3" data-testid="admin-dashboard-errors">
+          {productsFailed && (
+            <SectionError message="Product data could not be loaded. Product metrics are unavailable." onRetry={() => refetchProducts()} testId="admin-dashboard-products-error" />
+          )}
+          {ordersFailed && (
+            <SectionError message="Order data could not be loaded. Order metrics are unavailable." onRetry={() => refetchOrders()} testId="admin-dashboard-orders-error" />
+          )}
+        </div>
+      )}
+      {ordersPartial && (
+        <p className="text-sm text-amber-700" data-testid="admin-dashboard-orders-partial">
+          Pending orders and revenue are based on the first {orderList.length} of {totalOrders} orders.
+        </p>
+      )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8" data-testid="admin-dashboard-metrics">
         <Surface variant="default" padding="lg" data-testid="admin-dashboard-products-card">
           <h2 className="mb-2 text-sm font-medium uppercase text-slate-500">Total Products</h2>
-          <p className="text-3xl font-bold text-slate-950" data-testid="admin-dashboard-products-count">{totalProducts}</p>
+          {productsFailed ? <UnavailableValue testId="admin-dashboard-products-count" /> : <p className="text-3xl font-bold text-slate-950" data-testid="admin-dashboard-products-count">{totalProducts}</p>}
           <Link to="/admin/products" className="mt-2 inline-block text-sm text-sky-700 hover:underline" data-testid="admin-dashboard-products-link">
             Manage Products →
           </Link>
@@ -70,7 +124,7 @@ export function AdminDashboard() {
         
         <Surface variant="default" padding="lg" data-testid="admin-dashboard-orders-card">
           <h2 className="mb-2 text-sm font-medium uppercase text-slate-500">Total Orders</h2>
-          <p className="text-3xl font-bold text-slate-950" data-testid="admin-dashboard-orders-count">{totalOrders}</p>
+          {ordersFailed ? <UnavailableValue testId="admin-dashboard-orders-count" /> : <p className="text-3xl font-bold text-slate-950" data-testid="admin-dashboard-orders-count">{totalOrders}</p>}
           <Link to="/admin/orders" className="mt-2 inline-block text-sm text-sky-700 hover:underline" data-testid="admin-dashboard-orders-link">
             View All Orders →
           </Link>
@@ -78,7 +132,7 @@ export function AdminDashboard() {
         
         <Surface variant="default" padding="lg" data-testid="admin-dashboard-pending-card">
           <h2 className="mb-2 text-sm font-medium uppercase text-slate-500">Pending Orders</h2>
-          <p className="text-3xl font-bold text-slate-950" data-testid="admin-dashboard-pending-count">{pendingOrders}</p>
+          {ordersFailed ? <UnavailableValue testId="admin-dashboard-pending-count" /> : <p className="text-3xl font-bold text-slate-950" data-testid="admin-dashboard-pending-count">{pendingOrders}</p>}
           <Link to="/admin/orders" className="mt-2 inline-block text-sm text-sky-700 hover:underline" data-testid="admin-dashboard-pending-link">
             Process Orders →
           </Link>
@@ -86,7 +140,7 @@ export function AdminDashboard() {
         
         <Surface variant="default" padding="lg" data-testid="admin-dashboard-revenue-card">
           <h2 className="mb-2 text-sm font-medium uppercase text-slate-500">Total Revenue</h2>
-          <p className="text-3xl font-bold text-slate-950" data-testid="admin-dashboard-revenue-amount">${totalRevenue.toFixed(2)}</p>
+          {ordersFailed ? <UnavailableValue testId="admin-dashboard-revenue-amount" /> : <p className="text-3xl font-bold text-slate-950" data-testid="admin-dashboard-revenue-amount">{formatPrice(totalRevenue)}</p>}
         </Surface>
       </div>
       
@@ -99,7 +153,9 @@ export function AdminDashboard() {
             </Link>
           </div>
           
-          {recentOrders.length === 0 ? (
+          {ordersFailed ? (
+            <p className="text-slate-500" data-testid="admin-dashboard-orders-unavailable">Orders are unavailable.</p>
+          ) : recentOrders.length === 0 ? (
             <p className="text-slate-500" data-testid="admin-dashboard-no-orders">No orders found</p>
           ) : (
             <div className="space-y-4" data-testid="admin-dashboard-orders-list">
@@ -112,7 +168,7 @@ export function AdminDashboard() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium text-slate-900" data-testid={`admin-dashboard-order-amount-${order.id}`}>${order.totalAmount.toFixed(2)}</p>
+                    <p className="font-medium text-slate-900" data-testid={`admin-dashboard-order-amount-${order.id}`}>{formatPrice(order.totalAmount)}</p>
                     <Badge
                       variant={getStatusVariant(order.status)}
                       className="text-xs leading-5"
@@ -135,7 +191,9 @@ export function AdminDashboard() {
             </Link>
           </div>
           
-          {lowStockProducts.length === 0 ? (
+          {productsFailed ? (
+            <p className="text-slate-500" data-testid="admin-dashboard-low-stock-unavailable">Stock levels are unavailable.</p>
+          ) : lowStockProducts.length === 0 ? (
             <p className="text-slate-500" data-testid="admin-dashboard-no-low-stock">No low stock products</p>
           ) : (
             <div className="space-y-4" data-testid="admin-dashboard-low-stock-list">
@@ -154,7 +212,7 @@ export function AdminDashboard() {
                     )}
                     <div>
                       <p className="font-medium text-slate-900" data-testid={`admin-dashboard-product-name-${product.id}`}>{product.name}</p>
-                      <p className="text-sm text-slate-500" data-testid={`admin-dashboard-product-price-${product.id}`}>${product.price.toFixed(2)}</p>
+                      <p className="text-sm text-slate-500" data-testid={`admin-dashboard-product-price-${product.id}`}>{formatPrice(product.price)}</p>
                     </div>
                   </div>
                   <div className="text-right">

@@ -76,7 +76,7 @@ describe('EmailPage', () => {
 
     // then
     await waitFor(() => {
-      expect(screen.getByText('Email sent successfully')).toBeInTheDocument();
+      expect(screen.getByText('Email queued for delivery')).toBeInTheDocument();
     });
 
     expect(email.send).toHaveBeenCalledWith({
@@ -129,4 +129,60 @@ describe('EmailPage', () => {
       expect(screen.getByText('Failed to send email')).toBeInTheDocument();
     });
   });
-}); 
+
+  it('sends one request and shows progress while the first submission is pending (BUG-012)', async () => {
+    // given
+    let resolveSend: (value: unknown) => void = () => {};
+    vi.mocked(email.send).mockReturnValue(new Promise((resolve) => { resolveSend = resolve; }) as never);
+    renderWithProviders(<EmailPage />);
+    await user.type(screen.getByLabelText('To'), 'test@example.com');
+    await user.type(screen.getByLabelText('Subject'), 'Test Subject');
+    await user.type(screen.getByLabelText('Message'), 'Duplicate submission check');
+    const button = screen.getByRole('button', { name: 'Send Email' });
+
+    // when
+    await user.dblClick(button);
+
+    // then
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Sending...' })).toBeDisabled());
+    expect(email.send).toHaveBeenCalledTimes(1);
+    resolveSend({ data: { success: true } });
+    expect(await screen.findByRole('button', { name: 'Send Email' })).toBeEnabled();
+  });
+
+  it('shows field errors for whitespace-only input without calling the API', async () => {
+    // given
+    renderWithProviders(<EmailPage />);
+    await user.type(screen.getByLabelText('To'), '   ');
+    await user.type(screen.getByLabelText('Subject'), '   ');
+    await user.type(screen.getByLabelText('Message'), '          ');
+
+    // when
+    await user.click(screen.getByRole('button', { name: 'Send Email' }));
+
+    // then
+    expect(await screen.findByText('Recipient is required')).toBeInTheDocument();
+    expect(screen.getByText('Subject is required')).toBeInTheDocument();
+    expect(screen.getByText('Message is required')).toBeInTheDocument();
+    expect(email.send).not.toHaveBeenCalled();
+  });
+
+  it('accepts a new submission once the previous one has finished', async () => {
+    // given
+    vi.mocked(email.send).mockRejectedValueOnce({ response: { data: { message: 'Mail server down' } } });
+    vi.mocked(email.send).mockResolvedValueOnce({ data: { success: true } } as never);
+    renderWithProviders(<EmailPage />);
+    await user.type(screen.getByLabelText('To'), 'test@example.com');
+    await user.type(screen.getByLabelText('Subject'), 'Test Subject');
+    await user.type(screen.getByLabelText('Message'), 'Retry after a failure');
+    await user.click(screen.getByRole('button', { name: 'Send Email' }));
+    expect(await screen.findByText('Mail server down')).toBeInTheDocument();
+
+    // when
+    await user.click(await screen.findByRole('button', { name: 'Send Email' }));
+
+    // then
+    expect(await screen.findByText('Email queued for delivery')).toBeInTheDocument();
+    expect(email.send).toHaveBeenCalledTimes(2);
+  });
+});

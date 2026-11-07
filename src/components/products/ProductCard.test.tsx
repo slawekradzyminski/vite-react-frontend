@@ -159,7 +159,7 @@ describe('ProductCard', () => {
     await user.click(screen.getByText('Test Description'));
     
     // then
-    expect(mockNavigate).toHaveBeenCalledWith(`/products/${mockProduct.id}`);
+    expect(mockNavigate).toHaveBeenCalledWith(`/products/${mockProduct.id}`, { state: { productsSearch: '' } });
   });
 
   it('exposes the product name as a keyboard reachable link to the details page', async () => {
@@ -275,4 +275,80 @@ describe('ProductCard', () => {
     expect(screen.getByRole('button', { name: /update cart/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /remove/i })).toBeInTheDocument();
   });
-}); 
+
+  it('says "Out of stock" instead of offering quantity controls', () => {
+    // when
+    renderWithProviders(<ProductCard product={mockOutOfStockProduct} />);
+
+    // then
+    expect(screen.getByTestId('product-out-of-stock')).toHaveTextContent('Out of stock');
+    expect(screen.queryByTestId('product-increase-quantity')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('product-decrease-quantity')).not.toBeInTheDocument();
+    expect(screen.getByTestId('product-add-button')).toBeDisabled();
+  });
+
+  it('keeps the quantity between 1 and the stock', async () => {
+    // given
+    const user = userEvent.setup();
+    renderWithProviders(<ProductCard product={{ ...mockProduct, id: 9, stockQuantity: 2 }} />);
+    const decrease = screen.getByTestId('product-decrease-quantity');
+    const increase = screen.getByTestId('product-increase-quantity');
+
+    // then
+    expect(decrease).toBeDisabled();
+
+    // when
+    await user.click(increase);
+
+    // then
+    expect(screen.getByTestId('product-quantity-value')).toHaveTextContent('2');
+    expect(increase).toBeDisabled();
+    expect(decrease).toBeEnabled();
+  });
+
+  it('never turns the add button into a second Remove button for a product in the cart', async () => {
+    // given
+    const user = userEvent.setup();
+    renderWithProviders(<ProductCard product={mockProduct} />);
+
+    // when
+    await user.click(screen.getByTestId('product-decrease-quantity')); // 2 -> 1
+    await user.click(screen.getByTestId('product-decrease-quantity'));
+
+    // then
+    expect(screen.getByTestId('product-quantity-value')).toHaveTextContent('1');
+    expect(screen.getByTestId('product-add-button')).toHaveTextContent('Update Cart');
+    expect(screen.getAllByRole('button', { name: /remove/i })).toHaveLength(1);
+  });
+
+  it('formats prices with thousands separators', () => {
+    // when
+    renderWithProviders(<ProductCard product={{ ...mockProduct, price: 1999.99 }} />);
+
+    // then
+    expect(screen.getByTestId('product-price')).toHaveTextContent('$1,999.99');
+  });
+
+  it('lets a product with a single piece left be added', () => {
+    // when
+    renderWithProviders(<ProductCard product={{ ...mockProduct, id: 8, stockQuantity: 1 }} />);
+
+    // then
+    expect(screen.queryByTestId('product-out-of-stock')).not.toBeInTheDocument();
+    expect(screen.getByTestId('product-add-button')).toBeEnabled();
+  });
+
+  it('decreases a larger quantity one step at a time', async () => {
+    // given
+    const user = userEvent.setup();
+    renderWithProviders(<ProductCard product={{ ...mockProduct, id: 7 }} />);
+    await user.click(screen.getByTestId('product-increase-quantity'));
+    await user.click(screen.getByTestId('product-increase-quantity')); // 3
+
+    // when
+    await user.click(screen.getByTestId('product-decrease-quantity'));
+
+    // then
+    expect(screen.getByTestId('product-quantity-value')).toHaveTextContent('2');
+  });
+});

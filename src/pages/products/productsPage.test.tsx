@@ -88,6 +88,8 @@ describe('ProductsPage', () => {
   beforeEach(() => {
     user = userEvent.setup();
     vi.clearAllMocks();
+    // The selected category lives in the URL, which jsdom shares between tests.
+    window.history.replaceState({}, '', '/products');
     vi.mocked(products.getAllProducts).mockResolvedValue({
       data: mockProducts,
       status: 200,
@@ -225,8 +227,21 @@ describe('ProductsPage', () => {
     await user.click(electronicsCategory);
     
     // then
-    expect(electronicsCategory.className).toContain('bg-slate-900');
+    await waitFor(() => expect(electronicsCategory.className).toContain('bg-slate-900'));
     expect(allProductsButton.className).not.toContain('bg-slate-900');
+    expect(window.location.search).toBe('?category=Electronics');
+  });
+
+  it('restores the selected category from the URL', async () => {
+    // given
+    window.history.replaceState({}, '', '/products?category=Electronics');
+
+    // when
+    renderWithProviders(<ProductsPage />);
+
+    // then
+    expect(await screen.findByRole('button', { name: 'Electronics' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'All Products' })).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('displays all categories from products', async () => {
@@ -257,8 +272,20 @@ describe('ProductsPage', () => {
     await user.click(electronics);
 
     // then
-    expect(electronics).toHaveAttribute('aria-pressed', 'true');
+    await waitFor(() => expect(electronics).toHaveAttribute('aria-pressed', 'true'));
     expect(all).toHaveAttribute('aria-pressed', 'false');
     expect(document.title).toBe('Products – Awesome Testing');
+  });
+
+  it('removes the category from the URL when All Products is chosen', async () => {
+    // given
+    window.history.replaceState({}, '', '/products?category=Electronics&sort=price-desc');
+    renderWithProviders(<ProductsPage />);
+
+    // when
+    await user.click(await screen.findByRole('button', { name: 'All Products' }));
+
+    // then
+    await waitFor(() => expect(window.location.search).toBe('?sort=price-desc'));
   });
 });

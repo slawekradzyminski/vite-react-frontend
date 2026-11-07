@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useToast } from '../../hooks/useToast';
 import { Surface } from '../ui/surface';
 import { Badge } from '../ui/badge';
+import { formatPrice } from '../../lib/format';
 
 export const OrderDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -152,13 +153,13 @@ export const OrderDetails = () => {
                 <p className="[overflow-wrap:anywhere] font-medium text-slate-900" data-testid={`order-item-name-${item.id}`}>{item.productName}</p>
                 <p className="text-sm text-slate-500" data-testid={`order-item-price-details-${item.id}`}>${item.unitPrice} x {item.quantity}</p>
               </div>
-              <p className="shrink-0 self-end font-medium text-slate-900 sm:self-auto" data-testid={`order-item-total-${item.id}`}>${item.totalPrice.toFixed(2)}</p>
+              <p className="shrink-0 self-end font-medium text-slate-900 sm:self-auto" data-testid={`order-item-total-${item.id}`}>{formatPrice(item.totalPrice)}</p>
             </div>
           ))}
         </div>
         <div className="mt-4 flex items-center justify-between border-t border-stone-200 pt-3" data-testid="order-details-total">
           <p className="font-semibold text-slate-700">Total</p>
-          <p className="font-bold text-lg text-slate-950" data-testid="order-details-total-amount">${order.totalAmount.toFixed(2)}</p>
+          <p className="font-bold text-lg text-slate-950" data-testid="order-details-total-amount">{formatPrice(order.totalAmount)}</p>
         </div>
       </Surface>
 

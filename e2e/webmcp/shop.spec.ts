@@ -109,7 +109,7 @@ test('cart reads stay scoped to the authenticated user', async ({ shop, browser 
 
   // then
   expect(decode<Cart>(result).username).toBe(shop.username);
-  await expect(anonymousPage).toHaveURL(/\/login$/);
+  await expect(anonymousPage).toHaveURL(/\/login\?returnTo=%2Fwebmcp$/);
   expect(await anonymousPage.webmcp.tools()).toEqual([]);
   await anonymous.close();
 });

@@ -4,9 +4,11 @@ import { LoginPage } from '../pages/login.page.object';
 import { ProfilePage } from '../pages/profile.page.object';
 import { generateTotp, millisecondsUntilNextTotpStep } from '../utils/totp.utils';
 
+// The auth fixture re-injects its token on every page load, and /login keeps an
+// existing session (BUG-003), so sign out through the app instead of clearing storage.
 async function clearLogin(page: Page) {
-  await page.evaluate(() => window.localStorage.clear());
-  await page.goto('/login');
+  await page.getByTestId('logout-button').click();
+  await expect(page).toHaveURL(/\/login$/);
 }
 
 test.describe('Two-factor authentication', () => {

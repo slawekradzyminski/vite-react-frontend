@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import { products } from '../../lib/api';
 import { Product } from '../../types/product';
 import { Surface } from '../ui/surface';
+import { formatPrice } from '../../lib/format';
 
 export function AdminProductList() {
   const queryClient = useQueryClient();
@@ -130,7 +131,7 @@ export function AdminProductList() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500" data-testid={`admin-product-price-${product.id}`}>
-                    ${product.price.toFixed(2)}
+                    {formatPrice(product.price)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500" data-testid={`admin-product-stock-${product.id}`}>
                     {product.stockQuantity}

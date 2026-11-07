@@ -12,10 +12,11 @@ vi.mock('../../lib/api', () => ({
 }));
 
 const mockToast = vi.fn();
+const mockDismissErrors = vi.fn();
 
 const renderComponent = () =>
   render(
-    <ToastContext.Provider value={{ toast: mockToast }}>
+    <ToastContext.Provider value={{ toast: mockToast, dismissErrors: mockDismissErrors }}>
       <QrCodeGenerator />
     </ToastContext.Provider>
   );
@@ -105,7 +106,7 @@ describe('QrCodeGenerator', () => {
     renderComponent();
     await user.type(screen.getByRole('textbox'), 'first');
     await user.click(screen.getByRole('button', { name: /generate/i }));
-    await screen.findByText('QR code generated');
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('QR code generated'));
     vi.mocked(qr.create).mockReturnValueOnce(new Promise(() => {}));
 
     // when
@@ -201,4 +202,60 @@ describe('QrCodeGenerator', () => {
     });
     expect(qr.create).not.toHaveBeenCalled();
   });
-}); 
+
+  it('removes the previous code when a later generation fails (BUG-010)', async () => {
+    // given
+    vi.mocked(URL.createObjectURL).mockReturnValueOnce('blob:previous');
+    vi.mocked(qr.create).mockResolvedValueOnce({ type: 'image/png', data: new Blob(['previous']) });
+    renderComponent();
+    await user.type(screen.getByRole('textbox'), 'previous text');
+    await user.click(screen.getByRole('button', { name: /generate/i }));
+    expect(await screen.findByTestId('qr-code-image')).toHaveAttribute('alt', 'QR code for previous text');
+    vi.mocked(qr.create).mockRejectedValueOnce(new Error('500'));
+
+    // when
+    await user.clear(screen.getByRole('textbox'));
+    await user.type(screen.getByRole('textbox'), 'rejected text');
+    await user.click(screen.getByRole('button', { name: /generate/i }));
+
+    // then
+    await waitFor(() => expect(screen.queryByTestId('qr-code-image')).not.toBeInTheDocument());
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:previous');
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'error', description: 'Failed to generate QR code' }));
+  });
+
+  it('closes earlier error toasts and offers a download once a code is generated', async () => {
+    // given
+    vi.mocked(qr.create).mockResolvedValueOnce({ type: 'image/png', data: new Blob(['ok']) });
+    renderComponent();
+    await user.click(screen.getByRole('button', { name: /generate/i }));
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ description: 'Please enter text to generate QR code' }));
+    expect(mockDismissErrors).not.toHaveBeenCalled();
+
+    // when
+    await user.type(screen.getByRole('textbox'), 'https://awesome-testing.com');
+    await user.click(screen.getByRole('button', { name: /generate/i }));
+
+    // then
+    await waitFor(() => expect(mockDismissErrors).toHaveBeenCalledTimes(1));
+    const download = screen.getByRole('link', { name: 'Download PNG' });
+    expect(download).toHaveAttribute('href', 'blob:test-url');
+    expect(download).toHaveAttribute('download', 'qr-code.png');
+  });
+
+  it('scrolls the generated code into view', async () => {
+    // given
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    vi.mocked(qr.create).mockResolvedValueOnce({ type: 'image/png', data: new Blob(['ok']) });
+    renderComponent();
+
+    // when
+    await user.type(screen.getByRole('textbox'), 'scroll me');
+    await user.click(screen.getByRole('button', { name: /generate/i }));
+
+    // then
+    await waitFor(() => expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'nearest' }));
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+  });
+});
