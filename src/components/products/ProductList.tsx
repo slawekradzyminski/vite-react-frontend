@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { products } from '../../lib/api';
@@ -19,7 +19,9 @@ export function ProductList({ category, onAgentSearch }: ProductListProps) {
   // Filters live in the URL so refresh, Back and shared links keep the view.
   const [searchParams, setSearchParams] = useSearchParams();
   const sortOption = SORT_OPTIONS.includes(searchParams.get('sort') ?? '') ? searchParams.get('sort')! : DEFAULT_SORT;
-  const searchTerm = searchParams.get('q') ?? '';
+  // The search box filters from local state so typing stays synchronous; the URL
+  // only mirrors it, because router updates are applied asynchronously.
+  const [searchTerm, setSearchTermState] = useState(() => searchParams.get('q') ?? '');
   const inStockOnly = searchParams.get('inStock') === '1';
   const updateFilters = useCallback((changes: Record<string, string | null>) => {
     setSearchParams(previous => {
@@ -28,11 +30,15 @@ export function ProductList({ category, onAgentSearch }: ProductListProps) {
       return next;
     }, { replace: true });
   }, [setSearchParams]);
-  const setSearchTerm = (value: string) => updateFilters({ q: value || null });
+  const setSearchTerm = (value: string) => {
+    setSearchTermState(value);
+    updateFilters({ q: value || null });
+  };
   const setSortOption = (value: string) => updateFilters({ sort: value === DEFAULT_SORT ? null : value });
   const setInStockOnly = (value: boolean) => updateFilters({ inStock: value ? '1' : null });
   const onSearch = useCallback((query: string, stock: boolean) => {
     onAgentSearch?.();
+    setSearchTermState(query);
     updateFilters({ q: query || null, inStock: stock ? '1' : null, sort: 'price-asc' });
   }, [onAgentSearch, updateFilters]);
   const params = new URLSearchParams(window.location.search);
