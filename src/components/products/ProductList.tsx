@@ -12,10 +12,9 @@ const SORT_OPTIONS = ['name-asc', 'name-desc', 'price-asc', 'price-desc'];
 
 interface ProductListProps {
   category?: string;
-  onAgentSearch?: () => void;
 }
 
-export function ProductList({ category, onAgentSearch }: ProductListProps) {
+export function ProductList({ category }: ProductListProps) {
   // Filters live in the URL so refresh, Back and shared links keep the view.
   const [searchParams, setSearchParams] = useSearchParams();
   const sortOption = SORT_OPTIONS.includes(searchParams.get('sort') ?? '') ? searchParams.get('sort')! : DEFAULT_SORT;
@@ -36,11 +35,12 @@ export function ProductList({ category, onAgentSearch }: ProductListProps) {
   };
   const setSortOption = (value: string) => updateFilters({ sort: value === DEFAULT_SORT ? null : value });
   const setInStockOnly = (value: boolean) => updateFilters({ inStock: value ? '1' : null });
+  // An agent search covers every category. Clear it in the same URL update: a second
+  // update would start from the stale URL and could restore the category.
   const onSearch = useCallback((query: string, stock: boolean) => {
-    onAgentSearch?.();
     setSearchTermState(query);
-    updateFilters({ q: query || null, inStock: stock ? '1' : null, sort: 'price-asc' });
-  }, [onAgentSearch, updateFilters]);
+    updateFilters({ category: null, q: query || null, inStock: stock ? '1' : null, sort: 'price-asc' });
+  }, [updateFilters]);
   const params = new URLSearchParams(window.location.search);
   const webmcp = useShopWebMcp(onSearch, params.get('tools') !== 'off');
 
