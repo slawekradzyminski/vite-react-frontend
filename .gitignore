@@ -12,6 +12,7 @@ lerna-debug.log*
 test-results/
 playwright-report/
 reports/mutation/
+reports/stryker-incremental.json
 reports/webmcp/
 coverage/
 .stryker-tmp/

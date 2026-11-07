@@ -106,6 +106,22 @@ const fulfillAuth = (
     expect(screen.getByTestId('login-search')).toHaveTextContent(`?returnTo=${encodeURIComponent('/products/7?ref=share')}`);
   });
 
+  it('redirects from the home page to login without a returnTo parameter', () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/']}>
+          <Routes>
+            <Route path="/login" element={<LoginProbe />} />
+            <Route path="/" element={<ProtectedRoute><TestComponent /></ProtectedRoute>} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+
+    expect(screen.getByText('Login Page')).toBeInTheDocument();
+    expect(screen.getByTestId('login-search')).toBeEmptyDOMElement();
+  });
+
   // given
   it('renders children when token is present and API call succeeds', async () => {
     // when

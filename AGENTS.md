@@ -37,7 +37,8 @@ This section points other automation or human teammates to the right document fo
 
 ## Mutation-testing feedback
 
-- Run `npm test` first, then `npm run test:mutation` after changing SSO, runtime URL, SSE behavior, or their tests.
+- Run `npm test` first, then `npm run test:mutation` after changing SSO, runtime URL, SSE behavior, the API client and token refresh, auth storage, role checks, route protection, or their tests.
+- Stryker runs incrementally and keeps its state in `reports/stryker-incremental.json`, so repeat runs only re-test changed code and tests. Run `npx stryker run --force` for a full baseline.
 - Treat `NoCoverage` as a reachability gap and `Survived` as an assertion gap. For each meaningful survivor, add a test that passes on the original code and fails on that mutant.
 - Prioritize authentication/PKCE invariants, callback failure paths, redirect safety, and lossless stream parsing. Do not add brittle implementation-detail assertions solely to increase the score.
 - The initial score is advisory. On pull requests, reject new meaningful survivors in changed high-risk code; keep broader mutation-score trend checks outside the fast test loop.

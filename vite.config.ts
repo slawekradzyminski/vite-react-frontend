@@ -24,6 +24,9 @@ export default defineVitestConfig(() => ({
       exclude: ['node_modules/**', 'e2e/**'],
       coverage: {
         reporter: ['text', 'json', 'html'],
+        // Measure every source file, not only those some test imports, so untested
+        // modules show up as 0% instead of disappearing from the report.
+        include: ['src/**/*.{ts,tsx}'],
         thresholds: {
           lines: 85,
           statements: 85,
@@ -32,7 +35,10 @@ export default defineVitestConfig(() => ({
         },
         exclude: [
           'node_modules/',
-          'src/test/setup.ts',
+          'src/test/**',
+          'src/**/*.test.{ts,tsx}',
+          'src/**/*.d.ts',
+          'src/types/generated/**',
           'src/**/*.module.css',
         ],
       },
