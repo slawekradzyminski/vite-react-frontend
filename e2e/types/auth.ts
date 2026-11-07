@@ -1,3 +1,5 @@
+import type { UserRole } from './user';
+
 export interface SignInRequest {
     username: string;
     password: string;
@@ -5,7 +7,7 @@ export interface SignInRequest {
   
 export interface SignInResponse {
     username: string;
-    roles: string[];
+    roles: UserRole[];
     firstName: string;
     lastName: string;
     token: string;

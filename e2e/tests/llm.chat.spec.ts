@@ -1,6 +1,7 @@
 import { test, expect } from '../fixtures/auth.fixture';
 import { ChatPage } from '../pages/chat.page.object';
 import { ollamaChatMocks } from '../mocks/ollamaChatMocks';
+import { fulfillWithSchema } from '../mocks/backendContract';
 
 const STATUS_PROMPT = 'Give me a quick status update on the Ollama mock';
 const CHAT_SYSTEM_PROMPT = 'You are an engineering copilot focused on delivery-readiness checks.';
@@ -10,11 +11,7 @@ test.describe('Ollama Chat', () => {
 
   test.beforeEach(async ({ authenticatedPage }) => {
     await authenticatedPage.page.route('**/api/v1/users/chat-system-prompt', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ chatSystemPrompt: CHAT_SYSTEM_PROMPT }),
-      });
+      await fulfillWithSchema(route, 'ChatSystemPromptDto', { chatSystemPrompt: CHAT_SYSTEM_PROMPT });
     });
     chatPage = new ChatPage(authenticatedPage.page);
   });

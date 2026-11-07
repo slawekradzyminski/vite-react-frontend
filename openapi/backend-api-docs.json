@@ -1,0 +1,5744 @@
+{
+  "components": {
+    "schemas": {
+      "AddressDto": {
+        "description": "Address data transfer object",
+        "properties": {
+          "city": {
+            "description": "City",
+            "example": "New York",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "country": {
+            "description": "Country",
+            "example": "Poland",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "state": {
+            "description": "State",
+            "example": "NY",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "street": {
+            "description": "Street address",
+            "example": "123 Main St",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "zipCode": {
+            "description": "Postal/ZIP code",
+            "example": "35-119",
+            "minLength": 1,
+            "pattern": "^[0-9]{2}(-[0-9]{3})?|[0-9]{5}(-[0-9]{4})?$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "city",
+          "country",
+          "state",
+          "street",
+          "zipCode"
+        ],
+        "type": "object"
+      },
+      "CartDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CartItemDto"
+            },
+            "type": "array"
+          },
+          "totalItems": {
+            "description": "Total number of items",
+            "example": 7,
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalPrice": {
+            "description": "Total Cart price",
+            "example": 199.56,
+            "type": "number"
+          },
+          "username": {
+            "description": "Cart owner",
+            "example": "admin",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CartItemDto": {
+        "properties": {
+          "productId": {
+            "description": "Product id",
+            "example": 13,
+            "format": "int64",
+            "type": "integer"
+          },
+          "quantity": {
+            "description": "Product quantity",
+            "example": 1,
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "productId",
+          "quantity"
+        ],
+        "type": "object"
+      },
+      "ChatMessageDto": {
+        "properties": {
+          "content": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "contentOrThinkingOrToolCallPresent": {
+            "description": "Computed validation: nonblank content or thinking, or nonempty tool_calls is required",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "role": {
+            "minLength": 1,
+            "pattern": "^(system|user|assistant|tool)$",
+            "type": "string"
+          },
+          "thinking": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "toolNamePresentForToolRole": {
+            "description": "Computed validation: role tool requires a nonblank tool_name",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "tool_calls": {
+            "items": {
+              "$ref": "#/components/schemas/ToolCallDto"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "tool_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "type": "object"
+      },
+      "ChatRequestDto": {
+        "properties": {
+          "messages": {
+            "description": "Complete conversation history in chronological order.",
+            "example": [
+              {
+                "content": "You are a helpful AI assistant. You must use the conversation history to answer questions.",
+                "role": "system"
+              },
+              {
+                "content": "I love programming in Python.",
+                "role": "user"
+              },
+              {
+                "content": "That's great! Python is a versatile and popular programming language. What do you enjoy most about Python programming?",
+                "role": "assistant"
+              },
+              {
+                "content": "What programming language did I say I love?",
+                "role": "user"
+              }
+            ],
+            "items": {
+              "$ref": "#/components/schemas/ChatMessageDto"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "model": {
+            "description": "Model to use. Must be available on the Ollama server. Clients can override it per request.",
+            "example": "qwen3.5:2b",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "options": {
+            "additionalProperties": {},
+            "description": "Options",
+            "example": {
+              "temperature": 0.7
+            },
+            "type": "object"
+          },
+          "think": {
+            "description": "Should the model think before responding?",
+            "example": false,
+            "type": "boolean"
+          },
+          "tools": {
+            "description": "Function/tool definitions available to the model.",
+            "items": {
+              "$ref": "#/components/schemas/OllamaToolDefinitionDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "messages",
+          "model"
+        ],
+        "type": "object"
+      },
+      "ChatResponseDto": {
+        "properties": {
+          "created_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "done": {
+            "type": "boolean"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ChatMessageDto"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Message chunk; may be null when an upstream event contains no message",
+            "type": [
+              "object",
+              "null"
+            ]
+          },
+          "model": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ChatSystemPromptDto": {
+        "description": "Chat system prompt",
+        "properties": {
+          "chatSystemPrompt": {
+            "description": "Null, omitted, or empty resets the override. General chat system prompt",
+            "example": "You are a helpful assistant.",
+            "maxLength": 5000,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "CreateQrDto": {
+        "description": "QR link",
+        "properties": {
+          "text": {
+            "description": "Text to use in QR code",
+            "example": "https://awesome-testing.com",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "type": "object"
+      },
+      "EmailDto": {
+        "properties": {
+          "message": {
+            "description": "Email content",
+            "example": "Please read this message carefully",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "properties": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Template properties that help the consumer render the message",
+            "type": "object"
+          },
+          "subject": {
+            "description": "Email subject",
+            "example": "Important message",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "template": {
+            "description": "Optional template identifier used by downstream consumers; may be null in local outbox payloads",
+            "enum": [
+              "GENERIC",
+              "PASSWORD_RESET_REQUESTED",
+              "PASSWORD_RESET_CONFIRMED",
+              null
+            ],
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "to": {
+            "description": "Email recipient",
+            "example": "user@example.com",
+            "format": "email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "subject"
+        ],
+        "type": "object"
+      },
+      "EmailEventDto": {
+        "properties": {
+          "createdAt": {
+            "description": "When the email event was first recorded",
+            "format": "date-time",
+            "type": "string"
+          },
+          "failureReason": {
+            "description": "Failure detail when the test mail sink handoff did not succeed",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "recipientMasked": {
+            "description": "Masked recipient email address",
+            "example": "j***@example.com",
+            "type": "string"
+          },
+          "status": {
+            "description": "Delivery status recorded by the application for the Mailhog-backed test sink",
+            "enum": [
+              "QUEUED",
+              "SENT_TO_SMTP_SINK",
+              "FAILED"
+            ],
+            "type": "string"
+          },
+          "type": {
+            "description": "Email template or event type",
+            "enum": [
+              "GENERIC",
+              "PASSWORD_RESET_REQUESTED",
+              "PASSWORD_RESET_CONFIRMED"
+            ],
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "When the email event status was last updated",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ErrorDto": {
+        "additionalProperties": false,
+        "properties": {
+          "message": {
+            "description": "Error message",
+            "example": "Error message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "type": "object"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "status": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "timestamp": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ForgotPasswordRequestDto": {
+        "properties": {
+          "identifier": {
+            "description": "Username or email address associated with the account",
+            "example": "client",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "identifier"
+        ],
+        "type": "object"
+      },
+      "ForgotPasswordResponseDto": {
+        "properties": {
+          "message": {
+            "description": "Human readable status message",
+            "type": "string"
+          },
+          "token": {
+            "description": "Raw password reset token only when password-reset.expose-token-in-response is enabled and a local account matches; otherwise null",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "GenerateResponseDto": {
+        "properties": {
+          "context": {
+            "items": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "done": {
+            "type": "boolean"
+          },
+          "model": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "response": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "thinking": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "total_duration": {
+            "format": "int64",
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "InventoryAdjustmentDto": {
+        "properties": {
+          "delta": {
+            "description": "Nonzero change in stock; positive adds and negative subtracts",
+            "format": "int32",
+            "not": {
+              "enum": [
+                0
+              ],
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "integer"
+          },
+          "deltaNonZero": {
+            "description": "Computed validation result; supply a nonzero delta",
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "requestId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "delta",
+          "reason",
+          "requestId"
+        ],
+        "type": "object"
+      },
+      "InventoryItemDto": {
+        "properties": {
+          "availableQuantity": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "category": {
+            "type": "string"
+          },
+          "lastChangedAt": {
+            "description": "Server local date and time without an offset; timezone is deployment-dependent, not an absolute instant",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "productId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "stockStatus": {
+            "enum": [
+              "IN_STOCK",
+              "LOW_STOCK",
+              "OUT_OF_STOCK"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "InventoryMovementDto": {
+        "properties": {
+          "actor": {
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "Server local date and time without an offset; timezone is deployment-dependent, not an absolute instant",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "delta": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "orderId": {
+            "format": "int64",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "productId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "quantityAfter": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "requestId": {
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "enum": [
+              "INITIAL_STOCK",
+              "ADMIN_ADJUSTMENT",
+              "ORDER_DEDUCTED",
+              "ORDER_RESTORED"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "LoginDto": {
+        "description": "Login details",
+        "properties": {
+          "password": {
+            "description": "Password",
+            "example": "admin",
+            "maxLength": 255,
+            "minLength": 4,
+            "type": "string"
+          },
+          "username": {
+            "description": "Username",
+            "example": "admin",
+            "maxLength": 255,
+            "minLength": 4,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "LoginResponseDto": {
+        "properties": {
+          "challengeExpiresAt": {
+            "description": "MFA challenge expiration time",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "challengeToken": {
+            "description": "Short-lived, single-use MFA challenge token",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "email": {
+            "description": "Email address",
+            "example": "john.doe@example.com",
+            "type": "string"
+          },
+          "firstName": {
+            "description": "First name",
+            "example": "John",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastName": {
+            "description": "Last name",
+            "example": "Doe",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mfaRequired": {
+            "description": "Whether a second factor is required before tokens can be issued",
+            "type": "boolean"
+          },
+          "refreshToken": {
+            "description": "Refresh token",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "roles": {
+            "description": "User roles",
+            "example": [
+              "ROLE_CLIENT"
+            ],
+            "items": {
+              "enum": [
+                "ROLE_ADMIN",
+                "ROLE_CLIENT"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "token": {
+            "description": "JWT token",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "username": {
+            "description": "Username",
+            "example": "johndoe",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MfaChallengeRequestDto": {
+        "properties": {
+          "challengeToken": {
+            "description": "Short-lived challenge returned after password verification",
+            "maxLength": 255,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "code": {
+            "description": "Six-digit authenticator code or one-time recovery code",
+            "maxLength": 32,
+            "minLength": 6,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "challengeToken",
+          "code"
+        ],
+        "type": "object"
+      },
+      "MfaCodeRequestDto": {
+        "properties": {
+          "code": {
+            "description": "Six-digit code from an authenticator app",
+            "example": "123456",
+            "minLength": 1,
+            "pattern": "\\d{6}",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "type": "object"
+      },
+      "MfaProtectedActionRequestDto": {
+        "properties": {
+          "code": {
+            "description": "Six-digit authenticator code or one-time recovery code",
+            "maxLength": 32,
+            "minLength": 6,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "password": {
+            "description": "Current account password",
+            "maxLength": 255,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "password"
+        ],
+        "type": "object"
+      },
+      "MfaRecoveryCodesResponseDto": {
+        "properties": {
+          "recoveryCodes": {
+            "description": "One-time recovery codes. These are returned only when created.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "MfaSetupResponseDto": {
+        "properties": {
+          "expiresAt": {
+            "description": "Time at which this unconfirmed setup expires",
+            "format": "date-time",
+            "type": "string"
+          },
+          "otpAuthUri": {
+            "description": "Standard OTPAuth URI",
+            "type": "string"
+          },
+          "qrCodeDataUri": {
+            "description": "PNG QR code encoded as a data URI",
+            "type": "string"
+          },
+          "secret": {
+            "description": "Manual Base32 setup key",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MfaStatusResponseDto": {
+        "properties": {
+          "enabled": {
+            "description": "Whether application-owned TOTP is enabled",
+            "type": "boolean"
+          },
+          "unusedRecoveryCodes": {
+            "description": "Number of unused one-time recovery codes",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ModelNotFoundDto": {
+        "properties": {
+          "error": {
+            "description": "Missing model error. You need to pull it",
+            "example": "model 'X' not found",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "OllamaToolDefinitionDto": {
+        "properties": {
+          "function": {
+            "$ref": "#/components/schemas/OllamaToolFunctionDto",
+            "description": "Function metadata describing how Ollama should call the backend."
+          },
+          "type": {
+            "description": "Type of the tool. Only 'function' is supported currently.",
+            "example": "function",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "function",
+          "type"
+        ],
+        "type": "object"
+      },
+      "OllamaToolFunctionDto": {
+        "properties": {
+          "description": {
+            "description": "Short human-readable description",
+            "example": "Return catalog metadata for a product",
+            "type": "string"
+          },
+          "name": {
+            "description": "Function name exposed to the model",
+            "example": "get_product_snapshot",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "parameters": {
+            "$ref": "#/components/schemas/OllamaToolParametersDto",
+            "description": "JSON schema describing the function arguments"
+          }
+        },
+        "required": [
+          "name",
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "OllamaToolParametersDto": {
+        "properties": {
+          "oneOf": {
+            "description": "Optional oneOf blocks to express alternative required sets.",
+            "items": {
+              "$ref": "#/components/schemas/OllamaToolParametersRequirementDto"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "properties": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/OllamaToolSchemaPropertyDto"
+            },
+            "description": "JSON schema properties describing the arguments.",
+            "minProperties": 1,
+            "type": "object"
+          },
+          "required": {
+            "description": "List of required properties for this schema.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "type": {
+            "description": "JSON schema type. Usually 'object'.",
+            "example": "object",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "properties",
+          "type"
+        ],
+        "type": "object"
+      },
+      "OllamaToolParametersRequirementDto": {
+        "properties": {
+          "required": {
+            "description": "Required keys under this oneOf branch.",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "required"
+        ],
+        "type": "object"
+      },
+      "OllamaToolSchemaPropertyDto": {
+        "properties": {
+          "description": {
+            "description": "Human friendly explanation",
+            "example": "Numeric id of the product",
+            "type": "string"
+          },
+          "enum": {
+            "description": "Enum values, when applicable",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "type": {
+            "description": "Property type",
+            "example": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "OrderDto": {
+        "description": "Order data transfer object",
+        "properties": {
+          "createdAt": {
+            "description": "Creation timestamp",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Order ID",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "items": {
+            "description": "Order items",
+            "items": {
+              "$ref": "#/components/schemas/OrderItemDto"
+            },
+            "type": "array"
+          },
+          "shippingAddress": {
+            "$ref": "#/components/schemas/AddressDto",
+            "description": "Shipping address"
+          },
+          "status": {
+            "description": "Order status",
+            "enum": [
+              "PENDING",
+              "PAID",
+              "SHIPPED",
+              "DELIVERED",
+              "CANCELLED"
+            ],
+            "example": "PENDING",
+            "type": "string"
+          },
+          "totalAmount": {
+            "description": "Total amount",
+            "example": 1999.98,
+            "type": "number"
+          },
+          "updatedAt": {
+            "description": "Last update timestamp",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "username": {
+            "description": "Username",
+            "example": "john.doe",
+            "type": "string"
+          }
+        },
+        "required": [
+          "shippingAddress"
+        ],
+        "type": "object"
+      },
+      "OrderItemDto": {
+        "description": "Order item data transfer object",
+        "properties": {
+          "id": {
+            "description": "Order item ID",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "productId": {
+            "description": "Product ID",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "productName": {
+            "description": "Product name",
+            "example": "iPhone 13 Pro",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Quantity",
+            "example": 2,
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "totalPrice": {
+            "description": "Total price",
+            "example": 1999.98,
+            "type": "number"
+          },
+          "unitPrice": {
+            "description": "Unit price",
+            "example": 999.99,
+            "type": "number"
+          }
+        },
+        "required": [
+          "productId",
+          "quantity"
+        ],
+        "type": "object"
+      },
+      "PageDtoInventoryItemDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryItemDto"
+            },
+            "type": "array"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageDtoInventoryMovementDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryMovementDto"
+            },
+            "type": "array"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageDtoOrderDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/OrderDto"
+            },
+            "type": "array"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageDtoTrafficLogEntryDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/TrafficLogEntryDto"
+            },
+            "type": "array"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ProductCreateDto": {
+        "description": "Create product data transfer object",
+        "properties": {
+          "category": {
+            "description": "Product category",
+            "example": "Electronics",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "description": {
+            "description": "Nonblank product description required on creation; updates may use an empty description",
+            "example": "Latest iPhone model with A15 Bionic chip",
+            "maxLength": 1000,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "imageUrl": {
+            "description": "Product image URL",
+            "example": "https://example.com/iphone13.jpg",
+            "pattern": "^(https?://.*|)$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "description": "Product name",
+            "example": "iPhone 13",
+            "maxLength": 100,
+            "minLength": 3,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "price": {
+            "description": "Product price with at most 8 integer digits and 2 fractional digits",
+            "example": 999.99,
+            "maximum": 99999999.99,
+            "minimum": 0.01,
+            "multipleOf": 0.01,
+            "type": "number"
+          },
+          "stockQuantity": {
+            "description": "Available stock quantity",
+            "example": 100,
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "category",
+          "description",
+          "name",
+          "price",
+          "stockQuantity"
+        ],
+        "type": "object"
+      },
+      "ProductDto": {
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "Server local date and time without an offset. The server timezone is deployment-dependent; this value does not identify an absolute instant.",
+            "example": "2026-09-10T10:30:02.809462",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "imageUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "stockQuantity": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "updatedAt": {
+            "description": "Server local date and time without an offset. The server timezone is deployment-dependent; this value does not identify an absolute instant.",
+            "example": "2026-09-10T10:30:02.809462",
+            "format": "local-date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ProductUpdateDto": {
+        "description": "Update product data transfer object",
+        "properties": {
+          "category": {
+            "description": "Product category",
+            "example": "Electronics",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "description": "Product description",
+            "example": "Latest iPhone model with A15 Bionic chip",
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "imageUrl": {
+            "description": "Product image URL",
+            "example": "https://example.com/iphone13.jpg",
+            "pattern": "^(https?://.*|)$",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "description": "Product name",
+            "example": "iPhone 13",
+            "maxLength": 100,
+            "minLength": 3,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "price": {
+            "description": "Product price with at most 8 integer digits and 2 fractional digits",
+            "example": 999.99,
+            "maximum": 99999999.99,
+            "minimum": 0.01,
+            "multipleOf": 0.01,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "stockQuantity": {
+            "description": "Available stock quantity",
+            "example": 100,
+            "format": "int32",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "RefreshTokenRequestDto": {
+        "properties": {
+          "refreshToken": {
+            "description": "Refresh token obtained during login",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ],
+        "type": "object"
+      },
+      "ResetPasswordRequestDto": {
+        "properties": {
+          "confirmPassword": {
+            "description": "Confirmation of the new password",
+            "example": "password123",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "newPassword": {
+            "description": "New password",
+            "example": "password123",
+            "maxLength": 2147483647,
+            "minLength": 8,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "token": {
+            "description": "Password reset token received via email",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "confirmPassword",
+          "newPassword",
+          "token"
+        ],
+        "type": "object"
+      },
+      "SsoExchangeRequestDto": {
+        "description": "SSO exchange request",
+        "properties": {
+          "idToken": {
+            "description": "OIDC ID token returned by the configured identity provider",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "idToken"
+        ],
+        "type": "object"
+      },
+      "StoredEmail": {
+        "properties": {
+          "destination": {
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/EmailDto"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "StreamedRequestDto": {
+        "properties": {
+          "model": {
+            "description": "Model to use, needs to be available on the Ollama server.",
+            "example": "qwen3.5:2b",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "options": {
+            "additionalProperties": {},
+            "description": "Options",
+            "example": {
+              "temperature": 0.5
+            },
+            "type": "object"
+          },
+          "prompt": {
+            "description": "Prompt",
+            "example": "Hello, how are you?",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "think": {
+            "description": "Should the model think before responding?",
+            "example": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ],
+        "type": "object"
+      },
+      "TokenRefreshResponseDto": {
+        "properties": {
+          "refreshToken": {
+            "description": "Rotated refresh token",
+            "type": "string"
+          },
+          "token": {
+            "description": "Fresh JWT access token",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ToolCallDto": {
+        "properties": {
+          "function": {
+            "$ref": "#/components/schemas/ToolCallFunctionDto"
+          },
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "function"
+        ],
+        "type": "object"
+      },
+      "ToolCallFunctionDto": {
+        "properties": {
+          "arguments": {
+            "additionalProperties": {},
+            "type": "object"
+          },
+          "name": {
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "ToolSystemPromptDto": {
+        "description": "Tool system prompt",
+        "properties": {
+          "toolSystemPrompt": {
+            "description": "Null, omitted, or empty resets the override. Tool-specific system prompt for function calling",
+            "example": "Always call get_product_snapshot before answering.",
+            "maxLength": 5000,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "TrafficInfoDto": {
+        "description": "Traffic info web websockets connection",
+        "properties": {
+          "description": {
+            "description": "Websocket description",
+            "example": "Connect to the WebSocket endpoint and subscribe to the topic to receive real-time HTTP traffic events",
+            "type": "string"
+          },
+          "topic": {
+            "description": "Websocket topic",
+            "example": "/topic/traffic",
+            "type": "string"
+          },
+          "webSocketEndpoint": {
+            "description": "Websocket endpoint",
+            "example": "/api/v1/ws-traffic",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TrafficLogEntryDto": {
+        "description": "Persisted HTTP traffic log entry",
+        "properties": {
+          "clientSessionId": {
+            "description": "Client-provided session identifier",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "correlationId": {
+            "description": "Traffic correlation identifier",
+            "type": "string"
+          },
+          "durationMs": {
+            "description": "Request duration in milliseconds",
+            "format": "int64",
+            "type": "integer"
+          },
+          "method": {
+            "description": "HTTP method",
+            "type": "string"
+          },
+          "path": {
+            "description": "Request path",
+            "type": "string"
+          },
+          "queryString": {
+            "description": "Request query string",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "requestBody": {
+            "description": "Sanitized request body: parsed JSON of any type, or a text preview for non-JSON/truncated content",
+            "type": [
+              "object",
+              "array",
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ]
+          },
+          "requestBodyOriginalLength": {
+            "description": "Sanitized request body length before truncation",
+            "format": "int32",
+            "type": "integer"
+          },
+          "requestBodyStoredLength": {
+            "description": "Stored request body length",
+            "format": "int32",
+            "type": "integer"
+          },
+          "requestBodyTruncated": {
+            "description": "Whether the request body was truncated",
+            "type": "boolean"
+          },
+          "requestContentType": {
+            "description": "Request content type",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "requestHeaders": {
+            "additionalProperties": true,
+            "description": "Request headers as a JSON object"
+          },
+          "responseBody": {
+            "description": "Sanitized response body: parsed JSON of any type, or a text preview for non-JSON/truncated content",
+            "type": [
+              "object",
+              "array",
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ]
+          },
+          "responseBodyOriginalLength": {
+            "description": "Sanitized response body length before truncation",
+            "format": "int32",
+            "type": "integer"
+          },
+          "responseBodyStoredLength": {
+            "description": "Stored response body length",
+            "format": "int32",
+            "type": "integer"
+          },
+          "responseBodyTruncated": {
+            "description": "Whether the response body was truncated",
+            "type": "boolean"
+          },
+          "responseContentType": {
+            "description": "Response content type",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "responseHeaders": {
+            "additionalProperties": true,
+            "description": "Response headers as a JSON object"
+          },
+          "status": {
+            "description": "Response status code",
+            "format": "int32",
+            "type": "integer"
+          },
+          "timestamp": {
+            "description": "Request timestamp",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateCartItemDto": {
+        "properties": {
+          "quantity": {
+            "description": "Product quantity",
+            "example": 1,
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "quantity"
+        ],
+        "type": "object"
+      },
+      "UserEditDto": {
+        "description": "User details",
+        "properties": {
+          "email": {
+            "description": "Email address",
+            "example": "john.doe@example.com",
+            "format": "email",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "firstName": {
+            "description": "First name",
+            "example": "John",
+            "maxLength": 255,
+            "minLength": 4,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastName": {
+            "description": "Last name",
+            "example": "Boyd",
+            "maxLength": 255,
+            "minLength": 4,
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
+      "UserEntity": {
+        "properties": {
+          "authProvider": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "chatSystemPrompt": {
+            "maxLength": 5000,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "email": {
+            "type": "string"
+          },
+          "emailVerified": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "firstName": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "lastName": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "providerSubject": {
+            "maxLength": 255,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "roles": {
+            "items": {
+              "enum": [
+                "ROLE_ADMIN",
+                "ROLE_CLIENT"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "toolSystemPrompt": {
+            "maxLength": 5000,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "username": {
+            "maxLength": 255,
+            "minLength": 4,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UserRegisterDto": {
+        "description": "Signup User",
+        "properties": {
+          "email": {
+            "description": "Email address",
+            "example": "john.doe@example.com",
+            "format": "email",
+            "type": "string"
+          },
+          "firstName": {
+            "description": "First name",
+            "example": "John",
+            "maxLength": 255,
+            "minLength": 4,
+            "type": "string"
+          },
+          "lastName": {
+            "description": "Last name",
+            "example": "Boyd",
+            "maxLength": 255,
+            "minLength": 4,
+            "type": "string"
+          },
+          "password": {
+            "description": "Password",
+            "example": "password123",
+            "maxLength": 255,
+            "minLength": 8,
+            "type": "string"
+          },
+          "username": {
+            "description": "Username",
+            "example": "johndoe",
+            "maxLength": 255,
+            "minLength": 4,
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "firstName",
+          "lastName",
+          "password",
+          "username"
+        ],
+        "type": "object"
+      },
+      "UserResponseDto": {
+        "properties": {
+          "email": {
+            "description": "Email address",
+            "example": "john.doe@example.com",
+            "type": "string"
+          },
+          "firstName": {
+            "description": "First name",
+            "example": "John",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "description": "User ID",
+            "example": 1,
+            "format": "int32",
+            "type": "integer"
+          },
+          "lastName": {
+            "description": "Last name",
+            "example": "Boyd",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "roles": {
+            "description": "User roles",
+            "example": [
+              "ROLE_CLIENT"
+            ],
+            "items": {
+              "enum": [
+                "ROLE_ADMIN",
+                "ROLE_CLIENT"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "username": {
+            "description": "Username",
+            "example": "johndoe",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ValidationErrorsDto": {
+        "additionalProperties": {
+          "description": "Validation messages keyed by field name; invalid arguments use the error key",
+          "example": {
+            "email": "Email should be valid"
+          },
+          "type": "string"
+        },
+        "description": "Validation messages keyed by field name; invalid arguments use the error key",
+        "example": {
+          "email": "Email should be valid"
+        },
+        "properties": {
+          "empty": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "bearerFormat": "JWT",
+        "name": "bearerAuth",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "This is a sample JWT authentication service.",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://springdoc.org"
+    },
+    "termsOfService": "http://swagger.io/terms/",
+    "title": "JWT Authentication API",
+    "version": "1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/admin/inventory": {
+      "get": {
+        "description": "Lists inventory with optional stock and catalog filters. Negative page is clamped to zero; size is clamped to 1–100. lowStockThreshold must be at least 1.",
+        "operationId": "list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "IN_STOCK",
+                "LOW_STOCK",
+                "OUT_OF_STOCK"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Inclusive upper bound for LOW_STOCK; at least one",
+            "in": "query",
+            "name": "lowStockThreshold",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoInventoryItemDto"
+                }
+              }
+            },
+            "description": "Inventory returned"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Invalid parameter"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List inventory",
+        "tags": [
+          "Inventory"
+        ]
+      }
+    },
+    "/api/v1/admin/inventory/{productId}": {
+      "get": {
+        "description": "Returns the available quantity for one product.",
+        "operationId": "get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Inclusive upper bound for LOW_STOCK; at least one",
+            "in": "query",
+            "name": "lowStockThreshold",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryItemDto"
+                }
+              }
+            },
+            "description": "Inventory item returned"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Invalid parameter"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get inventory item",
+        "tags": [
+          "Inventory"
+        ]
+      }
+    },
+    "/api/v1/admin/inventory/{productId}/adjustments": {
+      "post": {
+        "description": "Applies a nonzero inventory delta. Repeating requestId with the same product, delta and reason returns the original movement with 201; changing delta or reason returns 409.",
+        "operationId": "adjust",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventoryAdjustmentDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryMovementDto"
+                }
+              }
+            },
+            "description": "Adjustment recorded"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid adjustment or product identifier"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Insufficient stock, quantity overflow, or requestId reused with different delta/reason"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Adjust inventory",
+        "tags": [
+          "Inventory"
+        ]
+      }
+    },
+    "/api/v1/admin/inventory/{productId}/movements": {
+      "get": {
+        "description": "Lists an inventory item's movement history newest first. Negative page is clamped to zero; size is clamped to 1–100.",
+        "operationId": "movements",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoInventoryMovementDto"
+                }
+              }
+            },
+            "description": "Movement history returned"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Invalid parameter"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List inventory movements",
+        "tags": [
+          "Inventory"
+        ]
+      }
+    },
+    "/api/v1/cart": {
+      "delete": {
+        "description": "Removes all items from the authenticated user's cart.",
+        "operationId": "clearCart",
+        "responses": {
+          "204": {
+            "description": "Cart cleared successfully"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Clear cart",
+        "tags": [
+          "Cart"
+        ]
+      },
+      "get": {
+        "description": "Returns the authenticated user's cart, including item count and calculated total price.",
+        "operationId": "getCart",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartDto"
+                }
+              }
+            },
+            "description": "Successfully retrieved cart"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get current user's cart",
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/api/v1/cart/items": {
+      "post": {
+        "description": "Adds a product to the authenticated user's cart or increases the quantity of an existing cart item.",
+        "operationId": "addToCart",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CartItemDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartDto"
+                }
+              }
+            },
+            "description": "Item added successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid input"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Requested quantity exceeds available stock"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Add item to cart",
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/api/v1/cart/items/{productId}": {
+      "delete": {
+        "description": "Removes a product from the authenticated user's cart and returns the updated cart.",
+        "operationId": "removeFromCart",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartDto"
+                }
+              }
+            },
+            "description": "Item removed successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Cart item not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Remove item from cart",
+        "tags": [
+          "Cart"
+        ]
+      },
+      "put": {
+        "description": "Sets the quantity for a product already in the authenticated user's cart. Quantity zero removes the item.",
+        "operationId": "updateCartItem",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCartItemDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartDto"
+                }
+              }
+            },
+            "description": "Item quantity updated successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid input"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Cart item not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Requested quantity exceeds available stock"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update item quantity",
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/api/v1/email": {
+      "post": {
+        "description": "Queues an email message for asynchronous delivery through the configured JMS destination.",
+        "operationId": "sendEmail",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Email queued; delivery is asynchronous"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid email data"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Send email",
+        "tags": [
+          "email"
+        ]
+      }
+    },
+    "/api/v1/local/email/outbox": {
+      "delete": {
+        "description": "Deletes all messages currently stored in the local email outbox buffer.",
+        "operationId": "clearOutbox",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Local-Outbox-Key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Outbox buffer cleared successfully"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized or invalid Bearer token"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Administrator role required, or configured X-Local-Outbox-Key is missing or invalid"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unexpected error while clearing outbox"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Clear the local outbox buffer",
+        "tags": [
+          "local-email-outbox"
+        ]
+      },
+      "get": {
+        "description": "Returns messages captured by the local email outbox stub. Requires an administrator and, when password-reset.require-outbox-access-key is enabled, X-Local-Outbox-Key. Available only in local and aitesters profiles.",
+        "operationId": "getOutbox",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Local-Outbox-Key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StoredEmail"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Queued local emails returned successfully"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized or invalid Bearer token"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Administrator role required, or configured X-Local-Outbox-Key is missing or invalid"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Fetch all queued emails produced in the local profile",
+        "tags": [
+          "local-email-outbox"
+        ]
+      }
+    },
+    "/api/v1/ollama/chat": {
+      "post": {
+        "description": "Streams responses and expects the caller to manage the entire conversation history client-side.",
+        "operationId": "chat",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponseDto"
+                }
+              }
+            },
+            "description": "One JSON ChatResponseDto per SSE data event"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ModelNotFoundDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelNotFoundDto"
+                }
+              }
+            },
+            "description": "Model not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": [
+                    "object",
+                    "array",
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "description": "Upstream server failure; JSON body is passed through before streaming starts"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": [
+                    "object",
+                    "array",
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "description": "Other upstream HTTP failures before streaming starts retain their status and JSON body"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Chat with Ollama model (stateless endpoint)",
+        "tags": [
+          "ollama"
+        ]
+      }
+    },
+    "/api/v1/ollama/chat/tools": {
+      "post": {
+        "description": "Available tools: get_product_snapshot, list_products.\nUse GET /api/v1/ollama/chat/tools/definitions for the full JSON schema.\nThis endpoint requires the caller to resend the full conversation on every request.\nSmall local models stay grounded only when they keep everything in the product lane—always snapshot a SKU first and follow up with list_products if it needs comparisons.",
+        "operationId": "chatWithTools",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponseDto"
+                }
+              }
+            },
+            "description": "One JSON ChatResponseDto per SSE data event"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ModelNotFoundDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelNotFoundDto"
+                }
+              }
+            },
+            "description": "Upstream model not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": [
+                    "object",
+                    "array",
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "description": "Upstream server failure; JSON body is passed through before streaming starts"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": [
+                    "object",
+                    "array",
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "description": "Other upstream HTTP failures before streaming starts retain their status and JSON body"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Chat with Ollama using backend function calling (legacy stateless endpoint)",
+        "tags": [
+          "ollama"
+        ]
+      }
+    },
+    "/api/v1/ollama/chat/tools/definitions": {
+      "get": {
+        "description": "Returns the backend function-calling tool schemas that clients can send to the tool-enabled chat endpoint.",
+        "operationId": "getToolDefinitions",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/OllamaToolDefinitionDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Available tool definitions returned successfully"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List tool definitions supported by /api/v1/ollama/chat/tools",
+        "tags": [
+          "ollama"
+        ]
+      }
+    },
+    "/api/v1/ollama/generate": {
+      "post": {
+        "description": "Streams generated text chunks from the configured Ollama backend for a single prompt. Upstream errors before the stream starts preserve their HTTP status and JSON body; failures after streaming begins may terminate the stream.",
+        "operationId": "generateText",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StreamedRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateResponseDto"
+                }
+              }
+            },
+            "description": "One JSON GenerateResponseDto per SSE data event"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ModelNotFoundDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelNotFoundDto"
+                }
+              }
+            },
+            "description": "Model not found"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": [
+                    "object",
+                    "array",
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "description": "Upstream server failure; JSON body is passed through before streaming starts"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": [
+                    "object",
+                    "array",
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "description": "Other upstream HTTP failures before streaming starts retain their status and JSON body"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Generate text using Ollama model",
+        "tags": [
+          "ollama"
+        ]
+      }
+    },
+    "/api/v1/orders": {
+      "get": {
+        "description": "Returns the authenticated user's orders with optional status filtering and pagination.",
+        "operationId": "getUserOrders",
+        "parameters": [
+          {
+            "description": "Zero-based page index",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Page size, at least one",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "PENDING",
+                "PAID",
+                "SHIPPED",
+                "DELIVERED",
+                "CANCELLED"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoOrderDto"
+                }
+              }
+            },
+            "description": "Orders retrieved successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get user's orders",
+        "tags": [
+          "Orders"
+        ]
+      },
+      "post": {
+        "description": "Creates an order for the authenticated user from the current cart and clears the cart after success.",
+        "operationId": "createOrder",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddressDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDto"
+                }
+              }
+            },
+            "description": "Order created successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid input or empty cart"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "A cart product no longer exists"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Insufficient stock to place the order"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create a new order from cart",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/v1/orders/admin": {
+      "get": {
+        "description": "Returns all orders in the system with optional status filtering and pagination. Requires an administrator role.",
+        "operationId": "getAllOrders",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "PENDING",
+                "PAID",
+                "SHIPPED",
+                "DELIVERED",
+                "CANCELLED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Zero-based page index",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Page size, at least one",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoOrderDto"
+                }
+              }
+            },
+            "description": "Orders retrieved successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get all orders (Admin only)",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/v1/orders/{id}": {
+      "get": {
+        "description": "Returns a single order. Administrators may access any order; clients may access only their own orders.",
+        "operationId": "getOrder",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDto"
+                }
+              }
+            },
+            "description": "Order retrieved successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Order not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get order by ID",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/v1/orders/{id}/cancel": {
+      "post": {
+        "description": "Cancels an order when its current status allows cancellation. Clients may cancel only their own orders. Only PENDING and PAID orders can be cancelled.",
+        "operationId": "cancelOrder",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDto"
+                }
+              }
+            },
+            "description": "Order cancelled successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Order cannot be cancelled"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Order not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Cancel order",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/v1/orders/{id}/status": {
+      "put": {
+        "description": "Sets the supplied status using administrator privileges. CANCELLED is allowed only from PENDING or PAID and restores deducted stock; other status values are assigned directly.",
+        "operationId": "updateOrderStatus",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "enum": [
+                  "PENDING",
+                  "PAID",
+                  "SHIPPED",
+                  "DELIVERED",
+                  "CANCELLED"
+                ],
+                "type": "string"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDto"
+                }
+              }
+            },
+            "description": "Order status updated successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid status transition"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Order not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update order status (Admin only)",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/v1/products": {
+      "get": {
+        "description": "Returns the complete product catalog visible to authenticated clients.",
+        "operationId": "getAllProducts",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProductDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successfully retrieved products"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get all products",
+        "tags": [
+          "Products"
+        ]
+      },
+      "post": {
+        "description": "Creates a catalog product from the supplied payload. Requires an administrator role.",
+        "operationId": "createProduct",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDto"
+                }
+              }
+            },
+            "description": "Product created successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid input"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create new product",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/api/v1/products/{id}": {
+      "delete": {
+        "description": "Deletes an existing product by identifier. Referenced products return 409 without removing existing data. Requires an administrator role.",
+        "operationId": "deleteProduct",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Product deleted successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Product not found; empty response body"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product is referenced by existing data"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete product",
+        "tags": [
+          "Products"
+        ]
+      },
+      "get": {
+        "description": "Returns one product by numeric identifier, or 404 when the product does not exist.",
+        "operationId": "getProductById",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDto"
+                }
+              }
+            },
+            "description": "Successfully retrieved product"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get product by ID",
+        "tags": [
+          "Products"
+        ]
+      },
+      "put": {
+        "description": "Updates supplied non-null product fields; omitted or null fields are unchanged. Empty description and imageUrl are allowed. Requires an administrator role.",
+        "operationId": "updateProduct",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDto"
+                }
+              }
+            },
+            "description": "Product updated successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid input"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update existing product",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/api/v1/qr/create": {
+      "post": {
+        "description": "Generates a PNG QR code for the supplied text payload.",
+        "operationId": "createQrCode",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateQrDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "image/png": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successfully generated QR code"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid input"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Generate QR code",
+        "tags": [
+          "QR"
+        ]
+      }
+    },
+    "/api/v1/traffic/info": {
+      "get": {
+        "description": "Returns WebSocket connection information. X-Client-Session-Id is required unless legacy public access is enabled; after trimming it must contain 16–128 letters, digits, underscores or hyphens.",
+        "operationId": "getTrafficInfo",
+        "parameters": [
+          {
+            "description": "Session identifier, trimmed before validation: 16–128 ASCII letters, digits, underscores or hyphens. Required unless legacy public access is enabled.",
+            "in": "header",
+            "name": "X-Client-Session-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrafficInfoDto"
+                }
+              }
+            },
+            "description": "Successfully returned info"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid session header, pagination or time filter"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized or invalid Bearer token; authentication is required unless legacy public access is enabled"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get traffic monitoring information",
+        "tags": [
+          "Traffic Monitoring"
+        ]
+      }
+    },
+    "/api/v1/traffic/logs": {
+      "get": {
+        "description": "Returns captured HTTP traffic logs with optional filters for session, method, status, path, text, and time range.",
+        "operationId": "getTrafficLogs",
+        "parameters": [
+          {
+            "description": "Zero-based page index",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "string"
+            }
+          },
+          {
+            "description": "Page size, clamped to 1 through the configured app.traffic.max-page-size",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Session identifier, trimmed before validation: 16–128 ASCII letters, digits, underscores or hyphens. Required unless legacy public access is enabled.",
+            "in": "header",
+            "name": "X-Client-Session-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "method",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pathContains",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "text",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Inclusive lower timestamp bound as an ISO-8601 instant with offset; blank means no lower bound",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Inclusive upper timestamp bound as an ISO-8601 instant with offset; blank means no upper bound",
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoTrafficLogEntryDto"
+                }
+              }
+            },
+            "description": "Successfully returned traffic logs"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid session header, pagination or time filter"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized or invalid Bearer token; authentication is required unless legacy public access is enabled"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get paginated HTTP traffic logs",
+        "tags": [
+          "Traffic Monitoring"
+        ]
+      }
+    },
+    "/api/v1/traffic/logs/{correlationId}": {
+      "get": {
+        "description": "Returns one captured HTTP traffic log entry using its correlation identifier.",
+        "operationId": "getTrafficLog",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "correlationId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Session identifier, trimmed before validation: 16–128 ASCII letters, digits, underscores or hyphens. Required unless legacy public access is enabled.",
+            "in": "header",
+            "name": "X-Client-Session-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrafficLogEntryDto"
+                }
+              }
+            },
+            "description": "Successfully returned traffic log"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid session header, pagination or time filter"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized or invalid Bearer token; authentication is required unless legacy public access is enabled"
+          },
+          "404": {
+            "description": "Traffic log not found; empty response body"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get traffic log by correlation identifier",
+        "tags": [
+          "Traffic Monitoring"
+        ]
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "description": "Returns all user accounts visible to the authenticated caller.",
+        "operationId": "getAll",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UserResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "List of users"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get all users",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/2fa/confirm": {
+      "post": {
+        "description": "Verifies the first TOTP, enables MFA, and returns one-time recovery codes.",
+        "operationId": "confirm",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaCodeRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MfaRecoveryCodesResponseDto"
+                }
+              }
+            },
+            "description": "MFA enabled and recovery codes created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Field validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Authenticator code is invalid"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Account no longer exists"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Setup is missing, MFA is already enabled, or it is provider-managed"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Pending setup expired"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Confirm authenticator enrollment",
+        "tags": [
+          "two-factor authentication"
+        ]
+      }
+    },
+    "/api/v1/users/2fa/disable": {
+      "post": {
+        "description": "Requires the current password and a TOTP or recovery code, then revokes refresh tokens.",
+        "operationId": "disable",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaProtectedActionRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "MFA disabled"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Field validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Second factor or Bearer token is invalid"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Account no longer exists"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "MFA is not enabled or is provider-managed"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Current password is invalid"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Disable two-factor authentication",
+        "tags": [
+          "two-factor authentication"
+        ]
+      }
+    },
+    "/api/v1/users/2fa/recovery-codes": {
+      "post": {
+        "description": "Requires the current password and a fresh TOTP, then invalidates all previous recovery codes.",
+        "operationId": "replaceRecoveryCodes",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaProtectedActionRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MfaRecoveryCodesResponseDto"
+                }
+              }
+            },
+            "description": "Replacement recovery codes created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Field validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Authenticator code or Bearer token is invalid"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Account no longer exists"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "MFA is not enabled or is provider-managed"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Current password is invalid"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Replace recovery codes",
+        "tags": [
+          "two-factor authentication"
+        ]
+      }
+    },
+    "/api/v1/users/2fa/setup": {
+      "post": {
+        "description": "Creates a pending TOTP secret and returns its manual key and QR code.",
+        "operationId": "setup",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MfaSetupResponseDto"
+                }
+              }
+            },
+            "description": "Pending setup created"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Account no longer exists"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "MFA is already enabled or provider-managed"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Start authenticator enrollment",
+        "tags": [
+          "two-factor authentication"
+        ]
+      }
+    },
+    "/api/v1/users/2fa/status": {
+      "get": {
+        "description": "Returns enrollment state and the number of unused recovery codes.",
+        "operationId": "status",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MfaStatusResponseDto"
+                }
+              }
+            },
+            "description": "Status returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get two-factor authentication status",
+        "tags": [
+          "two-factor authentication"
+        ]
+      }
+    },
+    "/api/v1/users/chat-system-prompt": {
+      "get": {
+        "description": "Returns the authenticated user's chat prompt override, or the default prompt when no override is stored.",
+        "operationId": "getChatSystemPrompt",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatSystemPromptDto"
+                }
+              }
+            },
+            "description": "Chat system prompt retrieved successfully"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get your chat system prompt",
+        "tags": [
+          "users"
+        ]
+      },
+      "put": {
+        "description": "Stores a new chat prompt override for the authenticated user. Null, an omitted field, or an empty string resets the override; PUT echoes the stored value and GET returns the effective default.",
+        "operationId": "updateChatSystemPrompt",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatSystemPromptDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatSystemPromptDto"
+                }
+              }
+            },
+            "description": "Chat system prompt was updated"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update your chat system prompt",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/logout": {
+      "post": {
+        "description": "Revokes all refresh tokens for the authenticated user.",
+        "operationId": "logout",
+        "responses": {
+          "200": {
+            "description": "Successfully logged out"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Logout user and revoke refresh token",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/me": {
+      "get": {
+        "description": "Returns account details for the authenticated user resolved from the JWT token.",
+        "operationId": "whoAmI",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            },
+            "description": "Current user details"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get current user information",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/me/email-events": {
+      "get": {
+        "description": "Returns the latest email events recorded for the authenticated user. Statuses reflect handoff to the Mailhog-backed test sink, not real-world inbox delivery.",
+        "operationId": "getMyEmailEvents",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EmailEventDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Recent email events returned successfully"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get recent email events for the current user",
+        "tags": [
+          "email-events"
+        ]
+      }
+    },
+    "/api/v1/users/password/forgot": {
+      "post": {
+        "description": "Accepts a username or email and queues reset instructions when a matching local account exists.",
+        "operationId": "forgotPassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForgotPasswordResponseDto"
+                }
+              }
+            },
+            "description": "Request accepted whether or not a matching account exists"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid payload"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Invalid or expired Bearer token; omit stale Authorization headers on these public endpoints"
+          }
+        },
+        "summary": "Start password reset flow",
+        "tags": [
+          "password-reset"
+        ]
+      }
+    },
+    "/api/v1/users/password/reset": {
+      "post": {
+        "description": "Validates a password reset token, updates the user's password, and revokes existing refresh tokens.",
+        "operationId": "resetPassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset successful"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid token or payload"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Invalid or expired Bearer token; omit stale Authorization headers on these public endpoints"
+          }
+        },
+        "summary": "Complete password reset with a valid token",
+        "tags": [
+          "password-reset"
+        ]
+      }
+    },
+    "/api/v1/users/refresh": {
+      "post": {
+        "description": "Rotates a valid refresh token and returns a fresh access token plus replacement refresh token.",
+        "operationId": "refresh",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenRefreshResponseDto"
+                }
+              }
+            },
+            "description": "New JWT and refresh tokens"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Invalid refresh token"
+          }
+        },
+        "summary": "Refresh JWT token using refresh token",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/signin": {
+      "post": {
+        "description": "Authenticates local credentials. When mfaRequired is false, returns access and refresh tokens with null challenge fields. When true, returns an MFA challenge and expiration with null tokens; complete POST /api/v1/users/signin/2fa to obtain tokens.",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            },
+            "description": "Successfully authenticated"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Field validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Invalid or expired Bearer token; omit stale Authorization headers on this public endpoint"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Invalid username/password supplied"
+          }
+        },
+        "summary": "Authenticate user and return JWT token",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/signin/2fa": {
+      "post": {
+        "description": "Consumes a short-lived password challenge and a TOTP or recovery code, then issues tokens.",
+        "operationId": "completeSignIn",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaChallengeRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            },
+            "description": "Sign-in completed"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Field validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Challenge or second factor is invalid"
+          }
+        },
+        "summary": "Complete sign-in with a second factor",
+        "tags": [
+          "two-factor authentication"
+        ]
+      }
+    },
+    "/api/v1/users/signup": {
+      "post": {
+        "description": "Registers a local user account with client privileges after validating the signup payload.",
+        "operationId": "signup",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRegisterDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "User was successfully created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Field validation failed, or username/email is already in use"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Invalid or expired Bearer token; omit stale Authorization headers on this public endpoint"
+          }
+        },
+        "summary": "Create a new user account",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/sso/exchange": {
+      "post": {
+        "description": "Verifies an external OIDC ID token, provisions or updates the matching user, and returns application tokens.",
+        "operationId": "exchange",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SsoExchangeRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            },
+            "description": "Successfully authenticated with SSO"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Field validation failed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Invalid SSO token"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "SSO login is disabled"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "SSO identity conflicts with an existing local account"
+          }
+        },
+        "summary": "Exchange a valid OIDC ID token for an app JWT token pair",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/tool-system-prompt": {
+      "get": {
+        "description": "Returns the authenticated user's tool-calling prompt override, or the default prompt when no override is stored.",
+        "operationId": "getToolSystemPrompt",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolSystemPromptDto"
+                }
+              }
+            },
+            "description": "Tool system prompt retrieved successfully"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get your tool system prompt",
+        "tags": [
+          "users"
+        ]
+      },
+      "put": {
+        "description": "Stores a new tool-calling prompt override for the authenticated user. Null, an omitted field, or an empty string resets the override; PUT echoes the stored value and GET returns the effective default.",
+        "operationId": "updateToolSystemPrompt",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToolSystemPromptDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolSystemPromptDto"
+                }
+              }
+            },
+            "description": "Tool system prompt was updated"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update your tool system prompt",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/{username}": {
+      "delete": {
+        "description": "Deletes a user account and user-owned data. Requires an administrator role.",
+        "operationId": "delete",
+        "parameters": [
+          {
+            "description": "Username",
+            "in": "path",
+            "name": "username",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "User was deleted"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The user doesn't exist"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete user",
+        "tags": [
+          "users"
+        ]
+      },
+      "get": {
+        "description": "Returns public account details for the requested username.",
+        "operationId": "getByUsername",
+        "parameters": [
+          {
+            "description": "Username",
+            "in": "path",
+            "name": "username",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            },
+            "description": "User details"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The user doesn't exist"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get user by username",
+        "tags": [
+          "users"
+        ]
+      },
+      "put": {
+        "description": "Updates editable profile fields for an existing user. Users may edit themselves; administrators may edit any user.",
+        "operationId": "edit",
+        "parameters": [
+          {
+            "description": "Username",
+            "in": "path",
+            "name": "username",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserEditDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserEntity"
+                }
+              }
+            },
+            "description": "User was updated"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The user doesn't exist"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update user",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/{username}/right-to-be-forgotten": {
+      "delete": {
+        "description": "Deletes the user account together with refresh tokens, reset tokens, email events, cart items, and orders.",
+        "operationId": "forget",
+        "parameters": [
+          {
+            "description": "Username",
+            "in": "path",
+            "name": "username",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "User account and user-owned data were deleted"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The user doesn't exist"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete user account and all user-owned data",
+        "tags": [
+          "users"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "description": "Administrator inventory management endpoints",
+      "name": "Inventory"
+    },
+    {
+      "description": "Ollama endpoints",
+      "name": "ollama"
+    },
+    {
+      "description": "Product management endpoints",
+      "name": "Products"
+    },
+    {
+      "description": "Helpers for inspecting the local JMS stub",
+      "name": "local-email-outbox"
+    },
+    {
+      "description": "Endpoint for QR code generation",
+      "name": "QR"
+    },
+    {
+      "description": "User management endpoints",
+      "name": "users"
+    },
+    {
+      "description": "Password recovery endpoints",
+      "name": "password-reset"
+    },
+    {
+      "description": "Authenticated email event visibility",
+      "name": "email-events"
+    },
+    {
+      "description": "Endpoints for HTTP traffic monitoring",
+      "name": "Traffic Monitoring"
+    },
+    {
+      "description": "Email sending endpoints",
+      "name": "email"
+    },
+    {
+      "description": "Shopping cart management endpoints",
+      "name": "Cart"
+    },
+    {
+      "description": "Order management endpoints",
+      "name": "Orders"
+    },
+    {
+      "description": "TOTP enrollment and two-factor sign-in",
+      "name": "two-factor authentication"
+    }
+  ]
+}

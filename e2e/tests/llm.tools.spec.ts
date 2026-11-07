@@ -1,12 +1,13 @@
 import { test, expect } from '../fixtures/auth.fixture';
 import { ToolChatPage } from '../pages/toolChat.page.object';
 import { ollamaChatMocks } from '../mocks/ollamaChatMocks';
+import { fulfillWithSchema, type BackendSchema } from '../mocks/backendContract';
 
 const TOOL_PROMPT = 'What iphones do we have available? Tell me the details about them';
 const NARRATION_PROMPT =
   'Walk me through a two-step catalog lookup where you narrate between tool calls';
 const TOOL_SYSTEM_PROMPT = 'You are a shopping copilot that must ground every answer in tool output.';
-const TOOL_DEFINITIONS = [
+const TOOL_DEFINITIONS: BackendSchema<'OllamaToolDefinitionDto'>[] = [
   {
     type: 'function',
     function: {
@@ -27,18 +28,10 @@ test.describe('Ollama Tool Calling', () => {
 
   test.beforeEach(async ({ authenticatedPage }) => {
     await authenticatedPage.page.route('**/api/v1/users/tool-system-prompt', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ toolSystemPrompt: TOOL_SYSTEM_PROMPT }),
-      });
+      await fulfillWithSchema(route, 'ToolSystemPromptDto', { toolSystemPrompt: TOOL_SYSTEM_PROMPT });
     });
     await authenticatedPage.page.route('**/api/v1/ollama/chat/tools/definitions', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(TOOL_DEFINITIONS),
-      });
+      await fulfillWithSchema(route, 'OllamaToolDefinitionDto', TOOL_DEFINITIONS);
     });
     toolChatPage = new ToolChatPage(authenticatedPage.page);
   });

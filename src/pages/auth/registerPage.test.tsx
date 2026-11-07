@@ -2,7 +2,6 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { RegisterPage } from './registerPage';
-import { Role } from '../../types/auth';
 import { AxiosResponse } from 'axios';
 
 // Mock API first, before any variable declarations
@@ -164,7 +163,6 @@ describe('RegisterPage', () => {
         password: 'password123',
         firstName: 'Test',
         lastName: 'User',
-        roles: [Role.CLIENT],
       });
       expect(mockNavigate).toHaveBeenCalledWith('/login', { 
         state: { 

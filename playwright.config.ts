@@ -9,6 +9,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   timeout: 15000,
   retries: process.env.CI ? 2 : 0,
+  // A test that only passes on retry fails the run, so flaky tests get fixed instead of hidden.
+  failOnFlakyTests: !!process.env.CI,
   workers: process.env.CI ? 2 : undefined,
   reporter: process.env.CI ? [['github'], ['html']] : 'list',
   use: {

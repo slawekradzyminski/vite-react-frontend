@@ -13,7 +13,7 @@ test.describe('Product Details Page', () => {
   test('should display product details', async ({ authenticatedPage }) => {
     // given
     const productId = 123;
-    const productData: Product = {
+    const productData = {
       id: productId,
       name: 'Mocked Product Name',
       description: 'This is a test product description',
@@ -21,7 +21,7 @@ test.describe('Product Details Page', () => {
       category: 'Electronics',
       stockQuantity: 10,
       imageUrl: '/images/product-123.jpg'
-    };
+    } satisfies Product;
     await productsMocks.mockGetProductDetailsSuccess(authenticatedPage.page, productId, productData);
     await cartMocks.mockEmptyCart(authenticatedPage.page);
 
@@ -55,14 +55,14 @@ test.describe('Product Details Page', () => {
   test('should add product to cart', async ({ authenticatedPage }) => {
     // given
     const productId = 777;
-    const productData: Product = {
+    const productData = {
       id: productId,
       name: 'Another Mocked Product',
       description: 'This is another test product',
       price: 14.99,
       category: 'Home',
       stockQuantity: 5
-    };
+    } satisfies Product;
     
     await productsMocks.mockGetProductDetailsSuccess(authenticatedPage.page, productId, productData);
     await cartMocks.mockEmptyCart(authenticatedPage.page);
@@ -81,14 +81,14 @@ test.describe('Product Details Page', () => {
     // given
     const productId = 1;
     const initialQuantity = 2;
-    const productData: Product = {
+    const productData = {
       id: productId,
       name: 'Product to Update',
       description: 'This product will have its quantity updated',
       price: 19.99,
       category: 'Office',
       stockQuantity: 20
-    };
+    } satisfies Product;
     await productsMocks.mockGetProductDetailsSuccess(authenticatedPage.page, productId, productData);
     await cartMocks.mockCartWithItems(authenticatedPage.page);
     await cartMocks.mockUpdateSuccess(authenticatedPage.page, productId);
@@ -109,14 +109,14 @@ test.describe('Product Details Page', () => {
   test('should remove product from cart', async ({ authenticatedPage }) => {
     // given
     const productId = 1;
-    const productData: Product = {
+    const productData = {
       id: productId,
       name: 'Product to Update',
       description: 'This product will have its quantity updated',
       price: 19.99,
       category: 'Office',
       stockQuantity: 20
-    };
+    } satisfies Product;
     await productsMocks.mockGetProductDetailsSuccess(authenticatedPage.page, productId, productData);
     await cartMocks.mockCartWithItems(authenticatedPage.page);
     await cartMocks.mockUpdateSuccess(authenticatedPage.page, productId);

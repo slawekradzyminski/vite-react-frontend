@@ -4,7 +4,6 @@ type RuntimeEnv = {
   DEV?: boolean;
   VITE_API_BASE_URL?: string;
   VITE_DOCKER?: string;
-  VITE_PASSWORD_RESET_BASE_URL?: string;
   VITE_SSO_ENABLED?: string;
   VITE_SSO_AUTHORITY?: string;
   VITE_SSO_CLIENT_ID?: string;
@@ -44,18 +43,6 @@ export const getApiBaseUrl = (
   }
 
   return getRuntimeOrigin(location);
-};
-
-export const getPasswordResetBaseUrl = (
-  env: RuntimeEnv = import.meta.env,
-  location: RuntimeLocation = window.location,
-) => {
-  const configuredResetBaseUrl = env.VITE_PASSWORD_RESET_BASE_URL?.trim();
-  if (configuredResetBaseUrl) {
-    return trimTrailingSlash(configuredResetBaseUrl);
-  }
-
-  return `${getRuntimeOrigin(location)}/reset`;
 };
 
 export const getSsoConfig = (

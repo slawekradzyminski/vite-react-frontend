@@ -1,7 +1,7 @@
 import { test, expect } from '../fixtures/auth.fixture';
 import { cartMocks } from '../mocks/cartMocks';
 import { meMocks } from '../mocks/meMocks';
-import { orderMocks } from '../mocks/orderMocks';
+import { orderMocks, type OrderState } from '../mocks/orderMocks';
 import { productsMocks } from '../mocks/productMocks';
 
 async function expectNoHorizontalOverflow(page: import('@playwright/test').Page) {
@@ -108,7 +108,7 @@ test.describe('Responsive shell smoke checks', () => {
       },
       createdAt: '2026-07-15T00:00:00Z',
       updatedAt: '2026-07-15T00:00:00Z',
-    };
+    } satisfies OrderState;
     await page.setViewportSize({ width: 375, height: 812 });
     await orderMocks.mockOrderWithState(page, order);
     await meMocks.mockAdminUser(page, user);

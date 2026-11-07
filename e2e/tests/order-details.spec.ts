@@ -1,6 +1,6 @@
 import { test, expect } from '../fixtures/auth.fixture';
 import { meMocks } from '../mocks/meMocks';
-import { orderMocks } from '../mocks/orderMocks';
+import { orderMocks, type OrderState } from '../mocks/orderMocks';
 import { OrderDetailsPage } from '../pages/order-details.page.object';
 
 test.describe('Order Details', () => {
@@ -30,7 +30,7 @@ test.describe('Order Details', () => {
             zipCode: '12345',
             country: 'Test Country'
         }
-    };
+    } satisfies OrderState;
     await orderMocks.mockOrderWithState(authenticatedPage.page, orderState);
 
     // when
@@ -59,7 +59,7 @@ test.describe('Order Details', () => {
             street: '123 Test St', city: 'Test City', state: 'Test State',
             zipCode: '12345', country: 'Test Country'
         }
-    };
+    } satisfies OrderState;
     await orderMocks.mockOrderWithState(authenticatedPage.page, orderState);
     await orderMocks.mockCancelOrder(authenticatedPage.page, orderState);
     const orderDetailsPage = new OrderDetailsPage(authenticatedPage);
@@ -96,7 +96,7 @@ test('should allow admin to update order status', async ({ adminPage }) => {
           zipCode: '54321',
           country: 'Admin Country'
       }
-  };
+  } satisfies OrderState;
 
   await orderMocks.mockOrderWithState(adminPage.page, orderState);
   await orderMocks.mockUpdateOrderStatus(adminPage.page, orderState);
@@ -128,7 +128,7 @@ test('should not show admin controls for regular customers', async ({ authentica
           zipCode: '12345',
           country: 'Test Country'
       }
-  };
+  } satisfies OrderState;
   await orderMocks.mockOrderWithState(authenticatedPage.page, orderState);
   await meMocks.mockRegularCustomer(authenticatedPage.page, authenticatedPage.user);
 

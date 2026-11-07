@@ -4,7 +4,6 @@ import type { User } from '../types/user';
 import { registerUser } from '../http/postSignUp';
 import { postSignIn } from '../http/postSignIn';
 import { deleteUser } from '../http/deleteUser';
-import { Role } from '../../src/types/auth';
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME ?? 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'LocalDemoAdmin123!';
@@ -27,7 +26,7 @@ export async function createAuthenticatedUser(request: APIRequestContext): Promi
     }
 
     return {
-        user: newUser,
+        user: { ...newUser, roles: loginResponse.roles },
         token: loginResponse.token,
         refreshToken: loginResponse.refreshToken,
     };
@@ -57,8 +56,7 @@ export async function createAdminUser(request: APIRequestContext): Promise<Authe
 }
 
 export async function createClientUser(request: APIRequestContext): Promise<AuthenticatedUser> {
-    const newUser = getRandomUser(); 
-    newUser.roles = [Role.CLIENT];
+    const newUser = getRandomUser();
     await registerUser(newUser);
     const { response: loginResponse, status: loginStatus } = await postSignIn(request, {
         username: newUser.username,
@@ -69,7 +67,7 @@ export async function createClientUser(request: APIRequestContext): Promise<Auth
     }
 
     return {
-        user: newUser,
+        user: { ...newUser, roles: loginResponse.roles },
         token: loginResponse.token,
         refreshToken: loginResponse.refreshToken,
     };

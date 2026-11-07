@@ -24,6 +24,11 @@ jobs:
       - name: Lint source and tests
         run: npm run lint
 
+      - name: Verify generated API types match the backend snapshot
+        run: |
+          npm run api:generate
+          git diff --exit-code -- src/types/generated
+
       - name: Build the application
         run: npm run build
         
@@ -64,6 +69,10 @@ jobs:
         
       - name: Wait for backend
         run: ./scripts/wait-for-backend.sh
+
+      - name: Verify pinned backend matches the API snapshot
+        if: matrix.shard == 1
+        run: npm run api:check
 
       - name: Wait for Keycloak
         run: ./scripts/wait-for-keycloak.sh

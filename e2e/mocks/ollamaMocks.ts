@@ -1,9 +1,6 @@
 import { Page, Route } from '@playwright/test';
 import { BACKEND_URL } from '../config/constants';
-
-function createMockEventStream(chunks: any[]): string {
-  return chunks.map(chunk => `data: ${JSON.stringify(chunk)}\n\n`).join('');
-}
+import { eventStream } from './backendContract';
 
 export const ollamaMocks = {
     async mockSuccess(page: Page, onRequest?: (route: Route) => void) {
@@ -18,7 +15,7 @@ export const ollamaMocks = {
                 { model: 'qwen3.5:2b', response: '**Bold text**\n\n`code block`', done: true }
             ];
 
-            const response = chunks.map(chunk => `data: ${JSON.stringify(chunk)}\n\n`).join('');
+            const response = eventStream('GenerateResponseDto', chunks);
             await route.fulfill({
                 status: 200,
                 headers: {
@@ -49,7 +46,7 @@ export const ollamaGenerateMocks = {
       await route.fulfill({
         status: 200,
         headers: { 'content-type': 'text/event-stream' },
-        body: createMockEventStream([
+        body: eventStream('GenerateResponseDto', [
           {
             response: "Release plan: mock Ollama service ready",
             done: false
@@ -69,7 +66,7 @@ export const ollamaGenerateMocks = {
       await route.fulfill({
         status: 200,
         headers: { 'content-type': 'text/event-stream' },
-        body: createMockEventStream([
+        body: eventStream('GenerateResponseDto', [
           {
             response: "Release plan: mock Ollama service ready",
             thinking: "Reviewing the release checklist before answering.",
@@ -90,7 +87,7 @@ export const ollamaGenerateMocks = {
       await route.fulfill({
         status: 200,
         headers: { 'content-type': 'text/event-stream' },
-        body: createMockEventStream([
+        body: eventStream('GenerateResponseDto', [
           {
             response: "",
             thinking: "Let me think...",
