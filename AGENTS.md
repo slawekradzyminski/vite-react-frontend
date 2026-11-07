@@ -18,6 +18,12 @@ This section points other automation or human teammates to the right document fo
 - Use a separate public prefix such as `/branding/...` for frontend logos, favicons, and similar files.
 - If deployed branding assets 404 while they exist in the frontend image, inspect the gateway config before changing Vite or nginx in this repo.
 
+## Test IDs
+
+- Give every button, link, form control, form, and `role="alert"`/`role="status"` element a kebab-case `data-testid` prefixed with its feature, for example `inventory-apply-adjustment` or `mfa-recovery-copy`.
+- Suffix repeated list items with a stable key, for example `inventory-movement-${movement.id}`.
+- [`src/test/testIdCoverage.test.ts`](./src/test/testIdCoverage.test.ts) fails when one is missing. Components that spread props or render through `asChild` pass the caller's ID through and are skipped.
+
 ## LLM implementation notes
 
 - [`docs/function-calling-flow.md`](./docs/function-calling-flow.md) – diagrams the message flow for chat, generate, and tool calling, which helps when triaging SSE events or tool payloads.

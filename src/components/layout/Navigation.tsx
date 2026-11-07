@@ -115,6 +115,7 @@ export function Navigation() {
                 src={brandMarkSrc}
                 alt={PRODUCT_NAME}
                 className="block h-11 w-11 object-contain sm:h-12 sm:w-12"
+                data-testid="brand-logo"
               />
             </Link>
 

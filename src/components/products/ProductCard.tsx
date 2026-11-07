@@ -148,7 +148,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
       <div className="flex grow flex-col p-5" data-testid="product-content">
         <div className="flex items-start justify-between gap-3" data-testid="product-card-header">
           <h3 className="min-h-14 text-lg font-semibold leading-7 text-slate-950 line-clamp-2" id={nameId} data-testid="product-name">
-            <Link to={productPath} state={productLinkState} className="rounded-md underline-offset-4 hover:underline">
+            <Link to={productPath} state={productLinkState} className="rounded-md underline-offset-4 hover:underline" data-testid="product-name-link">
               {product.name}
             </Link>
           </h3>
