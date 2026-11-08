@@ -203,6 +203,33 @@ const fulfillAuth = (
     });
   });
 
+  it('renders children when the user holds any of several required roles', async () => {
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValue(fulfillAuth([Role.WAREHOUSE]));
+
+    renderWithProviders(
+      <ProtectedRoute requiredRole={['WAREHOUSE', 'ADMIN']}>
+        <TestComponent />
+      </ProtectedRoute>
+    );
+
+    expect(await screen.findByText('Protected Content')).toBeInTheDocument();
+  });
+
+  it('redirects to home when the user holds none of several required roles', async () => {
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValue(fulfillAuth([Role.CLIENT]));
+
+    renderWithProviders(
+      <ProtectedRoute requiredRole={['WAREHOUSE', 'ADMIN']}>
+        <TestComponent />
+      </ProtectedRoute>
+    );
+
+    expect(await screen.findByTestId('home-page')).toBeInTheDocument();
+    expect(screen.queryByText('Protected Content')).not.toBeInTheDocument();
+  });
+
   it('redirects to home when requiredRole is missing on user', async () => {
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     localStorage.setItem('token', 'fake-token');

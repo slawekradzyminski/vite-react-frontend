@@ -1,0 +1,61 @@
+// Types for the coupon, review, wishlist, fulfilment, returns and purchasing APIs.
+// They alias the generated OpenAPI schemas directly, so they cannot drift from the service
+// that owns them: coupons, reviews, wishlist and CSV import come from the backend; shipments,
+// returns, suppliers, purchase orders and reorder suggestions come from warehouse-service.
+import type { components } from './generated/backend-api';
+import type { components as warehouseComponents } from './generated/warehouse-api';
+
+type Schemas = components['schemas'];
+type WarehouseSchemas = warehouseComponents['schemas'];
+
+export type Coupon = Schemas['CouponDto'];
+export type CouponRequest = Schemas['CouponRequestDto'];
+export type CouponType = NonNullable<CouponRequest['type']>;
+export type CouponStatus = NonNullable<Coupon['status']>;
+export type CartWithCoupon = Schemas['CartDto'];
+
+export type Review = Schemas['ReviewDto'];
+export type ReviewRequest = Schemas['ReviewRequestDto'];
+export type ReviewStatus = NonNullable<Review['status']>;
+export type MyReview = Schemas['MyReviewDto'];
+export type ReviewSummary = Schemas['ReviewSummaryDto'];
+export type ModerationRequest = Schemas['ModerationRequestDto'];
+
+export type WishlistItem = Schemas['WishlistItemDto'];
+
+export type ImportReport = Schemas['ImportReportDto'];
+export type ImportRowError = Schemas['ImportRowErrorDto'];
+
+export type Shipment = WarehouseSchemas['ShipmentDto'];
+export type ShipmentStatus = NonNullable<Shipment['status']>;
+export type Carrier = NonNullable<WarehouseSchemas['ShipShipmentDto']['carrier']>;
+export type PickList = WarehouseSchemas['PickListDto'];
+
+export type ReturnRequest = WarehouseSchemas['ReturnDto'];
+export type ReturnStatus = NonNullable<ReturnRequest['status']>;
+export type ReturnReason = NonNullable<WarehouseSchemas['CreateReturnDto']['reason']>;
+export type CreateReturnRequest = WarehouseSchemas['CreateReturnDto'];
+export type ItemCondition = NonNullable<WarehouseSchemas['ReceiveItemDto']['condition']>;
+
+export type Supplier = WarehouseSchemas['SupplierDto'];
+export type SupplierRequest = WarehouseSchemas['SupplierRequestDto'];
+export type PurchaseOrder = WarehouseSchemas['PurchaseOrderDto'];
+export type PurchaseOrderStatus = NonNullable<PurchaseOrder['status']>;
+export type PurchaseOrderRequest = WarehouseSchemas['PurchaseOrderRequestDto'];
+export type ReceiptRequest = WarehouseSchemas['ReceiptRequestDto'];
+export type ReorderSuggestion = WarehouseSchemas['ReorderSuggestionDto'];
+
+export interface Page<T> {
+  content?: T[];
+  pageNumber?: number;
+  pageSize?: number;
+  totalElements?: number;
+  totalPages?: number;
+}
+
+export const CARRIER_FORMATS: Record<Carrier, { pattern: RegExp; hint: string }> = {
+  INPOST: { pattern: /^\d{24}$/, hint: '24 digits' },
+  DPD: { pattern: /^\d{14}$/, hint: '14 digits' },
+  DHL: { pattern: /^\d{10}$/, hint: '10 digits' },
+  UPS: { pattern: /^1Z[A-Z0-9]{16}$/, hint: '1Z followed by 16 letters or digits' },
+};

@@ -6,7 +6,8 @@ import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock the products API
-vi.mock('../../lib/api', () => ({
+vi.mock('../../lib/api', async () => ({
+  ...(await import('../../test/commerceApiMocks')).commerceApiMocks(),
   products: {
     createProduct: vi.fn().mockResolvedValue({ data: { id: 1 } }),
     updateProduct: vi.fn().mockResolvedValue({ data: { id: 1 } }),
@@ -143,10 +144,29 @@ describe('AdminProductForm', () => {
         stockQuantity: 10,
         category: 'Test Category',
         imageUrl: 'https://example.com/image.jpg',
-      });
+      }, undefined);
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['inventory'] });
       expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['inventory-detail', 1] });
     });
+  });
+
+  it('sends the loaded ETag and reports a concurrent edit without losing the form', async () => {
+    vi.mocked(products.getProductById).mockResolvedValueOnce({
+      data: { id: 1, name: 'Test Product', description: 'Test description', price: 19.99, stockQuantity: 10, category: 'Test Category', imageUrl: 'https://example.com/image.jpg' },
+      headers: { etag: '"4"' },
+    } as never);
+    vi.mocked(products.updateProduct).mockRejectedValueOnce(Object.assign(new Error('Precondition Failed'), {
+      isAxiosError: true, response: { status: 412, data: { message: 'Product was modified by someone else; reload it and try again' } },
+    }));
+    renderWithProviders(<AdminProductForm productId={1} />);
+    await waitFor(() => expect(screen.getByLabelText(/name/i)).toHaveValue('Test Product'));
+
+    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: 'My edit' } });
+    fireEvent.submit(screen.getByRole('button', { name: /update product/i }));
+
+    expect(await screen.findByTestId('product-edit-conflict')).toHaveTextContent('Someone else changed this product');
+    expect(vi.mocked(products.updateProduct).mock.calls[0][2]).toBe('"4"');
+    expect(screen.getByLabelText(/name/i)).toHaveValue('My edit');
   });
 
   it('shows validation errors for required fields', async () => {

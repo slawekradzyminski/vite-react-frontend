@@ -7,7 +7,8 @@ import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock the orders API
-vi.mock('../../lib/api', () => ({
+vi.mock('../../lib/api', async () => ({
+  ...(await import('../../test/commerceApiMocks')).commerceApiMocks(),
   orders: {
     createOrder: vi.fn().mockResolvedValue({ data: { id: 1 } }),
   },
@@ -81,7 +82,7 @@ describe('CheckoutForm', () => {
         state: 'Test State',
         zipCode: '12345',
         country: 'Test Country',
-      });
+      }, expect.stringMatching(/^[0-9a-f-]{36}$/));
     });
   });
 
@@ -160,6 +161,47 @@ describe('CheckoutForm', () => {
       expect(submitButton).toHaveTextContent(/place order/i);
       expect(submitButton).not.toBeDisabled();
     });
+  });
+
+  it('explains a coupon that stopped qualifying instead of blaming stock', async () => {
+    vi.mocked(orders.createOrder).mockRejectedValueOnce(Object.assign(new Error('coupon conflict'), {
+      isAxiosError: true,
+      response: { status: 409, data: { message: 'Applied coupon is no longer valid: Coupon has expired' } },
+    }));
+    renderWithProviders();
+
+    fireEvent.change(screen.getByLabelText(/street address/i), { target: { value: '123 Test St' } });
+    fireEvent.change(screen.getByLabelText(/city/i), { target: { value: 'Test City' } });
+    fireEvent.change(screen.getByLabelText(/state\/province/i), { target: { value: 'Test State' } });
+    fireEvent.change(screen.getByLabelText(/zip\/postal code/i), { target: { value: '12345' } });
+    fireEvent.change(screen.getByLabelText(/country/i), { target: { value: 'Test Country' } });
+    fireEvent.click(screen.getByRole('button', { name: /place order/i }));
+
+    const message = await screen.findByTestId('checkout-availability-error');
+    expect(message).toHaveTextContent('Applied coupon is no longer valid: Coupon has expired');
+    expect(message).not.toHaveTextContent('no longer available in the requested quantity');
+  });
+
+  it('reuses one idempotency key when the same checkout is submitted again', async () => {
+    vi.mocked(orders.createOrder).mockRejectedValueOnce(new Error('timeout'));
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    renderWithProviders();
+
+    fireEvent.change(screen.getByLabelText(/street address/i), { target: { value: '123 Test St' } });
+    fireEvent.change(screen.getByLabelText(/city/i), { target: { value: 'Test City' } });
+    fireEvent.change(screen.getByLabelText(/state\/province/i), { target: { value: 'Test State' } });
+    fireEvent.change(screen.getByLabelText(/zip\/postal code/i), { target: { value: '12345' } });
+    fireEvent.change(screen.getByLabelText(/country/i), { target: { value: 'Test Country' } });
+    fireEvent.click(screen.getByRole('button', { name: /place order/i }));
+    await waitFor(() => expect(orders.createOrder).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.getByRole('button', { name: /place order/i })).not.toBeDisabled());
+    fireEvent.click(screen.getByRole('button', { name: /place order/i }));
+    await waitFor(() => expect(orders.createOrder).toHaveBeenCalledTimes(2));
+
+    const keys = vi.mocked(orders.createOrder).mock.calls.map((call) => call[1]);
+    expect(keys[0]).toBeTruthy();
+    expect(keys[1]).toBe(keys[0]);
+    alertSpy.mockRestore();
   });
 
   it.each([

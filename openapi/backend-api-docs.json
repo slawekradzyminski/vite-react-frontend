@@ -49,13 +49,63 @@
         ],
         "type": "object"
       },
+      "ApplyCouponDto": {
+        "description": "Coupon code to apply to the cart",
+        "properties": {
+          "code": {
+            "description": "Case-insensitive coupon code",
+            "example": "welcome10",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "type": "object"
+      },
       "CartDto": {
         "properties": {
+          "couponCode": {
+            "description": "Coupon applied to the cart",
+            "example": "WELCOME10",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "couponMessage": {
+            "description": "Why the applied coupon does not qualify",
+            "example": "Order subtotal must be at least 100.00",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "couponValid": {
+            "description": "Whether the applied coupon currently qualifies; null when no coupon is applied",
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "discountAmount": {
+            "description": "Discount that checkout would apply",
+            "example": 19.96,
+            "type": "number"
+          },
           "items": {
             "items": {
               "$ref": "#/components/schemas/CartItemDto"
             },
             "type": "array"
+          },
+          "totalAfterDiscount": {
+            "description": "Total price after the discount",
+            "example": 179.6,
+            "type": "number"
           },
           "totalItems": {
             "description": "Total number of items",
@@ -261,6 +311,213 @@
         },
         "type": "object"
       },
+      "CouponDto": {
+        "description": "Coupon",
+        "properties": {
+          "active": {
+            "description": "Administrator switch",
+            "example": true,
+            "type": "boolean"
+          },
+          "code": {
+            "description": "Upper-case coupon code",
+            "example": "WELCOME10",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "Creation timestamp",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "description": {
+            "description": "Internal description",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "description": "Coupon ID",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxRedemptions": {
+            "description": "Global redemption limit",
+            "format": "int32",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "minOrderAmount": {
+            "description": "Minimum cart subtotal",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "perUserLimit": {
+            "description": "Redemptions allowed per user",
+            "example": 1,
+            "format": "int32",
+            "type": "integer"
+          },
+          "redemptionCount": {
+            "description": "Redemptions currently counted",
+            "example": 0,
+            "format": "int32",
+            "type": "integer"
+          },
+          "status": {
+            "description": "Effective status at the time of the request",
+            "enum": [
+              "ACTIVE",
+              "INACTIVE",
+              "SCHEDULED",
+              "EXPIRED",
+              "EXHAUSTED"
+            ],
+            "example": "ACTIVE",
+            "type": "string"
+          },
+          "type": {
+            "description": "Discount type",
+            "enum": [
+              "PERCENTAGE",
+              "FIXED_AMOUNT"
+            ],
+            "example": "PERCENTAGE",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "Last update timestamp",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "validFrom": {
+            "description": "Start of validity",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "validUntil": {
+            "description": "End of validity",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "value": {
+            "description": "Percent or fixed amount",
+            "example": 10,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "CouponRequestDto": {
+        "description": "Coupon definition. PERCENTAGE values must be between 1 and 100; validUntil must be after validFrom.",
+        "properties": {
+          "active": {
+            "description": "Whether the coupon can be used; defaults to true",
+            "example": true,
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "code": {
+            "description": "Case-insensitive code, stored upper-case",
+            "example": "WELCOME10",
+            "maxLength": 32,
+            "minLength": 3,
+            "pattern": "^[A-Za-z0-9-]{3,32}$",
+            "type": "string"
+          },
+          "description": {
+            "description": "Internal description",
+            "example": "Welcome discount",
+            "maxLength": 255,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "maxRedemptions": {
+            "description": "Global redemption limit; null means unlimited",
+            "example": 100,
+            "format": "int32",
+            "minimum": 1,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "minOrderAmount": {
+            "description": "Minimum cart subtotal",
+            "example": 100,
+            "minimum": 0,
+            "multipleOf": 0.01,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "perUserLimit": {
+            "description": "Redemptions allowed per user; defaults to 1",
+            "example": 1,
+            "format": "int32",
+            "minimum": 1,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "type": {
+            "description": "Discount type",
+            "enum": [
+              "PERCENTAGE",
+              "FIXED_AMOUNT"
+            ],
+            "example": "PERCENTAGE",
+            "type": "string"
+          },
+          "validFrom": {
+            "description": "Start of validity (server-local)",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "validUntil": {
+            "description": "End of validity (server-local)",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "value": {
+            "description": "Percent (1-100) or fixed amount",
+            "example": 10,
+            "minimum": 0.01,
+            "multipleOf": 0.01,
+            "type": "number"
+          }
+        },
+        "required": [
+          "code",
+          "type",
+          "value"
+        ],
+        "type": "object"
+      },
       "CreateQrDto": {
         "description": "QR link",
         "properties": {
@@ -306,6 +563,10 @@
               "GENERIC",
               "PASSWORD_RESET_REQUESTED",
               "PASSWORD_RESET_CONFIRMED",
+              "BACK_IN_STOCK",
+              "ORDER_SHIPPED",
+              "ORDER_DELIVERED",
+              "RETURN_UPDATED",
               null
             ],
             "type": [
@@ -359,7 +620,11 @@
             "enum": [
               "GENERIC",
               "PASSWORD_RESET_REQUESTED",
-              "PASSWORD_RESET_CONFIRMED"
+              "PASSWORD_RESET_CONFIRMED",
+              "BACK_IN_STOCK",
+              "ORDER_SHIPPED",
+              "ORDER_DELIVERED",
+              "RETURN_UPDATED"
             ],
             "type": "string"
           },
@@ -476,6 +741,75 @@
               "integer",
               "null"
             ]
+          }
+        },
+        "type": "object"
+      },
+      "ImportReportDto": {
+        "description": "Result of a product CSV import. Nothing is persisted when errors is non-empty or dryRun is true.",
+        "properties": {
+          "applied": {
+            "description": "Whether changes were persisted",
+            "example": true,
+            "type": "boolean"
+          },
+          "created": {
+            "description": "Rows that create a product",
+            "example": 1,
+            "format": "int32",
+            "type": "integer"
+          },
+          "dryRun": {
+            "description": "Whether this was a dry run",
+            "example": false,
+            "type": "boolean"
+          },
+          "errors": {
+            "description": "Validation errors; empty when the file is valid",
+            "items": {
+              "$ref": "#/components/schemas/ImportRowErrorDto"
+            },
+            "type": "array"
+          },
+          "totalRows": {
+            "description": "Number of non-empty data rows",
+            "example": 3,
+            "format": "int32",
+            "type": "integer"
+          },
+          "unchanged": {
+            "description": "Rows identical to the existing product",
+            "example": 1,
+            "format": "int32",
+            "type": "integer"
+          },
+          "updated": {
+            "description": "Rows that change an existing product",
+            "example": 1,
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ImportRowErrorDto": {
+        "description": "Validation problem in one CSV row",
+        "properties": {
+          "field": {
+            "description": "Column name, or 'file' for structural problems",
+            "example": "price",
+            "type": "string"
+          },
+          "message": {
+            "description": "Problem description",
+            "example": "Price must be greater than 0",
+            "type": "string"
+          },
+          "row": {
+            "description": "1-based line number in the file; the header is line 1",
+            "example": 4,
+            "format": "int32",
+            "type": "integer"
           }
         },
         "type": "object"
@@ -597,7 +931,9 @@
               "INITIAL_STOCK",
               "ADMIN_ADJUSTMENT",
               "ORDER_DEDUCTED",
-              "ORDER_RESTORED"
+              "ORDER_RESTORED",
+              "PURCHASE_RECEIVED",
+              "RETURN_RESTOCKED"
             ],
             "type": "string"
           }
@@ -681,7 +1017,8 @@
             "items": {
               "enum": [
                 "ROLE_ADMIN",
-                "ROLE_CLIENT"
+                "ROLE_CLIENT",
+                "ROLE_WAREHOUSE"
               ],
               "type": "string"
             },
@@ -822,6 +1159,57 @@
         },
         "type": "object"
       },
+      "ModerationRequestDto": {
+        "description": "Moderation decision. REJECTED requires a note.",
+        "properties": {
+          "decision": {
+            "description": "Decision",
+            "enum": [
+              "APPROVED",
+              "REJECTED"
+            ],
+            "example": "APPROVED",
+            "type": "string"
+          },
+          "note": {
+            "description": "Reason shown to the author",
+            "example": "Contains a link to another shop",
+            "maxLength": 500,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "decision"
+        ],
+        "type": "object"
+      },
+      "MyReviewDto": {
+        "description": "Whether the caller may review a product, and their existing review",
+        "properties": {
+          "canReview": {
+            "description": "True when the caller may create a review now",
+            "example": true,
+            "type": "boolean"
+          },
+          "reason": {
+            "description": "Why the caller cannot create a review",
+            "example": "Only customers who received this product can review it",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "review": {
+            "$ref": "#/components/schemas/ReviewDto",
+            "description": "The caller's review, if any"
+          }
+        },
+        "type": "object"
+      },
       "OllamaToolDefinitionDto": {
         "properties": {
           "function": {
@@ -954,10 +1342,23 @@
       "OrderDto": {
         "description": "Order data transfer object",
         "properties": {
+          "couponCode": {
+            "description": "Coupon code applied at checkout",
+            "example": "WELCOME10",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "createdAt": {
             "description": "Creation timestamp",
             "format": "local-date-time",
             "type": "string"
+          },
+          "discountAmount": {
+            "description": "Coupon discount subtracted from the subtotal",
+            "example": 222.22,
+            "type": "number"
           },
           "id": {
             "description": "Order ID",
@@ -987,6 +1388,11 @@
             ],
             "example": "PENDING",
             "type": "string"
+          },
+          "subtotalAmount": {
+            "description": "Sum of item prices before discounts",
+            "example": 2222.2,
+            "type": "number"
           },
           "totalAmount": {
             "description": "Total amount",
@@ -1053,6 +1459,33 @@
         ],
         "type": "object"
       },
+      "PageDtoCouponDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/CouponDto"
+            },
+            "type": "array"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "PageDtoInventoryItemDto": {
         "properties": {
           "content": {
@@ -1112,6 +1545,33 @@
           "content": {
             "items": {
               "$ref": "#/components/schemas/OrderDto"
+            },
+            "type": "array"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageDtoReviewDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewDto"
             },
             "type": "array"
           },
@@ -1371,6 +1831,145 @@
           "newPassword",
           "token"
         ],
+        "type": "object"
+      },
+      "ReviewDto": {
+        "description": "Product review",
+        "properties": {
+          "body": {
+            "description": "Review text",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "Creation timestamp",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Review ID",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "moderationNote": {
+            "description": "Moderator note, visible to the author and administrators",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "productId": {
+            "description": "Product ID",
+            "example": 3,
+            "format": "int64",
+            "type": "integer"
+          },
+          "productName": {
+            "description": "Product name",
+            "example": "iPhone 13 Pro",
+            "type": "string"
+          },
+          "rating": {
+            "description": "Star rating",
+            "example": 5,
+            "format": "int32",
+            "type": "integer"
+          },
+          "status": {
+            "description": "Moderation status",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED"
+            ],
+            "example": "APPROVED",
+            "type": "string"
+          },
+          "title": {
+            "description": "Review title",
+            "example": "Great phone",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "Last update timestamp",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "username": {
+            "description": "Author username",
+            "example": "client",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ReviewRequestDto": {
+        "description": "Product review content",
+        "properties": {
+          "body": {
+            "description": "Review text",
+            "example": "Battery lasts two days and the camera is excellent.",
+            "maxLength": 2000,
+            "minLength": 10,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "rating": {
+            "description": "Star rating",
+            "example": 5,
+            "format": "int32",
+            "maximum": 5,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "title": {
+            "description": "Review title",
+            "example": "Great phone",
+            "maxLength": 120,
+            "minLength": 3,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "body",
+          "rating",
+          "title"
+        ],
+        "type": "object"
+      },
+      "ReviewSummaryDto": {
+        "description": "Rating summary over approved reviews",
+        "properties": {
+          "averageRating": {
+            "description": "Average rating rounded half-up to one decimal; null without reviews",
+            "example": 4.3,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "distribution": {
+            "additionalProperties": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "description": "Approved review count for each star rating 1-5",
+            "type": "object"
+          },
+          "productId": {
+            "description": "Product ID",
+            "example": 3,
+            "format": "int64",
+            "type": "integer"
+          },
+          "reviewCount": {
+            "description": "Number of approved reviews",
+            "example": 12,
+            "format": "int64",
+            "type": "integer"
+          }
+        },
         "type": "object"
       },
       "SsoExchangeRequestDto": {
@@ -1753,7 +2352,8 @@
             "items": {
               "enum": [
                 "ROLE_ADMIN",
-                "ROLE_CLIENT"
+                "ROLE_CLIENT",
+                "ROLE_WAREHOUSE"
               ],
               "type": "string"
             },
@@ -1859,7 +2459,8 @@
             "items": {
               "enum": [
                 "ROLE_ADMIN",
-                "ROLE_CLIENT"
+                "ROLE_CLIENT",
+                "ROLE_WAREHOUSE"
               ],
               "type": "string"
             },
@@ -1891,6 +2492,83 @@
           }
         },
         "type": "object"
+      },
+      "WishlistItemDto": {
+        "description": "Wishlist entry with the product's current price and availability",
+        "properties": {
+          "addedAt": {
+            "description": "When the product was added",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "imageUrl": {
+            "description": "Product image URL",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastNotifiedAt": {
+            "description": "Last back-in-stock email",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "notifyWhenAvailable": {
+            "description": "Email the user when the product is back in stock",
+            "example": true,
+            "type": "boolean"
+          },
+          "price": {
+            "description": "Current product price",
+            "example": 999.99,
+            "type": "number"
+          },
+          "productId": {
+            "description": "Product ID",
+            "example": 3,
+            "format": "int64",
+            "type": "integer"
+          },
+          "productName": {
+            "description": "Product name",
+            "example": "iPhone 13 Pro",
+            "type": "string"
+          },
+          "stockQuantity": {
+            "description": "Current stock quantity",
+            "example": 0,
+            "format": "int32",
+            "type": "integer"
+          },
+          "stockStatus": {
+            "description": "OUT_OF_STOCK when quantity is zero, otherwise IN_STOCK",
+            "enum": [
+              "IN_STOCK",
+              "LOW_STOCK",
+              "OUT_OF_STOCK"
+            ],
+            "example": "OUT_OF_STOCK",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WishlistUpdateDto": {
+        "description": "Wishlist entry settings",
+        "properties": {
+          "notifyWhenAvailable": {
+            "description": "Email when back in stock; defaults to false",
+            "example": true,
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
       }
     },
     "securitySchemes": {
@@ -1914,10 +2592,403 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/admin/coupons": {
+      "get": {
+        "description": "Lists coupons newest first with their effective status. Negative page is clamped to zero; size is clamped to 1-100.",
+        "operationId": "list_1",
+        "parameters": [
+          {
+            "description": "Zero-based page index",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page size, 1-100",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoCouponDto"
+                }
+              }
+            },
+            "description": "Coupons returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List coupons",
+        "tags": [
+          "Coupons"
+        ]
+      },
+      "post": {
+        "description": "Creates a coupon. Codes are case-insensitive and stored upper-case. PERCENTAGE values above 100 and validity windows that end before they start are rejected.",
+        "operationId": "create_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CouponRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CouponDto"
+                }
+              }
+            },
+            "description": "Coupon created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid coupon definition"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Coupon code already exists"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create coupon",
+        "tags": [
+          "Coupons"
+        ]
+      }
+    },
+    "/api/v1/admin/coupons/{id}": {
+      "delete": {
+        "description": "Deletes a coupon that was never redeemed and removes it from carts. Redeemed coupons return 409; deactivate them instead.",
+        "operationId": "delete_2",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Coupon deleted"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Coupon not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Coupon has redemptions"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete coupon",
+        "tags": [
+          "Coupons"
+        ]
+      },
+      "get": {
+        "description": "Returns one coupon with its redemption count and effective status.",
+        "operationId": "get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CouponDto"
+                }
+              }
+            },
+            "description": "Coupon returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Coupon not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get coupon",
+        "tags": [
+          "Coupons"
+        ]
+      },
+      "put": {
+        "description": "Replaces a coupon definition. The redemption count is preserved.",
+        "operationId": "update_1",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CouponRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CouponDto"
+                }
+              }
+            },
+            "description": "Coupon updated"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid coupon definition"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Coupon not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Coupon code already exists"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update coupon",
+        "tags": [
+          "Coupons"
+        ]
+      }
+    },
     "/api/v1/admin/inventory": {
       "get": {
         "description": "Lists inventory with optional stock and catalog filters. Negative page is clamped to zero; size is clamped to 1–100. lowStockThreshold must be at least 1.",
-        "operationId": "list",
+        "operationId": "list_4",
         "parameters": [
           {
             "in": "query",
@@ -2035,7 +3106,7 @@
     "/api/v1/admin/inventory/{productId}": {
       "get": {
         "description": "Returns the available quantity for one product.",
-        "operationId": "get",
+        "operationId": "get_1",
         "parameters": [
           {
             "in": "path",
@@ -2323,6 +3394,337 @@
         ]
       }
     },
+    "/api/v1/admin/products/export": {
+      "get": {
+        "description": "Downloads every product as RFC 4180 CSV with header id,name,description,price,stockQuantity,category,imageUrl. Text cells that start with =, +, -, @, tab or carriage return are prefixed with a single quote.",
+        "operationId": "export",
+        "responses": {
+          "200": {
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "CSV file"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Export products as CSV",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/api/v1/admin/products/import": {
+      "post": {
+        "description": "Creates products for rows without an id and updates products for rows with an existing id. Columns may appear in any order; name, description, price, stockQuantity and category are required. Files are limited to 1 MB and 1000 rows. The import is all-or-nothing: any row error returns 400 with the full report and persists nothing. dryRun=true validates without persisting.",
+        "operationId": "importCsv",
+        "parameters": [
+          {
+            "description": "Validate without persisting",
+            "in": "query",
+            "name": "dryRun",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "file": {
+                    "description": "CSV file",
+                    "format": "binary",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "file"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportReportDto"
+                }
+              }
+            },
+            "description": "Import applied, or dry run succeeded"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ImportReportDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid file or rows; the report lists every error when the file could be parsed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "File larger than 1 MB"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Import products from CSV",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/api/v1/admin/reviews": {
+      "get": {
+        "description": "Lists reviews oldest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1-100.",
+        "operationId": "list_3",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "PENDING",
+                "APPROVED",
+                "REJECTED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Zero-based page index",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page size, 1-100",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoReviewDto"
+                }
+              }
+            },
+            "description": "Reviews returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List reviews for moderation",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/api/v1/admin/reviews/{id}/moderation": {
+      "put": {
+        "description": "Approves or rejects a review. Rejection requires a note that the author can see. A review can be moderated again later.",
+        "operationId": "moderate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModerationRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewDto"
+                }
+              }
+            },
+            "description": "Review moderated"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid decision or missing rejection note"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Review not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Moderate review",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
     "/api/v1/cart": {
       "delete": {
         "description": "Removes all items from the authenticated user's cart.",
@@ -2383,6 +3785,125 @@
           }
         ],
         "summary": "Get current user's cart",
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/api/v1/cart/coupon": {
+      "delete": {
+        "description": "Detaches the coupon from the cart. Succeeds even when no coupon is applied.",
+        "operationId": "remove_1",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartDto"
+                }
+              }
+            },
+            "description": "Coupon removed; the updated cart is returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Remove coupon from cart",
+        "tags": [
+          "Cart"
+        ]
+      },
+      "put": {
+        "description": "Validates the coupon against the current cart and attaches it, replacing any previous coupon. Checkout validates it again.",
+        "operationId": "apply",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyCouponDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartDto"
+                }
+              }
+            },
+            "description": "Coupon applied; the cart shows the discount"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Empty cart, inactive, not yet valid or expired coupon, or subtotal below the minimum"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Coupon not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Global or per-user redemption limit reached"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Apply coupon to cart",
         "tags": [
           "Cart"
         ]
@@ -3251,8 +4772,19 @@
         ]
       },
       "post": {
-        "description": "Creates an order for the authenticated user from the current cart and clears the cart after success.",
+        "description": "Creates an order for the authenticated user from the current cart and clears the cart after success. A coupon applied to the cart is validated again and redeemed. An optional Idempotency-Key header makes retries safe: repeating the key with the same address within 24 hours returns the original order with Idempotent-Replayed: true, and a different address returns 409.",
         "operationId": "createOrder",
+        "parameters": [
+          {
+            "description": "Client-generated key, 8-64 letters, digits, hyphens or underscores",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -3272,7 +4804,17 @@
                 }
               }
             },
-            "description": "Order created successfully"
+            "description": "Order created successfully, or replayed for a repeated Idempotency-Key",
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "true when the response replays an earlier order",
+                "schema": {
+                  "example": "true",
+                  "type": "string"
+                },
+                "style": "simple"
+              }
+            }
           },
           "400": {
             "content": {
@@ -3319,7 +4861,7 @@
                 }
               }
             },
-            "description": "Insufficient stock to place the order"
+            "description": "Insufficient stock, coupon no longer valid, or Idempotency-Key reused with a different address"
           }
         },
         "security": [
@@ -3886,6 +5428,15 @@
               "format": "int64",
               "type": "integer"
             }
+          },
+          {
+            "description": "Entity tag from a previous response; a match returns 304",
+            "in": "header",
+            "name": "If-None-Match",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -3897,7 +5448,20 @@
                 }
               }
             },
-            "description": "Successfully retrieved product"
+            "description": "Successfully retrieved product; the ETag header carries the product version",
+            "headers": {
+              "ETag": {
+                "description": "Quoted product version",
+                "schema": {
+                  "example": "\"3\"",
+                  "type": "string"
+                },
+                "style": "simple"
+              }
+            }
+          },
+          "304": {
+            "description": "If-None-Match matches the current version; empty response body"
           },
           "400": {
             "content": {
@@ -3941,7 +5505,7 @@
         ]
       },
       "put": {
-        "description": "Updates supplied non-null product fields; omitted or null fields are unchanged. Empty description and imageUrl are allowed. Requires an administrator role.",
+        "description": "Updates supplied non-null product fields; omitted or null fields are unchanged. Empty description and imageUrl are allowed. An optional If-Match header with the ETag from GET enables optimistic concurrency: a stale tag returns 412 and nothing changes. Requires an administrator role.",
         "operationId": "updateProduct",
         "parameters": [
           {
@@ -3951,6 +5515,15 @@
             "schema": {
               "format": "int64",
               "type": "integer"
+            }
+          },
+          {
+            "description": "Entity tag from GET /api/v1/products/{id}, for example \"3\"",
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -3973,7 +5546,17 @@
                 }
               }
             },
-            "description": "Product updated successfully"
+            "description": "Product updated successfully; the ETag header carries the new version",
+            "headers": {
+              "ETag": {
+                "description": "Quoted product version",
+                "schema": {
+                  "example": "\"4\"",
+                  "type": "string"
+                },
+                "style": "simple"
+              }
+            }
           },
           "400": {
             "content": {
@@ -4014,6 +5597,16 @@
               }
             },
             "description": "Product not found"
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "If-Match does not match the current product version"
           }
         },
         "security": [
@@ -4024,6 +5617,423 @@
         "summary": "Update existing product",
         "tags": [
           "Products"
+        ]
+      }
+    },
+    "/api/v1/products/{productId}/reviews": {
+      "get": {
+        "description": "Lists approved reviews for a product, newest first. Negative page is clamped to zero; size is clamped to 1-50.",
+        "operationId": "list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Zero-based page index",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page size, 1-50",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoReviewDto"
+                }
+              }
+            },
+            "description": "Reviews returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product or review not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List approved reviews",
+        "tags": [
+          "Reviews"
+        ]
+      },
+      "post": {
+        "description": "Creates a PENDING review. Only users with a DELIVERED order containing the product may review it, once per product.",
+        "operationId": "create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewDto"
+                }
+              }
+            },
+            "description": "Review created and awaiting moderation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid review"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The caller has not received this product"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product or review not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The caller already reviewed this product"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create review",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/api/v1/products/{productId}/reviews/mine": {
+      "delete": {
+        "description": "Deletes the caller's review for the product.",
+        "operationId": "delete_1",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Review deleted"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product or review not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete my review",
+        "tags": [
+          "Reviews"
+        ]
+      },
+      "get": {
+        "description": "Returns whether the caller may review the product and the caller's review in any moderation status.",
+        "operationId": "mine",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyReviewDto"
+                }
+              }
+            },
+            "description": "Eligibility returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product or review not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get my review and eligibility",
+        "tags": [
+          "Reviews"
+        ]
+      },
+      "put": {
+        "description": "Replaces the caller's review content. The review returns to PENDING and its moderation note is cleared.",
+        "operationId": "update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewDto"
+                }
+              }
+            },
+            "description": "Review updated and awaiting moderation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid review"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product or review not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Edit my review",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/api/v1/products/{productId}/reviews/summary": {
+      "get": {
+        "description": "Returns the average rating, count, and 1-5 distribution over approved reviews only.",
+        "operationId": "summary",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewSummaryDto"
+                }
+              }
+            },
+            "description": "Summary returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product or review not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get rating summary",
+        "tags": [
+          "Reviews"
         ]
       }
     },
@@ -5685,6 +7695,182 @@
           "users"
         ]
       }
+    },
+    "/api/v1/wishlist": {
+      "get": {
+        "description": "Returns the caller's wishlist, most recently added first, with current price and stock.",
+        "operationId": "list_2",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WishlistItemDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Wishlist returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get wishlist",
+        "tags": [
+          "Wishlist"
+        ]
+      }
+    },
+    "/api/v1/wishlist/{productId}": {
+      "delete": {
+        "description": "Removes a product from the caller's wishlist.",
+        "operationId": "remove",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Wishlist entry removed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product is not on the wishlist"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Remove wishlist product",
+        "tags": [
+          "Wishlist"
+        ]
+      },
+      "put": {
+        "description": "Adds a product to the wishlist (201) or updates its notification setting (200). The body is optional; notifyWhenAvailable defaults to false. A wishlist holds at most 50 products.",
+        "operationId": "upsert",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WishlistUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WishlistItemDto"
+                }
+              }
+            },
+            "description": "Wishlist entry updated"
+          },
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WishlistItemDto"
+                }
+              }
+            },
+            "description": "Wishlist entry created"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Wishlist is full"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Add or update wishlist product",
+        "tags": [
+          "Wishlist"
+        ]
+      }
     }
   },
   "tags": [
@@ -5709,6 +7895,10 @@
       "name": "QR"
     },
     {
+      "description": "Product reviews and ratings",
+      "name": "Reviews"
+    },
+    {
       "description": "User management endpoints",
       "name": "users"
     },
@@ -5729,8 +7919,16 @@
       "name": "email"
     },
     {
+      "description": "Administrator coupon management",
+      "name": "Coupons"
+    },
+    {
       "description": "Shopping cart management endpoints",
       "name": "Cart"
+    },
+    {
+      "description": "Saved products and back-in-stock notifications",
+      "name": "Wishlist"
     },
     {
       "description": "Order management endpoints",

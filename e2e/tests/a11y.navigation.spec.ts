@@ -17,6 +17,7 @@ test.describe('Navigation keyboard accessibility', () => {
     const expectedTabOrder = [
       'brand-link',
       'desktop-menu-products',
+      'desktop-menu-wishlist',
       'desktop-menu-send-email',
       'desktop-menu-qr-code',
       'desktop-menu-llm',
@@ -60,6 +61,7 @@ test.describe('Navigation keyboard accessibility', () => {
     const menuToggle = page.getByTestId('mobile-menu-toggle');
     const mobileMenu = page.getByTestId('mobile-menu');
     const productsLink = page.getByTestId('mobile-menu-products');
+    const wishlistLink = page.getByTestId('mobile-menu-wishlist');
     const emailLink = page.getByTestId('mobile-menu-send-email');
 
     await expect(page.getByTestId('desktop-menu')).toBeHidden();
@@ -76,6 +78,7 @@ test.describe('Navigation keyboard accessibility', () => {
     await expect(mobileMenu).toBeVisible();
 
     await expectNextFocus(page, productsLink);
+    await expectNextFocus(page, wishlistLink);
     await expectNextFocus(page, emailLink);
     await page.keyboard.press('Enter');
 

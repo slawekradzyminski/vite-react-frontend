@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { responseStatus } from '../../lib/requestErrors';
 import { useForm } from 'react-hook-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { products } from '../../lib/api';
@@ -22,7 +23,8 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ProductCreateDto | ProductUpdateDto>();
 
-  const { data: productData, isLoading: isLoadingProduct } = useQuery({
+  const [conflict, setConflict] = useState(false);
+  const { data: productData, isLoading: isLoadingProduct, refetch: reloadProduct } = useQuery({
     queryKey: ['product', productId],
     queryFn: () => products.getProductById(Number(productId)),
     enabled: isEditMode,
@@ -52,9 +54,12 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: ProductUpdateDto }) => 
-      products.updateProduct(id, data),
+    // The ETag from the REST read makes the update conditional, so a concurrent
+    // edit by another administrator is reported instead of silently overwritten.
+    mutationFn: ({ id, data }: { id: number; data: ProductUpdateDto }) =>
+      products.updateProduct(id, data, entityTag(productData)),
     onSuccess: () => {
+      setConflict(false);
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['product', productId] });
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
@@ -73,6 +78,7 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
       }
     } catch (error) {
       console.error('Failed to save product:', error);
+      setConflict(responseStatus(error) === 412);
     } finally {
       setIsSubmitting(false);
     }
@@ -203,6 +209,13 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
         )}
       </Surface>
 
+      {conflict && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="alert" data-testid="product-edit-conflict">
+          <span>Someone else changed this product after you opened it. Reload to see their changes, then apply yours again.</span>
+          <Button type="button" variant="outline" size="sm" onClick={() => { setConflict(false); reloadProduct(); }} data-testid="product-edit-conflict-reload">Reload latest</Button>
+        </div>
+      )}
+
       <div className="flex justify-end" data-testid="product-form-actions">
         <Button
           type="submit"
@@ -214,4 +227,10 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
       </div>
     </Surface>
   );
-} 
+}
+
+function entityTag(response: unknown) {
+  const headers = (response as { headers?: Record<string, unknown> } | undefined)?.headers;
+  const etag = headers?.etag;
+  return typeof etag === 'string' ? etag : undefined;
+}

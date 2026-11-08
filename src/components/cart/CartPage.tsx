@@ -4,6 +4,8 @@ import { Link } from 'react-router';
 import { cart } from '../../lib/api';
 import { CartItem } from './CartItem';
 import { CartSummary } from './CartSummary';
+import { CartCouponPanel } from '../commerce/CartCouponPanel';
+import { commerceTransport } from '../../lib/commerceTransport';
 import { Surface } from '../ui/surface';
 import { useEnrichedCart, type RawCartResponse } from '../../hooks/useEnrichedCart';
 
@@ -104,6 +106,9 @@ export function CartPage() {
               onUpdate={handleCartUpdate}
               beforeCheckout={savePendingChanges}
             />
+            {commerceTransport === 'rest'
+              ? <CartCouponPanel />
+              : <p className="border-t border-stone-200 p-6 text-sm text-slate-500" data-testid="cart-coupon-rest-only">Coupons are available when the shop API is set to REST.</p>}
           </Surface>
 
           <Surface variant="default" className="overflow-hidden" data-testid="cart-items-container">

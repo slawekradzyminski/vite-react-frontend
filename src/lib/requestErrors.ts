@@ -24,3 +24,15 @@ export function describeCartError(error: unknown, fallback: string) {
       return fallback;
   }
 }
+
+// Prefers the backend's explanation: ErrorDto.message, then the first field
+// validation message, then {"error": "..."} maps.
+export function serverMessage(error: unknown, fallback: string) {
+  if (!axios.isAxiosError(error)) return fallback;
+  const data: unknown = error.response?.data;
+  if (!data || typeof data !== 'object') return fallback;
+  const record = data as Record<string, unknown>;
+  if (typeof record.message === 'string' && record.message.trim()) return record.message;
+  const firstText = Object.values(record).find((value): value is string => typeof value === 'string' && value.trim() !== '');
+  return firstText ?? fallback;
+}

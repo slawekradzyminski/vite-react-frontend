@@ -16,3 +16,8 @@ export const hasRole = (roles: unknown, requiredRole: string) => {
     return normalizedRole ? acceptedRoles.has(normalizedRole) : false;
   });
 };
+
+export const hasAnyRole = (roles: unknown, requiredRoles: string | string[]) => {
+  const required = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
+  return required.some((role) => hasRole(roles, role));
+};

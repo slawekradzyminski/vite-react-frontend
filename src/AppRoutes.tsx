@@ -27,6 +27,15 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { RedirectIfAuthenticated } from './components/RedirectIfAuthenticated';
 import { WebMcpPage } from './features/webmcp/WebMcpPage';
 
+import { WishlistPage } from './pages/wishlist/wishlistPage';
+import { MyReturnsPage } from './pages/returns/myReturnsPage';
+import { WarehousePage } from './pages/warehouse/warehousePage';
+import { AdminCouponsPage } from './pages/admin/couponsPage';
+import { AdminReviewsPage } from './pages/admin/reviewsPage';
+import { AdminReturnsPage } from './pages/admin/returnsPage';
+import { AdminPurchasingPage } from './pages/admin/purchasingPage';
+import { isWarehouseEnabled } from './lib/runtimeConfig';
+
 export function AppRoutes() {
   return (
     <Routes>
@@ -226,6 +235,19 @@ export function AppRoutes() {
         }
       />
       
+      {/* Commerce extensions */}
+      <Route path="/wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
+      <Route path="/admin/coupons" element={<ProtectedRoute requiredRole="ADMIN"><AdminCouponsPage /></ProtectedRoute>} />
+      <Route path="/admin/reviews" element={<ProtectedRoute requiredRole="ADMIN"><AdminReviewsPage /></ProtectedRoute>} />
+      {/* Served by warehouse-service; hidden until the deployment enables it. */}
+      {isWarehouseEnabled() && (
+        <>
+          <Route path="/returns" element={<ProtectedRoute><MyReturnsPage /></ProtectedRoute>} />
+          <Route path="/warehouse" element={<ProtectedRoute requiredRole={['WAREHOUSE', 'ADMIN']}><WarehousePage /></ProtectedRoute>} />
+          <Route path="/admin/returns" element={<ProtectedRoute requiredRole="ADMIN"><AdminReturnsPage /></ProtectedRoute>} />
+          <Route path="/admin/purchasing" element={<ProtectedRoute requiredRole="ADMIN"><AdminPurchasingPage /></ProtectedRoute>} />
+        </>
+      )}
       <Route
         path="/traffic"
         element={

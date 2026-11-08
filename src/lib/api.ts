@@ -34,6 +34,35 @@ import type {
   PageDto,
   StockStatus,
 } from '../types/inventory';
+import type {
+  Carrier,
+  CartWithCoupon,
+  Coupon,
+  CouponRequest,
+  CreateReturnRequest,
+  ImportReport,
+  ItemCondition,
+  ModerationRequest,
+  MyReview,
+  Page,
+  PickList,
+  PurchaseOrder,
+  PurchaseOrderRequest,
+  PurchaseOrderStatus,
+  ReceiptRequest,
+  ReorderSuggestion,
+  ReturnRequest,
+  ReturnStatus,
+  Review,
+  ReviewRequest,
+  ReviewStatus,
+  ReviewSummary,
+  Shipment,
+  ShipmentStatus,
+  Supplier,
+  SupplierRequest,
+  WishlistItem,
+} from '../types/commerce';
 import { authStorage } from './authStorage';
 import { commerceTransport } from './commerceTransport';
 import { createCommerceGraphql } from './commerceGraphql';
@@ -56,6 +85,11 @@ const PRODUCTS_API = `${API_V1_PREFIX}/products`;
 const CART_API = `${API_V1_PREFIX}/cart`;
 const TRAFFIC_API = `${API_V1_PREFIX}/traffic`;
 const INVENTORY_API = `${API_V1_PREFIX}/admin/inventory`;
+const ADMIN_API = `${API_V1_PREFIX}/admin`;
+const COUPONS_API = `${ADMIN_API}/coupons`;
+const WISHLIST_API = `${API_V1_PREFIX}/wishlist`;
+const WAREHOUSE_API = `${API_V1_PREFIX}/warehouse`;
+const RETURNS_API = `${API_V1_PREFIX}/returns`;
 const CLIENT_SESSION_ID_HEADER = 'X-Client-Session-Id';
 
 const PUBLIC_ENDPOINTS = [
@@ -326,8 +360,10 @@ const restOrders = {
   getOrderById: (id: number) => 
     api.get<Order>(`${ORDERS_API}/${id}`),
   
-  createOrder: (address: Address) => 
-    api.post<Order>(ORDERS_API, address),
+  createOrder: (address: Address, idempotencyKey?: string) =>
+    api.post<Order>(ORDERS_API, address, idempotencyKey
+      ? { headers: { 'Idempotency-Key': idempotencyKey } }
+      : undefined),
   
   updateOrderStatus: (id: number, status: OrderStatus) => 
     api.put<Order>(`${ORDERS_API}/${id}/status`, JSON.stringify(status), {
@@ -350,8 +386,10 @@ const restProducts = {
   createProduct: (data: ProductCreateDto) => 
     api.post<Product>(PRODUCTS_API, data),
   
-  updateProduct: (id: number, data: ProductUpdateDto) => 
-    api.put<Product>(`${PRODUCTS_API}/${id}`, data),
+  updateProduct: (id: number, data: ProductUpdateDto, etag?: string) =>
+    api.put<Product>(`${PRODUCTS_API}/${id}`, data, etag
+      ? { headers: { 'If-Match': etag } }
+      : undefined),
   
   deleteProduct: (id: number) => 
     api.delete(`${PRODUCTS_API}/${id}`),
@@ -398,6 +436,100 @@ const restInventory = {
     api.get<PageDto<InventoryMovement>>(`${INVENTORY_API}/${productId}/movements`, {
       params: { page, size },
     }),
+};
+
+const pageParams = (page = 0, size = 20, extra: Record<string, unknown> = {}) => ({ params: { page, size, ...extra } });
+
+export const coupons = {
+  list: (page = 0, size = 50) => api.get<Page<Coupon>>(COUPONS_API, pageParams(page, size)),
+  create: (data: CouponRequest) => api.post<Coupon>(COUPONS_API, data),
+  update: (id: number, data: CouponRequest) => api.put<Coupon>(`${COUPONS_API}/${id}`, data),
+  remove: (id: number) => api.delete(`${COUPONS_API}/${id}`),
+};
+
+// Coupons always use REST so they work with either commerce transport.
+export const cartCoupon = {
+  summary: () => api.get<CartWithCoupon>(CART_API),
+  apply: (code: string) => api.put<CartWithCoupon>(`${CART_API}/coupon`, { code }),
+  remove: () => api.delete<CartWithCoupon>(`${CART_API}/coupon`),
+};
+
+export const reviews = {
+  list: (productId: number, page = 0, size = 10) =>
+    api.get<Page<Review>>(`${PRODUCTS_API}/${productId}/reviews`, pageParams(page, size)),
+  summary: (productId: number) => api.get<ReviewSummary>(`${PRODUCTS_API}/${productId}/reviews/summary`),
+  mine: (productId: number) => api.get<MyReview>(`${PRODUCTS_API}/${productId}/reviews/mine`),
+  create: (productId: number, data: ReviewRequest) => api.post<Review>(`${PRODUCTS_API}/${productId}/reviews`, data),
+  update: (productId: number, data: ReviewRequest) => api.put<Review>(`${PRODUCTS_API}/${productId}/reviews/mine`, data),
+  remove: (productId: number) => api.delete(`${PRODUCTS_API}/${productId}/reviews/mine`),
+};
+
+export const adminReviews = {
+  list: (status?: ReviewStatus, page = 0, size = 20) =>
+    api.get<Page<Review>>(`${ADMIN_API}/reviews`, pageParams(page, size, { status })),
+  moderate: (id: number, data: ModerationRequest) => api.put<Review>(`${ADMIN_API}/reviews/${id}/moderation`, data),
+};
+
+export const wishlist = {
+  list: () => api.get<WishlistItem[]>(WISHLIST_API),
+  upsert: (productId: number, notifyWhenAvailable: boolean) =>
+    api.put<WishlistItem>(`${WISHLIST_API}/${productId}`, { notifyWhenAvailable }),
+  remove: (productId: number) => api.delete(`${WISHLIST_API}/${productId}`),
+};
+
+export const catalogCsv = {
+  export: () => api.get<Blob>(`${ADMIN_API}/products/export`, { responseType: 'blob', headers: { Accept: 'text/csv' } }),
+  import: (file: File, dryRun: boolean) => {
+    const body = new FormData();
+    body.append('file', file);
+    return api.post<ImportReport>(`${ADMIN_API}/products/import`, body, {
+      params: { dryRun },
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+};
+
+export const warehouse = {
+  queue: (page = 0, size = 20) => api.get<PageDtoOrderDto>(`${WAREHOUSE_API}/queue`, pageParams(page, size)),
+  shipments: (status?: ShipmentStatus, page = 0, size = 50) =>
+    api.get<Page<Shipment>>(`${WAREHOUSE_API}/shipments`, pageParams(page, size, { status })),
+  create: (orderId: number) => api.post<Shipment>(`${WAREHOUSE_API}/shipments`, { orderId }),
+  pickList: (id: number) => api.get<PickList>(`${WAREHOUSE_API}/shipments/${id}/pick-list`),
+  pick: (id: number) => api.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/pick`),
+  pack: (id: number, weightKg: number) => api.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/pack`, { weightKg }),
+  ship: (id: number, carrier: Carrier, trackingNumber: string) =>
+    api.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/ship`, { carrier, trackingNumber }),
+  deliver: (id: number) => api.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/deliver`),
+  cancel: (id: number) => api.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/cancel`),
+  trackOrder: (orderId: number) => api.get<Shipment>(`${ORDERS_API}/${orderId}/shipment`),
+};
+
+export const returns = {
+  create: (orderId: number, data: CreateReturnRequest) => api.post<ReturnRequest>(`${ORDERS_API}/${orderId}/returns`, data),
+  mine: (page = 0, size = 20) => api.get<Page<ReturnRequest>>(RETURNS_API, pageParams(page, size)),
+};
+
+export const adminReturns = {
+  list: (status?: ReturnStatus, page = 0, size = 50) =>
+    api.get<Page<ReturnRequest>>(`${ADMIN_API}/returns`, pageParams(page, size, { status })),
+  approve: (id: number) => api.post<ReturnRequest>(`${ADMIN_API}/returns/${id}/approve`),
+  reject: (id: number, note: string) => api.post<ReturnRequest>(`${ADMIN_API}/returns/${id}/reject`, { note }),
+  receive: (id: number, items: { productId: number; condition: ItemCondition }[]) =>
+    api.post<ReturnRequest>(`${ADMIN_API}/returns/${id}/receive`, { items }),
+  refund: (id: number) => api.post<ReturnRequest>(`${ADMIN_API}/returns/${id}/refund`),
+};
+
+export const purchasing = {
+  suppliers: () => api.get<Supplier[]>(`${ADMIN_API}/suppliers`),
+  createSupplier: (data: SupplierRequest) => api.post<Supplier>(`${ADMIN_API}/suppliers`, data),
+  list: (status?: PurchaseOrderStatus, page = 0, size = 50) =>
+    api.get<Page<PurchaseOrder>>(`${ADMIN_API}/purchase-orders`, pageParams(page, size, { status })),
+  create: (data: PurchaseOrderRequest) => api.post<PurchaseOrder>(`${ADMIN_API}/purchase-orders`, data),
+  submit: (id: number) => api.post<PurchaseOrder>(`${ADMIN_API}/purchase-orders/${id}/submit`),
+  cancel: (id: number) => api.post<PurchaseOrder>(`${ADMIN_API}/purchase-orders/${id}/cancel`),
+  receive: (id: number, data: ReceiptRequest) => api.post<PurchaseOrder>(`${ADMIN_API}/purchase-orders/${id}/receipts`, data),
+  reorderSuggestions: (lowStockThreshold = 5) =>
+    api.get<ReorderSuggestion[]>(`${INVENTORY_API}/reorder-suggestions`, { params: { lowStockThreshold } }),
 };
 
 const graphqlCommerce = createCommerceGraphql(api);

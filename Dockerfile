@@ -17,6 +17,10 @@ COPY . .
 ARG VITE_DEFAULT_OLLAMA_MODEL=hf.co/prism-ml/Bonsai-27B-gguf:Q1_0
 ENV VITE_DEFAULT_OLLAMA_MODEL=${VITE_DEFAULT_OLLAMA_MODEL}
 
+# Warehouse, returns and purchasing screens need warehouse-service. Baked in at build time.
+ARG VITE_WAREHOUSE_ENABLED=false
+ENV VITE_WAREHOUSE_ENABLED=${VITE_WAREHOUSE_ENABLED}
+
 # Build the application
 RUN npm run build
 

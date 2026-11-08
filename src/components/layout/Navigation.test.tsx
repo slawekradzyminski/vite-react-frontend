@@ -2,7 +2,7 @@ import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
 import { auth, cart } from '../../lib/api';
 import { renderWithProviders } from '../../test/test-utils';
 import { Navigation } from './Navigation';
@@ -428,7 +428,8 @@ describe('Navigation', () => {
     
     // First items should be navigation links
     expect(menuItemsArray[0]).toHaveTextContent('Products');
-    expect(menuItemsArray[1]).toHaveTextContent('Send Email');
+    expect(menuItemsArray[1]).toHaveTextContent('Wishlist');
+    expect(menuItemsArray[2]).toHaveTextContent('Send Email');
     
     // Cart should come after navigation links but before username
     const cartIndex = menuItemsArray.findIndex(item => item.textContent?.includes('Cart'));
@@ -462,6 +463,55 @@ describe('Navigation', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Admin')).toBeInTheDocument();
+    });
+  });
+
+  describe('warehouse link', () => {
+    const signInAs = (roles: Role[]) => {
+      localStorage.setItem('token', 'fake-token');
+      vi.mocked(auth.me).mockResolvedValue({
+        data: { id: 2, username: 'picker', email: 'picker@example.com', firstName: 'Pia', lastName: 'Picker', roles },
+      } as never);
+    };
+
+    // A fresh cache per test, so one test's roles never leak into the next.
+    const renderNavigation = () => render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <BrowserRouter><Navigation /></BrowserRouter>
+      </QueryClientProvider>
+    );
+
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    it('stays hidden from warehouse staff until warehouse-service is enabled', async () => {
+      signInAs([Role.WAREHOUSE]);
+
+      renderNavigation();
+
+      expect(await screen.findByTestId('logout-button')).toBeInTheDocument();
+      expect(screen.queryByText('Warehouse')).not.toBeInTheDocument();
+    });
+
+    it('shows the warehouse board to warehouse staff when warehouse-service is enabled', async () => {
+      vi.stubEnv('VITE_WAREHOUSE_ENABLED', 'true');
+      signInAs([Role.WAREHOUSE]);
+
+      renderNavigation();
+
+      expect(await screen.findByText('Warehouse')).toHaveAttribute('href', '/warehouse');
+      expect(screen.queryByText('Admin')).not.toBeInTheDocument();
+    });
+
+    it('keeps the warehouse board from clients even when enabled', async () => {
+      vi.stubEnv('VITE_WAREHOUSE_ENABLED', 'true');
+      signInAs([Role.CLIENT]);
+
+      renderNavigation();
+
+      expect(await screen.findByTestId('logout-button')).toBeInTheDocument();
+      expect(screen.queryByText('Warehouse')).not.toBeInTheDocument();
     });
   });
 

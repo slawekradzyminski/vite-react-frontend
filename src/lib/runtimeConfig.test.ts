@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getAbsoluteApiUrl, getApiBaseUrl, getSsoConfig } from './runtimeConfig';
+import { getAbsoluteApiUrl, getApiBaseUrl, getSsoConfig, isWarehouseEnabled } from './runtimeConfig';
 
 describe('runtimeConfig', () => {
   afterEach(() => {
@@ -109,6 +109,27 @@ describe('runtimeConfig', () => {
         window.location,
       ),
     ).toBe('https://api.example.com');
+  });
+
+  describe('warehouse feature flag', () => {
+    it('is off unless VITE_WAREHOUSE_ENABLED is set', () => {
+      expect(isWarehouseEnabled({})).toBe(false);
+      expect(isWarehouseEnabled({ VITE_WAREHOUSE_ENABLED: '' })).toBe(false);
+      expect(isWarehouseEnabled({ VITE_WAREHOUSE_ENABLED: 'false' })).toBe(false);
+      expect(isWarehouseEnabled({ VITE_WAREHOUSE_ENABLED: 'yes' })).toBe(false);
+    });
+
+    it('accepts true in any case and with surrounding whitespace', () => {
+      expect(isWarehouseEnabled({ VITE_WAREHOUSE_ENABLED: 'true' })).toBe(true);
+      expect(isWarehouseEnabled({ VITE_WAREHOUSE_ENABLED: '  TRUE  ' })).toBe(true);
+    });
+
+    it('reads the Vite environment by default', () => {
+      expect(isWarehouseEnabled()).toBe(false);
+      vi.stubEnv('VITE_WAREHOUSE_ENABLED', 'true');
+
+      expect(isWarehouseEnabled()).toBe(true);
+    });
   });
 
   it('normalizes SSO urls against the current origin', () => {

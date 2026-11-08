@@ -9,16 +9,22 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Surface } from '../ui/surface';
 import axios from 'axios';
+import { serverMessage } from '../../lib/requestErrors';
 import { CommerceGraphQlError } from '../../lib/commerceGraphql';
 import { fieldErrorId } from '../../lib/fieldError';
 import { formatPrice } from '../../lib/format';
 
 interface CheckoutFormProps {
   cartTotal: number;
+  /** Amount after a valid coupon; defaults to the cart total. */
+  payableTotal?: number;
 }
 
-export function CheckoutForm({ cartTotal }: CheckoutFormProps) {
+export function CheckoutForm({ cartTotal, payableTotal }: CheckoutFormProps) {
   const navigate = useNavigate();
+  // One key per checkout attempt: a retried submit after a timeout replays the
+  // same order instead of placing a second one.
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
@@ -34,7 +40,7 @@ export function CheckoutForm({ cartTotal }: CheckoutFormProps) {
   });
   
   const createOrderMutation = useMutation({
-    mutationFn: (shippingAddress: AddressDto) => orders.createOrder(shippingAddress),
+    mutationFn: (shippingAddress: AddressDto) => orders.createOrder(shippingAddress, idempotencyKey),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       queryClient.invalidateQueries({ queryKey: ['orders'] });
@@ -63,7 +69,10 @@ export function CheckoutForm({ cartTotal }: CheckoutFormProps) {
       console.error('Failed to create order:', error);
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      if (((axios.isAxiosError(error) && error.response?.status === 409)
+      const couponMessage = serverMessage(error, '');
+      if (axios.isAxiosError(error) && error.response?.status === 409 && couponMessage.startsWith('Applied coupon')) {
+        setAvailabilityError(`${couponMessage}. Your cart was preserved; remove or replace the coupon in your cart.`);
+      } else if (((axios.isAxiosError(error) && error.response?.status === 409)
         || (error instanceof CommerceGraphQlError && error.code === 'CONFLICT'))) {
         setAvailabilityError('Some items are no longer available in the requested quantity. Your cart was preserved; review it before trying again.');
       } else {
@@ -172,7 +181,7 @@ export function CheckoutForm({ cartTotal }: CheckoutFormProps) {
         <Surface variant="inset" padding="md" className="mt-6" data-testid="checkout-summary">
           <div className="flex justify-between items-center mb-4" data-testid="checkout-total">
             <span className="font-semibold text-slate-700" data-testid="checkout-total-label">Order Total:</span>
-            <span className="text-lg font-bold text-slate-950" data-testid="checkout-total-amount">{formatPrice(cartTotal)}</span>
+            <span className="text-lg font-bold text-slate-950" data-testid="checkout-total-amount">{formatPrice(payableTotal ?? cartTotal)}</span>
           </div>
           
           <Button

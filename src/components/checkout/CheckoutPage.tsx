@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
+import { commerceTransport } from '../../lib/commerceTransport';
+import { CART_COUPON_QUERY_KEY } from '../../lib/commerceQueryKeys';
 import { Link, Navigate } from 'react-router';
-import { cart } from '../../lib/api';
+import { cart, cartCoupon } from '../../lib/api';
 import { CheckoutForm } from './CheckoutForm';
 import { Surface } from '../ui/surface';
 import { useEnrichedCart, type RawCartResponse } from '../../hooks/useEnrichedCart';
@@ -14,6 +16,8 @@ export function CheckoutPage() {
     refetchOnWindowFocus: false,
   });
   
+  const { data: couponResponse } = useQuery({ queryKey: CART_COUPON_QUERY_KEY, queryFn: cartCoupon.summary, retry: false, enabled: commerceTransport === 'rest' });
+  const couponCart = couponResponse?.data;
   const rawData = cartResponse?.data as RawCartResponse;
   const { cartData, isEnriching } = useEnrichedCart(rawData);
 
@@ -64,7 +68,10 @@ export function CheckoutPage() {
             <h2 className="text-lg font-semibold text-slate-950" data-testid="checkout-shipping-title">Shipping Information</h2>
           </div>
           <div className="p-6" data-testid="checkout-form-container">
-            <CheckoutForm cartTotal={totalPrice} />
+            <CheckoutForm
+              cartTotal={totalPrice}
+              payableTotal={couponCart?.couponCode && couponCart.couponValid ? couponCart.totalAfterDiscount : undefined}
+            />
           </div>
         </Surface>
         
@@ -83,6 +90,14 @@ export function CheckoutPage() {
                 <span className="block text-sm font-medium uppercase text-slate-500">Total</span>
                 <span className="text-xl font-bold text-slate-950" data-testid="checkout-total-value">{formatPrice(totalPrice)}</span>
               </div>
+
+              {couponCart?.couponCode && couponCart.couponValid && (
+                <div data-testid="checkout-discount">
+                  <span className="block text-sm font-medium uppercase text-slate-500">Coupon {couponCart.couponCode}</span>
+                  <span className="text-lg text-emerald-700" data-testid="checkout-discount-value">−{formatPrice(couponCart.discountAmount ?? 0)}</span>
+                  <span className="block text-sm text-slate-600" data-testid="checkout-total-after-discount">You pay {formatPrice(couponCart.totalAfterDiscount ?? 0)}</span>
+                </div>
+              )}
             </div>
           </div>
           

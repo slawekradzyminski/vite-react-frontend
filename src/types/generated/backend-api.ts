@@ -4,6 +4,58 @@
  */
 
 export interface paths {
+    "/api/v1/admin/coupons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List coupons
+         * @description Lists coupons newest first with their effective status. Negative page is clamped to zero; size is clamped to 1-100.
+         */
+        get: operations["list_1"];
+        put?: never;
+        /**
+         * Create coupon
+         * @description Creates a coupon. Codes are case-insensitive and stored upper-case. PERCENTAGE values above 100 and validity windows that end before they start are rejected.
+         */
+        post: operations["create_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/coupons/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get coupon
+         * @description Returns one coupon with its redemption count and effective status.
+         */
+        get: operations["get"];
+        /**
+         * Update coupon
+         * @description Replaces a coupon definition. The redemption count is preserved.
+         */
+        put: operations["update_1"];
+        post?: never;
+        /**
+         * Delete coupon
+         * @description Deletes a coupon that was never redeemed and removes it from carts. Redeemed coupons return 409; deactivate them instead.
+         */
+        delete: operations["delete_2"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/inventory": {
         parameters: {
             query?: never;
@@ -15,7 +67,7 @@ export interface paths {
          * List inventory
          * @description Lists inventory with optional stock and catalog filters. Negative page is clamped to zero; size is clamped to 1–100. lowStockThreshold must be at least 1.
          */
-        get: operations["list"];
+        get: operations["list_4"];
         put?: never;
         post?: never;
         delete?: never;
@@ -35,7 +87,7 @@ export interface paths {
          * Get inventory item
          * @description Returns the available quantity for one product.
          */
-        get: operations["get"];
+        get: operations["get_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -84,6 +136,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/products/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export products as CSV
+         * @description Downloads every product as RFC 4180 CSV with header id,name,description,price,stockQuantity,category,imageUrl. Text cells that start with =, +, -, @, tab or carriage return are prefixed with a single quote.
+         */
+        get: operations["export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import products from CSV
+         * @description Creates products for rows without an id and updates products for rows with an existing id. Columns may appear in any order; name, description, price, stockQuantity and category are required. Files are limited to 1 MB and 1000 rows. The import is all-or-nothing: any row error returns 400 with the full report and persists nothing. dryRun=true validates without persisting.
+         */
+        post: operations["importCsv"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List reviews for moderation
+         * @description Lists reviews oldest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1-100.
+         */
+        get: operations["list_3"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reviews/{id}/moderation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Moderate review
+         * @description Approves or rejects a review. Rejection requires a note that the author can see. A review can be moderated again later.
+         */
+        put: operations["moderate"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/cart": {
         parameters: {
             query?: never;
@@ -103,6 +235,30 @@ export interface paths {
          * @description Removes all items from the authenticated user's cart.
          */
         delete: operations["clearCart"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cart/coupon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Apply coupon to cart
+         * @description Validates the coupon against the current cart and attaches it, replacing any previous coupon. Checkout validates it again.
+         */
+        put: operations["apply"];
+        post?: never;
+        /**
+         * Remove coupon from cart
+         * @description Detaches the coupon from the cart. Succeeds even when no coupon is applied.
+         */
+        delete: operations["remove_1"];
         options?: never;
         head?: never;
         patch?: never;
@@ -294,7 +450,7 @@ export interface paths {
         put?: never;
         /**
          * Create a new order from cart
-         * @description Creates an order for the authenticated user from the current cart and clears the cart after success.
+         * @description Creates an order for the authenticated user from the current cart and clears the cart after success. A coupon applied to the cart is validated again and redeemed. An optional Idempotency-Key header makes retries safe: repeating the key with the same address within 24 hours returns the original order with Idempotent-Replayed: true, and a different address returns 409.
          */
         post: operations["createOrder"];
         delete?: never;
@@ -421,7 +577,7 @@ export interface paths {
         get: operations["getProductById"];
         /**
          * Update existing product
-         * @description Updates supplied non-null product fields; omitted or null fields are unchanged. Empty description and imageUrl are allowed. Requires an administrator role.
+         * @description Updates supplied non-null product fields; omitted or null fields are unchanged. Empty description and imageUrl are allowed. An optional If-Match header with the ETag from GET enables optimistic concurrency: a stale tag returns 412 and nothing changes. Requires an administrator role.
          */
         put: operations["updateProduct"];
         post?: never;
@@ -430,6 +586,78 @@ export interface paths {
          * @description Deletes an existing product by identifier. Referenced products return 409 without removing existing data. Requires an administrator role.
          */
         delete: operations["deleteProduct"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products/{productId}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List approved reviews
+         * @description Lists approved reviews for a product, newest first. Negative page is clamped to zero; size is clamped to 1-50.
+         */
+        get: operations["list"];
+        put?: never;
+        /**
+         * Create review
+         * @description Creates a PENDING review. Only users with a DELIVERED order containing the product may review it, once per product.
+         */
+        post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products/{productId}/reviews/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get my review and eligibility
+         * @description Returns whether the caller may review the product and the caller's review in any moderation status.
+         */
+        get: operations["mine"];
+        /**
+         * Edit my review
+         * @description Replaces the caller's review content. The review returns to PENDING and its moderation note is cleared.
+         */
+        put: operations["update"];
+        post?: never;
+        /**
+         * Delete my review
+         * @description Deletes the caller's review for the product.
+         */
+        delete: operations["delete_1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products/{productId}/reviews/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get rating summary
+         * @description Returns the average rating, count, and 1-5 distribution over approved reviews only.
+         */
+        get: operations["summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -931,6 +1159,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/wishlist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get wishlist
+         * @description Returns the caller's wishlist, most recently added first, with current price and stock.
+         */
+        get: operations["list_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/wishlist/{productId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Add or update wishlist product
+         * @description Adds a product to the wishlist (201) or updates its notification setting (200). The body is optional; notifyWhenAvailable defaults to false. A wishlist holds at most 50 products.
+         */
+        put: operations["upsert"];
+        post?: never;
+        /**
+         * Remove wishlist product
+         * @description Removes a product from the caller's wishlist.
+         */
+        delete: operations["remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -963,8 +1235,38 @@ export interface components {
              */
             zipCode: string;
         };
+        /** @description Coupon code to apply to the cart */
+        ApplyCouponDto: {
+            /**
+             * @description Case-insensitive coupon code
+             * @example welcome10
+             */
+            code: string;
+        };
         CartDto: {
+            /**
+             * @description Coupon applied to the cart
+             * @example WELCOME10
+             */
+            couponCode?: string | null;
+            /**
+             * @description Why the applied coupon does not qualify
+             * @example Order subtotal must be at least 100.00
+             */
+            couponMessage?: string | null;
+            /** @description Whether the applied coupon currently qualifies; null when no coupon is applied */
+            couponValid?: boolean | null;
+            /**
+             * @description Discount that checkout would apply
+             * @example 19.96
+             */
+            discountAmount?: number;
             items?: components["schemas"]["CartItemDto"][];
+            /**
+             * @description Total price after the discount
+             * @example 179.6
+             */
+            totalAfterDiscount?: number;
             /**
              * Format: int32
              * @description Total number of items
@@ -1067,6 +1369,139 @@ export interface components {
              */
             chatSystemPrompt?: string | null;
         };
+        /** @description Coupon */
+        CouponDto: {
+            /**
+             * @description Administrator switch
+             * @example true
+             */
+            active?: boolean;
+            /**
+             * @description Upper-case coupon code
+             * @example WELCOME10
+             */
+            code?: string;
+            /**
+             * Format: local-date-time
+             * @description Creation timestamp
+             */
+            createdAt?: string;
+            /** @description Internal description */
+            description?: string | null;
+            /**
+             * Format: int64
+             * @description Coupon ID
+             * @example 1
+             */
+            id?: number;
+            /**
+             * Format: int32
+             * @description Global redemption limit
+             */
+            maxRedemptions?: number | null;
+            /** @description Minimum cart subtotal */
+            minOrderAmount?: number | null;
+            /**
+             * Format: int32
+             * @description Redemptions allowed per user
+             * @example 1
+             */
+            perUserLimit?: number;
+            /**
+             * Format: int32
+             * @description Redemptions currently counted
+             * @example 0
+             */
+            redemptionCount?: number;
+            /**
+             * @description Effective status at the time of the request
+             * @example ACTIVE
+             * @enum {string}
+             */
+            status?: "ACTIVE" | "INACTIVE" | "SCHEDULED" | "EXPIRED" | "EXHAUSTED";
+            /**
+             * @description Discount type
+             * @example PERCENTAGE
+             * @enum {string}
+             */
+            type?: "PERCENTAGE" | "FIXED_AMOUNT";
+            /**
+             * Format: local-date-time
+             * @description Last update timestamp
+             */
+            updatedAt?: string;
+            /**
+             * Format: local-date-time
+             * @description Start of validity
+             */
+            validFrom?: string | null;
+            /**
+             * Format: local-date-time
+             * @description End of validity
+             */
+            validUntil?: string | null;
+            /**
+             * @description Percent or fixed amount
+             * @example 10
+             */
+            value?: number;
+        };
+        /** @description Coupon definition. PERCENTAGE values must be between 1 and 100; validUntil must be after validFrom. */
+        CouponRequestDto: {
+            /**
+             * @description Whether the coupon can be used; defaults to true
+             * @example true
+             */
+            active?: boolean | null;
+            /**
+             * @description Case-insensitive code, stored upper-case
+             * @example WELCOME10
+             */
+            code: string;
+            /**
+             * @description Internal description
+             * @example Welcome discount
+             */
+            description?: string | null;
+            /**
+             * Format: int32
+             * @description Global redemption limit; null means unlimited
+             * @example 100
+             */
+            maxRedemptions?: number | null;
+            /**
+             * @description Minimum cart subtotal
+             * @example 100
+             */
+            minOrderAmount?: number | null;
+            /**
+             * Format: int32
+             * @description Redemptions allowed per user; defaults to 1
+             * @example 1
+             */
+            perUserLimit?: number | null;
+            /**
+             * @description Discount type
+             * @example PERCENTAGE
+             * @enum {string}
+             */
+            type: "PERCENTAGE" | "FIXED_AMOUNT";
+            /**
+             * Format: local-date-time
+             * @description Start of validity (server-local)
+             */
+            validFrom?: string | null;
+            /**
+             * Format: local-date-time
+             * @description End of validity (server-local)
+             */
+            validUntil?: string | null;
+            /**
+             * @description Percent (1-100) or fixed amount
+             * @example 10
+             */
+            value: number;
+        };
         /** @description QR link */
         CreateQrDto: {
             /**
@@ -1094,7 +1529,7 @@ export interface components {
              * @description Optional template identifier used by downstream consumers; may be null in local outbox payloads
              * @enum {string|null}
              */
-            template?: "GENERIC" | "PASSWORD_RESET_REQUESTED" | "PASSWORD_RESET_CONFIRMED" | null;
+            template?: "GENERIC" | "PASSWORD_RESET_REQUESTED" | "PASSWORD_RESET_CONFIRMED" | "BACK_IN_STOCK" | "ORDER_SHIPPED" | "ORDER_DELIVERED" | "RETURN_UPDATED" | null;
             /**
              * Format: email
              * @description Email recipient
@@ -1124,7 +1559,7 @@ export interface components {
              * @description Email template or event type
              * @enum {string}
              */
-            type?: "GENERIC" | "PASSWORD_RESET_REQUESTED" | "PASSWORD_RESET_CONFIRMED";
+            type?: "GENERIC" | "PASSWORD_RESET_REQUESTED" | "PASSWORD_RESET_CONFIRMED" | "BACK_IN_STOCK" | "ORDER_SHIPPED" | "ORDER_DELIVERED" | "RETURN_UPDATED";
             /**
              * Format: date-time
              * @description When the email event status was last updated
@@ -1166,6 +1601,64 @@ export interface components {
             thinking?: string | null;
             /** Format: int64 */
             total_duration?: number | null;
+        };
+        /** @description Result of a product CSV import. Nothing is persisted when errors is non-empty or dryRun is true. */
+        ImportReportDto: {
+            /**
+             * @description Whether changes were persisted
+             * @example true
+             */
+            applied?: boolean;
+            /**
+             * Format: int32
+             * @description Rows that create a product
+             * @example 1
+             */
+            created?: number;
+            /**
+             * @description Whether this was a dry run
+             * @example false
+             */
+            dryRun?: boolean;
+            /** @description Validation errors; empty when the file is valid */
+            errors?: components["schemas"]["ImportRowErrorDto"][];
+            /**
+             * Format: int32
+             * @description Number of non-empty data rows
+             * @example 3
+             */
+            totalRows?: number;
+            /**
+             * Format: int32
+             * @description Rows identical to the existing product
+             * @example 1
+             */
+            unchanged?: number;
+            /**
+             * Format: int32
+             * @description Rows that change an existing product
+             * @example 1
+             */
+            updated?: number;
+        };
+        /** @description Validation problem in one CSV row */
+        ImportRowErrorDto: {
+            /**
+             * @description Column name, or 'file' for structural problems
+             * @example price
+             */
+            field?: string;
+            /**
+             * @description Problem description
+             * @example Price must be greater than 0
+             */
+            message?: string;
+            /**
+             * Format: int32
+             * @description 1-based line number in the file; the header is line 1
+             * @example 4
+             */
+            row?: number;
         };
         InventoryAdjustmentDto: {
             /**
@@ -1215,7 +1708,7 @@ export interface components {
             /** Format: uuid */
             requestId?: string | null;
             /** @enum {string} */
-            type?: "INITIAL_STOCK" | "ADMIN_ADJUSTMENT" | "ORDER_DEDUCTED" | "ORDER_RESTORED";
+            type?: "INITIAL_STOCK" | "ADMIN_ADJUSTMENT" | "ORDER_DEDUCTED" | "ORDER_RESTORED" | "PURCHASE_RECEIVED" | "RETURN_RESTOCKED";
         };
         /** @description Login details */
         LoginDto: {
@@ -1263,7 +1756,7 @@ export interface components {
              *       "ROLE_CLIENT"
              *     ]
              */
-            roles?: ("ROLE_ADMIN" | "ROLE_CLIENT")[];
+            roles?: ("ROLE_ADMIN" | "ROLE_CLIENT" | "ROLE_WAREHOUSE")[];
             /**
              * @description JWT token
              * @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -1327,6 +1820,35 @@ export interface components {
              */
             error?: string;
         };
+        /** @description Moderation decision. REJECTED requires a note. */
+        ModerationRequestDto: {
+            /**
+             * @description Decision
+             * @example APPROVED
+             * @enum {string}
+             */
+            decision: "APPROVED" | "REJECTED";
+            /**
+             * @description Reason shown to the author
+             * @example Contains a link to another shop
+             */
+            note?: string | null;
+        };
+        /** @description Whether the caller may review a product, and their existing review */
+        MyReviewDto: {
+            /**
+             * @description True when the caller may create a review now
+             * @example true
+             */
+            canReview?: boolean;
+            /**
+             * @description Why the caller cannot create a review
+             * @example Only customers who received this product can review it
+             */
+            reason?: string | null;
+            /** @description The caller's review, if any */
+            review?: components["schemas"]["ReviewDto"];
+        };
         OllamaToolDefinitionDto: {
             /** @description Function metadata describing how Ollama should call the backend. */
             function: components["schemas"]["OllamaToolFunctionDto"];
@@ -1386,10 +1908,20 @@ export interface components {
         /** @description Order data transfer object */
         OrderDto: {
             /**
+             * @description Coupon code applied at checkout
+             * @example WELCOME10
+             */
+            couponCode?: string | null;
+            /**
              * Format: local-date-time
              * @description Creation timestamp
              */
             createdAt?: string;
+            /**
+             * @description Coupon discount subtracted from the subtotal
+             * @example 222.22
+             */
+            discountAmount?: number;
             /**
              * Format: int64
              * @description Order ID
@@ -1406,6 +1938,11 @@ export interface components {
              * @enum {string}
              */
             status?: "PENDING" | "PAID" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+            /**
+             * @description Sum of item prices before discounts
+             * @example 2222.2
+             */
+            subtotalAmount?: number;
             /**
              * @description Total amount
              * @example 1999.98
@@ -1458,6 +1995,17 @@ export interface components {
              */
             unitPrice?: number;
         };
+        PageDtoCouponDto: {
+            content?: components["schemas"]["CouponDto"][];
+            /** Format: int32 */
+            pageNumber?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: int64 */
+            totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
+        };
         PageDtoInventoryItemDto: {
             content?: components["schemas"]["InventoryItemDto"][];
             /** Format: int32 */
@@ -1482,6 +2030,17 @@ export interface components {
         };
         PageDtoOrderDto: {
             content?: components["schemas"]["OrderDto"][];
+            /** Format: int32 */
+            pageNumber?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: int64 */
+            totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
+        };
+        PageDtoReviewDto: {
+            content?: components["schemas"]["ReviewDto"][];
             /** Format: int32 */
             pageNumber?: number;
             /** Format: int32 */
@@ -1610,6 +2169,105 @@ export interface components {
             newPassword: string;
             /** @description Password reset token received via email */
             token: string;
+        };
+        /** @description Product review */
+        ReviewDto: {
+            /** @description Review text */
+            body?: string;
+            /**
+             * Format: local-date-time
+             * @description Creation timestamp
+             */
+            createdAt?: string;
+            /**
+             * Format: int64
+             * @description Review ID
+             * @example 1
+             */
+            id?: number;
+            /** @description Moderator note, visible to the author and administrators */
+            moderationNote?: string | null;
+            /**
+             * Format: int64
+             * @description Product ID
+             * @example 3
+             */
+            productId?: number;
+            /**
+             * @description Product name
+             * @example iPhone 13 Pro
+             */
+            productName?: string;
+            /**
+             * Format: int32
+             * @description Star rating
+             * @example 5
+             */
+            rating?: number;
+            /**
+             * @description Moderation status
+             * @example APPROVED
+             * @enum {string}
+             */
+            status?: "PENDING" | "APPROVED" | "REJECTED";
+            /**
+             * @description Review title
+             * @example Great phone
+             */
+            title?: string;
+            /**
+             * Format: local-date-time
+             * @description Last update timestamp
+             */
+            updatedAt?: string;
+            /**
+             * @description Author username
+             * @example client
+             */
+            username?: string;
+        };
+        /** @description Product review content */
+        ReviewRequestDto: {
+            /**
+             * @description Review text
+             * @example Battery lasts two days and the camera is excellent.
+             */
+            body: string;
+            /**
+             * Format: int32
+             * @description Star rating
+             * @example 5
+             */
+            rating: number;
+            /**
+             * @description Review title
+             * @example Great phone
+             */
+            title: string;
+        };
+        /** @description Rating summary over approved reviews */
+        ReviewSummaryDto: {
+            /**
+             * @description Average rating rounded half-up to one decimal; null without reviews
+             * @example 4.3
+             */
+            averageRating?: number | null;
+            /** @description Approved review count for each star rating 1-5 */
+            distribution?: {
+                [key: string]: number;
+            };
+            /**
+             * Format: int64
+             * @description Product ID
+             * @example 3
+             */
+            productId?: number;
+            /**
+             * Format: int64
+             * @description Number of approved reviews
+             * @example 12
+             */
+            reviewCount?: number;
         };
         /** @description SSO exchange request */
         SsoExchangeRequestDto: {
@@ -1795,7 +2453,7 @@ export interface components {
             id?: number;
             lastName?: string | null;
             providerSubject?: string | null;
-            roles?: ("ROLE_ADMIN" | "ROLE_CLIENT")[];
+            roles?: ("ROLE_ADMIN" | "ROLE_CLIENT" | "ROLE_WAREHOUSE")[];
             toolSystemPrompt?: string | null;
             username?: string;
         };
@@ -1856,7 +2514,7 @@ export interface components {
              *       "ROLE_CLIENT"
              *     ]
              */
-            roles?: ("ROLE_ADMIN" | "ROLE_CLIENT")[];
+            roles?: ("ROLE_ADMIN" | "ROLE_CLIENT" | "ROLE_WAREHOUSE")[];
             /**
              * @description Username
              * @example johndoe
@@ -1874,6 +2532,62 @@ export interface components {
         } & {
             [key: string]: string;
         };
+        /** @description Wishlist entry with the product's current price and availability */
+        WishlistItemDto: {
+            /**
+             * Format: local-date-time
+             * @description When the product was added
+             */
+            addedAt?: string;
+            /** @description Product image URL */
+            imageUrl?: string | null;
+            /**
+             * Format: local-date-time
+             * @description Last back-in-stock email
+             */
+            lastNotifiedAt?: string | null;
+            /**
+             * @description Email the user when the product is back in stock
+             * @example true
+             */
+            notifyWhenAvailable?: boolean;
+            /**
+             * @description Current product price
+             * @example 999.99
+             */
+            price?: number;
+            /**
+             * Format: int64
+             * @description Product ID
+             * @example 3
+             */
+            productId?: number;
+            /**
+             * @description Product name
+             * @example iPhone 13 Pro
+             */
+            productName?: string;
+            /**
+             * Format: int32
+             * @description Current stock quantity
+             * @example 0
+             */
+            stockQuantity?: number;
+            /**
+             * @description OUT_OF_STOCK when quantity is zero, otherwise IN_STOCK
+             * @example OUT_OF_STOCK
+             * @enum {string}
+             */
+            stockStatus?: "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK";
+        };
+        /** @description Wishlist entry settings */
+        WishlistUpdateDto: {
+            /**
+             * @description Email when back in stock; defaults to false
+             * @example true
+             */
+            notifyWhenAvailable?: boolean | null;
+        };
     };
     responses: never;
     parameters: never;
@@ -1883,7 +2597,286 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    list: {
+    list_1: {
+        parameters: {
+            query?: {
+                /** @description Zero-based page index */
+                page?: number;
+                /** @description Page size, 1-100 */
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Coupons returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageDtoCouponDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    create_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CouponRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Coupon created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CouponDto"];
+                };
+            };
+            /** @description Invalid coupon definition */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Coupon code already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Coupon returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CouponDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Coupon not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    update_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CouponRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Coupon updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CouponDto"];
+                };
+            };
+            /** @description Invalid coupon definition */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Coupon not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Coupon code already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    delete_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Coupon deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Coupon not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Coupon has redemptions */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    list_4: {
         parameters: {
             query?: {
                 page?: number;
@@ -1938,7 +2931,7 @@ export interface operations {
             };
         };
     };
-    get: {
+    get_1: {
         parameters: {
             query?: {
                 /** @description Inclusive upper bound for LOW_STOCK; at least one */
@@ -2131,6 +3124,219 @@ export interface operations {
             };
         };
     };
+    export: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CSV file */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    importCsv: {
+        parameters: {
+            query?: {
+                /** @description Validate without persisting */
+                dryRun?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /**
+                     * Format: binary
+                     * @description CSV file
+                     */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Import applied, or dry run succeeded */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ImportReportDto"];
+                };
+            };
+            /** @description Invalid file or rows; the report lists every error when the file could be parsed */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportReportDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description File larger than 1 MB */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    list_3: {
+        parameters: {
+            query?: {
+                status?: "PENDING" | "APPROVED" | "REJECTED";
+                /** @description Zero-based page index */
+                page?: number;
+                /** @description Page size, 1-100 */
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reviews returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageDtoReviewDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    moderate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModerationRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Review moderated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReviewDto"];
+                };
+            };
+            /** @description Invalid decision or missing rejection note */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Review not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
     getCart: {
         parameters: {
             query?: never;
@@ -2175,6 +3381,95 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    apply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApplyCouponDto"];
+            };
+        };
+        responses: {
+            /** @description Coupon applied; the cart shows the discount */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CartDto"];
+                };
+            };
+            /** @description Empty cart, inactive, not yet valid or expired coupon, or subtotal below the minimum */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Coupon not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Global or per-user redemption limit reached */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    remove_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Coupon removed; the updated cart is returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CartDto"];
+                };
             };
             /** @description Unauthorized */
             401: {
@@ -2768,7 +4063,10 @@ export interface operations {
     createOrder: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Client-generated key, 8-64 letters, digits, hyphens or underscores */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -2778,9 +4076,11 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Order created successfully */
+            /** @description Order created successfully, or replayed for a repeated Idempotency-Key */
             201: {
                 headers: {
+                    /** @description true when the response replays an earlier order */
+                    "Idempotent-Replayed"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2814,7 +4114,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
-            /** @description Insufficient stock to place the order */
+            /** @description Insufficient stock, coupon no longer valid, or Idempotency-Key reused with a different address */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -3130,7 +4430,10 @@ export interface operations {
     getProductById: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Entity tag from a previous response; a match returns 304 */
+                "If-None-Match"?: string;
+            };
             path: {
                 id: number;
             };
@@ -3138,14 +4441,23 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successfully retrieved product */
+            /** @description Successfully retrieved product; the ETag header carries the product version */
             200: {
                 headers: {
+                    /** @description Quoted product version */
+                    ETag?: string;
                     [name: string]: unknown;
                 };
                 content: {
                     "*/*": components["schemas"]["ProductDto"];
                 };
+            };
+            /** @description If-None-Match matches the current version; empty response body */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Bad request */
             400: {
@@ -3179,7 +4491,10 @@ export interface operations {
     updateProduct: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Entity tag from GET /api/v1/products/{id}, for example "3" */
+                "If-Match"?: string;
+            };
             path: {
                 id: number;
             };
@@ -3191,9 +4506,11 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Product updated successfully */
+            /** @description Product updated successfully; the ETag header carries the new version */
             200: {
                 headers: {
+                    /** @description Quoted product version */
+                    ETag?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -3229,6 +4546,15 @@ export interface operations {
             };
             /** @description Product not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description If-Match does not match the current product version */
+            412: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3292,6 +4618,293 @@ export interface operations {
             };
             /** @description Product is referenced by existing data */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    list: {
+        parameters: {
+            query?: {
+                /** @description Zero-based page index */
+                page?: number;
+                /** @description Page size, 1-50 */
+                size?: number;
+            };
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reviews returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageDtoReviewDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Product or review not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Review created and awaiting moderation */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReviewDto"];
+                };
+            };
+            /** @description Invalid review */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description The caller has not received this product */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Product or review not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description The caller already reviewed this product */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    mine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eligibility returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MyReviewDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Product or review not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Review updated and awaiting moderation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReviewDto"];
+                };
+            };
+            /** @description Invalid review */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Product or review not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    delete_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Review deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Product or review not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    summary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Summary returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReviewSummaryDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Product or review not found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4532,6 +6145,135 @@ export interface operations {
                 };
             };
             /** @description The user doesn't exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    list_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Wishlist returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WishlistItemDto"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    upsert: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["WishlistUpdateDto"];
+            };
+        };
+        responses: {
+            /** @description Wishlist entry updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WishlistItemDto"];
+                };
+            };
+            /** @description Wishlist entry created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WishlistItemDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Product not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Wishlist is full */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Wishlist entry removed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Product is not on the wishlist */
             404: {
                 headers: {
                     [name: string]: unknown;

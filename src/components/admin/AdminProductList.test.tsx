@@ -6,7 +6,8 @@ import { products } from '../../lib/api';
 import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-vi.mock('../../lib/api', () => ({
+vi.mock('../../lib/api', async () => ({
+  ...(await import('../../test/commerceApiMocks')).commerceApiMocks(),
   products: {
     getAllProducts: vi.fn(),
     deleteProduct: vi.fn(),

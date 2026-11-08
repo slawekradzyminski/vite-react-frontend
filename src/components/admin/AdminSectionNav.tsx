@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router';
+import { isWarehouseEnabled } from '../../lib/runtimeConfig';
 import { cn } from '../../lib/utils';
 
 const sections = [
@@ -6,13 +7,17 @@ const sections = [
   { label: 'Products', path: '/admin/products' },
   { label: 'Orders', path: '/admin/orders' },
   { label: 'Inventory', path: '/admin/inventory' },
+  { label: 'Coupons', path: '/admin/coupons' },
+  { label: 'Reviews', path: '/admin/reviews' },
+  { label: 'Returns', path: '/admin/returns', warehouse: true },
+  { label: 'Purchasing', path: '/admin/purchasing', warehouse: true },
 ];
 
 export function AdminSectionNav() {
   return (
     <nav aria-label="Admin sections" className="overflow-x-auto" data-testid="admin-section-nav">
       <div className="inline-flex min-w-full gap-1 rounded-2xl border border-stone-200 bg-stone-50 p-1 sm:min-w-0">
-        {sections.map((section) => (
+        {sections.filter((section) => !section.warehouse || isWarehouseEnabled()).map((section) => (
           <NavLink
             key={section.path}
             to={section.path}

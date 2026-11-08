@@ -12,6 +12,10 @@ export interface Order {
   username: string;
   items: OrderItem[];
   totalAmount: number;
+  /** Absent in responses from backends that predate coupons. */
+  subtotalAmount?: number;
+  discountAmount?: number;
+  couponCode?: string | null;
   status: OrderStatus;
   shippingAddress: Address;
   createdAt: string;
