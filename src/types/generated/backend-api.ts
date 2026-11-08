@@ -1923,11 +1923,11 @@ export interface components {
              */
             discountAmount?: number;
             /**
-             * @description Warehouse progress mirrored from warehouse-service; NONE until the order is released to the warehouse
-             * @example NONE
-             * @enum {string}
+             * @description Warehouse progress mirrored from warehouse-service; omitted until the order is released to the warehouse
+             * @example AWAITING_PICK
+             * @enum {string|null}
              */
-            fulfilmentState?: "NONE" | "AWAITING_PICK" | "PICKED" | "PACKED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+            fulfilmentState?: "NONE" | "AWAITING_PICK" | "PICKED" | "PACKED" | "SHIPPED" | "DELIVERED" | "CANCELLED" | null;
             /**
              * Format: int64
              * @description Order ID

@@ -1361,7 +1361,7 @@
             "type": "number"
           },
           "fulfilmentState": {
-            "description": "Warehouse progress mirrored from warehouse-service; NONE until the order is released to the warehouse",
+            "description": "Warehouse progress mirrored from warehouse-service; omitted until the order is released to the warehouse",
             "enum": [
               "NONE",
               "AWAITING_PICK",
@@ -1369,10 +1369,14 @@
               "PACKED",
               "SHIPPED",
               "DELIVERED",
-              "CANCELLED"
+              "CANCELLED",
+              null
             ],
-            "example": "NONE",
-            "type": "string"
+            "example": "AWAITING_PICK",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "id": {
             "description": "Order ID",
