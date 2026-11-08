@@ -14,7 +14,8 @@ describe('AdminSectionNav', () => {
     </MemoryRouter>
   );
 
-  it('hides the returns and purchasing tabs until warehouse-service is enabled', () => {
+  it('hides the returns and purchasing tabs when a build disables warehouse-service', () => {
+    vi.stubEnv('VITE_WAREHOUSE_ENABLED', 'false');
     renderAt('/admin');
 
     expect(screen.getByTestId('admin-section-coupons')).toHaveAttribute('href', '/admin/coupons');
@@ -23,8 +24,7 @@ describe('AdminSectionNav', () => {
     expect(screen.queryByTestId('admin-section-purchasing')).not.toBeInTheDocument();
   });
 
-  it('shows the returns and purchasing tabs when warehouse-service is enabled', () => {
-    vi.stubEnv('VITE_WAREHOUSE_ENABLED', 'true');
+  it('shows the returns and purchasing tabs by default', () => {
     renderAt('/admin');
 
     expect(screen.getByTestId('admin-section-returns')).toHaveAttribute('href', '/admin/returns');

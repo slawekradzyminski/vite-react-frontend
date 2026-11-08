@@ -95,13 +95,15 @@ The frontend runtime behavior is controlled by these environment variables. Vite
 - `VITE_API_BASE_URL`
   Optional. Overrides the resolved API origin completely. Use this only when the frontend must call a non-default backend origin.
 - `VITE_WAREHOUSE_ENABLED`
-  Optional, default `false`. Set to `true` to show the warehouse board, My returns, admin returns and purchasing screens and order shipment tracking. They need warehouse-service; while the flag is off the frontend sends no requests to those endpoints. The Dockerfile accepts it as a build argument.
+  Optional, default `true`. The warehouse board, My returns, admin returns and purchasing screens and order shipment tracking need warehouse-service. Set it to `false` for a build that runs without warehouse-service; the frontend then hides those screens and sends no requests to their endpoints. The Dockerfile accepts it as a build argument.
+- `VITE_WAREHOUSE_API_BASE_URL`
+  Optional. Origin of warehouse-service for shipments, order tracking, returns, suppliers, purchase orders and reorder suggestions. Defaults to the resolved API origin, which is correct behind the gateway. Set it to `http://localhost:4003` only when the Vite dev server talks to the services directly. The Dockerfile accepts it as a build argument.
 - `VITE_DOCKER`
   Dev-only flag. When `true`, Vite development mode targets `http://host.docker.internal:4001` instead of `http://localhost:4001`.
 
 Default behavior by profile:
 
-- local Vite dev: API `http://localhost:4001`, reset base `${window.location.origin}/reset`
+- local Vite dev: API `http://localhost:4001` (warehouse calls too, unless `VITE_WAREHOUSE_API_BASE_URL` is set), reset base `${window.location.origin}/reset`
 - Dockerized Vite dev: API `http://host.docker.internal:4001` when `VITE_DOCKER=true`
 - built Docker/server runtime: API same-origin via `window.location.origin`, reset base `${window.location.origin}/reset` unless overridden
 

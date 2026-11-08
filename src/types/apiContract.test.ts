@@ -29,7 +29,7 @@ import type { CartItemDto, UpdateCartItemDto } from './cart';
 import type { EmailDto } from './email';
 import type { InventoryAdjustmentRequest, InventoryItem, InventoryMovement, PageDto } from './inventory';
 import type { ChatRequestDto, GenerateRequestDto, OllamaToolDefinition } from './ollama';
-import type { Address, AddressDto, Order, OrderItem, PageDtoOrderDto } from './order';
+import type { Address, AddressDto, FulfilmentState, Order, OrderItem, PageDtoOrderDto } from './order';
 import type { Product, ProductCreateDto, ProductUpdateDto } from './product';
 import type { ChatSystemPromptDto, ToolSystemPromptDto } from './prompts';
 import type { CreateQrDto } from './qr';
@@ -148,5 +148,9 @@ describe('backend API contract', () => {
   it('reads only fields warehouse-service sends', () => {
     // The warehouse queue returns orders in the same page shape as the backend.
     expectTypeOf<ResponseViolations<PageDtoOrderDto, WarehouseSchemas['PageDtoOrderDto']>>().toEqualTypeOf<never>();
+  });
+
+  it('tracks the backend fulfilment state values', () => {
+    expectTypeOf<NonNullable<Schemas['OrderDto']['fulfilmentState']>>().toEqualTypeOf<FulfilmentState>();
   });
 });

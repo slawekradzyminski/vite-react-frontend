@@ -17,12 +17,23 @@ export interface Order {
   discountAmount?: number;
   couponCode?: string | null;
   status: OrderStatus;
+  /** Absent in responses from backends that predate warehouse-service. */
+  fulfilmentState?: FulfilmentState;
   shippingAddress: Address;
   createdAt: string;
   updatedAt: string;
 }
 
 export type OrderStatus = 'PENDING' | 'PAID' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+
+export type FulfilmentState =
+  | 'NONE'
+  | 'AWAITING_PICK'
+  | 'PICKED'
+  | 'PACKED'
+  | 'SHIPPED'
+  | 'DELIVERED'
+  | 'CANCELLED';
 
 export interface Address {
   street: string;

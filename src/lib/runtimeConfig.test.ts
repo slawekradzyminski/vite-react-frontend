@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getAbsoluteApiUrl, getApiBaseUrl, getSsoConfig, isWarehouseEnabled } from './runtimeConfig';
+import { getAbsoluteApiUrl, getApiBaseUrl, getSsoConfig, getWarehouseApiBaseUrl, isWarehouseEnabled } from './runtimeConfig';
 
 describe('runtimeConfig', () => {
   afterEach(() => {
@@ -112,23 +112,56 @@ describe('runtimeConfig', () => {
   });
 
   describe('warehouse feature flag', () => {
-    it('is off unless VITE_WAREHOUSE_ENABLED is set', () => {
-      expect(isWarehouseEnabled({})).toBe(false);
-      expect(isWarehouseEnabled({ VITE_WAREHOUSE_ENABLED: '' })).toBe(false);
-      expect(isWarehouseEnabled({ VITE_WAREHOUSE_ENABLED: 'false' })).toBe(false);
-      expect(isWarehouseEnabled({ VITE_WAREHOUSE_ENABLED: 'yes' })).toBe(false);
+    it('is on unless a build sets VITE_WAREHOUSE_ENABLED=false', () => {
+      expect(isWarehouseEnabled({})).toBe(true);
+      expect(isWarehouseEnabled({ VITE_WAREHOUSE_ENABLED: '' })).toBe(true);
+      expect(isWarehouseEnabled({ VITE_WAREHOUSE_ENABLED: 'true' })).toBe(true);
     });
 
-    it('accepts true in any case and with surrounding whitespace', () => {
-      expect(isWarehouseEnabled({ VITE_WAREHOUSE_ENABLED: 'true' })).toBe(true);
-      expect(isWarehouseEnabled({ VITE_WAREHOUSE_ENABLED: '  TRUE  ' })).toBe(true);
+    it('accepts false in any case and with surrounding whitespace', () => {
+      expect(isWarehouseEnabled({ VITE_WAREHOUSE_ENABLED: 'false' })).toBe(false);
+      expect(isWarehouseEnabled({ VITE_WAREHOUSE_ENABLED: '  FALSE  ' })).toBe(false);
     });
 
     it('reads the Vite environment by default', () => {
-      expect(isWarehouseEnabled()).toBe(false);
-      vi.stubEnv('VITE_WAREHOUSE_ENABLED', 'true');
-
       expect(isWarehouseEnabled()).toBe(true);
+      vi.stubEnv('VITE_WAREHOUSE_ENABLED', 'false');
+
+      expect(isWarehouseEnabled()).toBe(false);
+    });
+  });
+
+  describe('warehouse API base URL', () => {
+    const production = { origin: 'https://awesome.byst.re' } as Location;
+
+    it('prefers VITE_WAREHOUSE_API_BASE_URL, trimmed and without trailing slashes', () => {
+      expect(
+        getWarehouseApiBaseUrl(
+          { VITE_API_BASE_URL: 'https://api.example.com', VITE_WAREHOUSE_API_BASE_URL: '  http://localhost:4003//  ' },
+          production,
+        ),
+      ).toBe('http://localhost:4003');
+    });
+
+    it('reads VITE_WAREHOUSE_API_BASE_URL from the Vite environment by default', () => {
+      vi.stubEnv('VITE_WAREHOUSE_API_BASE_URL', 'https://warehouse.example.com/');
+
+      expect(getWarehouseApiBaseUrl()).toBe('https://warehouse.example.com');
+    });
+
+    it('falls back to the configured API base URL', () => {
+      expect(getWarehouseApiBaseUrl({ VITE_API_BASE_URL: 'https://api.example.com/' }, production)).toBe('https://api.example.com');
+    });
+
+    it('treats a blank warehouse URL as unset', () => {
+      expect(
+        getWarehouseApiBaseUrl({ VITE_API_BASE_URL: 'https://api.example.com', VITE_WAREHOUSE_API_BASE_URL: '   ' }, production),
+      ).toBe('https://api.example.com');
+    });
+
+    it('follows the backend during local vite development and same-origin builds', () => {
+      expect(getWarehouseApiBaseUrl({ DEV: true }, production)).toBe('http://localhost:4001');
+      expect(getWarehouseApiBaseUrl({ DEV: false }, production)).toBe('https://awesome.byst.re');
     });
   });
 

@@ -9,6 +9,7 @@ This frontend expects the Spring backend from `/Users/admin/IdeaProjects/test-se
 | Frontend (Vite) | `vite-react-frontend` | `npm install && npm run dev -- --host 0.0.0.0 --port 8081` | Includes hot reload and Tailwind JIT. |
 | Spring backend | `test-secure-backend` | `./mvnw spring-boot:run -Dspring-boot.run.profiles=local` | Listens on `http://localhost:4001`. The local profile already points at the mock Ollama service. |
 | Ollama mock | `ollama-mock` | `./mvnw spring-boot:run` | Streams deterministic responses on `http://localhost:11434`. |
+| Warehouse service (optional) | `warehouse-service` | See its README | Listens on `http://localhost:4003`. Needed for shipments, tracking, returns and purchasing; start the dev server with `VITE_WAREHOUSE_API_BASE_URL=http://localhost:4003`. |
 
 The `docker-compose.yml` in this repo is the Playwright/CI stack. It builds this frontend into its production nginx image, starts backend, Keycloak, and the Ollama mock, then exposes the app and backend API through an nginx gateway at `http://localhost:8081`.
 

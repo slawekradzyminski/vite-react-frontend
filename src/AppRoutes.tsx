@@ -239,7 +239,7 @@ export function AppRoutes() {
       <Route path="/wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
       <Route path="/admin/coupons" element={<ProtectedRoute requiredRole="ADMIN"><AdminCouponsPage /></ProtectedRoute>} />
       <Route path="/admin/reviews" element={<ProtectedRoute requiredRole="ADMIN"><AdminReviewsPage /></ProtectedRoute>} />
-      {/* Served by warehouse-service; hidden until the deployment enables it. */}
+      {/* Served by warehouse-service; hidden when a build sets VITE_WAREHOUSE_ENABLED=false. */}
       {isWarehouseEnabled() && (
         <>
           <Route path="/returns" element={<ProtectedRoute><MyReturnsPage /></ProtectedRoute>} />

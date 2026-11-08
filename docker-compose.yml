@@ -1,6 +1,6 @@
 services:
   backend:
-    image: ${BACKEND_IMAGE:-slawekradzyminski/backend:3.10.0@sha256:6c1eea68cbfdea3894cee414d9fbdbc425468e1f41c8cff9c764b6d18e3458ba}
+    image: ${BACKEND_IMAGE:-slawekradzyminski/backend:3.11.0@sha256:a6d0a499fd54071c46eb1930b72fd75cde8ed71ee5cfa745f00c8013130d736d}
     expose:
       - "4001"
     hostname: backend
@@ -24,6 +24,9 @@ services:
     image: ${FRONTEND_IMAGE:-vite-react-frontend:local}
     build:
       context: .
+      args:
+        # This CI stack has no warehouse-service, so the warehouse screens stay off here.
+        VITE_WAREHOUSE_ENABLED: "false"
     expose:
       - "80"
     hostname: frontend

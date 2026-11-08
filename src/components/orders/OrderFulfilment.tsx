@@ -25,10 +25,14 @@ const STEPS = ['AWAITING_PICK', 'PICKED', 'PACKED', 'SHIPPED', 'DELIVERED'] as c
 /** Shipment tracking and the return request form for one order. */
 export function OrderFulfilment({ order }: { order: Order }) {
   const queryClient = useQueryClient();
+  // Backends that know the fulfilment state say when no shipment exists yet; older ones
+  // leave the field out, and the tracking endpoint answers 404 instead.
+  const knownUnreleased = order.fulfilmentState === 'NONE';
   const shipment = useQuery({
     queryKey: ['order-shipment', order.id],
     queryFn: () => warehouse.trackOrder(order.id),
     retry: false,
+    enabled: !knownUnreleased,
   });
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<ReturnReason>('DAMAGED');
@@ -55,7 +59,7 @@ export function OrderFulfilment({ order }: { order: Order }) {
   });
 
   const tracked = shipment.data?.data;
-  const notReleased = responseStatus(shipment.error) === 404;
+  const notReleased = knownUnreleased || responseStatus(shipment.error) === 404;
   const selectedUnits = Object.values(quantities).reduce((sum, value) => sum + (Number(value) || 0), 0);
   const stepIndex = tracked?.status ? STEPS.indexOf(tracked.status as (typeof STEPS)[number]) : -1;
 

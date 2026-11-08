@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { describeDrift, serializeSpec } from './api-contract.mjs';
+import {
+  DEFAULT_API_DOCS_URL,
+  DEFAULT_WAREHOUSE_API_DOCS_URL,
+  describeDrift,
+  resolveTarget,
+  serializeSpec,
+} from './api-contract.mjs';
 
 const spec = (overrides: Record<string, unknown> = {}) => ({
   openapi: '3.1.0',
@@ -55,5 +61,40 @@ describe('api-contract', () => {
 
   it('reports changes outside paths and schemas', () => {
     expect(describeDrift(spec(), spec({ openapi: '3.0.1' }))).toEqual(['~ document changed outside paths and schemas']);
+  });
+
+  describe('resolveTarget', () => {
+    it('defaults to the backend snapshot and gateway URL', () => {
+      expect(resolveTarget(['check'])).toMatchObject({
+        command: 'check',
+        serviceName: 'backend',
+        service: { snapshot: 'openapi/backend-api-docs.json' },
+        url: DEFAULT_API_DOCS_URL,
+      });
+    });
+
+    it('keeps accepting a bare URL for the backend', () => {
+      expect(resolveTarget(['check', 'http://localhost:4001/v3/api-docs'])).toMatchObject({
+        serviceName: 'backend',
+        url: 'http://localhost:4001/v3/api-docs',
+      });
+    });
+
+    it('targets the warehouse snapshot and its gateway URL', () => {
+      expect(resolveTarget(['snapshot', 'warehouse'])).toMatchObject({
+        serviceName: 'warehouse',
+        service: { snapshot: 'openapi/warehouse-api-docs.json' },
+        url: DEFAULT_WAREHOUSE_API_DOCS_URL,
+      });
+      expect(DEFAULT_WAREHOUSE_API_DOCS_URL).toBe('http://localhost:8081/warehouse/v3/api-docs');
+    });
+
+    it('prefers an explicit URL over the service environment variable', () => {
+      const env = { WAREHOUSE_API_DOCS_URL: 'http://warehouse:4003/v3/api-docs', BACKEND_API_DOCS_URL: 'http://backend:4001/v3/api-docs' };
+
+      expect(resolveTarget(['check', 'warehouse'], env).url).toBe('http://warehouse:4003/v3/api-docs');
+      expect(resolveTarget(['check'], env).url).toBe('http://backend:4001/v3/api-docs');
+      expect(resolveTarget(['check', 'warehouse', 'http://localhost:4003/v3/api-docs'], env).url).toBe('http://localhost:4003/v3/api-docs');
+    });
   });
 });

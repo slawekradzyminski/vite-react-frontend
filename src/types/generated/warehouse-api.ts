@@ -35,13 +35,13 @@ export interface paths {
          * List purchase orders
          * @description Lists purchase orders newest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1-100.
          */
-        get: operations["list_2"];
+        get: operations["list_1"];
         put?: never;
         /**
          * Create purchase order
          * @description Creates a DRAFT purchase order. Lines may be empty until submission; each product may appear once.
          */
-        post: operations["create_3"];
+        post: operations["create_2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -64,7 +64,7 @@ export interface paths {
          * Update draft purchase order
          * @description Replaces the supplier, note and lines of a DRAFT purchase order.
          */
-        put: operations["update_1"];
+        put: operations["update"];
         post?: never;
         delete?: never;
         options?: never;
@@ -143,7 +143,7 @@ export interface paths {
          * List returns
          * @description Lists returns oldest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1-100.
          */
-        get: operations["list_6"];
+        get: operations["list_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -163,7 +163,7 @@ export interface paths {
          * Get return
          * @description Returns any customer's return.
          */
-        get: operations["get_4"];
+        get: operations["get_3"];
         put?: never;
         post?: never;
         delete?: never;
@@ -309,7 +309,7 @@ export interface paths {
          * Request a return
          * @description Opens a return for the caller's DELIVERED order within 30 days of delivery. Each product may appear once, and quantities cannot exceed what was bought minus units in other non-rejected returns.
          */
-        post: operations["create_2"];
+        post: operations["create_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -327,7 +327,7 @@ export interface paths {
          * List my returns
          * @description Lists the caller's returns newest first. Negative page is clamped to zero; size is clamped to 1-100.
          */
-        get: operations["mine_1"];
+        get: operations["mine"];
         put?: never;
         post?: never;
         delete?: never;
@@ -347,7 +347,7 @@ export interface paths {
          * Get my return
          * @description Returns one of the caller's returns with its estimated or paid refund.
          */
-        get: operations["get_3"];
+        get: operations["get_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -411,7 +411,7 @@ export interface paths {
          * Get shipment
          * @description Returns one shipment with its timestamps.
          */
-        get: operations["get_2"];
+        get: operations["get_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1390,9 +1390,18 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
-    list_2: {
+    list_1: {
         parameters: {
             query?: {
                 status?: "DRAFT" | "SUBMITTED" | "PARTIALLY_RECEIVED" | "RECEIVED" | "CANCELLED";
@@ -1434,9 +1443,18 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
-    create_3: {
+    create_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -1494,6 +1512,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
     get: {
@@ -1543,9 +1570,18 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
-    update_1: {
+    update: {
         parameters: {
             query?: never;
             header?: never;
@@ -1614,6 +1650,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
     cancel_1: {
@@ -1665,6 +1710,15 @@ export interface operations {
             };
             /** @description Purchase order cannot be cancelled in its status */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Backend unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1743,6 +1797,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
     submit: {
@@ -1810,9 +1873,18 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
-    list_6: {
+    list_2: {
         parameters: {
             query?: {
                 status?: "REQUESTED" | "APPROVED" | "REJECTED" | "RECEIVED" | "REFUNDED";
@@ -1854,9 +1926,18 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
-    get_4: {
+    get_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -1896,6 +1977,15 @@ export interface operations {
             };
             /** @description Return not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Backend unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1954,6 +2044,15 @@ export interface operations {
             };
             /** @description Transition not allowed from the current return status */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Backend unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2032,6 +2131,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
     refund: {
@@ -2083,6 +2191,15 @@ export interface operations {
             };
             /** @description Transition not allowed from the current return status */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Backend unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2161,6 +2278,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
     suppliers: {
@@ -2192,6 +2318,15 @@ export interface operations {
             };
             /** @description Forbidden */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Backend unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2259,6 +2394,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
     track: {
@@ -2299,9 +2443,18 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
-    create_2: {
+    create_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -2361,9 +2514,18 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
-    mine_1: {
+    mine: {
         parameters: {
             query?: {
                 /** @description Zero-based page index */
@@ -2395,9 +2557,18 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
-    get_3: {
+    get_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -2428,6 +2599,15 @@ export interface operations {
             };
             /** @description Return not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Backend unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2478,6 +2658,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
     list: {
@@ -2515,6 +2704,15 @@ export interface operations {
             };
             /** @description Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Backend unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2591,9 +2789,18 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
-    get_2: {
+    get_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -2633,6 +2840,15 @@ export interface operations {
             };
             /** @description Shipment not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Backend unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2698,6 +2914,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
     deliver: {
@@ -2749,6 +2974,15 @@ export interface operations {
             };
             /** @description Transition not allowed from the current shipment status */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Backend unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2827,6 +3061,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
     pick: {
@@ -2885,6 +3128,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
     pickList: {
@@ -2927,6 +3179,15 @@ export interface operations {
             };
             /** @description Shipment not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Backend unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2998,6 +3259,15 @@ export interface operations {
             };
             /** @description Transition not allowed from the current shipment status */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Backend unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

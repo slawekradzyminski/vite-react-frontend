@@ -3,6 +3,7 @@ const trimTrailingSlash = (value: string) => value.replace(/\/+$/, '');
 type RuntimeEnv = {
   DEV?: boolean;
   VITE_API_BASE_URL?: string;
+  VITE_WAREHOUSE_API_BASE_URL?: string;
   VITE_DOCKER?: string;
   VITE_WAREHOUSE_ENABLED?: string;
   VITE_SSO_ENABLED?: string;
@@ -46,10 +47,25 @@ export const getApiBaseUrl = (
   return getRuntimeOrigin(location);
 };
 
-// Warehouse, returns and purchasing screens need warehouse-service. They stay hidden, and send
-// no requests, until a deployment that runs it sets VITE_WAREHOUSE_ENABLED=true.
+// Warehouse, returns and purchasing screens need warehouse-service, which every profile runs.
+// A build without it sets VITE_WAREHOUSE_ENABLED=false to hide them and send no requests.
 export const isWarehouseEnabled = (env: RuntimeEnv = import.meta.env) =>
-  env.VITE_WAREHOUSE_ENABLED?.trim().toLowerCase() === 'true';
+  env.VITE_WAREHOUSE_ENABLED?.trim().toLowerCase() !== 'false';
+
+// Shipments, returns, suppliers, purchase orders and reorder suggestions are served by
+// warehouse-service. Behind the gateway it shares the backend origin, so only direct-to-service
+// development needs a separate origin.
+export const getWarehouseApiBaseUrl = (
+  env: RuntimeEnv = import.meta.env,
+  location: RuntimeLocation = window.location,
+) => {
+  const configuredBaseUrl = env.VITE_WAREHOUSE_API_BASE_URL?.trim();
+  if (configuredBaseUrl) {
+    return trimTrailingSlash(configuredBaseUrl);
+  }
+
+  return getApiBaseUrl(env, location);
+};
 
 export const getSsoConfig = (
   env: RuntimeEnv = import.meta.env,

@@ -180,7 +180,8 @@ describe('warehouse-service routes', () => {
     vi.unstubAllEnvs();
   });
 
-  it.each(warehouseRoutes)('does not render %s while warehouse-service is disabled', async (path, page, roles) => {
+  it.each(warehouseRoutes)('does not render %s when a build disables warehouse-service', async (path, page, roles) => {
+    vi.stubEnv('VITE_WAREHOUSE_ENABLED', 'false');
     signInWithRoles(roles);
 
     const { container } = renderAt(path);
@@ -190,8 +191,7 @@ describe('warehouse-service routes', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it.each(warehouseRoutes)('renders %s for %s when warehouse-service is enabled', async (path, page, roles) => {
-    vi.stubEnv('VITE_WAREHOUSE_ENABLED', 'true');
+  it.each(warehouseRoutes)('renders %s for %s by default', async (path, page, roles) => {
     signInWithRoles(roles);
 
     renderAt(path);
@@ -199,8 +199,7 @@ describe('warehouse-service routes', () => {
     expect(await screen.findByText(page)).toBeInTheDocument();
   });
 
-  it('keeps clients off the warehouse board when enabled', async () => {
-    vi.stubEnv('VITE_WAREHOUSE_ENABLED', 'true');
+  it('keeps clients off the warehouse board', async () => {
     signInWithRoles(['ROLE_CLIENT']);
 
     renderAt('/warehouse');

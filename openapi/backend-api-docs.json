@@ -1360,6 +1360,24 @@
             "example": 222.22,
             "type": "number"
           },
+          "fulfilmentState": {
+            "description": "Warehouse progress mirrored from warehouse-service; omitted until the order is released to the warehouse",
+            "enum": [
+              "NONE",
+              "AWAITING_PICK",
+              "PICKED",
+              "PACKED",
+              "SHIPPED",
+              "DELIVERED",
+              "CANCELLED",
+              null
+            ],
+            "example": "AWAITING_PICK",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "id": {
             "description": "Order ID",
             "example": 1,
