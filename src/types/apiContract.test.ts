@@ -1,7 +1,9 @@
-// Compile-time contract between the hand-written API types and the backend OpenAPI snapshot.
+// Compile-time contract between the hand-written API types and the backend and warehouse-service
+// OpenAPI snapshots.
 // `npm run typecheck` fails here when a backend change renames, removes, or retypes a field
 // the frontend relies on; the runtime test only keeps Vitest from reporting an empty file.
 import type { components } from './generated/backend-api';
+import type { components as warehouseComponents } from './generated/warehouse-api';
 import type { RawCartResponse } from '../hooks/useEnrichedCart';
 import type {
   ForgotPasswordRequest,
@@ -34,6 +36,7 @@ import type { CreateQrDto } from './qr';
 import type { TrafficInfoDto } from './traffic';
 
 type Schemas = components['schemas'];
+type WarehouseSchemas = warehouseComponents['schemas'];
 
 // springdoc marks few response fields as required, so a response is compared as if the
 // backend always sends every field it declares; nulls are left to the frontend's own guards.
@@ -140,5 +143,10 @@ describe('backend API contract', () => {
     expectTypeOf<RequestViolations<CreateQrDto, Schemas['CreateQrDto']>>().toEqualTypeOf<never>();
     expectTypeOf<RequestViolations<ChatRequestDto, Schemas['ChatRequestDto']>>().toEqualTypeOf<never>();
     expectTypeOf<RequestViolations<GenerateRequestDto, Schemas['StreamedRequestDto']>>().toEqualTypeOf<never>();
+  });
+
+  it('reads only fields warehouse-service sends', () => {
+    // The warehouse queue returns orders in the same page shape as the backend.
+    expectTypeOf<ResponseViolations<PageDtoOrderDto, WarehouseSchemas['PageDtoOrderDto']>>().toEqualTypeOf<never>();
   });
 });

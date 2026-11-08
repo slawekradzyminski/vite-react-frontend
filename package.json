@@ -24,8 +24,10 @@
     "regression": "npm test && npm run build && npm run test:e2e:ai",
     "test:e2e:commerce": "playwright test --config=playwright.commerce.config.ts",
     "typecheck": "tsc -b",
-    "api:snapshot": "node scripts/api-contract.mjs snapshot && npm run api:generate",
-    "api:generate": "openapi-typescript openapi/backend-api-docs.json --output src/types/generated/backend-api.ts",
+    "api:snapshot": "node scripts/api-contract.mjs snapshot && npm run api:generate:backend",
+    "api:generate": "npm run api:generate:backend && npm run api:generate:warehouse",
+    "api:generate:backend": "openapi-typescript openapi/backend-api-docs.json --output src/types/generated/backend-api.ts",
+    "api:generate:warehouse": "openapi-typescript openapi/warehouse-api-docs.json --output src/types/generated/warehouse-api.ts",
     "api:check": "node scripts/api-contract.mjs check",
     "demo:webmcp": "vite --config vite.webmcp.config.ts",
     "test:e2e:webmcp": "playwright test --config playwright.webmcp.config.ts"

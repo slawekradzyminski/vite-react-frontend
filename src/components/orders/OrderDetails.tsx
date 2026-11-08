@@ -1,5 +1,6 @@
 import { useParams } from 'react-router';
 import { OrderFulfilment } from './OrderFulfilment';
+import { isWarehouseEnabled } from '../../lib/runtimeConfig';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orders, auth } from '../../lib/api';
 import type { OrderStatus } from '../../types/order';
@@ -181,7 +182,7 @@ export const OrderDetails = () => {
         </div>
       </Surface>
 
-      <OrderFulfilment order={order} />
+      {isWarehouseEnabled() && <OrderFulfilment order={order} />}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" data-testid="order-details-actions">
         {order.status === 'PENDING' && (

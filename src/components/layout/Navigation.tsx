@@ -6,6 +6,7 @@ import { auth, cart } from '../../lib/api';
 import { Button } from '../ui/button';
 import { authStorage } from '../../lib/authStorage';
 import { hasRole } from '../../lib/roles';
+import { isWarehouseEnabled } from '../../lib/runtimeConfig';
 import { brandMarkSrc } from '../../lib/brandingAssets';
 import { CommerceTransportSelector } from './CommerceTransportSelector';
 
@@ -97,7 +98,7 @@ export function Navigation() {
 
   const isWarehouse = hasRole(user?.data?.roles, 'WAREHOUSE');
   const staffMenuItems = [
-    ...(isAdmin || isWarehouse ? [{ label: 'Warehouse', path: '/warehouse' }] : []),
+    ...(isWarehouseEnabled() && (isAdmin || isWarehouse) ? [{ label: 'Warehouse', path: '/warehouse' }] : []),
     ...(isAdmin ? [{ label: 'Admin', path: '/admin' }] : []),
   ];
 

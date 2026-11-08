@@ -90,10 +90,12 @@ The frontend expects the backend business API only under `/api/v1/...`. There is
 
 ## Environment Contract
 
-The frontend runtime behavior is controlled by two environment variables:
+The frontend runtime behavior is controlled by these environment variables. Vite reads them at build or dev-server time (`import.meta.env`); the nginx image does not read them at container start:
 
 - `VITE_API_BASE_URL`
   Optional. Overrides the resolved API origin completely. Use this only when the frontend must call a non-default backend origin.
+- `VITE_WAREHOUSE_ENABLED`
+  Optional, default `false`. Set to `true` to show the warehouse board, My returns, admin returns and purchasing screens and order shipment tracking. They need warehouse-service; while the flag is off the frontend sends no requests to those endpoints. The Dockerfile accepts it as a build argument.
 - `VITE_DOCKER`
   Dev-only flag. When `true`, Vite development mode targets `http://host.docker.internal:4001` instead of `http://localhost:4001`.
 

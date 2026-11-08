@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -39,6 +39,10 @@ vi.mock('./pages/admin/ordersPage', () => ({ AdminOrdersPage: () => 'page:AdminO
 vi.mock('./pages/admin/inventoryPage', () => ({ AdminInventoryPage: () => 'page:AdminInventory' }));
 vi.mock('./pages/traffic/trafficPage', () => ({ TrafficMonitorPage: () => 'page:TrafficMonitor' }));
 vi.mock('./features/webmcp/WebMcpPage', () => ({ WebMcpPage: () => 'page:WebMcp' }));
+vi.mock('./pages/returns/myReturnsPage', () => ({ MyReturnsPage: () => 'page:MyReturns' }));
+vi.mock('./pages/warehouse/warehousePage', () => ({ WarehousePage: () => 'page:Warehouse' }));
+vi.mock('./pages/admin/returnsPage', () => ({ AdminReturnsPage: () => 'page:AdminReturns' }));
+vi.mock('./pages/admin/purchasingPage', () => ({ AdminPurchasingPage: () => 'page:AdminPurchasing' }));
 
 const publicRoutes: Array<[string, string]> = [
   ['/login', 'page:Login'],
@@ -155,5 +159,52 @@ describe('AppRoutes access contract', () => {
     renderAt('/admin');
 
     expect(await screen.findByText('page:Login')).toBeInTheDocument();
+  });
+
+});
+
+describe('warehouse-service routes', () => {
+  const warehouseRoutes: Array<[string, string, string[]]> = [
+    ['/returns', 'page:MyReturns', ['ROLE_CLIENT']],
+    ['/warehouse', 'page:Warehouse', ['ROLE_WAREHOUSE']],
+    ['/warehouse', 'page:Warehouse', ['ROLE_ADMIN']],
+    ['/admin/returns', 'page:AdminReturns', ['ROLE_ADMIN']],
+    ['/admin/purchasing', 'page:AdminPurchasing', ['ROLE_ADMIN']],
+  ];
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it.each(warehouseRoutes)('does not render %s while warehouse-service is disabled', async (path, page, roles) => {
+    signInWithRoles(roles);
+
+    const { container } = renderAt(path);
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(screen.queryByText(page)).not.toBeInTheDocument();
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it.each(warehouseRoutes)('renders %s for %s when warehouse-service is enabled', async (path, page, roles) => {
+    vi.stubEnv('VITE_WAREHOUSE_ENABLED', 'true');
+    signInWithRoles(roles);
+
+    renderAt(path);
+
+    expect(await screen.findByText(page)).toBeInTheDocument();
+  });
+
+  it('keeps clients off the warehouse board when enabled', async () => {
+    vi.stubEnv('VITE_WAREHOUSE_ENABLED', 'true');
+    signInWithRoles(['ROLE_CLIENT']);
+
+    renderAt('/warehouse');
+
+    expect(await screen.findByText('page:Home')).toBeInTheDocument();
   });
 });

@@ -1,9 +1,36 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AdminSectionNav } from './AdminSectionNav';
 
 describe('AdminSectionNav', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  const renderAt = (path: string) => render(
+    <MemoryRouter initialEntries={[path]}>
+      <AdminSectionNav />
+    </MemoryRouter>
+  );
+
+  it('hides the returns and purchasing tabs until warehouse-service is enabled', () => {
+    renderAt('/admin');
+
+    expect(screen.getByTestId('admin-section-coupons')).toHaveAttribute('href', '/admin/coupons');
+    expect(screen.getByTestId('admin-section-reviews')).toHaveAttribute('href', '/admin/reviews');
+    expect(screen.queryByTestId('admin-section-returns')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('admin-section-purchasing')).not.toBeInTheDocument();
+  });
+
+  it('shows the returns and purchasing tabs when warehouse-service is enabled', () => {
+    vi.stubEnv('VITE_WAREHOUSE_ENABLED', 'true');
+    renderAt('/admin');
+
+    expect(screen.getByTestId('admin-section-returns')).toHaveAttribute('href', '/admin/returns');
+    expect(screen.getByTestId('admin-section-purchasing')).toHaveAttribute('href', '/admin/purchasing');
+  });
+
   it('exposes inventory only inside the admin section and marks the active route', () => {
     render(
       <MemoryRouter initialEntries={['/admin/inventory/42']}>

@@ -26,9 +26,12 @@ This section points other automation or human teammates to the right document fo
 
 ## Backend API contract
 
-- [`openapi/backend-api-docs.json`](./openapi/backend-api-docs.json) is the OpenAPI document of the backend image pinned in `docker-compose.yml`. `src/types/generated/backend-api.ts` is generated from it; never edit either by hand.
-- When you bump the backend pin, start the stack and run `npm run api:snapshot`, then fix every error `npm run typecheck` reports. CI fails the E2E job when the pinned backend no longer matches the snapshot (`npm run api:check`) and the unit job when the generated types are stale.
-- [`src/types/apiContract.test.ts`](./src/types/apiContract.test.ts) checks the hand-written types in `src/types` against the snapshot at compile time. Add a mapping there when you add an API type.
+- There are two OpenAPI snapshots. Never edit a snapshot or its generated types by hand.
+  - [`openapi/backend-api-docs.json`](./openapi/backend-api-docs.json) is the document of the backend image pinned in `docker-compose.yml`; `src/types/generated/backend-api.ts` is generated from it.
+  - [`openapi/warehouse-api-docs.json`](./openapi/warehouse-api-docs.json) is the document of warehouse-service (shipments, tracking, returns, suppliers, purchase orders, reorder suggestions); `src/types/generated/warehouse-api.ts` is generated from it. Its screens stay hidden unless the build sets `VITE_WAREHOUSE_ENABLED=true`.
+- When you bump the backend pin, start the stack and run `npm run api:snapshot`, then fix every error `npm run typecheck` reports. `npm run api:generate` regenerates both type files. CI fails the E2E job when the pinned backend no longer matches the snapshot (`npm run api:check`) and the unit job when either generated type file is stale.
+- Take warehouse aliases in [`src/types/commerce.ts`](./src/types/commerce.ts) from `generated/warehouse-api`, everything else from `generated/backend-api`.
+- [`src/types/apiContract.test.ts`](./src/types/apiContract.test.ts) checks the hand-written types in `src/types` against both snapshots at compile time. Add a mapping there when you add an API type.
 - Playwright mocks serve bodies through [`e2e/mocks/backendContract.ts`](./e2e/mocks/backendContract.ts), so a mock cannot invent fields the backend does not send. Type new mocks the same way.
 
 ## LLM implementation notes

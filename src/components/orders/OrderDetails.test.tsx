@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { OrderDetails } from './OrderDetails';
-import { orders, auth } from '../../lib/api';
+import { orders, auth, warehouse } from '../../lib/api';
 import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { OrderStatus } from '../../types/order';
@@ -121,6 +121,30 @@ describe('OrderDetails', () => {
       </QueryClientProvider>
     );
   };
+
+  describe('delivery section', () => {
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    it('neither shows nor requests shipment tracking while warehouse-service is disabled', async () => {
+      vi.mocked(orders.getOrderById).mockResolvedValueOnce(createOrderResponse({ status: 'DELIVERED' }));
+      renderWithProviders();
+
+      expect(await screen.findByText('Order #1')).toBeInTheDocument();
+      expect(screen.queryByTestId('order-fulfilment')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('order-return-open')).not.toBeInTheDocument();
+      expect(warehouse.trackOrder).not.toHaveBeenCalled();
+    });
+
+    it('shows shipment tracking when warehouse-service is enabled', async () => {
+      vi.stubEnv('VITE_WAREHOUSE_ENABLED', 'true');
+      renderWithProviders();
+
+      expect(await screen.findByTestId('order-fulfilment')).toBeInTheDocument();
+      await waitFor(() => expect(warehouse.trackOrder).toHaveBeenCalledWith(1));
+    });
+  });
 
   it('renders order details correctly', async () => {
     // given

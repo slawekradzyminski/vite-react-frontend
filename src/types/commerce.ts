@@ -1,8 +1,12 @@
 // Types for the coupon, review, wishlist, fulfilment, returns and purchasing APIs.
-// They alias the generated OpenAPI schemas directly, so they cannot drift from the backend.
+// They alias the generated OpenAPI schemas directly, so they cannot drift from the service
+// that owns them: coupons, reviews, wishlist and CSV import come from the backend; shipments,
+// returns, suppliers, purchase orders and reorder suggestions come from warehouse-service.
 import type { components } from './generated/backend-api';
+import type { components as warehouseComponents } from './generated/warehouse-api';
 
 type Schemas = components['schemas'];
+type WarehouseSchemas = warehouseComponents['schemas'];
 
 export type Coupon = Schemas['CouponDto'];
 export type CouponRequest = Schemas['CouponRequestDto'];
@@ -22,24 +26,24 @@ export type WishlistItem = Schemas['WishlistItemDto'];
 export type ImportReport = Schemas['ImportReportDto'];
 export type ImportRowError = Schemas['ImportRowErrorDto'];
 
-export type Shipment = Schemas['ShipmentDto'];
+export type Shipment = WarehouseSchemas['ShipmentDto'];
 export type ShipmentStatus = NonNullable<Shipment['status']>;
-export type Carrier = NonNullable<Schemas['ShipShipmentDto']['carrier']>;
-export type PickList = Schemas['PickListDto'];
+export type Carrier = NonNullable<WarehouseSchemas['ShipShipmentDto']['carrier']>;
+export type PickList = WarehouseSchemas['PickListDto'];
 
-export type ReturnRequest = Schemas['ReturnDto'];
+export type ReturnRequest = WarehouseSchemas['ReturnDto'];
 export type ReturnStatus = NonNullable<ReturnRequest['status']>;
-export type ReturnReason = NonNullable<Schemas['CreateReturnDto']['reason']>;
-export type CreateReturnRequest = Schemas['CreateReturnDto'];
-export type ItemCondition = NonNullable<Schemas['ReceiveItemDto']['condition']>;
+export type ReturnReason = NonNullable<WarehouseSchemas['CreateReturnDto']['reason']>;
+export type CreateReturnRequest = WarehouseSchemas['CreateReturnDto'];
+export type ItemCondition = NonNullable<WarehouseSchemas['ReceiveItemDto']['condition']>;
 
-export type Supplier = Schemas['SupplierDto'];
-export type SupplierRequest = Schemas['SupplierRequestDto'];
-export type PurchaseOrder = Schemas['PurchaseOrderDto'];
+export type Supplier = WarehouseSchemas['SupplierDto'];
+export type SupplierRequest = WarehouseSchemas['SupplierRequestDto'];
+export type PurchaseOrder = WarehouseSchemas['PurchaseOrderDto'];
 export type PurchaseOrderStatus = NonNullable<PurchaseOrder['status']>;
-export type PurchaseOrderRequest = Schemas['PurchaseOrderRequestDto'];
-export type ReceiptRequest = Schemas['ReceiptRequestDto'];
-export type ReorderSuggestion = Schemas['ReorderSuggestionDto'];
+export type PurchaseOrderRequest = WarehouseSchemas['PurchaseOrderRequestDto'];
+export type ReceiptRequest = WarehouseSchemas['ReceiptRequestDto'];
+export type ReorderSuggestion = WarehouseSchemas['ReorderSuggestionDto'];
 
 export interface Page<T> {
   content?: T[];

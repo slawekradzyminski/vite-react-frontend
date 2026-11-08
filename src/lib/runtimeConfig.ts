@@ -4,6 +4,7 @@ type RuntimeEnv = {
   DEV?: boolean;
   VITE_API_BASE_URL?: string;
   VITE_DOCKER?: string;
+  VITE_WAREHOUSE_ENABLED?: string;
   VITE_SSO_ENABLED?: string;
   VITE_SSO_AUTHORITY?: string;
   VITE_SSO_CLIENT_ID?: string;
@@ -44,6 +45,11 @@ export const getApiBaseUrl = (
 
   return getRuntimeOrigin(location);
 };
+
+// Warehouse, returns and purchasing screens need warehouse-service. They stay hidden, and send
+// no requests, until a deployment that runs it sets VITE_WAREHOUSE_ENABLED=true.
+export const isWarehouseEnabled = (env: RuntimeEnv = import.meta.env) =>
+  env.VITE_WAREHOUSE_ENABLED?.trim().toLowerCase() === 'true';
 
 export const getSsoConfig = (
   env: RuntimeEnv = import.meta.env,
