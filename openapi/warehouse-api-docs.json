@@ -746,7 +746,7 @@
             "description": "Reason",
             "example": "Item shows signs of use",
             "maxLength": 500,
-            "minLength": 1,
+            "minLength": 0,
             "pattern": "\\S",
             "type": "string"
           }
@@ -925,8 +925,7 @@
             "description": "Condition recorded on receipt",
             "enum": [
               "RESELLABLE",
-              "DAMAGED",
-              null
+              "DAMAGED"
             ],
             "example": "RESELLABLE",
             "type": [
@@ -1027,8 +1026,7 @@
               "INPOST",
               "DPD",
               "DHL",
-              "UPS",
-              null
+              "UPS"
             ],
             "example": "DHL",
             "type": [
@@ -1241,7 +1239,11 @@
     }
   },
   "info": {
-    "description": "Shipments, returns, suppliers, purchase orders and reorder suggestions.",
+    "description": "Shipments, returns (RMA), suppliers and purchase orders. Uses the access tokens issued by the backend.",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://springdoc.org"
+    },
     "title": "Warehouse Service API",
     "version": "1.0"
   },
@@ -1306,6 +1308,16 @@
               }
             },
             "description": "Forbidden"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -1322,7 +1334,7 @@
     "/api/v1/admin/purchase-orders": {
       "get": {
         "description": "Lists purchase orders newest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1-100.",
-        "operationId": "list_2",
+        "operationId": "list_1",
         "parameters": [
           {
             "in": "query",
@@ -1392,6 +1404,16 @@
               }
             },
             "description": "Forbidden"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -1406,7 +1428,7 @@
       },
       "post": {
         "description": "Creates a DRAFT purchase order. Lines may be empty until submission; each product may appear once.",
-        "operationId": "create_3",
+        "operationId": "create_2",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1474,6 +1496,16 @@
               }
             },
             "description": "Supplier or product not found"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -1542,6 +1574,16 @@
               }
             },
             "description": "Purchase order not found"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -1556,7 +1598,7 @@
       },
       "put": {
         "description": "Replaces the supplier, note and lines of a DRAFT purchase order.",
-        "operationId": "update_1",
+        "operationId": "update",
         "parameters": [
           {
             "in": "path",
@@ -1645,6 +1687,16 @@
               }
             },
             "description": "Purchase order is no longer a draft"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -1723,6 +1775,16 @@
               }
             },
             "description": "Purchase order cannot be cancelled in its status"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -1828,6 +1890,16 @@
               }
             },
             "description": "Not open for receipt, over-receipt, or requestId reused with different lines"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -1916,6 +1988,16 @@
               }
             },
             "description": "Purchase order is not a draft"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -1932,7 +2014,7 @@
     "/api/v1/admin/returns": {
       "get": {
         "description": "Lists returns oldest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1-100.",
-        "operationId": "list_6",
+        "operationId": "list_2",
         "parameters": [
           {
             "in": "query",
@@ -2002,6 +2084,16 @@
               }
             },
             "description": "Forbidden"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -2018,7 +2110,7 @@
     "/api/v1/admin/returns/{id}": {
       "get": {
         "description": "Returns any customer's return.",
-        "operationId": "get_4",
+        "operationId": "get_3",
         "parameters": [
           {
             "in": "path",
@@ -2070,6 +2162,16 @@
               }
             },
             "description": "Return not found"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -2148,6 +2250,16 @@
               }
             },
             "description": "Transition not allowed from the current return status"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -2253,6 +2365,16 @@
               }
             },
             "description": "Transition not allowed from the current return status"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -2331,6 +2453,16 @@
               }
             },
             "description": "Transition not allowed from the current return status"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -2429,6 +2561,16 @@
               }
             },
             "description": "Transition not allowed from the current return status"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -2479,6 +2621,16 @@
               }
             },
             "description": "Forbidden"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -2554,6 +2706,16 @@
               }
             },
             "description": "Supplier name already exists"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -2612,6 +2774,16 @@
               }
             },
             "description": "Order not found, or not released to the warehouse yet"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -2628,7 +2800,7 @@
     "/api/v1/orders/{orderId}/returns": {
       "post": {
         "description": "Opens a return for the caller's DELIVERED order within 30 days of delivery. Each product may appear once, and quantities cannot exceed what was bought minus units in other non-rejected returns.",
-        "operationId": "create_2",
+        "operationId": "create_1",
         "parameters": [
           {
             "in": "path",
@@ -2707,6 +2879,16 @@
               }
             },
             "description": "Order not delivered, return window passed, or quantity exceeds what can be returned"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -2723,7 +2905,7 @@
     "/api/v1/returns": {
       "get": {
         "description": "Lists the caller's returns newest first. Negative page is clamped to zero; size is clamped to 1-100.",
-        "operationId": "mine_1",
+        "operationId": "mine",
         "parameters": [
           {
             "description": "Zero-based page index",
@@ -2768,6 +2950,16 @@
               }
             },
             "description": "Unauthorized"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -2784,7 +2976,7 @@
     "/api/v1/returns/{id}": {
       "get": {
         "description": "Returns one of the caller's returns with its estimated or paid refund.",
-        "operationId": "get_3",
+        "operationId": "get_2",
         "parameters": [
           {
             "in": "path",
@@ -2826,6 +3018,16 @@
               }
             },
             "description": "Return not found"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -2897,6 +3099,16 @@
               }
             },
             "description": "Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -2984,6 +3196,16 @@
               }
             },
             "description": "Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -3069,6 +3291,16 @@
               }
             },
             "description": "Order is not PAID or already has a shipment"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -3085,7 +3317,7 @@
     "/api/v1/warehouse/shipments/{id}": {
       "get": {
         "description": "Returns one shipment with its timestamps.",
-        "operationId": "get_2",
+        "operationId": "get_1",
         "parameters": [
           {
             "in": "path",
@@ -3137,6 +3369,16 @@
               }
             },
             "description": "Shipment not found"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -3215,6 +3457,16 @@
               }
             },
             "description": "Transition not allowed from the current shipment status"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -3293,6 +3545,16 @@
               }
             },
             "description": "Transition not allowed from the current shipment status"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -3391,6 +3653,16 @@
               }
             },
             "description": "Transition not allowed from the current shipment status"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -3469,6 +3741,16 @@
               }
             },
             "description": "Transition not allowed from the current shipment status"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -3537,6 +3819,16 @@
               }
             },
             "description": "Shipment not found"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -3642,6 +3934,16 @@
               }
             },
             "description": "Transition not allowed from the current shipment status"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
           }
         },
         "security": [
@@ -3666,12 +3968,12 @@
       "name": "Warehouse"
     },
     {
-      "description": "Suppliers, purchase orders, goods receipts and reorder suggestions",
-      "name": "Purchasing"
-    },
-    {
       "description": "Order management endpoints",
       "name": "Orders"
+    },
+    {
+      "description": "Suppliers, purchase orders, goods receipts and reorder suggestions",
+      "name": "Purchasing"
     }
   ]
 }

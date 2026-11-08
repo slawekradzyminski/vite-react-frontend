@@ -1923,7 +1923,7 @@ export interface components {
              */
             discountAmount?: number;
             /**
-             * @description Warehouse fulfilment state of the order, maintained from warehouse-service events
+             * @description Warehouse progress mirrored from warehouse-service; NONE until the order is released to the warehouse
              * @example NONE
              * @enum {string}
              */

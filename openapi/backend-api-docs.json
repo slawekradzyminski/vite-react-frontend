@@ -1361,7 +1361,7 @@
             "type": "number"
           },
           "fulfilmentState": {
-            "description": "Warehouse fulfilment state of the order, maintained from warehouse-service events",
+            "description": "Warehouse progress mirrored from warehouse-service; NONE until the order is released to the warehouse",
             "enum": [
               "NONE",
               "AWAITING_PICK",
