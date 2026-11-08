@@ -24,6 +24,9 @@ services:
     image: ${FRONTEND_IMAGE:-vite-react-frontend:local}
     build:
       context: .
+      args:
+        # This CI stack has no warehouse-service, so the warehouse screens stay off here.
+        VITE_WAREHOUSE_ENABLED: "false"
     expose:
       - "80"
     hostname: frontend

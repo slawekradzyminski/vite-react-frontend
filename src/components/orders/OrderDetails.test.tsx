@@ -74,6 +74,14 @@ const createOrderResponse = vi.hoisted(() => {
   });
 });
 
+const transport = vi.hoisted(() => ({ value: 'rest' as 'rest' | 'graphql' }));
+vi.mock('../../lib/commerceTransport', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../lib/commerceTransport')>()),
+  get commerceTransport() {
+    return transport.value;
+  },
+}));
+
 vi.mock('../../lib/api', async () => ({
   ...(await import('../../test/commerceApiMocks')).commerceApiMocks(),
   orders: {
@@ -136,6 +144,20 @@ describe('OrderDetails', () => {
       expect(screen.queryByTestId('order-fulfilment')).not.toBeInTheDocument();
       expect(screen.queryByTestId('order-return-open')).not.toBeInTheDocument();
       expect(warehouse.trackOrder).not.toHaveBeenCalled();
+    });
+
+    it('keeps warehouse calls out of GraphQL mode', async () => {
+      transport.value = 'graphql';
+      try {
+        vi.mocked(orders.getOrderById).mockResolvedValueOnce(createOrderResponse({ status: 'DELIVERED' }));
+        renderWithProviders();
+
+        expect(await screen.findByText('Order #1')).toBeInTheDocument();
+        expect(screen.queryByTestId('order-fulfilment')).not.toBeInTheDocument();
+        expect(warehouse.trackOrder).not.toHaveBeenCalled();
+      } finally {
+        transport.value = 'rest';
+      }
     });
 
     it('shows shipment tracking by default', async () => {
