@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { commerceTransport } from '../../lib/commerceTransport';
 import { CART_COUPON_QUERY_KEY } from '../../lib/commerceQueryKeys';
 import { Link, Navigate } from 'react-router';
 import { cart, cartCoupon } from '../../lib/api';
@@ -15,7 +16,7 @@ export function CheckoutPage() {
     refetchOnWindowFocus: false,
   });
   
-  const { data: couponResponse } = useQuery({ queryKey: CART_COUPON_QUERY_KEY, queryFn: cartCoupon.summary, retry: false });
+  const { data: couponResponse } = useQuery({ queryKey: CART_COUPON_QUERY_KEY, queryFn: cartCoupon.summary, retry: false, enabled: commerceTransport === 'rest' });
   const couponCart = couponResponse?.data;
   const rawData = cartResponse?.data as RawCartResponse;
   const { cartData, isEnriching } = useEnrichedCart(rawData);

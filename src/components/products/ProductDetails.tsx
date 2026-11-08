@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, Link, useLocation } from 'react-router';
 import { WishlistButton } from '../wishlist/WishlistButton';
 import { ProductReviews } from './ProductReviews';
+import { commerceTransport } from '../../lib/commerceTransport';
 import { products, cart } from '../../lib/api';
 import { CartItemDto, UpdateCartItemDto } from '../../types/cart';
 import { useToast } from '../../hooks/useToast';
@@ -287,7 +288,9 @@ export function ProductDetails() {
         </Surface>
       </div>
 
-      <ProductReviews productId={productData.id} />
+      {commerceTransport === 'rest'
+        ? <ProductReviews productId={productData.id} />
+        : <p className="text-sm text-slate-500" data-testid="product-reviews-rest-only">Reviews are available when the shop API is set to REST.</p>}
     </div>
   );
 }
