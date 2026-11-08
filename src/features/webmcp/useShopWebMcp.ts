@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { cart, products } from '../../lib/api';
 import type { Cart } from '../../types/cart';
@@ -10,6 +10,14 @@ export function useShopWebMcp(onSearch: (query: string, inStockOnly: boolean) =>
   const [status, setStatus] = useState('Checking browser support');
   const [calls, setCalls] = useState<ToolCall[]>([]);
   const onCall = useCallback((call: ToolCall) => setCalls(current => [call, ...current].slice(0, 20)), []);
+  // The caller's onSearch changes identity whenever the URL changes (each search
+  // updates the URL). Read it through a ref so a search does not unregister and
+  // re-register every tool, which left a window where tools were missing.
+  const onSearchRef = useRef(onSearch);
+  useEffect(() => { onSearchRef.current = onSearch; }, [onSearch]);
+  const stableOnSearch = useCallback((query: string, inStockOnly: boolean) => onSearchRef.current(query, inStockOnly), []);
+  // stableOnSearch reads the ref only when an agent calls search_products, never during render.
+  // eslint-disable-next-line react-hooks/refs
   const tools = useMemo(() => createShopTools({
     getProducts: async () => {
       const response = await products.getAllProducts();
@@ -18,12 +26,12 @@ export function useShopWebMcp(onSearch: (query: string, inStockOnly: boolean) =>
     },
     getCart: async () => (await cart.getCart()).data,
     addToCart: async (productId, quantity) => (await cart.addToCart({ productId, quantity })).data,
-    onSearch,
+    onSearch: stableOnSearch,
     onCart: value => {
       queryClient.setQueryData(['cart'], (previous: { data: Cart } | undefined) => ({ ...previous, data: value }));
       void queryClient.invalidateQueries({ queryKey: ['cart'] });
     },
-  }, 'none', onCall), [onSearch, onCall, queryClient]);
+  }, 'none', onCall), [stableOnSearch, onCall, queryClient]);
 
   useEffect(() => {
     const context = getModelContext();

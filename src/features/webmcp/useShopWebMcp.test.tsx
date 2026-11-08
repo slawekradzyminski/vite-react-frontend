@@ -45,6 +45,28 @@ describe('Shared shop WebMCP integration', () => {
     expect(signals.every(signal => signal.aborted)).toBe(true);
   });
 
+  it('keeps tools registered when the caller passes a new search callback', async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const firstSearch = vi.fn();
+    const latestSearch = vi.fn();
+    const hook = renderHook(({ onSearch }) => useShopWebMcp(onSearch), {
+      initialProps: { onSearch: firstSearch },
+      wrapper: ({ children }) => <QueryClientProvider client={client}>{children}</QueryClientProvider>,
+    });
+    await waitFor(() => expect(hook.result.current.status).toBe('3 native WebMCP tools registered'));
+    const toolsBefore = hook.result.current.tools;
+
+    // A search updates the URL, which gives the caller a new onSearch identity.
+    hook.rerender({ onSearch: latestSearch });
+
+    expect(hook.result.current.tools).toBe(toolsBefore);
+    expect(registerTool).toHaveBeenCalledTimes(3);
+    expect(signals.some(signal => signal.aborted)).toBe(false);
+    await act(async () => { await registered[0].execute({ query: 'USB', inStockOnly: false }); });
+    expect(latestSearch).toHaveBeenCalledWith('USB', false);
+    expect(firstSearch).not.toHaveBeenCalled();
+  });
+
   it('preserves the normal UI when the browser has no native API', () => {
     Reflect.deleteProperty(document, 'modelContext');
     const hook = renderShop();
