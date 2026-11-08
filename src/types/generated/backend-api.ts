@@ -15,13 +15,13 @@ export interface paths {
          * List coupons
          * @description Lists coupons newest first with their effective status. Negative page is clamped to zero; size is clamped to 1-100.
          */
-        get: operations["list_3"];
+        get: operations["list_1"];
         put?: never;
         /**
          * Create coupon
          * @description Creates a coupon. Codes are case-insensitive and stored upper-case. PERCENTAGE values above 100 and validity windows that end before they start are rejected.
          */
-        post: operations["create_4"];
+        post: operations["create_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -39,12 +39,12 @@ export interface paths {
          * Get coupon
          * @description Returns one coupon with its redemption count and effective status.
          */
-        get: operations["get_1"];
+        get: operations["get"];
         /**
          * Update coupon
          * @description Replaces a coupon definition. The redemption count is preserved.
          */
-        put: operations["update_2"];
+        put: operations["update_1"];
         post?: never;
         /**
          * Delete coupon
@@ -67,7 +67,7 @@ export interface paths {
          * List inventory
          * @description Lists inventory with optional stock and catalog filters. Negative page is clamped to zero; size is clamped to 1–100. lowStockThreshold must be at least 1.
          */
-        get: operations["list_7"];
+        get: operations["list_4"];
         put?: never;
         post?: never;
         delete?: never;
@@ -87,7 +87,7 @@ export interface paths {
          * Get inventory item
          * @description Returns the available quantity for one product.
          */
-        get: operations["get_5"];
+        get: operations["get_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -187,7 +187,7 @@ export interface paths {
          * List reviews for moderation
          * @description Lists reviews oldest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1-100.
          */
-        get: operations["list_5"];
+        get: operations["list_3"];
         put?: never;
         post?: never;
         delete?: never;
@@ -602,13 +602,13 @@ export interface paths {
          * List approved reviews
          * @description Lists approved reviews for a product, newest first. Negative page is clamped to zero; size is clamped to 1-50.
          */
-        get: operations["list_1"];
+        get: operations["list"];
         put?: never;
         /**
          * Create review
          * @description Creates a PENDING review. Only users with a DELIVERED order containing the product may review it, once per product.
          */
-        post: operations["create_1"];
+        post: operations["create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1170,7 +1170,7 @@ export interface paths {
          * Get wishlist
          * @description Returns the caller's wishlist, most recently added first, with current price and stock.
          */
-        get: operations["list_4"];
+        get: operations["list_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2597,7 +2597,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    list_3: {
+    list_1: {
         parameters: {
             query?: {
                 /** @description Zero-based page index */
@@ -2640,7 +2640,7 @@ export interface operations {
             };
         };
     };
-    create_4: {
+    create_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -2700,7 +2700,7 @@ export interface operations {
             };
         };
     };
-    get_1: {
+    get: {
         parameters: {
             query?: never;
             header?: never;
@@ -2749,7 +2749,7 @@ export interface operations {
             };
         };
     };
-    update_2: {
+    update_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -2876,7 +2876,7 @@ export interface operations {
             };
         };
     };
-    list_7: {
+    list_4: {
         parameters: {
             query?: {
                 page?: number;
@@ -2931,7 +2931,7 @@ export interface operations {
             };
         };
     };
-    get_5: {
+    get_1: {
         parameters: {
             query?: {
                 /** @description Inclusive upper bound for LOW_STOCK; at least one */
@@ -3231,7 +3231,7 @@ export interface operations {
             };
         };
     };
-    list_5: {
+    list_3: {
         parameters: {
             query?: {
                 status?: "PENDING" | "APPROVED" | "REJECTED";
@@ -4627,7 +4627,7 @@ export interface operations {
             };
         };
     };
-    list_1: {
+    list: {
         parameters: {
             query?: {
                 /** @description Zero-based page index */
@@ -4672,7 +4672,7 @@ export interface operations {
             };
         };
     };
-    create_1: {
+    create: {
         parameters: {
             query?: never;
             header?: never;
@@ -6155,7 +6155,7 @@ export interface operations {
             };
         };
     };
-    list_4: {
+    list_2: {
         parameters: {
             query?: never;
             header?: never;

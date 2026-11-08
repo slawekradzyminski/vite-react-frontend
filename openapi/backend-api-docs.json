@@ -2595,7 +2595,7 @@
     "/api/v1/admin/coupons": {
       "get": {
         "description": "Lists coupons newest first with their effective status. Negative page is clamped to zero; size is clamped to 1-100.",
-        "operationId": "list_3",
+        "operationId": "list_1",
         "parameters": [
           {
             "description": "Zero-based page index",
@@ -2664,7 +2664,7 @@
       },
       "post": {
         "description": "Creates a coupon. Codes are case-insensitive and stored upper-case. PERCENTAGE values above 100 and validity windows that end before they start are rejected.",
-        "operationId": "create_4",
+        "operationId": "create_1",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2817,7 +2817,7 @@
       },
       "get": {
         "description": "Returns one coupon with its redemption count and effective status.",
-        "operationId": "get_1",
+        "operationId": "get",
         "parameters": [
           {
             "in": "path",
@@ -2883,7 +2883,7 @@
       },
       "put": {
         "description": "Replaces a coupon definition. The redemption count is preserved.",
-        "operationId": "update_2",
+        "operationId": "update_1",
         "parameters": [
           {
             "in": "path",
@@ -2988,7 +2988,7 @@
     "/api/v1/admin/inventory": {
       "get": {
         "description": "Lists inventory with optional stock and catalog filters. Negative page is clamped to zero; size is clamped to 1–100. lowStockThreshold must be at least 1.",
-        "operationId": "list_7",
+        "operationId": "list_4",
         "parameters": [
           {
             "in": "query",
@@ -3106,7 +3106,7 @@
     "/api/v1/admin/inventory/{productId}": {
       "get": {
         "description": "Returns the available quantity for one product.",
-        "operationId": "get_5",
+        "operationId": "get_1",
         "parameters": [
           {
             "in": "path",
@@ -3549,7 +3549,7 @@
     "/api/v1/admin/reviews": {
       "get": {
         "description": "Lists reviews oldest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1-100.",
-        "operationId": "list_5",
+        "operationId": "list_3",
         "parameters": [
           {
             "in": "query",
@@ -5623,7 +5623,7 @@
     "/api/v1/products/{productId}/reviews": {
       "get": {
         "description": "Lists approved reviews for a product, newest first. Negative page is clamped to zero; size is clamped to 1-50.",
-        "operationId": "list_1",
+        "operationId": "list",
         "parameters": [
           {
             "in": "path",
@@ -5701,7 +5701,7 @@
       },
       "post": {
         "description": "Creates a PENDING review. Only users with a DELIVERED order containing the product may review it, once per product.",
-        "operationId": "create_1",
+        "operationId": "create",
         "parameters": [
           {
             "in": "path",
@@ -7699,7 +7699,7 @@
     "/api/v1/wishlist": {
       "get": {
         "description": "Returns the caller's wishlist, most recently added first, with current price and stock.",
-        "operationId": "list_4",
+        "operationId": "list_2",
         "responses": {
           "200": {
             "content": {
