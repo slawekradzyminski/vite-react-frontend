@@ -46,8 +46,11 @@ test.describe('Products Page', () => {
     await productsPage.filterByCategory(category);
 
     //  then
-    const productCategories = await productsPage.getAllProductCategories();
-    expect(productCategories.every(cat => cat === category)).toBeTruthy();
+    // The list re-renders after the filter changes; poll instead of reading it once.
+    await expect.poll(async () => {
+      const productCategories = await productsPage.getAllProductCategories();
+      return productCategories.length > 0 && productCategories.every(cat => cat === category);
+    }).toBe(true);
   });
 
   test('should sort products by price ascending', async ({ authenticatedPage }) => {

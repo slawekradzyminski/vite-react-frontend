@@ -63,7 +63,12 @@ export class ProfilePage {
 
   async updateFirstName(newName: string) {
     await this.firstNameInput.fill(newName);
+    // Wait for the save to reach the backend; a reload right after the click would abort it.
+    const saved = this.page.waitForResponse(
+      response => response.request().method() === 'PUT' && /\/api\/v1\/users\/[^/]+$/.test(response.url()),
+    );
     await this.saveChangesButton.click();
+    await saved;
   }
 
   async hasOrders(): Promise<boolean> {
