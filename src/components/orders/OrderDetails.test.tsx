@@ -127,7 +127,8 @@ describe('OrderDetails', () => {
       vi.unstubAllEnvs();
     });
 
-    it('neither shows nor requests shipment tracking while warehouse-service is disabled', async () => {
+    it('neither shows nor requests shipment tracking when a build disables warehouse-service', async () => {
+      vi.stubEnv('VITE_WAREHOUSE_ENABLED', 'false');
       vi.mocked(orders.getOrderById).mockResolvedValueOnce(createOrderResponse({ status: 'DELIVERED' }));
       renderWithProviders();
 
@@ -137,8 +138,7 @@ describe('OrderDetails', () => {
       expect(warehouse.trackOrder).not.toHaveBeenCalled();
     });
 
-    it('shows shipment tracking when warehouse-service is enabled', async () => {
-      vi.stubEnv('VITE_WAREHOUSE_ENABLED', 'true');
+    it('shows shipment tracking by default', async () => {
       renderWithProviders();
 
       expect(await screen.findByTestId('order-fulfilment')).toBeInTheDocument();

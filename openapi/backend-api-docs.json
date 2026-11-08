@@ -1360,6 +1360,20 @@
             "example": 222.22,
             "type": "number"
           },
+          "fulfilmentState": {
+            "description": "Warehouse fulfilment state of the order, maintained from warehouse-service events",
+            "enum": [
+              "NONE",
+              "AWAITING_PICK",
+              "PICKED",
+              "PACKED",
+              "SHIPPED",
+              "DELIVERED",
+              "CANCELLED"
+            ],
+            "example": "NONE",
+            "type": "string"
+          },
           "id": {
             "description": "Order ID",
             "example": 1,

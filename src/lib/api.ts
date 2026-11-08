@@ -1,4 +1,4 @@
-import axios, { type AxiosError, type AxiosRequestConfig } from 'axios';
+import axios, { type AxiosError, type AxiosInstance, type AxiosRequestConfig } from 'axios';
 import type {
   LoginRequest,
   LoginResponse,
@@ -66,10 +66,19 @@ import type {
 import { authStorage } from './authStorage';
 import { commerceTransport } from './commerceTransport';
 import { createCommerceGraphql } from './commerceGraphql';
-import { getAbsoluteApiUrl, getApiBaseUrl } from './runtimeConfig';
+import { getAbsoluteApiUrl, getApiBaseUrl, getWarehouseApiBaseUrl } from './runtimeConfig';
 
 const api = axios.create({
   baseURL: getApiBaseUrl(),
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Shipments, returns, suppliers, purchase orders and reorder suggestions live in
+// warehouse-service. It accepts the backend's tokens, so it shares the auth interceptors.
+const warehouseApi = axios.create({
+  baseURL: getWarehouseApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
@@ -143,62 +152,69 @@ const redirectToLogin = () => {
   window.location.href = '/login';
 };
 
-api.interceptors.request.use((config) => {
-  config.headers = config.headers ?? {};
-  config.headers[CLIENT_SESSION_ID_HEADER] = authStorage.getClientSessionId();
+// Applied to every instance so each one sends the session and bearer headers and retries
+// its own requests after a shared token refresh.
+const installAuthInterceptors = (instance: AxiosInstance) => {
+  instance.interceptors.request.use((config) => {
+    config.headers = config.headers ?? {};
+    config.headers[CLIENT_SESSION_ID_HEADER] = authStorage.getClientSessionId();
 
-  if (isPublicEndpoint(config.url)) {
+    if (isPublicEndpoint(config.url)) {
+      return config;
+    }
+
+    const token = authStorage.getAccessToken();
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
-  }
+  });
 
-  const token = authStorage.getAccessToken();
-  if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+  instance.interceptors.response.use(
+    (response) => {
+      storeClientSessionId(readClientSessionIdHeader(response.headers));
+      return response;
+    },
+    async (error: AxiosError) => {
+      const status = error.response?.status;
+      const originalRequest = error.config as RefreshableRequestConfig | undefined;
+      if (originalRequest && isRefreshEndpoint(originalRequest.url)) {
+        redirectToLogin();
+        return Promise.reject(error);
+      }
 
-api.interceptors.response.use(
-  (response) => {
-    storeClientSessionId(readClientSessionIdHeader(response.headers));
-    return response;
-  },
-  async (error: AxiosError) => {
-    const status = error.response?.status;
-    const originalRequest = error.config as RefreshableRequestConfig | undefined;
-    if (originalRequest && isRefreshEndpoint(originalRequest.url)) {
-      redirectToLogin();
-      return Promise.reject(error);
-    }
+      if (originalRequest && isPublicEndpoint(originalRequest.url)) {
+        return Promise.reject(error);
+      }
 
-    if (originalRequest && isPublicEndpoint(originalRequest.url)) {
-      return Promise.reject(error);
-    }
-
-    if (status === 401 && originalRequest && !originalRequest._retry) {
-      const refreshToken = authStorage.getRefreshToken();
-      if (refreshToken) {
-        originalRequest._retry = true;
-        try {
-          const tokens = await enqueueRefresh(refreshToken);
-          originalRequest.headers = {
-            ...originalRequest.headers,
-            Authorization: `Bearer ${tokens.token}`,
-          };
-          return api(originalRequest);
-        } catch (refreshError) {
-          redirectToLogin();
-          return Promise.reject(refreshError);
+      if (status === 401 && originalRequest && !originalRequest._retry) {
+        const refreshToken = authStorage.getRefreshToken();
+        if (refreshToken) {
+          originalRequest._retry = true;
+          try {
+            const tokens = await enqueueRefresh(refreshToken);
+            originalRequest.headers = {
+              ...originalRequest.headers,
+              Authorization: `Bearer ${tokens.token}`,
+            };
+            return instance(originalRequest);
+          } catch (refreshError) {
+            redirectToLogin();
+            return Promise.reject(refreshError);
+          }
         }
       }
-    }
 
-    if (status === 401 || status === 403) {
-      redirectToLogin();
+      if (status === 401 || status === 403) {
+        redirectToLogin();
+      }
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
-  }
-);
+  );
+};
+
+installAuthInterceptors(api);
+installAuthInterceptors(warehouseApi);
 
 const buildStreamingHeaders = (token: string | null) => ({
   'Content-Type': 'application/json',
@@ -490,46 +506,46 @@ export const catalogCsv = {
 };
 
 export const warehouse = {
-  queue: (page = 0, size = 20) => api.get<PageDtoOrderDto>(`${WAREHOUSE_API}/queue`, pageParams(page, size)),
+  queue: (page = 0, size = 20) => warehouseApi.get<PageDtoOrderDto>(`${WAREHOUSE_API}/queue`, pageParams(page, size)),
   shipments: (status?: ShipmentStatus, page = 0, size = 50) =>
-    api.get<Page<Shipment>>(`${WAREHOUSE_API}/shipments`, pageParams(page, size, { status })),
-  create: (orderId: number) => api.post<Shipment>(`${WAREHOUSE_API}/shipments`, { orderId }),
-  pickList: (id: number) => api.get<PickList>(`${WAREHOUSE_API}/shipments/${id}/pick-list`),
-  pick: (id: number) => api.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/pick`),
-  pack: (id: number, weightKg: number) => api.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/pack`, { weightKg }),
+    warehouseApi.get<Page<Shipment>>(`${WAREHOUSE_API}/shipments`, pageParams(page, size, { status })),
+  create: (orderId: number) => warehouseApi.post<Shipment>(`${WAREHOUSE_API}/shipments`, { orderId }),
+  pickList: (id: number) => warehouseApi.get<PickList>(`${WAREHOUSE_API}/shipments/${id}/pick-list`),
+  pick: (id: number) => warehouseApi.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/pick`),
+  pack: (id: number, weightKg: number) => warehouseApi.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/pack`, { weightKg }),
   ship: (id: number, carrier: Carrier, trackingNumber: string) =>
-    api.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/ship`, { carrier, trackingNumber }),
-  deliver: (id: number) => api.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/deliver`),
-  cancel: (id: number) => api.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/cancel`),
-  trackOrder: (orderId: number) => api.get<Shipment>(`${ORDERS_API}/${orderId}/shipment`),
+    warehouseApi.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/ship`, { carrier, trackingNumber }),
+  deliver: (id: number) => warehouseApi.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/deliver`),
+  cancel: (id: number) => warehouseApi.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/cancel`),
+  trackOrder: (orderId: number) => warehouseApi.get<Shipment>(`${ORDERS_API}/${orderId}/shipment`),
 };
 
 export const returns = {
-  create: (orderId: number, data: CreateReturnRequest) => api.post<ReturnRequest>(`${ORDERS_API}/${orderId}/returns`, data),
-  mine: (page = 0, size = 20) => api.get<Page<ReturnRequest>>(RETURNS_API, pageParams(page, size)),
+  create: (orderId: number, data: CreateReturnRequest) => warehouseApi.post<ReturnRequest>(`${ORDERS_API}/${orderId}/returns`, data),
+  mine: (page = 0, size = 20) => warehouseApi.get<Page<ReturnRequest>>(RETURNS_API, pageParams(page, size)),
 };
 
 export const adminReturns = {
   list: (status?: ReturnStatus, page = 0, size = 50) =>
-    api.get<Page<ReturnRequest>>(`${ADMIN_API}/returns`, pageParams(page, size, { status })),
-  approve: (id: number) => api.post<ReturnRequest>(`${ADMIN_API}/returns/${id}/approve`),
-  reject: (id: number, note: string) => api.post<ReturnRequest>(`${ADMIN_API}/returns/${id}/reject`, { note }),
+    warehouseApi.get<Page<ReturnRequest>>(`${ADMIN_API}/returns`, pageParams(page, size, { status })),
+  approve: (id: number) => warehouseApi.post<ReturnRequest>(`${ADMIN_API}/returns/${id}/approve`),
+  reject: (id: number, note: string) => warehouseApi.post<ReturnRequest>(`${ADMIN_API}/returns/${id}/reject`, { note }),
   receive: (id: number, items: { productId: number; condition: ItemCondition }[]) =>
-    api.post<ReturnRequest>(`${ADMIN_API}/returns/${id}/receive`, { items }),
-  refund: (id: number) => api.post<ReturnRequest>(`${ADMIN_API}/returns/${id}/refund`),
+    warehouseApi.post<ReturnRequest>(`${ADMIN_API}/returns/${id}/receive`, { items }),
+  refund: (id: number) => warehouseApi.post<ReturnRequest>(`${ADMIN_API}/returns/${id}/refund`),
 };
 
 export const purchasing = {
-  suppliers: () => api.get<Supplier[]>(`${ADMIN_API}/suppliers`),
-  createSupplier: (data: SupplierRequest) => api.post<Supplier>(`${ADMIN_API}/suppliers`, data),
+  suppliers: () => warehouseApi.get<Supplier[]>(`${ADMIN_API}/suppliers`),
+  createSupplier: (data: SupplierRequest) => warehouseApi.post<Supplier>(`${ADMIN_API}/suppliers`, data),
   list: (status?: PurchaseOrderStatus, page = 0, size = 50) =>
-    api.get<Page<PurchaseOrder>>(`${ADMIN_API}/purchase-orders`, pageParams(page, size, { status })),
-  create: (data: PurchaseOrderRequest) => api.post<PurchaseOrder>(`${ADMIN_API}/purchase-orders`, data),
-  submit: (id: number) => api.post<PurchaseOrder>(`${ADMIN_API}/purchase-orders/${id}/submit`),
-  cancel: (id: number) => api.post<PurchaseOrder>(`${ADMIN_API}/purchase-orders/${id}/cancel`),
-  receive: (id: number, data: ReceiptRequest) => api.post<PurchaseOrder>(`${ADMIN_API}/purchase-orders/${id}/receipts`, data),
+    warehouseApi.get<Page<PurchaseOrder>>(`${ADMIN_API}/purchase-orders`, pageParams(page, size, { status })),
+  create: (data: PurchaseOrderRequest) => warehouseApi.post<PurchaseOrder>(`${ADMIN_API}/purchase-orders`, data),
+  submit: (id: number) => warehouseApi.post<PurchaseOrder>(`${ADMIN_API}/purchase-orders/${id}/submit`),
+  cancel: (id: number) => warehouseApi.post<PurchaseOrder>(`${ADMIN_API}/purchase-orders/${id}/cancel`),
+  receive: (id: number, data: ReceiptRequest) => warehouseApi.post<PurchaseOrder>(`${ADMIN_API}/purchase-orders/${id}/receipts`, data),
   reorderSuggestions: (lowStockThreshold = 5) =>
-    api.get<ReorderSuggestion[]>(`${INVENTORY_API}/reorder-suggestions`, { params: { lowStockThreshold } }),
+    warehouseApi.get<ReorderSuggestion[]>(`${INVENTORY_API}/reorder-suggestions`, { params: { lowStockThreshold } }),
 };
 
 const graphqlCommerce = createCommerceGraphql(api);
@@ -538,6 +554,7 @@ export const cart = commerceTransport === 'graphql' ? graphqlCommerce.cart : res
 export const orders = commerceTransport === 'graphql' ? graphqlCommerce.orders : restOrders;
 export const inventory = commerceTransport === 'graphql' ? graphqlCommerce.inventory : restInventory;
 
-export { getAbsoluteApiUrl, getApiBaseUrl } from './runtimeConfig';
+export { getAbsoluteApiUrl, getApiBaseUrl, getWarehouseApiBaseUrl } from './runtimeConfig';
+export { warehouseApi };
 
 export default api; 

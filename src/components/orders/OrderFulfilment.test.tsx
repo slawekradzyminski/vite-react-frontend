@@ -11,8 +11,8 @@ vi.mock('../../lib/api', () => ({
   returns: { create: vi.fn() },
 }));
 
-const order = (status: Order['status']): Order => ({
-  id: 42, username: 'client', status, totalAmount: 140, createdAt: '', updatedAt: '',
+const order = (status: Order['status'], fulfilmentState?: Order['fulfilmentState']): Order => ({
+  id: 42, username: 'client', status, fulfilmentState, totalAmount: 140, createdAt: '', updatedAt: '',
   shippingAddress: { street: 'Main 1', city: 'Warsaw', state: 'MZ', zipCode: '00-001', country: 'PL' },
   items: [
     { id: 1, productId: 3, productName: 'Phone', quantity: 1, unitPrice: 100, totalPrice: 100 },
@@ -23,12 +23,30 @@ const order = (status: Order['status']): Order => ({
 describe('OrderFulfilment', () => {
   beforeEach(() => vi.resetAllMocks());
 
-  it('explains that an order without a shipment has not reached the warehouse', async () => {
+  it('falls back to the tracking 404 when the backend does not report a fulfilment state', async () => {
     vi.mocked(warehouse.trackOrder).mockRejectedValue(Object.assign(new Error('Not found'), { isAxiosError: true, response: { status: 404 } }));
     renderWithProviders(<OrderFulfilment order={order('PAID')} />);
 
     expect(await screen.findByTestId('order-shipment-none')).toBeInTheDocument();
+    expect(warehouse.trackOrder).toHaveBeenCalledWith(42);
     expect(screen.queryByTestId('order-return-open')).not.toBeInTheDocument();
+  });
+
+  it('skips the tracking request when the order says it has not reached the warehouse', async () => {
+    renderWithProviders(<OrderFulfilment order={order('PAID', 'NONE')} />);
+
+    expect(screen.getByTestId('order-shipment-none')).toBeInTheDocument();
+    expect(screen.queryByTestId('order-shipment-loading')).not.toBeInTheDocument();
+    expect(warehouse.trackOrder).not.toHaveBeenCalled();
+  });
+
+  it('tracks the shipment once the order has been released to the warehouse', async () => {
+    vi.mocked(warehouse.trackOrder).mockResolvedValue({ data: { id: 7, status: 'PICKED' } } as never);
+    renderWithProviders(<OrderFulfilment order={order('PAID', 'PICKED')} />);
+
+    expect(await screen.findByTestId('order-shipment-status')).toHaveTextContent(/picked/i);
+    expect(warehouse.trackOrder).toHaveBeenCalledWith(42);
+    expect(screen.queryByTestId('order-shipment-none')).not.toBeInTheDocument();
   });
 
   it('shows tracking and requests a return with only the selected quantities', async () => {

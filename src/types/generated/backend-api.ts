@@ -1923,6 +1923,12 @@ export interface components {
              */
             discountAmount?: number;
             /**
+             * @description Warehouse fulfilment state of the order, maintained from warehouse-service events
+             * @example NONE
+             * @enum {string}
+             */
+            fulfilmentState?: "NONE" | "AWAITING_PICK" | "PICKED" | "PACKED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+            /**
              * Format: int64
              * @description Order ID
              * @example 1

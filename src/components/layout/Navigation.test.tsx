@@ -485,7 +485,8 @@ describe('Navigation', () => {
       vi.unstubAllEnvs();
     });
 
-    it('stays hidden from warehouse staff until warehouse-service is enabled', async () => {
+    it('stays hidden from warehouse staff when a build disables warehouse-service', async () => {
+      vi.stubEnv('VITE_WAREHOUSE_ENABLED', 'false');
       signInAs([Role.WAREHOUSE]);
 
       renderNavigation();
@@ -494,8 +495,7 @@ describe('Navigation', () => {
       expect(screen.queryByText('Warehouse')).not.toBeInTheDocument();
     });
 
-    it('shows the warehouse board to warehouse staff when warehouse-service is enabled', async () => {
-      vi.stubEnv('VITE_WAREHOUSE_ENABLED', 'true');
+    it('shows the warehouse board to warehouse staff by default', async () => {
       signInAs([Role.WAREHOUSE]);
 
       renderNavigation();
@@ -504,8 +504,7 @@ describe('Navigation', () => {
       expect(screen.queryByText('Admin')).not.toBeInTheDocument();
     });
 
-    it('keeps the warehouse board from clients even when enabled', async () => {
-      vi.stubEnv('VITE_WAREHOUSE_ENABLED', 'true');
+    it('keeps the warehouse board from clients', async () => {
       signInAs([Role.CLIENT]);
 
       renderNavigation();

@@ -28,9 +28,9 @@ This section points other automation or human teammates to the right document fo
 
 - There are two OpenAPI snapshots. Never edit a snapshot or its generated types by hand.
   - [`openapi/backend-api-docs.json`](./openapi/backend-api-docs.json) is the document of the backend image pinned in `docker-compose.yml`; `src/types/generated/backend-api.ts` is generated from it.
-  - [`openapi/warehouse-api-docs.json`](./openapi/warehouse-api-docs.json) is the document of warehouse-service (shipments, tracking, returns, suppliers, purchase orders, reorder suggestions); `src/types/generated/warehouse-api.ts` is generated from it. Its screens stay hidden unless the build sets `VITE_WAREHOUSE_ENABLED=true`.
-- When you bump the backend pin, start the stack and run `npm run api:snapshot`, then fix every error `npm run typecheck` reports. `npm run api:generate` regenerates both type files. CI fails the E2E job when the pinned backend no longer matches the snapshot (`npm run api:check`) and the unit job when either generated type file is stale.
-- Take warehouse aliases in [`src/types/commerce.ts`](./src/types/commerce.ts) from `generated/warehouse-api`, everything else from `generated/backend-api`.
+  - [`openapi/warehouse-api-docs.json`](./openapi/warehouse-api-docs.json) is the document of warehouse-service (shipments, tracking, returns, suppliers, purchase orders, reorder suggestions); `src/types/generated/warehouse-api.ts` is generated from it. The gateway exposes it at `/warehouse/v3/api-docs`. A build with `VITE_WAREHOUSE_ENABLED=false` hides its screens.
+- When you bump the backend pin, start the stack and run `npm run api:snapshot`; for warehouse-service run `npm run api:snapshot:warehouse`. Then fix every error `npm run typecheck` reports. `npm run api:generate` regenerates both type files. CI fails the E2E job when the pinned backend no longer matches the snapshot (`npm run api:check`) and the unit job when either generated type file is stale. `npm run api:check:warehouse` compares a running warehouse-service the same way; CI runs it once the compose stack in this repo starts warehouse-service.
+- Take warehouse aliases in [`src/types/commerce.ts`](./src/types/commerce.ts) from `generated/warehouse-api`, everything else from `generated/backend-api`. Warehouse calls in `src/lib/api.ts` go through the warehouse axios instance (`VITE_WAREHOUSE_API_BASE_URL`, defaulting to the API base URL), which shares the auth and token-refresh interceptors.
 - [`src/types/apiContract.test.ts`](./src/types/apiContract.test.ts) checks the hand-written types in `src/types` against both snapshots at compile time. Add a mapping there when you add an API type.
 - Playwright mocks serve bodies through [`e2e/mocks/backendContract.ts`](./e2e/mocks/backendContract.ts), so a mock cannot invent fields the backend does not send. Type new mocks the same way.
 
@@ -40,7 +40,7 @@ This section points other automation or human teammates to the right document fo
 
 ## Mutation-testing feedback
 
-- Run `npm test` first, then `npm run test:mutation` after changing SSO, runtime URL, SSE behavior, the API client and token refresh, auth storage, role checks, route protection, or their tests.
+- Run `npm test` first, then `npm run test:mutation` after changing SSO, runtime URLs and flags (API and warehouse base URL, warehouse flag), SSE behavior, the API client and token refresh on either axios instance, auth storage, role checks, route protection, or their tests.
 - Stryker runs incrementally and keeps its state in `reports/stryker-incremental.json`, so repeat runs only re-test changed code and tests. Run `npx stryker run --force` for a full baseline.
 - Treat `NoCoverage` as a reachability gap and `Survived` as an assertion gap. For each meaningful survivor, add a test that passes on the original code and fails on that mutant.
 - Prioritize authentication/PKCE invariants, callback failure paths, redirect safety, and lossless stream parsing. Do not add brittle implementation-detail assertions solely to increase the score.

@@ -1,11 +1,43 @@
 #!/usr/bin/env node
-// Keeps openapi/backend-api-docs.json in step with the backend image pinned in docker-compose.yml.
-//   node scripts/api-contract.mjs snapshot [url]  rewrites the snapshot from a running backend
-//   node scripts/api-contract.mjs check [url]     fails when a running backend no longer matches the snapshot
+// Keeps the OpenAPI snapshots in step with the service images pinned in docker-compose.yml.
+//   node scripts/api-contract.mjs snapshot [service] [url]  rewrites a snapshot from a running service
+//   node scripts/api-contract.mjs check [service] [url]     fails when a running service no longer matches its snapshot
+// `service` is `backend` (default, openapi/backend-api-docs.json) or `warehouse`
+// (openapi/warehouse-api-docs.json).
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 export const DEFAULT_API_DOCS_URL = 'http://localhost:8081/v3/api-docs';
+export const DEFAULT_WAREHOUSE_API_DOCS_URL = 'http://localhost:8081/warehouse/v3/api-docs';
+
+export const SERVICES = {
+  backend: {
+    label: 'Backend',
+    snapshot: 'openapi/backend-api-docs.json',
+    // Literal URLs: Vite rewrites `new URL(template, import.meta.url)` into a glob import.
+    snapshotUrl: () => new URL('../openapi/backend-api-docs.json', import.meta.url),
+    urlEnv: 'BACKEND_API_DOCS_URL',
+    defaultUrl: DEFAULT_API_DOCS_URL,
+    snapshotScript: 'api:snapshot',
+  },
+  warehouse: {
+    label: 'Warehouse service',
+    snapshot: 'openapi/warehouse-api-docs.json',
+    snapshotUrl: () => new URL('../openapi/warehouse-api-docs.json', import.meta.url),
+    urlEnv: 'WAREHOUSE_API_DOCS_URL',
+    defaultUrl: DEFAULT_WAREHOUSE_API_DOCS_URL,
+    snapshotScript: 'api:snapshot:warehouse',
+  },
+};
+
+// The service name is optional so `check <url>` keeps working for the backend.
+export function resolveTarget([command, ...rest], env = {}) {
+  const [first, second] = rest;
+  const serviceName = first && Object.hasOwn(SERVICES, first) ? first : 'backend';
+  const service = SERVICES[serviceName];
+  const explicitUrl = serviceName === first ? second : first;
+  return { command, serviceName, service, url: explicitUrl ?? env[service.urlEnv] ?? service.defaultUrl };
+}
 
 const sortKeys = (value) => {
   if (Array.isArray(value)) {
@@ -69,9 +101,10 @@ const fetchSpec = async (url) => {
   return response.json();
 };
 
-async function main([command, url = process.env.BACKEND_API_DOCS_URL ?? DEFAULT_API_DOCS_URL]) {
+async function main(args) {
+  const { command, service, url } = resolveTarget(args, process.env);
   // Resolved here, not at import: Vitest loads this module in jsdom, where import.meta.url is not a file URL.
-  const snapshotPath = fileURLToPath(new URL('../openapi/backend-api-docs.json', import.meta.url));
+  const snapshotPath = fileURLToPath(service.snapshotUrl());
   if (command === 'snapshot') {
     await writeFile(snapshotPath, serializeSpec(await fetchSpec(url)));
     console.log(`Wrote ${snapshotPath} from ${url}`);
@@ -81,15 +114,15 @@ async function main([command, url = process.env.BACKEND_API_DOCS_URL ?? DEFAULT_
     const expected = JSON.parse(await readFile(snapshotPath, 'utf8'));
     const drift = describeDrift(expected, await fetchSpec(url));
     if (drift.length === 0) {
-      console.log(`Backend API at ${url} matches the snapshot.`);
+      console.log(`${service.label} API at ${url} matches the snapshot.`);
       return 0;
     }
-    console.error(`Backend API at ${url} drifted from openapi/backend-api-docs.json:`);
+    console.error(`${service.label} API at ${url} drifted from ${service.snapshot}:`);
     drift.forEach((line) => console.error(`  ${line}`));
-    console.error('If the backend change is intended, run `npm run api:snapshot` and fix the type errors it surfaces.');
+    console.error(`If the change is intended, run \`npm run ${service.snapshotScript}\` and fix the type errors it surfaces.`);
     return 1;
   }
-  console.error('Usage: node scripts/api-contract.mjs <snapshot|check> [api-docs-url]');
+  console.error(`Usage: node scripts/api-contract.mjs <snapshot|check> [${Object.keys(SERVICES).join('|')}] [api-docs-url]`);
   return 2;
 }
 
