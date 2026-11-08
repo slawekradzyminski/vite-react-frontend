@@ -74,7 +74,8 @@ const createOrderResponse = vi.hoisted(() => {
   });
 });
 
-vi.mock('../../lib/api', () => ({
+vi.mock('../../lib/api', async () => ({
+  ...(await import('../../test/commerceApiMocks')).commerceApiMocks(),
   orders: {
     getOrderById: vi.fn().mockResolvedValue(createOrderResponse()),
     cancelOrder: vi.fn().mockResolvedValue({ success: true }),

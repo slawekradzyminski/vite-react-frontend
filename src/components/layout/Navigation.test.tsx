@@ -428,7 +428,8 @@ describe('Navigation', () => {
     
     // First items should be navigation links
     expect(menuItemsArray[0]).toHaveTextContent('Products');
-    expect(menuItemsArray[1]).toHaveTextContent('Send Email');
+    expect(menuItemsArray[1]).toHaveTextContent('Wishlist');
+    expect(menuItemsArray[2]).toHaveTextContent('Send Email');
     
     // Cart should come after navigation links but before username
     const cartIndex = menuItemsArray.findIndex(item => item.textContent?.includes('Cart'));

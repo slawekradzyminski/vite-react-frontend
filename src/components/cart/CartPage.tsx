@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import { cart } from '../../lib/api';
 import { CartItem } from './CartItem';
 import { CartSummary } from './CartSummary';
+import { CartCouponPanel } from '../commerce/CartCouponPanel';
 import { Surface } from '../ui/surface';
 import { useEnrichedCart, type RawCartResponse } from '../../hooks/useEnrichedCart';
 
@@ -104,6 +105,7 @@ export function CartPage() {
               onUpdate={handleCartUpdate}
               beforeCheckout={savePendingChanges}
             />
+            <CartCouponPanel />
           </Surface>
 
           <Surface variant="default" className="overflow-hidden" data-testid="cart-items-container">

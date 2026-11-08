@@ -49,13 +49,63 @@
         ],
         "type": "object"
       },
+      "ApplyCouponDto": {
+        "description": "Coupon code to apply to the cart",
+        "properties": {
+          "code": {
+            "description": "Case-insensitive coupon code",
+            "example": "welcome10",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "type": "object"
+      },
       "CartDto": {
         "properties": {
+          "couponCode": {
+            "description": "Coupon applied to the cart",
+            "example": "WELCOME10",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "couponMessage": {
+            "description": "Why the applied coupon does not qualify",
+            "example": "Order subtotal must be at least 100.00",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "couponValid": {
+            "description": "Whether the applied coupon currently qualifies; null when no coupon is applied",
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "discountAmount": {
+            "description": "Discount that checkout would apply",
+            "example": 19.96,
+            "type": "number"
+          },
           "items": {
             "items": {
               "$ref": "#/components/schemas/CartItemDto"
             },
             "type": "array"
+          },
+          "totalAfterDiscount": {
+            "description": "Total price after the discount",
+            "example": 179.6,
+            "type": "number"
           },
           "totalItems": {
             "description": "Total number of items",
@@ -261,6 +311,213 @@
         },
         "type": "object"
       },
+      "CouponDto": {
+        "description": "Coupon",
+        "properties": {
+          "active": {
+            "description": "Administrator switch",
+            "example": true,
+            "type": "boolean"
+          },
+          "code": {
+            "description": "Upper-case coupon code",
+            "example": "WELCOME10",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "Creation timestamp",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "description": {
+            "description": "Internal description",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "description": "Coupon ID",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "maxRedemptions": {
+            "description": "Global redemption limit",
+            "format": "int32",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "minOrderAmount": {
+            "description": "Minimum cart subtotal",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "perUserLimit": {
+            "description": "Redemptions allowed per user",
+            "example": 1,
+            "format": "int32",
+            "type": "integer"
+          },
+          "redemptionCount": {
+            "description": "Redemptions currently counted",
+            "example": 0,
+            "format": "int32",
+            "type": "integer"
+          },
+          "status": {
+            "description": "Effective status at the time of the request",
+            "enum": [
+              "ACTIVE",
+              "INACTIVE",
+              "SCHEDULED",
+              "EXPIRED",
+              "EXHAUSTED"
+            ],
+            "example": "ACTIVE",
+            "type": "string"
+          },
+          "type": {
+            "description": "Discount type",
+            "enum": [
+              "PERCENTAGE",
+              "FIXED_AMOUNT"
+            ],
+            "example": "PERCENTAGE",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "Last update timestamp",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "validFrom": {
+            "description": "Start of validity",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "validUntil": {
+            "description": "End of validity",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "value": {
+            "description": "Percent or fixed amount",
+            "example": 10,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "CouponRequestDto": {
+        "description": "Coupon definition. PERCENTAGE values must be between 1 and 100; validUntil must be after validFrom.",
+        "properties": {
+          "active": {
+            "description": "Whether the coupon can be used; defaults to true",
+            "example": true,
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "code": {
+            "description": "Case-insensitive code, stored upper-case",
+            "example": "WELCOME10",
+            "maxLength": 32,
+            "minLength": 3,
+            "pattern": "^[A-Za-z0-9-]{3,32}$",
+            "type": "string"
+          },
+          "description": {
+            "description": "Internal description",
+            "example": "Welcome discount",
+            "maxLength": 255,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "maxRedemptions": {
+            "description": "Global redemption limit; null means unlimited",
+            "example": 100,
+            "format": "int32",
+            "minimum": 1,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "minOrderAmount": {
+            "description": "Minimum cart subtotal",
+            "example": 100,
+            "minimum": 0,
+            "multipleOf": 0.01,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "perUserLimit": {
+            "description": "Redemptions allowed per user; defaults to 1",
+            "example": 1,
+            "format": "int32",
+            "minimum": 1,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "type": {
+            "description": "Discount type",
+            "enum": [
+              "PERCENTAGE",
+              "FIXED_AMOUNT"
+            ],
+            "example": "PERCENTAGE",
+            "type": "string"
+          },
+          "validFrom": {
+            "description": "Start of validity (server-local)",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "validUntil": {
+            "description": "End of validity (server-local)",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "value": {
+            "description": "Percent (1-100) or fixed amount",
+            "example": 10,
+            "minimum": 0.01,
+            "multipleOf": 0.01,
+            "type": "number"
+          }
+        },
+        "required": [
+          "code",
+          "type",
+          "value"
+        ],
+        "type": "object"
+      },
       "CreateQrDto": {
         "description": "QR link",
         "properties": {
@@ -274,6 +531,60 @@
         },
         "required": [
           "text"
+        ],
+        "type": "object"
+      },
+      "CreateReturnDto": {
+        "description": "Return request for a delivered order",
+        "properties": {
+          "comment": {
+            "description": "Customer comment",
+            "example": "Screen arrived cracked",
+            "maxLength": 1000,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "items": {
+            "description": "Items to return; each product at most once",
+            "items": {
+              "$ref": "#/components/schemas/ReturnItemRequestDto"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "reason": {
+            "description": "Return reason",
+            "enum": [
+              "DAMAGED",
+              "WRONG_ITEM",
+              "NOT_AS_DESCRIBED",
+              "NO_LONGER_NEEDED"
+            ],
+            "example": "DAMAGED",
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "reason"
+        ],
+        "type": "object"
+      },
+      "CreateShipmentDto": {
+        "description": "Release a PAID order to the warehouse",
+        "properties": {
+          "orderId": {
+            "description": "Order ID",
+            "example": 42,
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "orderId"
         ],
         "type": "object"
       },
@@ -306,6 +617,10 @@
               "GENERIC",
               "PASSWORD_RESET_REQUESTED",
               "PASSWORD_RESET_CONFIRMED",
+              "BACK_IN_STOCK",
+              "ORDER_SHIPPED",
+              "ORDER_DELIVERED",
+              "RETURN_UPDATED",
               null
             ],
             "type": [
@@ -359,7 +674,11 @@
             "enum": [
               "GENERIC",
               "PASSWORD_RESET_REQUESTED",
-              "PASSWORD_RESET_CONFIRMED"
+              "PASSWORD_RESET_CONFIRMED",
+              "BACK_IN_STOCK",
+              "ORDER_SHIPPED",
+              "ORDER_DELIVERED",
+              "RETURN_UPDATED"
             ],
             "type": "string"
           },
@@ -476,6 +795,75 @@
               "integer",
               "null"
             ]
+          }
+        },
+        "type": "object"
+      },
+      "ImportReportDto": {
+        "description": "Result of a product CSV import. Nothing is persisted when errors is non-empty or dryRun is true.",
+        "properties": {
+          "applied": {
+            "description": "Whether changes were persisted",
+            "example": true,
+            "type": "boolean"
+          },
+          "created": {
+            "description": "Rows that create a product",
+            "example": 1,
+            "format": "int32",
+            "type": "integer"
+          },
+          "dryRun": {
+            "description": "Whether this was a dry run",
+            "example": false,
+            "type": "boolean"
+          },
+          "errors": {
+            "description": "Validation errors; empty when the file is valid",
+            "items": {
+              "$ref": "#/components/schemas/ImportRowErrorDto"
+            },
+            "type": "array"
+          },
+          "totalRows": {
+            "description": "Number of non-empty data rows",
+            "example": 3,
+            "format": "int32",
+            "type": "integer"
+          },
+          "unchanged": {
+            "description": "Rows identical to the existing product",
+            "example": 1,
+            "format": "int32",
+            "type": "integer"
+          },
+          "updated": {
+            "description": "Rows that change an existing product",
+            "example": 1,
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ImportRowErrorDto": {
+        "description": "Validation problem in one CSV row",
+        "properties": {
+          "field": {
+            "description": "Column name, or 'file' for structural problems",
+            "example": "price",
+            "type": "string"
+          },
+          "message": {
+            "description": "Problem description",
+            "example": "Price must be greater than 0",
+            "type": "string"
+          },
+          "row": {
+            "description": "1-based line number in the file; the header is line 1",
+            "example": 4,
+            "format": "int32",
+            "type": "integer"
           }
         },
         "type": "object"
@@ -597,7 +985,9 @@
               "INITIAL_STOCK",
               "ADMIN_ADJUSTMENT",
               "ORDER_DEDUCTED",
-              "ORDER_RESTORED"
+              "ORDER_RESTORED",
+              "PURCHASE_RECEIVED",
+              "RETURN_RESTOCKED"
             ],
             "type": "string"
           }
@@ -681,7 +1071,8 @@
             "items": {
               "enum": [
                 "ROLE_ADMIN",
-                "ROLE_CLIENT"
+                "ROLE_CLIENT",
+                "ROLE_WAREHOUSE"
               ],
               "type": "string"
             },
@@ -822,6 +1213,57 @@
         },
         "type": "object"
       },
+      "ModerationRequestDto": {
+        "description": "Moderation decision. REJECTED requires a note.",
+        "properties": {
+          "decision": {
+            "description": "Decision",
+            "enum": [
+              "APPROVED",
+              "REJECTED"
+            ],
+            "example": "APPROVED",
+            "type": "string"
+          },
+          "note": {
+            "description": "Reason shown to the author",
+            "example": "Contains a link to another shop",
+            "maxLength": 500,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "decision"
+        ],
+        "type": "object"
+      },
+      "MyReviewDto": {
+        "description": "Whether the caller may review a product, and their existing review",
+        "properties": {
+          "canReview": {
+            "description": "True when the caller may create a review now",
+            "example": true,
+            "type": "boolean"
+          },
+          "reason": {
+            "description": "Why the caller cannot create a review",
+            "example": "Only customers who received this product can review it",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "review": {
+            "$ref": "#/components/schemas/ReviewDto",
+            "description": "The caller's review, if any"
+          }
+        },
+        "type": "object"
+      },
       "OllamaToolDefinitionDto": {
         "properties": {
           "function": {
@@ -954,10 +1396,23 @@
       "OrderDto": {
         "description": "Order data transfer object",
         "properties": {
+          "couponCode": {
+            "description": "Coupon code applied at checkout",
+            "example": "WELCOME10",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "createdAt": {
             "description": "Creation timestamp",
             "format": "local-date-time",
             "type": "string"
+          },
+          "discountAmount": {
+            "description": "Coupon discount subtracted from the subtotal",
+            "example": 222.22,
+            "type": "number"
           },
           "id": {
             "description": "Order ID",
@@ -987,6 +1442,11 @@
             ],
             "example": "PENDING",
             "type": "string"
+          },
+          "subtotalAmount": {
+            "description": "Sum of item prices before discounts",
+            "example": 2222.2,
+            "type": "number"
           },
           "totalAmount": {
             "description": "Total amount",
@@ -1051,6 +1511,50 @@
           "productId",
           "quantity"
         ],
+        "type": "object"
+      },
+      "PackShipmentDto": {
+        "description": "Packing result",
+        "properties": {
+          "weightKg": {
+            "description": "Package weight in kilograms",
+            "example": 1.25,
+            "maximum": 30,
+            "minimum": 0.01,
+            "multipleOf": 0.01,
+            "type": "number"
+          }
+        },
+        "required": [
+          "weightKg"
+        ],
+        "type": "object"
+      },
+      "PageDtoCouponDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/CouponDto"
+            },
+            "type": "array"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
         "type": "object"
       },
       "PageDtoInventoryItemDto": {
@@ -1134,6 +1638,114 @@
         },
         "type": "object"
       },
+      "PageDtoPurchaseOrderDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/PurchaseOrderDto"
+            },
+            "type": "array"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageDtoReturnDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/ReturnDto"
+            },
+            "type": "array"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageDtoReviewDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewDto"
+            },
+            "type": "array"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageDtoShipmentDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/ShipmentDto"
+            },
+            "type": "array"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "PageDtoTrafficLogEntryDto": {
         "properties": {
           "content": {
@@ -1155,6 +1767,82 @@
             "type": "integer"
           },
           "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PickListDto": {
+        "description": "Pick list grouped by product and sorted by category, then name",
+        "properties": {
+          "items": {
+            "description": "Products to pick",
+            "items": {
+              "$ref": "#/components/schemas/PickListItemDto"
+            },
+            "type": "array"
+          },
+          "orderId": {
+            "description": "Order ID",
+            "example": 42,
+            "format": "int64",
+            "type": "integer"
+          },
+          "shipmentId": {
+            "description": "Shipment ID",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "shippingAddress": {
+            "$ref": "#/components/schemas/AddressDto",
+            "description": "Shipping address"
+          },
+          "status": {
+            "description": "Shipment status",
+            "enum": [
+              "AWAITING_PICK",
+              "PICKED",
+              "PACKED",
+              "SHIPPED",
+              "DELIVERED",
+              "CANCELLED"
+            ],
+            "example": "AWAITING_PICK",
+            "type": "string"
+          },
+          "totalUnits": {
+            "description": "Units to pick",
+            "example": 3,
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PickListItemDto": {
+        "description": "Product to pick",
+        "properties": {
+          "category": {
+            "description": "Category, used as the warehouse aisle",
+            "example": "Electronics",
+            "type": "string"
+          },
+          "productId": {
+            "description": "Product ID",
+            "example": 3,
+            "format": "int64",
+            "type": "integer"
+          },
+          "productName": {
+            "description": "Product name",
+            "example": "iPhone 13 Pro",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Units to pick",
+            "example": 2,
             "format": "int32",
             "type": "integer"
           }
@@ -1328,6 +2016,307 @@
         },
         "type": "object"
       },
+      "PurchaseOrderDto": {
+        "description": "Purchase order",
+        "properties": {
+          "cancelledAt": {
+            "description": "Cancellation timestamp",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "description": "Creation timestamp",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "createdBy": {
+            "description": "Creator",
+            "example": "admin",
+            "type": "string"
+          },
+          "expectedAt": {
+            "description": "submittedAt plus the supplier lead time",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "description": "Purchase order ID",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "lines": {
+            "description": "Lines",
+            "items": {
+              "$ref": "#/components/schemas/PurchaseOrderLineDto"
+            },
+            "type": "array"
+          },
+          "note": {
+            "description": "Internal note",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "receivedAt": {
+            "description": "When the last units arrived",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "description": "Status",
+            "enum": [
+              "DRAFT",
+              "SUBMITTED",
+              "PARTIALLY_RECEIVED",
+              "RECEIVED",
+              "CANCELLED"
+            ],
+            "example": "SUBMITTED",
+            "type": "string"
+          },
+          "submittedAt": {
+            "description": "Submission timestamp",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "supplierId": {
+            "description": "Supplier ID",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "supplierName": {
+            "description": "Supplier name",
+            "example": "Nordic Electronics",
+            "type": "string"
+          },
+          "totalCost": {
+            "description": "Sum of line totals",
+            "example": 32000,
+            "type": "number"
+          },
+          "updatedAt": {
+            "description": "Last update timestamp",
+            "format": "local-date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PurchaseOrderLineDto": {
+        "description": "Purchase order line",
+        "properties": {
+          "lineTotal": {
+            "description": "orderedQuantity × unitCost",
+            "example": 32000,
+            "type": "number"
+          },
+          "orderedQuantity": {
+            "description": "Units ordered",
+            "example": 50,
+            "format": "int32",
+            "type": "integer"
+          },
+          "outstandingQuantity": {
+            "description": "Units still expected",
+            "example": 30,
+            "format": "int32",
+            "type": "integer"
+          },
+          "productId": {
+            "description": "Product ID",
+            "example": 3,
+            "format": "int64",
+            "type": "integer"
+          },
+          "productName": {
+            "description": "Product name",
+            "example": "iPhone 13 Pro",
+            "type": "string"
+          },
+          "receivedQuantity": {
+            "description": "Units received so far",
+            "example": 20,
+            "format": "int32",
+            "type": "integer"
+          },
+          "unitCost": {
+            "description": "Purchase price per unit",
+            "example": 640,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "PurchaseOrderLineRequestDto": {
+        "description": "Purchase order line",
+        "properties": {
+          "productId": {
+            "description": "Product ID",
+            "example": 3,
+            "format": "int64",
+            "type": "integer"
+          },
+          "quantity": {
+            "description": "Units ordered",
+            "example": 50,
+            "format": "int32",
+            "maximum": 100000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "unitCost": {
+            "description": "Purchase price per unit",
+            "example": 640,
+            "minimum": 0.01,
+            "multipleOf": 0.01,
+            "type": "number"
+          }
+        },
+        "required": [
+          "productId",
+          "quantity",
+          "unitCost"
+        ],
+        "type": "object"
+      },
+      "PurchaseOrderRequestDto": {
+        "description": "Draft purchase order; lines may be empty until submission",
+        "properties": {
+          "lines": {
+            "description": "Lines; each product at most once",
+            "items": {
+              "$ref": "#/components/schemas/PurchaseOrderLineRequestDto"
+            },
+            "maxItems": 200,
+            "minItems": 0,
+            "type": "array"
+          },
+          "note": {
+            "description": "Internal note",
+            "example": "Restock before Black Friday",
+            "maxLength": 500,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "supplierId": {
+            "description": "Supplier ID",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "supplierId"
+        ],
+        "type": "object"
+      },
+      "ReceiptLineDto": {
+        "description": "Units received for one product",
+        "properties": {
+          "productId": {
+            "description": "Product ID",
+            "example": 3,
+            "format": "int64",
+            "type": "integer"
+          },
+          "quantity": {
+            "description": "Units received",
+            "example": 20,
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "productId",
+          "quantity"
+        ],
+        "type": "object"
+      },
+      "ReceiptRequestDto": {
+        "description": "Goods receipt. Repeating requestId with the same lines replays the receipt; different lines return 409.",
+        "properties": {
+          "lines": {
+            "description": "Lines; each product at most once",
+            "items": {
+              "$ref": "#/components/schemas/ReceiptLineDto"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "requestId": {
+            "description": "Client-generated idempotency key",
+            "example": "2f1c8a8e-3b0e-4d39-9d43-0a6d6f7f0a11",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lines",
+          "requestId"
+        ],
+        "type": "object"
+      },
+      "ReceiveItemDto": {
+        "description": "Condition of one returned product",
+        "properties": {
+          "condition": {
+            "description": "RESELLABLE items return to stock",
+            "enum": [
+              "RESELLABLE",
+              "DAMAGED"
+            ],
+            "example": "RESELLABLE",
+            "type": "string"
+          },
+          "productId": {
+            "description": "Product ID",
+            "example": 3,
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "condition",
+          "productId"
+        ],
+        "type": "object"
+      },
+      "ReceiveReturnDto": {
+        "description": "Inspection result covering every returned product exactly once",
+        "properties": {
+          "items": {
+            "description": "Conditions per product",
+            "items": {
+              "$ref": "#/components/schemas/ReceiveItemDto"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
       "RefreshTokenRequestDto": {
         "properties": {
           "refreshToken": {
@@ -1340,6 +2329,63 @@
         "required": [
           "refreshToken"
         ],
+        "type": "object"
+      },
+      "RejectReturnDto": {
+        "description": "Rejection reason shown to the customer",
+        "properties": {
+          "note": {
+            "description": "Reason",
+            "example": "Item shows signs of use",
+            "maxLength": 500,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "note"
+        ],
+        "type": "object"
+      },
+      "ReorderSuggestionDto": {
+        "description": "Product that should be reordered",
+        "properties": {
+          "category": {
+            "description": "Category",
+            "example": "Electronics",
+            "type": "string"
+          },
+          "incomingQuantity": {
+            "description": "Units outstanding on SUBMITTED or PARTIALLY_RECEIVED purchase orders",
+            "example": 0,
+            "format": "int32",
+            "type": "integer"
+          },
+          "productId": {
+            "description": "Product ID",
+            "example": 3,
+            "format": "int64",
+            "type": "integer"
+          },
+          "productName": {
+            "description": "Product name",
+            "example": "iPhone 13 Pro",
+            "type": "string"
+          },
+          "stockQuantity": {
+            "description": "Stock on hand",
+            "example": 2,
+            "format": "int32",
+            "type": "integer"
+          },
+          "suggestedQuantity": {
+            "description": "4 × threshold − stock − incoming",
+            "example": 18,
+            "format": "int32",
+            "type": "integer"
+          }
+        },
         "type": "object"
       },
       "ResetPasswordRequestDto": {
@@ -1371,6 +2417,492 @@
           "newPassword",
           "token"
         ],
+        "type": "object"
+      },
+      "ReturnDto": {
+        "description": "Return request (RMA)",
+        "properties": {
+          "approvedAt": {
+            "description": "Approval timestamp",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "comment": {
+            "description": "Customer comment",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "description": "Creation timestamp",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "estimatedRefund": {
+            "description": "Refund the customer receives, proportional to any order discount",
+            "example": 899.99,
+            "type": "number"
+          },
+          "id": {
+            "description": "Return ID",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "items": {
+            "description": "Returned items",
+            "items": {
+              "$ref": "#/components/schemas/ReturnItemDto"
+            },
+            "type": "array"
+          },
+          "orderId": {
+            "description": "Order ID",
+            "example": 42,
+            "format": "int64",
+            "type": "integer"
+          },
+          "reason": {
+            "description": "Reason",
+            "enum": [
+              "DAMAGED",
+              "WRONG_ITEM",
+              "NOT_AS_DESCRIBED",
+              "NO_LONGER_NEEDED"
+            ],
+            "example": "DAMAGED",
+            "type": "string"
+          },
+          "receivedAt": {
+            "description": "Receipt timestamp",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "refundAmount": {
+            "description": "Refund paid; set when REFUNDED",
+            "example": 899.99,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "refundedAt": {
+            "description": "Refund timestamp",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rejectedAt": {
+            "description": "Rejection timestamp",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resolutionNote": {
+            "description": "Administrator note",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "description": "Status",
+            "enum": [
+              "REQUESTED",
+              "APPROVED",
+              "REJECTED",
+              "RECEIVED",
+              "REFUNDED"
+            ],
+            "example": "REQUESTED",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "Last update timestamp",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "username": {
+            "description": "Customer",
+            "example": "client",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ReturnItemDto": {
+        "description": "Returned item",
+        "properties": {
+          "condition": {
+            "description": "Condition recorded on receipt",
+            "enum": [
+              "RESELLABLE",
+              "DAMAGED",
+              null
+            ],
+            "example": "RESELLABLE",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "productId": {
+            "description": "Product ID",
+            "example": 3,
+            "format": "int64",
+            "type": "integer"
+          },
+          "productName": {
+            "description": "Product name",
+            "example": "iPhone 13 Pro",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Units returned",
+            "example": 1,
+            "format": "int32",
+            "type": "integer"
+          },
+          "unitPrice": {
+            "description": "Unit price paid before discounts",
+            "example": 999.99,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "ReturnItemRequestDto": {
+        "description": "Product and quantity to return",
+        "properties": {
+          "productId": {
+            "description": "Product ID from the order",
+            "example": 3,
+            "format": "int64",
+            "type": "integer"
+          },
+          "quantity": {
+            "description": "Units to return",
+            "example": 1,
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "productId",
+          "quantity"
+        ],
+        "type": "object"
+      },
+      "ReviewDto": {
+        "description": "Product review",
+        "properties": {
+          "body": {
+            "description": "Review text",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "Creation timestamp",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Review ID",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "moderationNote": {
+            "description": "Moderator note, visible to the author and administrators",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "productId": {
+            "description": "Product ID",
+            "example": 3,
+            "format": "int64",
+            "type": "integer"
+          },
+          "productName": {
+            "description": "Product name",
+            "example": "iPhone 13 Pro",
+            "type": "string"
+          },
+          "rating": {
+            "description": "Star rating",
+            "example": 5,
+            "format": "int32",
+            "type": "integer"
+          },
+          "status": {
+            "description": "Moderation status",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED"
+            ],
+            "example": "APPROVED",
+            "type": "string"
+          },
+          "title": {
+            "description": "Review title",
+            "example": "Great phone",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "Last update timestamp",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "username": {
+            "description": "Author username",
+            "example": "client",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ReviewRequestDto": {
+        "description": "Product review content",
+        "properties": {
+          "body": {
+            "description": "Review text",
+            "example": "Battery lasts two days and the camera is excellent.",
+            "maxLength": 2000,
+            "minLength": 10,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "rating": {
+            "description": "Star rating",
+            "example": 5,
+            "format": "int32",
+            "maximum": 5,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "title": {
+            "description": "Review title",
+            "example": "Great phone",
+            "maxLength": 120,
+            "minLength": 3,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "body",
+          "rating",
+          "title"
+        ],
+        "type": "object"
+      },
+      "ReviewSummaryDto": {
+        "description": "Rating summary over approved reviews",
+        "properties": {
+          "averageRating": {
+            "description": "Average rating rounded half-up to one decimal; null without reviews",
+            "example": 4.3,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "distribution": {
+            "additionalProperties": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "description": "Approved review count for each star rating 1-5",
+            "type": "object"
+          },
+          "productId": {
+            "description": "Product ID",
+            "example": 3,
+            "format": "int64",
+            "type": "integer"
+          },
+          "reviewCount": {
+            "description": "Number of approved reviews",
+            "example": 12,
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ShipShipmentDto": {
+        "description": "Carrier hand-over. INPOST: 24 digits, DPD: 14 digits, DHL: 10 digits, UPS: 1Z + 16 letters or digits.",
+        "properties": {
+          "carrier": {
+            "description": "Carrier",
+            "enum": [
+              "INPOST",
+              "DPD",
+              "DHL",
+              "UPS"
+            ],
+            "example": "DHL",
+            "type": "string"
+          },
+          "trackingNumber": {
+            "description": "Tracking number; surrounding spaces are ignored and letters are upper-cased",
+            "example": "1234567890",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "carrier",
+          "trackingNumber"
+        ],
+        "type": "object"
+      },
+      "ShipmentDto": {
+        "description": "Warehouse shipment for one order",
+        "properties": {
+          "cancelledAt": {
+            "description": "When the shipment was cancelled",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "carrier": {
+            "description": "Carrier, set when shipped",
+            "enum": [
+              "INPOST",
+              "DPD",
+              "DHL",
+              "UPS",
+              null
+            ],
+            "example": "DHL",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "description": "Creation timestamp",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "createdBy": {
+            "description": "User who released the order to the warehouse",
+            "example": "warehouse",
+            "type": "string"
+          },
+          "deliveredAt": {
+            "description": "When the parcel was delivered",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "description": "Shipment ID",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "lastActor": {
+            "description": "User who performed the latest transition",
+            "example": "warehouse",
+            "type": "string"
+          },
+          "orderId": {
+            "description": "Order ID",
+            "example": 42,
+            "format": "int64",
+            "type": "integer"
+          },
+          "packedAt": {
+            "description": "When packing finished",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "pickedAt": {
+            "description": "When picking finished",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "shippedAt": {
+            "description": "When the carrier collected the parcel",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "description": "Shipment status",
+            "enum": [
+              "AWAITING_PICK",
+              "PICKED",
+              "PACKED",
+              "SHIPPED",
+              "DELIVERED",
+              "CANCELLED"
+            ],
+            "example": "AWAITING_PICK",
+            "type": "string"
+          },
+          "totalUnits": {
+            "description": "Units to pick",
+            "example": 3,
+            "format": "int32",
+            "type": "integer"
+          },
+          "trackingNumber": {
+            "description": "Carrier tracking number",
+            "example": "1234567890",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updatedAt": {
+            "description": "Last update timestamp",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "username": {
+            "description": "Order owner",
+            "example": "client",
+            "type": "string"
+          },
+          "weightKg": {
+            "description": "Package weight in kilograms, set when packed",
+            "example": 1.25,
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
         "type": "object"
       },
       "SsoExchangeRequestDto": {
@@ -1436,6 +2968,74 @@
         "required": [
           "model",
           "prompt"
+        ],
+        "type": "object"
+      },
+      "SupplierDto": {
+        "description": "Supplier",
+        "properties": {
+          "createdAt": {
+            "description": "Creation timestamp",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "email": {
+            "description": "Purchasing contact",
+            "example": "orders@nordic.example",
+            "type": "string"
+          },
+          "id": {
+            "description": "Supplier ID",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "leadTimeDays": {
+            "description": "Lead time in days",
+            "example": 7,
+            "format": "int32",
+            "type": "integer"
+          },
+          "name": {
+            "description": "Name",
+            "example": "Nordic Electronics",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SupplierRequestDto": {
+        "description": "Supplier",
+        "properties": {
+          "email": {
+            "description": "Purchasing contact",
+            "example": "orders@nordic.example",
+            "format": "email",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "leadTimeDays": {
+            "description": "Days between submission and expected delivery",
+            "example": 7,
+            "format": "int32",
+            "maximum": 365,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "name": {
+            "description": "Unique name, case-insensitive",
+            "example": "Nordic Electronics",
+            "maxLength": 120,
+            "minLength": 2,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "leadTimeDays",
+          "name"
         ],
         "type": "object"
       },
@@ -1753,7 +3353,8 @@
             "items": {
               "enum": [
                 "ROLE_ADMIN",
-                "ROLE_CLIENT"
+                "ROLE_CLIENT",
+                "ROLE_WAREHOUSE"
               ],
               "type": "string"
             },
@@ -1859,7 +3460,8 @@
             "items": {
               "enum": [
                 "ROLE_ADMIN",
-                "ROLE_CLIENT"
+                "ROLE_CLIENT",
+                "ROLE_WAREHOUSE"
               ],
               "type": "string"
             },
@@ -1891,6 +3493,83 @@
           }
         },
         "type": "object"
+      },
+      "WishlistItemDto": {
+        "description": "Wishlist entry with the product's current price and availability",
+        "properties": {
+          "addedAt": {
+            "description": "When the product was added",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "imageUrl": {
+            "description": "Product image URL",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastNotifiedAt": {
+            "description": "Last back-in-stock email",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "notifyWhenAvailable": {
+            "description": "Email the user when the product is back in stock",
+            "example": true,
+            "type": "boolean"
+          },
+          "price": {
+            "description": "Current product price",
+            "example": 999.99,
+            "type": "number"
+          },
+          "productId": {
+            "description": "Product ID",
+            "example": 3,
+            "format": "int64",
+            "type": "integer"
+          },
+          "productName": {
+            "description": "Product name",
+            "example": "iPhone 13 Pro",
+            "type": "string"
+          },
+          "stockQuantity": {
+            "description": "Current stock quantity",
+            "example": 0,
+            "format": "int32",
+            "type": "integer"
+          },
+          "stockStatus": {
+            "description": "OUT_OF_STOCK when quantity is zero, otherwise IN_STOCK",
+            "enum": [
+              "IN_STOCK",
+              "LOW_STOCK",
+              "OUT_OF_STOCK"
+            ],
+            "example": "OUT_OF_STOCK",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WishlistUpdateDto": {
+        "description": "Wishlist entry settings",
+        "properties": {
+          "notifyWhenAvailable": {
+            "description": "Email when back in stock; defaults to false",
+            "example": true,
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
       }
     },
     "securitySchemes": {
@@ -1914,10 +3593,403 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/admin/coupons": {
+      "get": {
+        "description": "Lists coupons newest first with their effective status. Negative page is clamped to zero; size is clamped to 1-100.",
+        "operationId": "list_3",
+        "parameters": [
+          {
+            "description": "Zero-based page index",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page size, 1-100",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoCouponDto"
+                }
+              }
+            },
+            "description": "Coupons returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List coupons",
+        "tags": [
+          "Coupons"
+        ]
+      },
+      "post": {
+        "description": "Creates a coupon. Codes are case-insensitive and stored upper-case. PERCENTAGE values above 100 and validity windows that end before they start are rejected.",
+        "operationId": "create_4",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CouponRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CouponDto"
+                }
+              }
+            },
+            "description": "Coupon created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid coupon definition"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Coupon code already exists"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create coupon",
+        "tags": [
+          "Coupons"
+        ]
+      }
+    },
+    "/api/v1/admin/coupons/{id}": {
+      "delete": {
+        "description": "Deletes a coupon that was never redeemed and removes it from carts. Redeemed coupons return 409; deactivate them instead.",
+        "operationId": "delete_2",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Coupon deleted"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Coupon not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Coupon has redemptions"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete coupon",
+        "tags": [
+          "Coupons"
+        ]
+      },
+      "get": {
+        "description": "Returns one coupon with its redemption count and effective status.",
+        "operationId": "get_1",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CouponDto"
+                }
+              }
+            },
+            "description": "Coupon returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Coupon not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get coupon",
+        "tags": [
+          "Coupons"
+        ]
+      },
+      "put": {
+        "description": "Replaces a coupon definition. The redemption count is preserved.",
+        "operationId": "update_2",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CouponRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CouponDto"
+                }
+              }
+            },
+            "description": "Coupon updated"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid coupon definition"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Coupon not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Coupon code already exists"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update coupon",
+        "tags": [
+          "Coupons"
+        ]
+      }
+    },
     "/api/v1/admin/inventory": {
       "get": {
         "description": "Lists inventory with optional stock and catalog filters. Negative page is clamped to zero; size is clamped to 1–100. lowStockThreshold must be at least 1.",
-        "operationId": "list",
+        "operationId": "list_7",
         "parameters": [
           {
             "in": "query",
@@ -2032,10 +4104,82 @@
         ]
       }
     },
+    "/api/v1/admin/inventory/reorder-suggestions": {
+      "get": {
+        "description": "Lists products whose stock plus units outstanding on open purchase orders is at or below the threshold, with suggestedQuantity = 4 × threshold − stock − incoming. Sorted by projected stock, then product id.",
+        "operationId": "reorderSuggestions",
+        "parameters": [
+          {
+            "description": "Inclusive low-stock threshold; at least one",
+            "in": "query",
+            "name": "lowStockThreshold",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReorderSuggestionDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Suggestions returned"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Threshold below 1"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get reorder suggestions",
+        "tags": [
+          "Purchasing"
+        ]
+      }
+    },
     "/api/v1/admin/inventory/{productId}": {
       "get": {
         "description": "Returns the available quantity for one product.",
-        "operationId": "get",
+        "operationId": "get_5",
         "parameters": [
           {
             "in": "path",
@@ -2323,6 +4467,1585 @@
         ]
       }
     },
+    "/api/v1/admin/products/export": {
+      "get": {
+        "description": "Downloads every product as RFC 4180 CSV with header id,name,description,price,stockQuantity,category,imageUrl. Text cells that start with =, +, -, @, tab or carriage return are prefixed with a single quote.",
+        "operationId": "export",
+        "responses": {
+          "200": {
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "CSV file"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Export products as CSV",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/api/v1/admin/products/import": {
+      "post": {
+        "description": "Creates products for rows without an id and updates products for rows with an existing id. Columns may appear in any order; name, description, price, stockQuantity and category are required. Files are limited to 1 MB and 1000 rows. The import is all-or-nothing: any row error returns 400 with the full report and persists nothing. dryRun=true validates without persisting.",
+        "operationId": "importCsv",
+        "parameters": [
+          {
+            "description": "Validate without persisting",
+            "in": "query",
+            "name": "dryRun",
+            "required": false,
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "file": {
+                    "description": "CSV file",
+                    "format": "binary",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "file"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportReportDto"
+                }
+              }
+            },
+            "description": "Import applied, or dry run succeeded"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ImportReportDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid file or rows; the report lists every error when the file could be parsed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "File larger than 1 MB"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Import products from CSV",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/api/v1/admin/purchase-orders": {
+      "get": {
+        "description": "Lists purchase orders newest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1-100.",
+        "operationId": "list_2",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "DRAFT",
+                "SUBMITTED",
+                "PARTIALLY_RECEIVED",
+                "RECEIVED",
+                "CANCELLED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Zero-based page index",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page size, 1-100",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoPurchaseOrderDto"
+                }
+              }
+            },
+            "description": "Purchase orders returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List purchase orders",
+        "tags": [
+          "Purchasing"
+        ]
+      },
+      "post": {
+        "description": "Creates a DRAFT purchase order. Lines may be empty until submission; each product may appear once.",
+        "operationId": "create_3",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PurchaseOrderRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                }
+              }
+            },
+            "description": "Draft created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid purchase order or duplicate product"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Supplier or product not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create purchase order",
+        "tags": [
+          "Purchasing"
+        ]
+      }
+    },
+    "/api/v1/admin/purchase-orders/{id}": {
+      "get": {
+        "description": "Returns one purchase order with received and outstanding quantities.",
+        "operationId": "get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                }
+              }
+            },
+            "description": "Purchase order returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Purchase order not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get purchase order",
+        "tags": [
+          "Purchasing"
+        ]
+      },
+      "put": {
+        "description": "Replaces the supplier, note and lines of a DRAFT purchase order.",
+        "operationId": "update_1",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PurchaseOrderRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                }
+              }
+            },
+            "description": "Draft updated"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid purchase order or duplicate product"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Purchase order, supplier or product not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Purchase order is no longer a draft"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update draft purchase order",
+        "tags": [
+          "Purchasing"
+        ]
+      }
+    },
+    "/api/v1/admin/purchase-orders/{id}/cancel": {
+      "post": {
+        "description": "Cancels a DRAFT or SUBMITTED purchase order. Orders with received goods cannot be cancelled.",
+        "operationId": "cancel_1",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                }
+              }
+            },
+            "description": "Purchase order cancelled"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Purchase order not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Purchase order cannot be cancelled in its status"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Cancel purchase order",
+        "tags": [
+          "Purchasing"
+        ]
+      }
+    },
+    "/api/v1/admin/purchase-orders/{id}/receipts": {
+      "post": {
+        "description": "Books received units for SUBMITTED or PARTIALLY_RECEIVED purchase orders and raises stock with PURCHASE_RECEIVED movements. Receiving more than is outstanding returns 409. Repeating requestId with the same lines returns the current purchase order without booking again.",
+        "operationId": "receive_1",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReceiptRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                }
+              }
+            },
+            "description": "Goods received, or receipt replayed"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid receipt, duplicate product, or product not on the purchase order"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Purchase order not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Not open for receipt, over-receipt, or requestId reused with different lines"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Receive goods",
+        "tags": [
+          "Purchasing"
+        ]
+      }
+    },
+    "/api/v1/admin/purchase-orders/{id}/submit": {
+      "post": {
+        "description": "DRAFT to SUBMITTED. Requires at least one line; expectedAt is the submission time plus the supplier lead time.",
+        "operationId": "submit",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                }
+              }
+            },
+            "description": "Purchase order submitted"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Purchase order has no lines"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Purchase order not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Purchase order is not a draft"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Submit purchase order",
+        "tags": [
+          "Purchasing"
+        ]
+      }
+    },
+    "/api/v1/admin/returns": {
+      "get": {
+        "description": "Lists returns oldest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1-100.",
+        "operationId": "list_6",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "REQUESTED",
+                "APPROVED",
+                "REJECTED",
+                "RECEIVED",
+                "REFUNDED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Zero-based page index",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page size, 1-100",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoReturnDto"
+                }
+              }
+            },
+            "description": "Returns listed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List returns",
+        "tags": [
+          "Returns"
+        ]
+      }
+    },
+    "/api/v1/admin/returns/{id}": {
+      "get": {
+        "description": "Returns any customer's return.",
+        "operationId": "get_4",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnDto"
+                }
+              }
+            },
+            "description": "Return found"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Return not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get return",
+        "tags": [
+          "Returns"
+        ]
+      }
+    },
+    "/api/v1/admin/returns/{id}/approve": {
+      "post": {
+        "description": "REQUESTED to APPROVED. The customer is emailed.",
+        "operationId": "approve",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnDto"
+                }
+              }
+            },
+            "description": "Return approved"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Return not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Transition not allowed from the current return status"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Approve return",
+        "tags": [
+          "Returns"
+        ]
+      }
+    },
+    "/api/v1/admin/returns/{id}/receive": {
+      "post": {
+        "description": "APPROVED to RECEIVED. Every returned product needs a condition; RESELLABLE units go back to stock as RETURN_RESTOCKED movements.",
+        "operationId": "receive",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReceiveReturnDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnDto"
+                }
+              }
+            },
+            "description": "Return received"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Conditions missing or not matching the returned products"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Return not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Transition not allowed from the current return status"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Receive returned goods",
+        "tags": [
+          "Returns"
+        ]
+      }
+    },
+    "/api/v1/admin/returns/{id}/refund": {
+      "post": {
+        "description": "RECEIVED to REFUNDED. The refund is the returned items' value scaled by the order's total-to-subtotal ratio, rounded half-up. The customer is emailed.",
+        "operationId": "refund",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnDto"
+                }
+              }
+            },
+            "description": "Return refunded"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Return not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Transition not allowed from the current return status"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Refund return",
+        "tags": [
+          "Returns"
+        ]
+      }
+    },
+    "/api/v1/admin/returns/{id}/reject": {
+      "post": {
+        "description": "REQUESTED to REJECTED with a note for the customer. Rejected quantities become returnable again.",
+        "operationId": "reject",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectReturnDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnDto"
+                }
+              }
+            },
+            "description": "Return rejected"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Missing note"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Return not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Transition not allowed from the current return status"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Reject return",
+        "tags": [
+          "Returns"
+        ]
+      }
+    },
+    "/api/v1/admin/reviews": {
+      "get": {
+        "description": "Lists reviews oldest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1-100.",
+        "operationId": "list_5",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "PENDING",
+                "APPROVED",
+                "REJECTED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Zero-based page index",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page size, 1-100",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoReviewDto"
+                }
+              }
+            },
+            "description": "Reviews returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List reviews for moderation",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/api/v1/admin/reviews/{id}/moderation": {
+      "put": {
+        "description": "Approves or rejects a review. Rejection requires a note that the author can see. A review can be moderated again later.",
+        "operationId": "moderate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModerationRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewDto"
+                }
+              }
+            },
+            "description": "Review moderated"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid decision or missing rejection note"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Review not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Moderate review",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/api/v1/admin/suppliers": {
+      "get": {
+        "description": "Lists suppliers by name.",
+        "operationId": "suppliers",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SupplierDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Suppliers returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List suppliers",
+        "tags": [
+          "Purchasing"
+        ]
+      },
+      "post": {
+        "description": "Creates a supplier with a case-insensitively unique name and a lead time of 0-365 days.",
+        "operationId": "createSupplier",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupplierRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierDto"
+                }
+              }
+            },
+            "description": "Supplier created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid supplier"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Supplier name already exists"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create supplier",
+        "tags": [
+          "Purchasing"
+        ]
+      }
+    },
     "/api/v1/cart": {
       "delete": {
         "description": "Removes all items from the authenticated user's cart.",
@@ -2383,6 +6106,125 @@
           }
         ],
         "summary": "Get current user's cart",
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/api/v1/cart/coupon": {
+      "delete": {
+        "description": "Detaches the coupon from the cart. Succeeds even when no coupon is applied.",
+        "operationId": "remove_1",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartDto"
+                }
+              }
+            },
+            "description": "Coupon removed; the updated cart is returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Remove coupon from cart",
+        "tags": [
+          "Cart"
+        ]
+      },
+      "put": {
+        "description": "Validates the coupon against the current cart and attaches it, replacing any previous coupon. Checkout validates it again.",
+        "operationId": "apply",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyCouponDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartDto"
+                }
+              }
+            },
+            "description": "Coupon applied; the cart shows the discount"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Empty cart, inactive, not yet valid or expired coupon, or subtotal below the minimum"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Coupon not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Global or per-user redemption limit reached"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Apply coupon to cart",
         "tags": [
           "Cart"
         ]
@@ -3251,8 +7093,19 @@
         ]
       },
       "post": {
-        "description": "Creates an order for the authenticated user from the current cart and clears the cart after success.",
+        "description": "Creates an order for the authenticated user from the current cart and clears the cart after success. A coupon applied to the cart is validated again and redeemed. An optional Idempotency-Key header makes retries safe: repeating the key with the same address within 24 hours returns the original order with Idempotent-Replayed: true, and a different address returns 409.",
         "operationId": "createOrder",
+        "parameters": [
+          {
+            "description": "Client-generated key, 8-64 letters, digits, hyphens or underscores",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -3272,7 +7125,17 @@
                 }
               }
             },
-            "description": "Order created successfully"
+            "description": "Order created successfully, or replayed for a repeated Idempotency-Key",
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "true when the response replays an earlier order",
+                "schema": {
+                  "example": "true",
+                  "type": "string"
+                },
+                "style": "simple"
+              }
+            }
           },
           "400": {
             "content": {
@@ -3319,7 +7182,7 @@
                 }
               }
             },
-            "description": "Insufficient stock to place the order"
+            "description": "Insufficient stock, coupon no longer valid, or Idempotency-Key reused with a different address"
           }
         },
         "security": [
@@ -3594,6 +7457,64 @@
         ]
       }
     },
+    "/api/v1/orders/{id}/shipment": {
+      "get": {
+        "description": "Returns the shipment for one of the caller's orders. Administrators may track any order.",
+        "operationId": "track",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentDto"
+                }
+              }
+            },
+            "description": "Shipment returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Order not found, or not released to the warehouse yet"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Track order shipment",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
     "/api/v1/orders/{id}/status": {
       "put": {
         "description": "Sets the supplied status using administrator privileges. CANCELLED is allowed only from PENDING or PAID and restores deducted stock; other status values are assigned directly.",
@@ -3693,6 +7614,101 @@
         "summary": "Update order status (Admin only)",
         "tags": [
           "Orders"
+        ]
+      }
+    },
+    "/api/v1/orders/{orderId}/returns": {
+      "post": {
+        "description": "Opens a return for the caller's DELIVERED order within 30 days of delivery. Each product may appear once, and quantities cannot exceed what was bought minus units in other non-rejected returns.",
+        "operationId": "create_2",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "orderId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReturnDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnDto"
+                }
+              }
+            },
+            "description": "Return requested"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid request, duplicate product, or product not in the order"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Order not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Order not delivered, return window passed, or quantity exceeds what can be returned"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Request a return",
+        "tags": [
+          "Returns"
         ]
       }
     },
@@ -3886,6 +7902,15 @@
               "format": "int64",
               "type": "integer"
             }
+          },
+          {
+            "description": "Entity tag from a previous response; a match returns 304",
+            "in": "header",
+            "name": "If-None-Match",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -3897,7 +7922,20 @@
                 }
               }
             },
-            "description": "Successfully retrieved product"
+            "description": "Successfully retrieved product; the ETag header carries the product version",
+            "headers": {
+              "ETag": {
+                "description": "Quoted product version",
+                "schema": {
+                  "example": "\"3\"",
+                  "type": "string"
+                },
+                "style": "simple"
+              }
+            }
+          },
+          "304": {
+            "description": "If-None-Match matches the current version; empty response body"
           },
           "400": {
             "content": {
@@ -3941,7 +7979,7 @@
         ]
       },
       "put": {
-        "description": "Updates supplied non-null product fields; omitted or null fields are unchanged. Empty description and imageUrl are allowed. Requires an administrator role.",
+        "description": "Updates supplied non-null product fields; omitted or null fields are unchanged. Empty description and imageUrl are allowed. An optional If-Match header with the ETag from GET enables optimistic concurrency: a stale tag returns 412 and nothing changes. Requires an administrator role.",
         "operationId": "updateProduct",
         "parameters": [
           {
@@ -3951,6 +7989,15 @@
             "schema": {
               "format": "int64",
               "type": "integer"
+            }
+          },
+          {
+            "description": "Entity tag from GET /api/v1/products/{id}, for example \"3\"",
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -3973,7 +8020,17 @@
                 }
               }
             },
-            "description": "Product updated successfully"
+            "description": "Product updated successfully; the ETag header carries the new version",
+            "headers": {
+              "ETag": {
+                "description": "Quoted product version",
+                "schema": {
+                  "example": "\"4\"",
+                  "type": "string"
+                },
+                "style": "simple"
+              }
+            }
           },
           "400": {
             "content": {
@@ -4014,6 +8071,16 @@
               }
             },
             "description": "Product not found"
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "If-Match does not match the current product version"
           }
         },
         "security": [
@@ -4024,6 +8091,423 @@
         "summary": "Update existing product",
         "tags": [
           "Products"
+        ]
+      }
+    },
+    "/api/v1/products/{productId}/reviews": {
+      "get": {
+        "description": "Lists approved reviews for a product, newest first. Negative page is clamped to zero; size is clamped to 1-50.",
+        "operationId": "list_1",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Zero-based page index",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page size, 1-50",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoReviewDto"
+                }
+              }
+            },
+            "description": "Reviews returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product or review not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List approved reviews",
+        "tags": [
+          "Reviews"
+        ]
+      },
+      "post": {
+        "description": "Creates a PENDING review. Only users with a DELIVERED order containing the product may review it, once per product.",
+        "operationId": "create_1",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewDto"
+                }
+              }
+            },
+            "description": "Review created and awaiting moderation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid review"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The caller has not received this product"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product or review not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The caller already reviewed this product"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create review",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/api/v1/products/{productId}/reviews/mine": {
+      "delete": {
+        "description": "Deletes the caller's review for the product.",
+        "operationId": "delete_1",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Review deleted"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product or review not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete my review",
+        "tags": [
+          "Reviews"
+        ]
+      },
+      "get": {
+        "description": "Returns whether the caller may review the product and the caller's review in any moderation status.",
+        "operationId": "mine",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyReviewDto"
+                }
+              }
+            },
+            "description": "Eligibility returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product or review not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get my review and eligibility",
+        "tags": [
+          "Reviews"
+        ]
+      },
+      "put": {
+        "description": "Replaces the caller's review content. The review returns to PENDING and its moderation note is cleared.",
+        "operationId": "update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewDto"
+                }
+              }
+            },
+            "description": "Review updated and awaiting moderation"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid review"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product or review not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Edit my review",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/api/v1/products/{productId}/reviews/summary": {
+      "get": {
+        "description": "Returns the average rating, count, and 1-5 distribution over approved reviews only.",
+        "operationId": "summary",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewSummaryDto"
+                }
+              }
+            },
+            "description": "Summary returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product or review not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get rating summary",
+        "tags": [
+          "Reviews"
         ]
       }
     },
@@ -4082,6 +8566,125 @@
         "summary": "Generate QR code",
         "tags": [
           "QR"
+        ]
+      }
+    },
+    "/api/v1/returns": {
+      "get": {
+        "description": "Lists the caller's returns newest first. Negative page is clamped to zero; size is clamped to 1-100.",
+        "operationId": "mine_1",
+        "parameters": [
+          {
+            "description": "Zero-based page index",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page size, 1-100",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoReturnDto"
+                }
+              }
+            },
+            "description": "Returns listed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List my returns",
+        "tags": [
+          "Returns"
+        ]
+      }
+    },
+    "/api/v1/returns/{id}": {
+      "get": {
+        "description": "Returns one of the caller's returns with its estimated or paid refund.",
+        "operationId": "get_3",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReturnDto"
+                }
+              }
+            },
+            "description": "Return found"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Return not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get my return",
+        "tags": [
+          "Returns"
         ]
       }
     },
@@ -5685,6 +10288,998 @@
           "users"
         ]
       }
+    },
+    "/api/v1/warehouse/queue": {
+      "get": {
+        "description": "Lists PAID orders that have not been released to the warehouse yet, oldest first. Negative page is clamped to zero; size is clamped to 1-100.",
+        "operationId": "queue",
+        "parameters": [
+          {
+            "description": "Zero-based page index",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page size, 1-100",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoOrderDto"
+                }
+              }
+            },
+            "description": "Queue returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get fulfilment queue",
+        "tags": [
+          "Warehouse"
+        ]
+      }
+    },
+    "/api/v1/warehouse/shipments": {
+      "get": {
+        "description": "Lists shipments oldest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1-100.",
+        "operationId": "list",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "AWAITING_PICK",
+                "PICKED",
+                "PACKED",
+                "SHIPPED",
+                "DELIVERED",
+                "CANCELLED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Zero-based page index",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page size, 1-100",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoShipmentDto"
+                }
+              }
+            },
+            "description": "Shipments returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List shipments",
+        "tags": [
+          "Warehouse"
+        ]
+      },
+      "post": {
+        "description": "Releases a PAID order to the warehouse as an AWAITING_PICK shipment.",
+        "operationId": "create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateShipmentDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentDto"
+                }
+              }
+            },
+            "description": "Shipment created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Order not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Order is not PAID or already has a shipment"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create shipment",
+        "tags": [
+          "Warehouse"
+        ]
+      }
+    },
+    "/api/v1/warehouse/shipments/{id}": {
+      "get": {
+        "description": "Returns one shipment with its timestamps.",
+        "operationId": "get_2",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentDto"
+                }
+              }
+            },
+            "description": "Shipment returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Shipment not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get shipment",
+        "tags": [
+          "Warehouse"
+        ]
+      }
+    },
+    "/api/v1/warehouse/shipments/{id}/cancel": {
+      "post": {
+        "description": "Cancels an AWAITING_PICK or PICKED shipment. The order is cancelled, stock is restored and any coupon redemption is released.",
+        "operationId": "cancel",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentDto"
+                }
+              }
+            },
+            "description": "Shipment cancelled"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Shipment not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Transition not allowed from the current shipment status"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Cancel shipment",
+        "tags": [
+          "Warehouse"
+        ]
+      }
+    },
+    "/api/v1/warehouse/shipments/{id}/deliver": {
+      "post": {
+        "description": "SHIPPED to DELIVERED. The order becomes DELIVERED, which enables reviews and returns, and the customer receives an email.",
+        "operationId": "deliver",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentDto"
+                }
+              }
+            },
+            "description": "Shipment delivered"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Shipment not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Transition not allowed from the current shipment status"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Confirm delivery",
+        "tags": [
+          "Warehouse"
+        ]
+      }
+    },
+    "/api/v1/warehouse/shipments/{id}/pack": {
+      "post": {
+        "description": "PICKED to PACKED with the package weight (0.01-30.00 kg).",
+        "operationId": "pack",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PackShipmentDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentDto"
+                }
+              }
+            },
+            "description": "Shipment packed"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid weight"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Shipment not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Transition not allowed from the current shipment status"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Mark shipment packed",
+        "tags": [
+          "Warehouse"
+        ]
+      }
+    },
+    "/api/v1/warehouse/shipments/{id}/pick": {
+      "post": {
+        "description": "AWAITING_PICK to PICKED.",
+        "operationId": "pick",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentDto"
+                }
+              }
+            },
+            "description": "Shipment picked"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Shipment not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Transition not allowed from the current shipment status"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Mark shipment picked",
+        "tags": [
+          "Warehouse"
+        ]
+      }
+    },
+    "/api/v1/warehouse/shipments/{id}/pick-list": {
+      "get": {
+        "description": "Returns the products to pick grouped by product and sorted by category, then name.",
+        "operationId": "pickList",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PickListDto"
+                }
+              }
+            },
+            "description": "Pick list returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Shipment not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get pick list",
+        "tags": [
+          "Warehouse"
+        ]
+      }
+    },
+    "/api/v1/warehouse/shipments/{id}/ship": {
+      "post": {
+        "description": "PACKED to SHIPPED. The tracking number must match the carrier format. The order becomes SHIPPED and the customer receives an email.",
+        "operationId": "ship",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipShipmentDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentDto"
+                }
+              }
+            },
+            "description": "Shipment shipped"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Missing carrier or invalid tracking number"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Shipment not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Transition not allowed from the current shipment status"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Hand shipment to carrier",
+        "tags": [
+          "Warehouse"
+        ]
+      }
+    },
+    "/api/v1/wishlist": {
+      "get": {
+        "description": "Returns the caller's wishlist, most recently added first, with current price and stock.",
+        "operationId": "list_4",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WishlistItemDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Wishlist returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get wishlist",
+        "tags": [
+          "Wishlist"
+        ]
+      }
+    },
+    "/api/v1/wishlist/{productId}": {
+      "delete": {
+        "description": "Removes a product from the caller's wishlist.",
+        "operationId": "remove",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Wishlist entry removed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product is not on the wishlist"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Remove wishlist product",
+        "tags": [
+          "Wishlist"
+        ]
+      },
+      "put": {
+        "description": "Adds a product to the wishlist (201) or updates its notification setting (200). The body is optional; notifyWhenAvailable defaults to false. A wishlist holds at most 50 products.",
+        "operationId": "upsert",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WishlistUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WishlistItemDto"
+                }
+              }
+            },
+            "description": "Wishlist entry updated"
+          },
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WishlistItemDto"
+                }
+              }
+            },
+            "description": "Wishlist entry created"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Wishlist is full"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Add or update wishlist product",
+        "tags": [
+          "Wishlist"
+        ]
+      }
     }
   },
   "tags": [
@@ -5701,12 +11296,24 @@
       "name": "Products"
     },
     {
+      "description": "Customer returns (RMA)",
+      "name": "Returns"
+    },
+    {
+      "description": "Fulfilment queue and shipment state machine for warehouse operators",
+      "name": "Warehouse"
+    },
+    {
       "description": "Helpers for inspecting the local JMS stub",
       "name": "local-email-outbox"
     },
     {
       "description": "Endpoint for QR code generation",
       "name": "QR"
+    },
+    {
+      "description": "Product reviews and ratings",
+      "name": "Reviews"
     },
     {
       "description": "User management endpoints",
@@ -5729,8 +11336,20 @@
       "name": "email"
     },
     {
+      "description": "Suppliers, purchase orders, goods receipts and reorder suggestions",
+      "name": "Purchasing"
+    },
+    {
+      "description": "Administrator coupon management",
+      "name": "Coupons"
+    },
+    {
       "description": "Shopping cart management endpoints",
       "name": "Cart"
+    },
+    {
+      "description": "Saved products and back-in-stock notifications",
+      "name": "Wishlist"
     },
     {
       "description": "Order management endpoints",

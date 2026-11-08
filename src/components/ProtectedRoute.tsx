@@ -2,11 +2,12 @@ import { Navigate, useLocation } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { auth } from '../lib/api';
 import { authStorage } from '../lib/authStorage';
-import { hasRole } from '../lib/roles';
+import { hasAnyRole } from '../lib/roles';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: string;
+  /** One role, or several where any one grants access. */
+  requiredRole?: string | string[];
   'data-testid'?: string;
 }
 
@@ -33,7 +34,7 @@ export function ProtectedRoute({ children, requiredRole, 'data-testid': dataTest
     );
   }
 
-  if (requiredRole && !hasRole(data?.data?.roles, requiredRole)) {
+  if (requiredRole && !hasAnyRole(data?.data?.roles, requiredRole)) {
     return <Navigate to="/" replace data-testid="protected-route-unauthorized" />;
   }
 

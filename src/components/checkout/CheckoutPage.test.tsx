@@ -16,7 +16,8 @@ vi.mock('react-router', async () => {
 
 const mockNavigate = vi.fn();
 
-vi.mock('../../lib/api', () => ({
+vi.mock('../../lib/api', async () => ({
+  ...(await import('../../test/commerceApiMocks')).commerceApiMocks(),
   cart: {
     getCart: vi.fn(),
   },

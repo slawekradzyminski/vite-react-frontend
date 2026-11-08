@@ -13,7 +13,8 @@ vi.mock('react-router', () => ({
   ),
 }));
 
-vi.mock('../../lib/api', () => ({
+vi.mock('../../lib/api', async () => ({
+  ...(await import('../../test/commerceApiMocks')).commerceApiMocks(),
   cart: {
     addToCart: vi.fn().mockResolvedValue({ data: { id: 1 } }),
     updateCartItem: vi.fn().mockResolvedValue({ data: { id: 1 } }),

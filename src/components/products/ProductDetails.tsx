@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, Link, useLocation } from 'react-router';
+import { WishlistButton } from '../wishlist/WishlistButton';
+import { ProductReviews } from './ProductReviews';
 import { products, cart } from '../../lib/api';
 import { CartItemDto, UpdateCartItemDto } from '../../types/cart';
 import { useToast } from '../../hooks/useToast';
@@ -279,8 +281,13 @@ export function ProductDetails() {
               }
             </button>
           </div>
+          <div className="mt-6 border-t border-stone-200 pt-5">
+            <WishlistButton productId={productData.id} />
+          </div>
         </Surface>
       </div>
+
+      <ProductReviews productId={productData.id} />
     </div>
   );
-} 
+}

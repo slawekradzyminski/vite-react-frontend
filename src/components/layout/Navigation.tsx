@@ -88,14 +88,17 @@ export function Navigation() {
 
   const authMenuItems: MenuItem[] = [
     { label: 'Products', path: '/products' },
+    { label: 'Wishlist', path: '/wishlist' },
     { label: 'Send Email', path: '/email' },
     { label: 'QR Code', path: '/qr' },
     { label: 'LLM', path: '/llm' },
     { label: 'Traffic Monitor', path: '/traffic' },
   ];
 
-  const adminMenuItems = [
-    { label: 'Admin', path: '/admin' },
+  const isWarehouse = hasRole(user?.data?.roles, 'WAREHOUSE');
+  const staffMenuItems = [
+    ...(isAdmin || isWarehouse ? [{ label: 'Warehouse', path: '/warehouse' }] : []),
+    ...(isAdmin ? [{ label: 'Admin', path: '/admin' }] : []),
   ];
 
   return (
@@ -119,7 +122,7 @@ export function Navigation() {
               />
             </Link>
 
-            <div className="hidden lg:flex lg:items-center lg:gap-2" data-testid="desktop-menu">
+            <div className="hidden xl:flex xl:items-center xl:gap-2" data-testid="desktop-menu">
               {user?.data && authMenuItems.map((item) => {
                 const className = `inline-flex items-center rounded-full px-3 py-2 text-sm font-medium transition ${
                     isActive(item.path)
@@ -130,7 +133,7 @@ export function Navigation() {
                 return <Link key={item.path} to={item.path} className={className} data-testid={testId}>{item.label}</Link>;
               })}
 
-              {isAdmin && adminMenuItems.map((item) => (
+              {staffMenuItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
@@ -168,7 +171,7 @@ export function Navigation() {
                   )}
                 </Link>
 
-                <div className="hidden lg:flex lg:items-center lg:gap-3" data-testid="user-actions">
+                <div className="hidden xl:flex xl:items-center xl:gap-3" data-testid="user-actions">
                   <Link
                     to="/profile" 
                     className="rounded-full border border-transparent px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-stone-200 hover:bg-white hover:text-slate-900"
@@ -185,7 +188,7 @@ export function Navigation() {
                     Logout
                   </Button>
                 </div>
-                <div className="flex items-center lg:hidden">
+                <div className="flex items-center xl:hidden">
                   <button
                     ref={menuToggleRef}
                     type="button"
@@ -226,7 +229,7 @@ export function Navigation() {
         </div>
       </div>
       {isOpen && user?.data && (
-        <div className="border-t border-stone-200/80 bg-stone-50/95 px-4 pb-4 pt-3 lg:hidden" id={MOBILE_MENU_ID} data-testid="mobile-menu">
+        <div className="border-t border-stone-200/80 bg-stone-50/95 px-4 pb-4 pt-3 xl:hidden" id={MOBILE_MENU_ID} data-testid="mobile-menu">
           <div className="space-y-2">
             {authMenuItems.map((item) => {
               const className = `block rounded-2xl px-4 py-3 text-base font-medium transition ${
@@ -238,7 +241,7 @@ export function Navigation() {
               return <Link key={item.path} to={item.path} className={className} onClick={() => setIsOpen(false)} data-testid={testId}>{item.label}</Link>;
             })}
 
-            {isAdmin && adminMenuItems.map((item) => (
+            {staffMenuItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}

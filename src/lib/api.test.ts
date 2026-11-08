@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { auth, inventory, ollama, qr } from './api';
+import { auth, cartCoupon, catalogCsv, inventory, ollama, orders, products, qr, warehouse } from './api';
 import { Role } from '../types/auth';
 
 const mockAxios = vi.hoisted(() => {
@@ -798,5 +798,60 @@ describe('API Client', () => {
         })
       );
     });
+  });
+});
+
+describe('commerce API headers', () => {
+  const address = { street: 'Main 1', city: 'Warsaw', state: 'MZ', zipCode: '00-001', country: 'PL' };
+
+  beforeEach(() => {
+    mockAxios.get.mockReset();
+    mockAxios.post.mockReset();
+    mockAxios.put.mockReset();
+  });
+
+  it('sends the Idempotency-Key header only when a key is supplied', async () => {
+    mockAxios.post.mockResolvedValue({ data: {} });
+
+    await orders.createOrder(address, 'checkout-key-1');
+    await orders.createOrder(address);
+
+    expect(mockAxios.post).toHaveBeenNthCalledWith(1, '/api/v1/orders', address, { headers: { 'Idempotency-Key': 'checkout-key-1' } });
+    expect(mockAxios.post).toHaveBeenNthCalledWith(2, '/api/v1/orders', address, undefined);
+  });
+
+  it('makes product updates conditional only when an entity tag is supplied', async () => {
+    mockAxios.put.mockResolvedValue({ data: {} });
+
+    await products.updateProduct(3, { price: 10 }, '"4"');
+    await products.updateProduct(3, { price: 11 });
+
+    expect(mockAxios.put).toHaveBeenNthCalledWith(1, '/api/v1/products/3', { price: 10 }, { headers: { 'If-Match': '"4"' } });
+    expect(mockAxios.put).toHaveBeenNthCalledWith(2, '/api/v1/products/3', { price: 11 }, undefined);
+  });
+
+  it('applies coupons and drives shipments through their REST endpoints', async () => {
+    mockAxios.put.mockResolvedValue({ data: {} });
+    mockAxios.post.mockResolvedValue({ data: {} });
+
+    await cartCoupon.apply('WELCOME10');
+    await warehouse.pack(7, 1.25);
+    await warehouse.ship(7, 'DHL', '1234567890');
+
+    expect(mockAxios.put).toHaveBeenCalledWith('/api/v1/cart/coupon', { code: 'WELCOME10' });
+    expect(mockAxios.post).toHaveBeenCalledWith('/api/v1/warehouse/shipments/7/pack', { weightKg: 1.25 });
+    expect(mockAxios.post).toHaveBeenCalledWith('/api/v1/warehouse/shipments/7/ship', { carrier: 'DHL', trackingNumber: '1234567890' });
+  });
+
+  it('uploads CSV imports as multipart with the dry-run flag', async () => {
+    mockAxios.post.mockResolvedValue({ data: {} });
+    const file = new File(['name\n'], 'products.csv', { type: 'text/csv' });
+
+    await catalogCsv.import(file, true);
+
+    const [url, body, config] = mockAxios.post.mock.calls[0];
+    expect(url).toBe('/api/v1/admin/products/import');
+    expect((body as FormData).get('file')).toBe(file);
+    expect(config).toEqual({ params: { dryRun: true }, headers: { 'Content-Type': 'multipart/form-data' } });
   });
 });

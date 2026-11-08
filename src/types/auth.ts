@@ -3,6 +3,7 @@ import { RegisterFormData, LoginFormData, ForgotPasswordFormData, ResetPasswordF
 export enum Role {
   ADMIN = 'ROLE_ADMIN',
   CLIENT = 'ROLE_CLIENT',
+  WAREHOUSE = 'ROLE_WAREHOUSE',
 }
 
 export interface RegisterRequest extends RegisterFormData {}

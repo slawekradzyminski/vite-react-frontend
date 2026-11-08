@@ -4,7 +4,9 @@ export type InventoryMovementType =
   | 'INITIAL_STOCK'
   | 'ADMIN_ADJUSTMENT'
   | 'ORDER_DEDUCTED'
-  | 'ORDER_RESTORED';
+  | 'ORDER_RESTORED'
+  | 'PURCHASE_RECEIVED'
+  | 'RETURN_RESTOCKED';
 
 export interface PageDto<T> {
   content: T[];

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { AdminCatalogCsv } from './AdminCatalogCsv';
 import { Link } from 'react-router';
 import { products } from '../../lib/api';
 import { Product } from '../../types/product';
@@ -66,6 +67,9 @@ export function AdminProductList() {
         >
           Add New Product
         </Link>
+        </div>
+        <div className="mt-5">
+          <AdminCatalogCsv />
         </div>
       </Surface>
       

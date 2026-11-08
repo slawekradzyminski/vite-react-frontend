@@ -32,7 +32,8 @@ const defaultProductLookup = (id: number) =>
     })
   );
 
-vi.mock('../../lib/api', () => ({
+vi.mock('../../lib/api', async () => ({
+  ...(await import('../../test/commerceApiMocks')).commerceApiMocks(),
   cart: {
     getCart: vi.fn(),
     addToCart: vi.fn(),

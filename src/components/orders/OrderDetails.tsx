@@ -1,4 +1,5 @@
 import { useParams } from 'react-router';
+import { OrderFulfilment } from './OrderFulfilment';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orders, auth } from '../../lib/api';
 import type { OrderStatus } from '../../types/order';
@@ -157,6 +158,12 @@ export const OrderDetails = () => {
             </div>
           ))}
         </div>
+        {order.discountAmount != null && order.discountAmount > 0 && (
+          <div className="mt-4 space-y-1 border-t border-stone-200 pt-3 text-sm" data-testid="order-details-discount">
+            <div className="flex items-center justify-between"><span className="text-slate-600">Subtotal</span><span data-testid="order-details-subtotal">{formatPrice(order.subtotalAmount ?? order.totalAmount)}</span></div>
+            <div className="flex items-center justify-between"><span className="text-slate-600">Coupon {order.couponCode}</span><span className="text-emerald-700" data-testid="order-details-discount-amount">−{formatPrice(order.discountAmount)}</span></div>
+          </div>
+        )}
         <div className="mt-4 flex items-center justify-between border-t border-stone-200 pt-3" data-testid="order-details-total">
           <p className="font-semibold text-slate-700">Total</p>
           <p className="font-bold text-lg text-slate-950" data-testid="order-details-total-amount">{formatPrice(order.totalAmount)}</p>
@@ -173,6 +180,8 @@ export const OrderDetails = () => {
           <p data-testid="order-details-address-country">{order.shippingAddress.country}</p>
         </div>
       </Surface>
+
+      <OrderFulfilment order={order} />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" data-testid="order-details-actions">
         {order.status === 'PENDING' && (

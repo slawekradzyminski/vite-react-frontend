@@ -4,6 +4,58 @@
  */
 
 export interface paths {
+    "/api/v1/admin/coupons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List coupons
+         * @description Lists coupons newest first with their effective status. Negative page is clamped to zero; size is clamped to 1-100.
+         */
+        get: operations["list_3"];
+        put?: never;
+        /**
+         * Create coupon
+         * @description Creates a coupon. Codes are case-insensitive and stored upper-case. PERCENTAGE values above 100 and validity windows that end before they start are rejected.
+         */
+        post: operations["create_4"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/coupons/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get coupon
+         * @description Returns one coupon with its redemption count and effective status.
+         */
+        get: operations["get_1"];
+        /**
+         * Update coupon
+         * @description Replaces a coupon definition. The redemption count is preserved.
+         */
+        put: operations["update_2"];
+        post?: never;
+        /**
+         * Delete coupon
+         * @description Deletes a coupon that was never redeemed and removes it from carts. Redeemed coupons return 409; deactivate them instead.
+         */
+        delete: operations["delete_2"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/inventory": {
         parameters: {
             query?: never;
@@ -15,7 +67,27 @@ export interface paths {
          * List inventory
          * @description Lists inventory with optional stock and catalog filters. Negative page is clamped to zero; size is clamped to 1–100. lowStockThreshold must be at least 1.
          */
-        get: operations["list"];
+        get: operations["list_7"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/reorder-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get reorder suggestions
+         * @description Lists products whose stock plus units outstanding on open purchase orders is at or below the threshold, with suggestedQuantity = 4 × threshold − stock − incoming. Sorted by projected stock, then product id.
+         */
+        get: operations["reorderSuggestions"];
         put?: never;
         post?: never;
         delete?: never;
@@ -35,7 +107,7 @@ export interface paths {
          * Get inventory item
          * @description Returns the available quantity for one product.
          */
-        get: operations["get"];
+        get: operations["get_5"];
         put?: never;
         post?: never;
         delete?: never;
@@ -84,6 +156,338 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/products/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export products as CSV
+         * @description Downloads every product as RFC 4180 CSV with header id,name,description,price,stockQuantity,category,imageUrl. Text cells that start with =, +, -, @, tab or carriage return are prefixed with a single quote.
+         */
+        get: operations["export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import products from CSV
+         * @description Creates products for rows without an id and updates products for rows with an existing id. Columns may appear in any order; name, description, price, stockQuantity and category are required. Files are limited to 1 MB and 1000 rows. The import is all-or-nothing: any row error returns 400 with the full report and persists nothing. dryRun=true validates without persisting.
+         */
+        post: operations["importCsv"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/purchase-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List purchase orders
+         * @description Lists purchase orders newest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1-100.
+         */
+        get: operations["list_2"];
+        put?: never;
+        /**
+         * Create purchase order
+         * @description Creates a DRAFT purchase order. Lines may be empty until submission; each product may appear once.
+         */
+        post: operations["create_3"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/purchase-orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get purchase order
+         * @description Returns one purchase order with received and outstanding quantities.
+         */
+        get: operations["get"];
+        /**
+         * Update draft purchase order
+         * @description Replaces the supplier, note and lines of a DRAFT purchase order.
+         */
+        put: operations["update_1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/purchase-orders/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel purchase order
+         * @description Cancels a DRAFT or SUBMITTED purchase order. Orders with received goods cannot be cancelled.
+         */
+        post: operations["cancel_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/purchase-orders/{id}/receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Receive goods
+         * @description Books received units for SUBMITTED or PARTIALLY_RECEIVED purchase orders and raises stock with PURCHASE_RECEIVED movements. Receiving more than is outstanding returns 409. Repeating requestId with the same lines returns the current purchase order without booking again.
+         */
+        post: operations["receive_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/purchase-orders/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit purchase order
+         * @description DRAFT to SUBMITTED. Requires at least one line; expectedAt is the submission time plus the supplier lead time.
+         */
+        post: operations["submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/returns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List returns
+         * @description Lists returns oldest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1-100.
+         */
+        get: operations["list_6"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/returns/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get return
+         * @description Returns any customer's return.
+         */
+        get: operations["get_4"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/returns/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve return
+         * @description REQUESTED to APPROVED. The customer is emailed.
+         */
+        post: operations["approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/returns/{id}/receive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Receive returned goods
+         * @description APPROVED to RECEIVED. Every returned product needs a condition; RESELLABLE units go back to stock as RETURN_RESTOCKED movements.
+         */
+        post: operations["receive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/returns/{id}/refund": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refund return
+         * @description RECEIVED to REFUNDED. The refund is the returned items' value scaled by the order's total-to-subtotal ratio, rounded half-up. The customer is emailed.
+         */
+        post: operations["refund"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/returns/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reject return
+         * @description REQUESTED to REJECTED with a note for the customer. Rejected quantities become returnable again.
+         */
+        post: operations["reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List reviews for moderation
+         * @description Lists reviews oldest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1-100.
+         */
+        get: operations["list_5"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/reviews/{id}/moderation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Moderate review
+         * @description Approves or rejects a review. Rejection requires a note that the author can see. A review can be moderated again later.
+         */
+        put: operations["moderate"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/suppliers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List suppliers
+         * @description Lists suppliers by name.
+         */
+        get: operations["suppliers"];
+        put?: never;
+        /**
+         * Create supplier
+         * @description Creates a supplier with a case-insensitively unique name and a lead time of 0-365 days.
+         */
+        post: operations["createSupplier"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/cart": {
         parameters: {
             query?: never;
@@ -103,6 +507,30 @@ export interface paths {
          * @description Removes all items from the authenticated user's cart.
          */
         delete: operations["clearCart"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cart/coupon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Apply coupon to cart
+         * @description Validates the coupon against the current cart and attaches it, replacing any previous coupon. Checkout validates it again.
+         */
+        put: operations["apply"];
+        post?: never;
+        /**
+         * Remove coupon from cart
+         * @description Detaches the coupon from the cart. Succeeds even when no coupon is applied.
+         */
+        delete: operations["remove_1"];
         options?: never;
         head?: never;
         patch?: never;
@@ -294,7 +722,7 @@ export interface paths {
         put?: never;
         /**
          * Create a new order from cart
-         * @description Creates an order for the authenticated user from the current cart and clears the cart after success.
+         * @description Creates an order for the authenticated user from the current cart and clears the cart after success. A coupon applied to the cart is validated again and redeemed. An optional Idempotency-Key header makes retries safe: repeating the key with the same address within 24 hours returns the original order with Idempotent-Replayed: true, and a different address returns 409.
          */
         post: operations["createOrder"];
         delete?: never;
@@ -363,6 +791,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/orders/{id}/shipment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Track order shipment
+         * @description Returns the shipment for one of the caller's orders. Administrators may track any order.
+         */
+        get: operations["track"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/orders/{id}/status": {
         parameters: {
             query?: never;
@@ -377,6 +825,26 @@ export interface paths {
          */
         put: operations["updateOrderStatus"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{orderId}/returns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request a return
+         * @description Opens a return for the caller's DELIVERED order within 30 days of delivery. Each product may appear once, and quantities cannot exceed what was bought minus units in other non-rejected returns.
+         */
+        post: operations["create_2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -421,7 +889,7 @@ export interface paths {
         get: operations["getProductById"];
         /**
          * Update existing product
-         * @description Updates supplied non-null product fields; omitted or null fields are unchanged. Empty description and imageUrl are allowed. Requires an administrator role.
+         * @description Updates supplied non-null product fields; omitted or null fields are unchanged. Empty description and imageUrl are allowed. An optional If-Match header with the ETag from GET enables optimistic concurrency: a stale tag returns 412 and nothing changes. Requires an administrator role.
          */
         put: operations["updateProduct"];
         post?: never;
@@ -430,6 +898,78 @@ export interface paths {
          * @description Deletes an existing product by identifier. Referenced products return 409 without removing existing data. Requires an administrator role.
          */
         delete: operations["deleteProduct"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products/{productId}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List approved reviews
+         * @description Lists approved reviews for a product, newest first. Negative page is clamped to zero; size is clamped to 1-50.
+         */
+        get: operations["list_1"];
+        put?: never;
+        /**
+         * Create review
+         * @description Creates a PENDING review. Only users with a DELIVERED order containing the product may review it, once per product.
+         */
+        post: operations["create_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products/{productId}/reviews/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get my review and eligibility
+         * @description Returns whether the caller may review the product and the caller's review in any moderation status.
+         */
+        get: operations["mine"];
+        /**
+         * Edit my review
+         * @description Replaces the caller's review content. The review returns to PENDING and its moderation note is cleared.
+         */
+        put: operations["update"];
+        post?: never;
+        /**
+         * Delete my review
+         * @description Deletes the caller's review for the product.
+         */
+        delete: operations["delete_1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products/{productId}/reviews/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get rating summary
+         * @description Returns the average rating, count, and 1-5 distribution over approved reviews only.
+         */
+        get: operations["summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -449,6 +989,46 @@ export interface paths {
          * @description Generates a PNG QR code for the supplied text payload.
          */
         post: operations["createQrCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/returns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List my returns
+         * @description Lists the caller's returns newest first. Negative page is clamped to zero; size is clamped to 1-100.
+         */
+        get: operations["mine_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/returns/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get my return
+         * @description Returns one of the caller's returns with its estimated or paid refund.
+         */
+        get: operations["get_3"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -931,6 +1511,234 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/warehouse/queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get fulfilment queue
+         * @description Lists PAID orders that have not been released to the warehouse yet, oldest first. Negative page is clamped to zero; size is clamped to 1-100.
+         */
+        get: operations["queue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/warehouse/shipments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List shipments
+         * @description Lists shipments oldest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1-100.
+         */
+        get: operations["list"];
+        put?: never;
+        /**
+         * Create shipment
+         * @description Releases a PAID order to the warehouse as an AWAITING_PICK shipment.
+         */
+        post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/warehouse/shipments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get shipment
+         * @description Returns one shipment with its timestamps.
+         */
+        get: operations["get_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/warehouse/shipments/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel shipment
+         * @description Cancels an AWAITING_PICK or PICKED shipment. The order is cancelled, stock is restored and any coupon redemption is released.
+         */
+        post: operations["cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/warehouse/shipments/{id}/deliver": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm delivery
+         * @description SHIPPED to DELIVERED. The order becomes DELIVERED, which enables reviews and returns, and the customer receives an email.
+         */
+        post: operations["deliver"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/warehouse/shipments/{id}/pack": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark shipment packed
+         * @description PICKED to PACKED with the package weight (0.01-30.00 kg).
+         */
+        post: operations["pack"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/warehouse/shipments/{id}/pick": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark shipment picked
+         * @description AWAITING_PICK to PICKED.
+         */
+        post: operations["pick"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/warehouse/shipments/{id}/pick-list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get pick list
+         * @description Returns the products to pick grouped by product and sorted by category, then name.
+         */
+        get: operations["pickList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/warehouse/shipments/{id}/ship": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Hand shipment to carrier
+         * @description PACKED to SHIPPED. The tracking number must match the carrier format. The order becomes SHIPPED and the customer receives an email.
+         */
+        post: operations["ship"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/wishlist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get wishlist
+         * @description Returns the caller's wishlist, most recently added first, with current price and stock.
+         */
+        get: operations["list_4"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/wishlist/{productId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Add or update wishlist product
+         * @description Adds a product to the wishlist (201) or updates its notification setting (200). The body is optional; notifyWhenAvailable defaults to false. A wishlist holds at most 50 products.
+         */
+        put: operations["upsert"];
+        post?: never;
+        /**
+         * Remove wishlist product
+         * @description Removes a product from the caller's wishlist.
+         */
+        delete: operations["remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -963,8 +1771,38 @@ export interface components {
              */
             zipCode: string;
         };
+        /** @description Coupon code to apply to the cart */
+        ApplyCouponDto: {
+            /**
+             * @description Case-insensitive coupon code
+             * @example welcome10
+             */
+            code: string;
+        };
         CartDto: {
+            /**
+             * @description Coupon applied to the cart
+             * @example WELCOME10
+             */
+            couponCode?: string | null;
+            /**
+             * @description Why the applied coupon does not qualify
+             * @example Order subtotal must be at least 100.00
+             */
+            couponMessage?: string | null;
+            /** @description Whether the applied coupon currently qualifies; null when no coupon is applied */
+            couponValid?: boolean | null;
+            /**
+             * @description Discount that checkout would apply
+             * @example 19.96
+             */
+            discountAmount?: number;
             items?: components["schemas"]["CartItemDto"][];
+            /**
+             * @description Total price after the discount
+             * @example 179.6
+             */
+            totalAfterDiscount?: number;
             /**
              * Format: int32
              * @description Total number of items
@@ -1067,6 +1905,139 @@ export interface components {
              */
             chatSystemPrompt?: string | null;
         };
+        /** @description Coupon */
+        CouponDto: {
+            /**
+             * @description Administrator switch
+             * @example true
+             */
+            active?: boolean;
+            /**
+             * @description Upper-case coupon code
+             * @example WELCOME10
+             */
+            code?: string;
+            /**
+             * Format: local-date-time
+             * @description Creation timestamp
+             */
+            createdAt?: string;
+            /** @description Internal description */
+            description?: string | null;
+            /**
+             * Format: int64
+             * @description Coupon ID
+             * @example 1
+             */
+            id?: number;
+            /**
+             * Format: int32
+             * @description Global redemption limit
+             */
+            maxRedemptions?: number | null;
+            /** @description Minimum cart subtotal */
+            minOrderAmount?: number | null;
+            /**
+             * Format: int32
+             * @description Redemptions allowed per user
+             * @example 1
+             */
+            perUserLimit?: number;
+            /**
+             * Format: int32
+             * @description Redemptions currently counted
+             * @example 0
+             */
+            redemptionCount?: number;
+            /**
+             * @description Effective status at the time of the request
+             * @example ACTIVE
+             * @enum {string}
+             */
+            status?: "ACTIVE" | "INACTIVE" | "SCHEDULED" | "EXPIRED" | "EXHAUSTED";
+            /**
+             * @description Discount type
+             * @example PERCENTAGE
+             * @enum {string}
+             */
+            type?: "PERCENTAGE" | "FIXED_AMOUNT";
+            /**
+             * Format: local-date-time
+             * @description Last update timestamp
+             */
+            updatedAt?: string;
+            /**
+             * Format: local-date-time
+             * @description Start of validity
+             */
+            validFrom?: string | null;
+            /**
+             * Format: local-date-time
+             * @description End of validity
+             */
+            validUntil?: string | null;
+            /**
+             * @description Percent or fixed amount
+             * @example 10
+             */
+            value?: number;
+        };
+        /** @description Coupon definition. PERCENTAGE values must be between 1 and 100; validUntil must be after validFrom. */
+        CouponRequestDto: {
+            /**
+             * @description Whether the coupon can be used; defaults to true
+             * @example true
+             */
+            active?: boolean | null;
+            /**
+             * @description Case-insensitive code, stored upper-case
+             * @example WELCOME10
+             */
+            code: string;
+            /**
+             * @description Internal description
+             * @example Welcome discount
+             */
+            description?: string | null;
+            /**
+             * Format: int32
+             * @description Global redemption limit; null means unlimited
+             * @example 100
+             */
+            maxRedemptions?: number | null;
+            /**
+             * @description Minimum cart subtotal
+             * @example 100
+             */
+            minOrderAmount?: number | null;
+            /**
+             * Format: int32
+             * @description Redemptions allowed per user; defaults to 1
+             * @example 1
+             */
+            perUserLimit?: number | null;
+            /**
+             * @description Discount type
+             * @example PERCENTAGE
+             * @enum {string}
+             */
+            type: "PERCENTAGE" | "FIXED_AMOUNT";
+            /**
+             * Format: local-date-time
+             * @description Start of validity (server-local)
+             */
+            validFrom?: string | null;
+            /**
+             * Format: local-date-time
+             * @description End of validity (server-local)
+             */
+            validUntil?: string | null;
+            /**
+             * @description Percent (1-100) or fixed amount
+             * @example 10
+             */
+            value: number;
+        };
         /** @description QR link */
         CreateQrDto: {
             /**
@@ -1074,6 +2045,31 @@ export interface components {
              * @example https://awesome-testing.com
              */
             text: string;
+        };
+        /** @description Return request for a delivered order */
+        CreateReturnDto: {
+            /**
+             * @description Customer comment
+             * @example Screen arrived cracked
+             */
+            comment?: string | null;
+            /** @description Items to return; each product at most once */
+            items: components["schemas"]["ReturnItemRequestDto"][];
+            /**
+             * @description Return reason
+             * @example DAMAGED
+             * @enum {string}
+             */
+            reason: "DAMAGED" | "WRONG_ITEM" | "NOT_AS_DESCRIBED" | "NO_LONGER_NEEDED";
+        };
+        /** @description Release a PAID order to the warehouse */
+        CreateShipmentDto: {
+            /**
+             * Format: int64
+             * @description Order ID
+             * @example 42
+             */
+            orderId: number;
         };
         EmailDto: {
             /**
@@ -1094,7 +2090,7 @@ export interface components {
              * @description Optional template identifier used by downstream consumers; may be null in local outbox payloads
              * @enum {string|null}
              */
-            template?: "GENERIC" | "PASSWORD_RESET_REQUESTED" | "PASSWORD_RESET_CONFIRMED" | null;
+            template?: "GENERIC" | "PASSWORD_RESET_REQUESTED" | "PASSWORD_RESET_CONFIRMED" | "BACK_IN_STOCK" | "ORDER_SHIPPED" | "ORDER_DELIVERED" | "RETURN_UPDATED" | null;
             /**
              * Format: email
              * @description Email recipient
@@ -1124,7 +2120,7 @@ export interface components {
              * @description Email template or event type
              * @enum {string}
              */
-            type?: "GENERIC" | "PASSWORD_RESET_REQUESTED" | "PASSWORD_RESET_CONFIRMED";
+            type?: "GENERIC" | "PASSWORD_RESET_REQUESTED" | "PASSWORD_RESET_CONFIRMED" | "BACK_IN_STOCK" | "ORDER_SHIPPED" | "ORDER_DELIVERED" | "RETURN_UPDATED";
             /**
              * Format: date-time
              * @description When the email event status was last updated
@@ -1166,6 +2162,64 @@ export interface components {
             thinking?: string | null;
             /** Format: int64 */
             total_duration?: number | null;
+        };
+        /** @description Result of a product CSV import. Nothing is persisted when errors is non-empty or dryRun is true. */
+        ImportReportDto: {
+            /**
+             * @description Whether changes were persisted
+             * @example true
+             */
+            applied?: boolean;
+            /**
+             * Format: int32
+             * @description Rows that create a product
+             * @example 1
+             */
+            created?: number;
+            /**
+             * @description Whether this was a dry run
+             * @example false
+             */
+            dryRun?: boolean;
+            /** @description Validation errors; empty when the file is valid */
+            errors?: components["schemas"]["ImportRowErrorDto"][];
+            /**
+             * Format: int32
+             * @description Number of non-empty data rows
+             * @example 3
+             */
+            totalRows?: number;
+            /**
+             * Format: int32
+             * @description Rows identical to the existing product
+             * @example 1
+             */
+            unchanged?: number;
+            /**
+             * Format: int32
+             * @description Rows that change an existing product
+             * @example 1
+             */
+            updated?: number;
+        };
+        /** @description Validation problem in one CSV row */
+        ImportRowErrorDto: {
+            /**
+             * @description Column name, or 'file' for structural problems
+             * @example price
+             */
+            field?: string;
+            /**
+             * @description Problem description
+             * @example Price must be greater than 0
+             */
+            message?: string;
+            /**
+             * Format: int32
+             * @description 1-based line number in the file; the header is line 1
+             * @example 4
+             */
+            row?: number;
         };
         InventoryAdjustmentDto: {
             /**
@@ -1215,7 +2269,7 @@ export interface components {
             /** Format: uuid */
             requestId?: string | null;
             /** @enum {string} */
-            type?: "INITIAL_STOCK" | "ADMIN_ADJUSTMENT" | "ORDER_DEDUCTED" | "ORDER_RESTORED";
+            type?: "INITIAL_STOCK" | "ADMIN_ADJUSTMENT" | "ORDER_DEDUCTED" | "ORDER_RESTORED" | "PURCHASE_RECEIVED" | "RETURN_RESTOCKED";
         };
         /** @description Login details */
         LoginDto: {
@@ -1263,7 +2317,7 @@ export interface components {
              *       "ROLE_CLIENT"
              *     ]
              */
-            roles?: ("ROLE_ADMIN" | "ROLE_CLIENT")[];
+            roles?: ("ROLE_ADMIN" | "ROLE_CLIENT" | "ROLE_WAREHOUSE")[];
             /**
              * @description JWT token
              * @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
@@ -1327,6 +2381,35 @@ export interface components {
              */
             error?: string;
         };
+        /** @description Moderation decision. REJECTED requires a note. */
+        ModerationRequestDto: {
+            /**
+             * @description Decision
+             * @example APPROVED
+             * @enum {string}
+             */
+            decision: "APPROVED" | "REJECTED";
+            /**
+             * @description Reason shown to the author
+             * @example Contains a link to another shop
+             */
+            note?: string | null;
+        };
+        /** @description Whether the caller may review a product, and their existing review */
+        MyReviewDto: {
+            /**
+             * @description True when the caller may create a review now
+             * @example true
+             */
+            canReview?: boolean;
+            /**
+             * @description Why the caller cannot create a review
+             * @example Only customers who received this product can review it
+             */
+            reason?: string | null;
+            /** @description The caller's review, if any */
+            review?: components["schemas"]["ReviewDto"];
+        };
         OllamaToolDefinitionDto: {
             /** @description Function metadata describing how Ollama should call the backend. */
             function: components["schemas"]["OllamaToolFunctionDto"];
@@ -1386,10 +2469,20 @@ export interface components {
         /** @description Order data transfer object */
         OrderDto: {
             /**
+             * @description Coupon code applied at checkout
+             * @example WELCOME10
+             */
+            couponCode?: string | null;
+            /**
              * Format: local-date-time
              * @description Creation timestamp
              */
             createdAt?: string;
+            /**
+             * @description Coupon discount subtracted from the subtotal
+             * @example 222.22
+             */
+            discountAmount?: number;
             /**
              * Format: int64
              * @description Order ID
@@ -1406,6 +2499,11 @@ export interface components {
              * @enum {string}
              */
             status?: "PENDING" | "PAID" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+            /**
+             * @description Sum of item prices before discounts
+             * @example 2222.2
+             */
+            subtotalAmount?: number;
             /**
              * @description Total amount
              * @example 1999.98
@@ -1458,6 +2556,25 @@ export interface components {
              */
             unitPrice?: number;
         };
+        /** @description Packing result */
+        PackShipmentDto: {
+            /**
+             * @description Package weight in kilograms
+             * @example 1.25
+             */
+            weightKg: number;
+        };
+        PageDtoCouponDto: {
+            content?: components["schemas"]["CouponDto"][];
+            /** Format: int32 */
+            pageNumber?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: int64 */
+            totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
+        };
         PageDtoInventoryItemDto: {
             content?: components["schemas"]["InventoryItemDto"][];
             /** Format: int32 */
@@ -1491,6 +2608,50 @@ export interface components {
             /** Format: int32 */
             totalPages?: number;
         };
+        PageDtoPurchaseOrderDto: {
+            content?: components["schemas"]["PurchaseOrderDto"][];
+            /** Format: int32 */
+            pageNumber?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: int64 */
+            totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
+        };
+        PageDtoReturnDto: {
+            content?: components["schemas"]["ReturnDto"][];
+            /** Format: int32 */
+            pageNumber?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: int64 */
+            totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
+        };
+        PageDtoReviewDto: {
+            content?: components["schemas"]["ReviewDto"][];
+            /** Format: int32 */
+            pageNumber?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: int64 */
+            totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
+        };
+        PageDtoShipmentDto: {
+            content?: components["schemas"]["ShipmentDto"][];
+            /** Format: int32 */
+            pageNumber?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: int64 */
+            totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
+        };
         PageDtoTrafficLogEntryDto: {
             content?: components["schemas"]["TrafficLogEntryDto"][];
             /** Format: int32 */
@@ -1501,6 +2662,62 @@ export interface components {
             totalElements?: number;
             /** Format: int32 */
             totalPages?: number;
+        };
+        /** @description Pick list grouped by product and sorted by category, then name */
+        PickListDto: {
+            /** @description Products to pick */
+            items?: components["schemas"]["PickListItemDto"][];
+            /**
+             * Format: int64
+             * @description Order ID
+             * @example 42
+             */
+            orderId?: number;
+            /**
+             * Format: int64
+             * @description Shipment ID
+             * @example 1
+             */
+            shipmentId?: number;
+            /** @description Shipping address */
+            shippingAddress?: components["schemas"]["AddressDto"];
+            /**
+             * @description Shipment status
+             * @example AWAITING_PICK
+             * @enum {string}
+             */
+            status?: "AWAITING_PICK" | "PICKED" | "PACKED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+            /**
+             * Format: int32
+             * @description Units to pick
+             * @example 3
+             */
+            totalUnits?: number;
+        };
+        /** @description Product to pick */
+        PickListItemDto: {
+            /**
+             * @description Category, used as the warehouse aisle
+             * @example Electronics
+             */
+            category?: string;
+            /**
+             * Format: int64
+             * @description Product ID
+             * @example 3
+             */
+            productId?: number;
+            /**
+             * @description Product name
+             * @example iPhone 13 Pro
+             */
+            productName?: string;
+            /**
+             * Format: int32
+             * @description Units to pick
+             * @example 2
+             */
+            quantity?: number;
         };
         /** @description Create product data transfer object */
         ProductCreateDto: {
@@ -1593,9 +2810,248 @@ export interface components {
              */
             stockQuantity?: number | null;
         };
+        /** @description Purchase order */
+        PurchaseOrderDto: {
+            /**
+             * Format: local-date-time
+             * @description Cancellation timestamp
+             */
+            cancelledAt?: string | null;
+            /**
+             * Format: local-date-time
+             * @description Creation timestamp
+             */
+            createdAt?: string;
+            /**
+             * @description Creator
+             * @example admin
+             */
+            createdBy?: string;
+            /**
+             * Format: local-date-time
+             * @description submittedAt plus the supplier lead time
+             */
+            expectedAt?: string | null;
+            /**
+             * Format: int64
+             * @description Purchase order ID
+             * @example 1
+             */
+            id?: number;
+            /** @description Lines */
+            lines?: components["schemas"]["PurchaseOrderLineDto"][];
+            /** @description Internal note */
+            note?: string | null;
+            /**
+             * Format: local-date-time
+             * @description When the last units arrived
+             */
+            receivedAt?: string | null;
+            /**
+             * @description Status
+             * @example SUBMITTED
+             * @enum {string}
+             */
+            status?: "DRAFT" | "SUBMITTED" | "PARTIALLY_RECEIVED" | "RECEIVED" | "CANCELLED";
+            /**
+             * Format: local-date-time
+             * @description Submission timestamp
+             */
+            submittedAt?: string | null;
+            /**
+             * Format: int64
+             * @description Supplier ID
+             * @example 1
+             */
+            supplierId?: number;
+            /**
+             * @description Supplier name
+             * @example Nordic Electronics
+             */
+            supplierName?: string;
+            /**
+             * @description Sum of line totals
+             * @example 32000
+             */
+            totalCost?: number;
+            /**
+             * Format: local-date-time
+             * @description Last update timestamp
+             */
+            updatedAt?: string;
+        };
+        /** @description Purchase order line */
+        PurchaseOrderLineDto: {
+            /**
+             * @description orderedQuantity × unitCost
+             * @example 32000
+             */
+            lineTotal?: number;
+            /**
+             * Format: int32
+             * @description Units ordered
+             * @example 50
+             */
+            orderedQuantity?: number;
+            /**
+             * Format: int32
+             * @description Units still expected
+             * @example 30
+             */
+            outstandingQuantity?: number;
+            /**
+             * Format: int64
+             * @description Product ID
+             * @example 3
+             */
+            productId?: number;
+            /**
+             * @description Product name
+             * @example iPhone 13 Pro
+             */
+            productName?: string;
+            /**
+             * Format: int32
+             * @description Units received so far
+             * @example 20
+             */
+            receivedQuantity?: number;
+            /**
+             * @description Purchase price per unit
+             * @example 640
+             */
+            unitCost?: number;
+        };
+        /** @description Purchase order line */
+        PurchaseOrderLineRequestDto: {
+            /**
+             * Format: int64
+             * @description Product ID
+             * @example 3
+             */
+            productId: number;
+            /**
+             * Format: int32
+             * @description Units ordered
+             * @example 50
+             */
+            quantity: number;
+            /**
+             * @description Purchase price per unit
+             * @example 640
+             */
+            unitCost: number;
+        };
+        /** @description Draft purchase order; lines may be empty until submission */
+        PurchaseOrderRequestDto: {
+            /** @description Lines; each product at most once */
+            lines?: components["schemas"]["PurchaseOrderLineRequestDto"][];
+            /**
+             * @description Internal note
+             * @example Restock before Black Friday
+             */
+            note?: string | null;
+            /**
+             * Format: int64
+             * @description Supplier ID
+             * @example 1
+             */
+            supplierId: number;
+        };
+        /** @description Units received for one product */
+        ReceiptLineDto: {
+            /**
+             * Format: int64
+             * @description Product ID
+             * @example 3
+             */
+            productId: number;
+            /**
+             * Format: int32
+             * @description Units received
+             * @example 20
+             */
+            quantity: number;
+        };
+        /** @description Goods receipt. Repeating requestId with the same lines replays the receipt; different lines return 409. */
+        ReceiptRequestDto: {
+            /** @description Lines; each product at most once */
+            lines: components["schemas"]["ReceiptLineDto"][];
+            /**
+             * Format: uuid
+             * @description Client-generated idempotency key
+             * @example 2f1c8a8e-3b0e-4d39-9d43-0a6d6f7f0a11
+             */
+            requestId: string;
+        };
+        /** @description Condition of one returned product */
+        ReceiveItemDto: {
+            /**
+             * @description RESELLABLE items return to stock
+             * @example RESELLABLE
+             * @enum {string}
+             */
+            condition: "RESELLABLE" | "DAMAGED";
+            /**
+             * Format: int64
+             * @description Product ID
+             * @example 3
+             */
+            productId: number;
+        };
+        /** @description Inspection result covering every returned product exactly once */
+        ReceiveReturnDto: {
+            /** @description Conditions per product */
+            items: components["schemas"]["ReceiveItemDto"][];
+        };
         RefreshTokenRequestDto: {
             /** @description Refresh token obtained during login */
             refreshToken: string;
+        };
+        /** @description Rejection reason shown to the customer */
+        RejectReturnDto: {
+            /**
+             * @description Reason
+             * @example Item shows signs of use
+             */
+            note: string;
+        };
+        /** @description Product that should be reordered */
+        ReorderSuggestionDto: {
+            /**
+             * @description Category
+             * @example Electronics
+             */
+            category?: string;
+            /**
+             * Format: int32
+             * @description Units outstanding on SUBMITTED or PARTIALLY_RECEIVED purchase orders
+             * @example 0
+             */
+            incomingQuantity?: number;
+            /**
+             * Format: int64
+             * @description Product ID
+             * @example 3
+             */
+            productId?: number;
+            /**
+             * @description Product name
+             * @example iPhone 13 Pro
+             */
+            productName?: string;
+            /**
+             * Format: int32
+             * @description Stock on hand
+             * @example 2
+             */
+            stockQuantity?: number;
+            /**
+             * Format: int32
+             * @description 4 × threshold − stock − incoming
+             * @example 18
+             */
+            suggestedQuantity?: number;
         };
         ResetPasswordRequestDto: {
             /**
@@ -1610,6 +3066,336 @@ export interface components {
             newPassword: string;
             /** @description Password reset token received via email */
             token: string;
+        };
+        /** @description Return request (RMA) */
+        ReturnDto: {
+            /**
+             * Format: local-date-time
+             * @description Approval timestamp
+             */
+            approvedAt?: string | null;
+            /** @description Customer comment */
+            comment?: string | null;
+            /**
+             * Format: local-date-time
+             * @description Creation timestamp
+             */
+            createdAt?: string;
+            /**
+             * @description Refund the customer receives, proportional to any order discount
+             * @example 899.99
+             */
+            estimatedRefund?: number;
+            /**
+             * Format: int64
+             * @description Return ID
+             * @example 1
+             */
+            id?: number;
+            /** @description Returned items */
+            items?: components["schemas"]["ReturnItemDto"][];
+            /**
+             * Format: int64
+             * @description Order ID
+             * @example 42
+             */
+            orderId?: number;
+            /**
+             * @description Reason
+             * @example DAMAGED
+             * @enum {string}
+             */
+            reason?: "DAMAGED" | "WRONG_ITEM" | "NOT_AS_DESCRIBED" | "NO_LONGER_NEEDED";
+            /**
+             * Format: local-date-time
+             * @description Receipt timestamp
+             */
+            receivedAt?: string | null;
+            /**
+             * @description Refund paid; set when REFUNDED
+             * @example 899.99
+             */
+            refundAmount?: number | null;
+            /**
+             * Format: local-date-time
+             * @description Refund timestamp
+             */
+            refundedAt?: string | null;
+            /**
+             * Format: local-date-time
+             * @description Rejection timestamp
+             */
+            rejectedAt?: string | null;
+            /** @description Administrator note */
+            resolutionNote?: string | null;
+            /**
+             * @description Status
+             * @example REQUESTED
+             * @enum {string}
+             */
+            status?: "REQUESTED" | "APPROVED" | "REJECTED" | "RECEIVED" | "REFUNDED";
+            /**
+             * Format: local-date-time
+             * @description Last update timestamp
+             */
+            updatedAt?: string;
+            /**
+             * @description Customer
+             * @example client
+             */
+            username?: string;
+        };
+        /** @description Returned item */
+        ReturnItemDto: {
+            /**
+             * @description Condition recorded on receipt
+             * @example RESELLABLE
+             * @enum {string|null}
+             */
+            condition?: "RESELLABLE" | "DAMAGED" | null;
+            /**
+             * Format: int64
+             * @description Product ID
+             * @example 3
+             */
+            productId?: number;
+            /**
+             * @description Product name
+             * @example iPhone 13 Pro
+             */
+            productName?: string;
+            /**
+             * Format: int32
+             * @description Units returned
+             * @example 1
+             */
+            quantity?: number;
+            /**
+             * @description Unit price paid before discounts
+             * @example 999.99
+             */
+            unitPrice?: number;
+        };
+        /** @description Product and quantity to return */
+        ReturnItemRequestDto: {
+            /**
+             * Format: int64
+             * @description Product ID from the order
+             * @example 3
+             */
+            productId: number;
+            /**
+             * Format: int32
+             * @description Units to return
+             * @example 1
+             */
+            quantity: number;
+        };
+        /** @description Product review */
+        ReviewDto: {
+            /** @description Review text */
+            body?: string;
+            /**
+             * Format: local-date-time
+             * @description Creation timestamp
+             */
+            createdAt?: string;
+            /**
+             * Format: int64
+             * @description Review ID
+             * @example 1
+             */
+            id?: number;
+            /** @description Moderator note, visible to the author and administrators */
+            moderationNote?: string | null;
+            /**
+             * Format: int64
+             * @description Product ID
+             * @example 3
+             */
+            productId?: number;
+            /**
+             * @description Product name
+             * @example iPhone 13 Pro
+             */
+            productName?: string;
+            /**
+             * Format: int32
+             * @description Star rating
+             * @example 5
+             */
+            rating?: number;
+            /**
+             * @description Moderation status
+             * @example APPROVED
+             * @enum {string}
+             */
+            status?: "PENDING" | "APPROVED" | "REJECTED";
+            /**
+             * @description Review title
+             * @example Great phone
+             */
+            title?: string;
+            /**
+             * Format: local-date-time
+             * @description Last update timestamp
+             */
+            updatedAt?: string;
+            /**
+             * @description Author username
+             * @example client
+             */
+            username?: string;
+        };
+        /** @description Product review content */
+        ReviewRequestDto: {
+            /**
+             * @description Review text
+             * @example Battery lasts two days and the camera is excellent.
+             */
+            body: string;
+            /**
+             * Format: int32
+             * @description Star rating
+             * @example 5
+             */
+            rating: number;
+            /**
+             * @description Review title
+             * @example Great phone
+             */
+            title: string;
+        };
+        /** @description Rating summary over approved reviews */
+        ReviewSummaryDto: {
+            /**
+             * @description Average rating rounded half-up to one decimal; null without reviews
+             * @example 4.3
+             */
+            averageRating?: number | null;
+            /** @description Approved review count for each star rating 1-5 */
+            distribution?: {
+                [key: string]: number;
+            };
+            /**
+             * Format: int64
+             * @description Product ID
+             * @example 3
+             */
+            productId?: number;
+            /**
+             * Format: int64
+             * @description Number of approved reviews
+             * @example 12
+             */
+            reviewCount?: number;
+        };
+        /** @description Carrier hand-over. INPOST: 24 digits, DPD: 14 digits, DHL: 10 digits, UPS: 1Z + 16 letters or digits. */
+        ShipShipmentDto: {
+            /**
+             * @description Carrier
+             * @example DHL
+             * @enum {string}
+             */
+            carrier: "INPOST" | "DPD" | "DHL" | "UPS";
+            /**
+             * @description Tracking number; surrounding spaces are ignored and letters are upper-cased
+             * @example 1234567890
+             */
+            trackingNumber: string;
+        };
+        /** @description Warehouse shipment for one order */
+        ShipmentDto: {
+            /**
+             * Format: local-date-time
+             * @description When the shipment was cancelled
+             */
+            cancelledAt?: string | null;
+            /**
+             * @description Carrier, set when shipped
+             * @example DHL
+             * @enum {string|null}
+             */
+            carrier?: "INPOST" | "DPD" | "DHL" | "UPS" | null;
+            /**
+             * Format: local-date-time
+             * @description Creation timestamp
+             */
+            createdAt?: string;
+            /**
+             * @description User who released the order to the warehouse
+             * @example warehouse
+             */
+            createdBy?: string;
+            /**
+             * Format: local-date-time
+             * @description When the parcel was delivered
+             */
+            deliveredAt?: string | null;
+            /**
+             * Format: int64
+             * @description Shipment ID
+             * @example 1
+             */
+            id?: number;
+            /**
+             * @description User who performed the latest transition
+             * @example warehouse
+             */
+            lastActor?: string;
+            /**
+             * Format: int64
+             * @description Order ID
+             * @example 42
+             */
+            orderId?: number;
+            /**
+             * Format: local-date-time
+             * @description When packing finished
+             */
+            packedAt?: string | null;
+            /**
+             * Format: local-date-time
+             * @description When picking finished
+             */
+            pickedAt?: string | null;
+            /**
+             * Format: local-date-time
+             * @description When the carrier collected the parcel
+             */
+            shippedAt?: string | null;
+            /**
+             * @description Shipment status
+             * @example AWAITING_PICK
+             * @enum {string}
+             */
+            status?: "AWAITING_PICK" | "PICKED" | "PACKED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+            /**
+             * Format: int32
+             * @description Units to pick
+             * @example 3
+             */
+            totalUnits?: number;
+            /**
+             * @description Carrier tracking number
+             * @example 1234567890
+             */
+            trackingNumber?: string | null;
+            /**
+             * Format: local-date-time
+             * @description Last update timestamp
+             */
+            updatedAt?: string;
+            /**
+             * @description Order owner
+             * @example client
+             */
+            username?: string;
+            /**
+             * @description Package weight in kilograms, set when packed
+             * @example 1.25
+             */
+            weightKg?: number | null;
         };
         /** @description SSO exchange request */
         SsoExchangeRequestDto: {
@@ -1647,6 +3433,56 @@ export interface components {
              * @example false
              */
             think?: boolean;
+        };
+        /** @description Supplier */
+        SupplierDto: {
+            /**
+             * Format: local-date-time
+             * @description Creation timestamp
+             */
+            createdAt?: string;
+            /**
+             * @description Purchasing contact
+             * @example orders@nordic.example
+             */
+            email?: string;
+            /**
+             * Format: int64
+             * @description Supplier ID
+             * @example 1
+             */
+            id?: number;
+            /**
+             * Format: int32
+             * @description Lead time in days
+             * @example 7
+             */
+            leadTimeDays?: number;
+            /**
+             * @description Name
+             * @example Nordic Electronics
+             */
+            name?: string;
+        };
+        /** @description Supplier */
+        SupplierRequestDto: {
+            /**
+             * Format: email
+             * @description Purchasing contact
+             * @example orders@nordic.example
+             */
+            email: string;
+            /**
+             * Format: int32
+             * @description Days between submission and expected delivery
+             * @example 7
+             */
+            leadTimeDays: number;
+            /**
+             * @description Unique name, case-insensitive
+             * @example Nordic Electronics
+             */
+            name: string;
         };
         TokenRefreshResponseDto: {
             /** @description Rotated refresh token */
@@ -1795,7 +3631,7 @@ export interface components {
             id?: number;
             lastName?: string | null;
             providerSubject?: string | null;
-            roles?: ("ROLE_ADMIN" | "ROLE_CLIENT")[];
+            roles?: ("ROLE_ADMIN" | "ROLE_CLIENT" | "ROLE_WAREHOUSE")[];
             toolSystemPrompt?: string | null;
             username?: string;
         };
@@ -1856,7 +3692,7 @@ export interface components {
              *       "ROLE_CLIENT"
              *     ]
              */
-            roles?: ("ROLE_ADMIN" | "ROLE_CLIENT")[];
+            roles?: ("ROLE_ADMIN" | "ROLE_CLIENT" | "ROLE_WAREHOUSE")[];
             /**
              * @description Username
              * @example johndoe
@@ -1874,6 +3710,62 @@ export interface components {
         } & {
             [key: string]: string;
         };
+        /** @description Wishlist entry with the product's current price and availability */
+        WishlistItemDto: {
+            /**
+             * Format: local-date-time
+             * @description When the product was added
+             */
+            addedAt?: string;
+            /** @description Product image URL */
+            imageUrl?: string | null;
+            /**
+             * Format: local-date-time
+             * @description Last back-in-stock email
+             */
+            lastNotifiedAt?: string | null;
+            /**
+             * @description Email the user when the product is back in stock
+             * @example true
+             */
+            notifyWhenAvailable?: boolean;
+            /**
+             * @description Current product price
+             * @example 999.99
+             */
+            price?: number;
+            /**
+             * Format: int64
+             * @description Product ID
+             * @example 3
+             */
+            productId?: number;
+            /**
+             * @description Product name
+             * @example iPhone 13 Pro
+             */
+            productName?: string;
+            /**
+             * Format: int32
+             * @description Current stock quantity
+             * @example 0
+             */
+            stockQuantity?: number;
+            /**
+             * @description OUT_OF_STOCK when quantity is zero, otherwise IN_STOCK
+             * @example OUT_OF_STOCK
+             * @enum {string}
+             */
+            stockStatus?: "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK";
+        };
+        /** @description Wishlist entry settings */
+        WishlistUpdateDto: {
+            /**
+             * @description Email when back in stock; defaults to false
+             * @example true
+             */
+            notifyWhenAvailable?: boolean | null;
+        };
     };
     responses: never;
     parameters: never;
@@ -1883,7 +3775,286 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    list: {
+    list_3: {
+        parameters: {
+            query?: {
+                /** @description Zero-based page index */
+                page?: number;
+                /** @description Page size, 1-100 */
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Coupons returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageDtoCouponDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    create_4: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CouponRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Coupon created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CouponDto"];
+                };
+            };
+            /** @description Invalid coupon definition */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Coupon code already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    get_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Coupon returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CouponDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Coupon not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    update_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CouponRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Coupon updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CouponDto"];
+                };
+            };
+            /** @description Invalid coupon definition */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Coupon not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Coupon code already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    delete_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Coupon deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Coupon not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Coupon has redemptions */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    list_7: {
         parameters: {
             query?: {
                 page?: number;
@@ -1938,7 +4109,57 @@ export interface operations {
             };
         };
     };
-    get: {
+    reorderSuggestions: {
+        parameters: {
+            query?: {
+                /** @description Inclusive low-stock threshold; at least one */
+                lowStockThreshold?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Suggestions returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReorderSuggestionDto"][];
+                };
+            };
+            /** @description Threshold below 1 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    get_5: {
         parameters: {
             query?: {
                 /** @description Inclusive upper bound for LOW_STOCK; at least one */
@@ -2131,6 +4352,1088 @@ export interface operations {
             };
         };
     };
+    export: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CSV file */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": string;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    importCsv: {
+        parameters: {
+            query?: {
+                /** @description Validate without persisting */
+                dryRun?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": {
+                    /**
+                     * Format: binary
+                     * @description CSV file
+                     */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Import applied, or dry run succeeded */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ImportReportDto"];
+                };
+            };
+            /** @description Invalid file or rows; the report lists every error when the file could be parsed */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportReportDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description File larger than 1 MB */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    list_2: {
+        parameters: {
+            query?: {
+                status?: "DRAFT" | "SUBMITTED" | "PARTIALLY_RECEIVED" | "RECEIVED" | "CANCELLED";
+                /** @description Zero-based page index */
+                page?: number;
+                /** @description Page size, 1-100 */
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Purchase orders returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageDtoPurchaseOrderDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    create_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PurchaseOrderRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Draft created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PurchaseOrderDto"];
+                };
+            };
+            /** @description Invalid purchase order or duplicate product */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Supplier or product not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Purchase order returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PurchaseOrderDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Purchase order not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    update_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PurchaseOrderRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Draft updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PurchaseOrderDto"];
+                };
+            };
+            /** @description Invalid purchase order or duplicate product */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Purchase order, supplier or product not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Purchase order is no longer a draft */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    cancel_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Purchase order cancelled */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PurchaseOrderDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Purchase order not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Purchase order cannot be cancelled in its status */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    receive_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReceiptRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Goods received, or receipt replayed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PurchaseOrderDto"];
+                };
+            };
+            /** @description Invalid receipt, duplicate product, or product not on the purchase order */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Purchase order not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Not open for receipt, over-receipt, or requestId reused with different lines */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    submit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Purchase order submitted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PurchaseOrderDto"];
+                };
+            };
+            /** @description Purchase order has no lines */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Purchase order not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Purchase order is not a draft */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    list_6: {
+        parameters: {
+            query?: {
+                status?: "REQUESTED" | "APPROVED" | "REJECTED" | "RECEIVED" | "REFUNDED";
+                /** @description Zero-based page index */
+                page?: number;
+                /** @description Page size, 1-100 */
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Returns listed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageDtoReturnDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    get_4: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Return found */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReturnDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Return not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    approve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Return approved */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReturnDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Return not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Transition not allowed from the current return status */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    receive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReceiveReturnDto"];
+            };
+        };
+        responses: {
+            /** @description Return received */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReturnDto"];
+                };
+            };
+            /** @description Conditions missing or not matching the returned products */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Return not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Transition not allowed from the current return status */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    refund: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Return refunded */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReturnDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Return not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Transition not allowed from the current return status */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    reject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectReturnDto"];
+            };
+        };
+        responses: {
+            /** @description Return rejected */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReturnDto"];
+                };
+            };
+            /** @description Missing note */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Return not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Transition not allowed from the current return status */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    list_5: {
+        parameters: {
+            query?: {
+                status?: "PENDING" | "APPROVED" | "REJECTED";
+                /** @description Zero-based page index */
+                page?: number;
+                /** @description Page size, 1-100 */
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reviews returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageDtoReviewDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    moderate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModerationRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Review moderated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReviewDto"];
+                };
+            };
+            /** @description Invalid decision or missing rejection note */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Review not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    suppliers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Suppliers returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SupplierDto"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    createSupplier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupplierRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Supplier created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SupplierDto"];
+                };
+            };
+            /** @description Invalid supplier */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Supplier name already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
     getCart: {
         parameters: {
             query?: never;
@@ -2175,6 +5478,95 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    apply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApplyCouponDto"];
+            };
+        };
+        responses: {
+            /** @description Coupon applied; the cart shows the discount */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CartDto"];
+                };
+            };
+            /** @description Empty cart, inactive, not yet valid or expired coupon, or subtotal below the minimum */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Coupon not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Global or per-user redemption limit reached */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    remove_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Coupon removed; the updated cart is returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CartDto"];
+                };
             };
             /** @description Unauthorized */
             401: {
@@ -2768,7 +6160,10 @@ export interface operations {
     createOrder: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Client-generated key, 8-64 letters, digits, hyphens or underscores */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -2778,9 +6173,11 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Order created successfully */
+            /** @description Order created successfully, or replayed for a repeated Idempotency-Key */
             201: {
                 headers: {
+                    /** @description true when the response replays an earlier order */
+                    "Idempotent-Replayed"?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2814,7 +6211,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
-            /** @description Insufficient stock to place the order */
+            /** @description Insufficient stock, coupon no longer valid, or Idempotency-Key reused with a different address */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -2985,6 +6382,46 @@ export interface operations {
             };
         };
     };
+    track: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Shipment returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShipmentDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Order not found, or not released to the warehouse yet */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
     updateOrderStatus: {
         parameters: {
             query?: never;
@@ -3038,6 +6475,68 @@ export interface operations {
             };
             /** @description Order not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    create_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateReturnDto"];
+            };
+        };
+        responses: {
+            /** @description Return requested */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReturnDto"];
+                };
+            };
+            /** @description Invalid request, duplicate product, or product not in the order */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Order not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Order not delivered, return window passed, or quantity exceeds what can be returned */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3130,7 +6629,10 @@ export interface operations {
     getProductById: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Entity tag from a previous response; a match returns 304 */
+                "If-None-Match"?: string;
+            };
             path: {
                 id: number;
             };
@@ -3138,14 +6640,23 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successfully retrieved product */
+            /** @description Successfully retrieved product; the ETag header carries the product version */
             200: {
                 headers: {
+                    /** @description Quoted product version */
+                    ETag?: string;
                     [name: string]: unknown;
                 };
                 content: {
                     "*/*": components["schemas"]["ProductDto"];
                 };
+            };
+            /** @description If-None-Match matches the current version; empty response body */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Bad request */
             400: {
@@ -3179,7 +6690,10 @@ export interface operations {
     updateProduct: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Entity tag from GET /api/v1/products/{id}, for example "3" */
+                "If-Match"?: string;
+            };
             path: {
                 id: number;
             };
@@ -3191,9 +6705,11 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Product updated successfully */
+            /** @description Product updated successfully; the ETag header carries the new version */
             200: {
                 headers: {
+                    /** @description Quoted product version */
+                    ETag?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -3229,6 +6745,15 @@ export interface operations {
             };
             /** @description Product not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description If-Match does not match the current product version */
+            412: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3301,6 +6826,293 @@ export interface operations {
             };
         };
     };
+    list_1: {
+        parameters: {
+            query?: {
+                /** @description Zero-based page index */
+                page?: number;
+                /** @description Page size, 1-50 */
+                size?: number;
+            };
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reviews returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageDtoReviewDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Product or review not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    create_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Review created and awaiting moderation */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReviewDto"];
+                };
+            };
+            /** @description Invalid review */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description The caller has not received this product */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Product or review not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description The caller already reviewed this product */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    mine: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eligibility returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MyReviewDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Product or review not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Review updated and awaiting moderation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReviewDto"];
+                };
+            };
+            /** @description Invalid review */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Product or review not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    delete_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Review deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Product or review not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    summary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Summary returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReviewSummaryDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Product or review not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
     createQrCode: {
         parameters: {
             query?: never;
@@ -3334,6 +7146,80 @@ export interface operations {
             };
             /** @description Unauthorized */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    mine_1: {
+        parameters: {
+            query?: {
+                /** @description Zero-based page index */
+                page?: number;
+                /** @description Page size, 1-100 */
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Returns listed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageDtoReturnDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    get_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Return found */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReturnDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Return not found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4532,6 +8418,705 @@ export interface operations {
                 };
             };
             /** @description The user doesn't exist */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    queue: {
+        parameters: {
+            query?: {
+                /** @description Zero-based page index */
+                page?: number;
+                /** @description Page size, 1-100 */
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Queue returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageDtoOrderDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    list: {
+        parameters: {
+            query?: {
+                status?: "AWAITING_PICK" | "PICKED" | "PACKED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+                /** @description Zero-based page index */
+                page?: number;
+                /** @description Page size, 1-100 */
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Shipments returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageDtoShipmentDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateShipmentDto"];
+            };
+        };
+        responses: {
+            /** @description Shipment created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShipmentDto"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Order not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Order is not PAID or already has a shipment */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    get_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Shipment returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShipmentDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Shipment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Shipment cancelled */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShipmentDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Shipment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Transition not allowed from the current shipment status */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    deliver: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Shipment delivered */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShipmentDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Shipment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Transition not allowed from the current shipment status */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    pack: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PackShipmentDto"];
+            };
+        };
+        responses: {
+            /** @description Shipment packed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShipmentDto"];
+                };
+            };
+            /** @description Invalid weight */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Shipment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Transition not allowed from the current shipment status */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    pick: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Shipment picked */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShipmentDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Shipment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Transition not allowed from the current shipment status */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    pickList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Pick list returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PickListDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Shipment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    ship: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShipShipmentDto"];
+            };
+        };
+        responses: {
+            /** @description Shipment shipped */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShipmentDto"];
+                };
+            };
+            /** @description Missing carrier or invalid tracking number */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Shipment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Transition not allowed from the current shipment status */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    list_4: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Wishlist returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WishlistItemDto"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    upsert: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["WishlistUpdateDto"];
+            };
+        };
+        responses: {
+            /** @description Wishlist entry updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WishlistItemDto"];
+                };
+            };
+            /** @description Wishlist entry created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WishlistItemDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Product not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Wishlist is full */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Wishlist entry removed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Product is not on the wishlist */
             404: {
                 headers: {
                     [name: string]: unknown;

@@ -6,6 +6,10 @@ const sections = [
   { label: 'Products', path: '/admin/products' },
   { label: 'Orders', path: '/admin/orders' },
   { label: 'Inventory', path: '/admin/inventory' },
+  { label: 'Coupons', path: '/admin/coupons' },
+  { label: 'Reviews', path: '/admin/reviews' },
+  { label: 'Returns', path: '/admin/returns' },
+  { label: 'Purchasing', path: '/admin/purchasing' },
 ];
 
 export function AdminSectionNav() {
