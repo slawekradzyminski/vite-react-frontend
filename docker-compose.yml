@@ -1,11 +1,14 @@
 services:
   backend:
-    image: ${BACKEND_IMAGE:-slawekradzyminski/backend:3.11.0@sha256:a6d0a499fd54071c46eb1930b72fd75cde8ed71ee5cfa745f00c8013130d736d}
+    image: ${BACKEND_IMAGE:-slawekradzyminski/backend:3.12.0@sha256:4ab420bfcf8fa94aff2cbe9917d37593e054aa616ae35751295112953686a13a}
     expose:
       - "4001"
     hostname: backend
     environment:
       SPRING_PROFILES_ACTIVE: local
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/testdb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
       PASSWORD_RESET_FRONTEND_BASE_URL: http://localhost:8081/reset
       SWAGGER_UI_OAUTH2_REDIRECT_URL: http://localhost:8081/swagger-ui/oauth2-redirect.html
       OLLAMA_BASE_URL: http://ollama-mock:11434
@@ -15,8 +18,29 @@ services:
       APP_SSO_AUDIENCE: awesome-testing-frontend
       APP_CORS_ALLOWED_ORIGIN_PATTERNS: http://localhost:8081,http://127.0.0.1:8081
     depends_on:
-      - keycloak
-      - ollama-mock
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+      ollama-mock:
+        condition: service_started
+    networks:
+      - my-private-ntwk
+
+  postgres:
+    # Disposable database for the backend's local profile (PostgreSQL with Flyway since backend 3.12.0).
+    image: postgres:16.14-bookworm@sha256:92620daddcd947f8d5ab5ba66e848702fe443d87fed30c4cea8e389fd78dfc55
+    environment:
+      POSTGRES_DB: testdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d testdb"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
     networks:
       - my-private-ntwk
 
