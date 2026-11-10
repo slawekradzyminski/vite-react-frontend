@@ -19,6 +19,19 @@ export interface Order {
   status: OrderStatus;
   /** Absent in responses from backends that predate warehouse-service. */
   fulfilmentState?: FulfilmentState;
+  /** VAT breakdown; absent in responses from backends that predate VAT (3.15.0). */
+  netAmount?: number | null;
+  taxAmount?: number | null;
+  taxRate?: number | null;
+  taxCountry?: string | null;
+  /** Gift card and loyalty points tenders; absent when the order used none. */
+  giftCardCode?: string | null;
+  giftCardAmount?: number | null;
+  pointsRedeemed?: number | null;
+  pointsAmount?: number | null;
+  /** What the card has to pay: totalAmount minus gift card and points. */
+  amountDue?: number | null;
+  refundedAmount?: number | null;
   shippingAddress: Address;
   createdAt: string;
   updatedAt: string;

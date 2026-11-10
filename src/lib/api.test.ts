@@ -1,24 +1,38 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  adminGiftCards,
+  adminPayments,
   adminReturns,
+  adminWebhooks,
   auth,
   cartCoupon,
+  cartTenders,
   catalogCsv,
   coupons,
+  currencies,
+  giftCards,
   inventory,
+  loyalty,
   ollama,
   orders,
+  payments,
+  productSearch,
   products,
   purchasing,
   qr,
   returns,
   reviews,
+  tracking,
+  vatRates,
   warehouse,
+  webhookInboxes,
+  webhooks,
 } from './api';
-import { getApiBaseUrl, getWarehouseApiBaseUrl } from './runtimeConfig';
+import { getApiBaseUrl, getPaymentApiBaseUrl, getWarehouseApiBaseUrl } from './runtimeConfig';
 import { Role } from '../types/auth';
 
-// api.ts creates the backend instance first and the warehouse-service instance second.
+// api.ts creates the backend instance first, the warehouse-service instance second and the
+// payment-service instance third.
 const mockAxios = vi.hoisted(() => {
   const makeInstance = () => {
     const instance: any = vi.fn(() => Promise.resolve({ data: {} }));
@@ -38,11 +52,15 @@ const mockAxios = vi.hoisted(() => {
   };
   const main = makeInstance();
   const warehouseInstance = makeInstance();
+  const paymentInstance = makeInstance();
   main.warehouseInstance = warehouseInstance;
-  main.create = vi.fn(() => (main.create.mock.calls.length === 1 ? main : warehouseInstance));
+  main.paymentInstance = paymentInstance;
+  const instances = [main, warehouseInstance, paymentInstance];
+  main.create = vi.fn(() => instances[main.create.mock.calls.length - 1]);
   return main;
 });
 const mockWarehouseAxios = mockAxios.warehouseInstance;
+const mockPaymentAxios = mockAxios.paymentInstance;
 
 describe('inventory API', () => {
   beforeEach(() => {
@@ -910,7 +928,7 @@ describe('warehouse-service API client', () => {
   });
 
   it('creates a separate instance on the warehouse base URL with JSON headers', () => {
-    expect(mockAxios.create).toHaveBeenCalledTimes(2);
+    expect(mockAxios.create).toHaveBeenCalledTimes(3);
     expect(mockAxios.create).toHaveBeenNthCalledWith(1, {
       baseURL: getApiBaseUrl(),
       headers: { 'Content-Type': 'application/json' },
@@ -1121,5 +1139,316 @@ describe('warehouse-service API client', () => {
 
     expect(localStorage.getItem('token')).toBe('client-token');
     expect(window.location.href).toBe('http://localhost/');
+  });
+});
+
+describe('payment-service API client', () => {
+  const resetInstance = (instance: any) => {
+    instance.mockReset();
+    instance.mockImplementation(() => Promise.resolve({ data: {} }));
+    instance.get.mockReset();
+    instance.post.mockReset();
+    instance.put.mockReset();
+    instance.delete.mockReset();
+  };
+  let originalLocation: Location;
+  const card = { number: '4242424242424242', expiryMonth: 12, expiryYear: 2030, cvc: '123', holderName: 'Ada Client' };
+  const paymentId = '0b9f6c1e-7d2a-4c1b-9a59-3f0f2d6b1c11';
+
+  beforeEach(() => {
+    resetInstance(mockAxios);
+    resetInstance(mockWarehouseAxios);
+    resetInstance(mockPaymentAxios);
+    localStorage.clear();
+    originalLocation = window.location;
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { href: 'http://localhost/' } as Location,
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
+  });
+
+  it('creates a third instance on the payment base URL with JSON headers', () => {
+    expect(mockAxios.create).toHaveBeenNthCalledWith(3, {
+      baseURL: getPaymentApiBaseUrl(),
+      headers: { 'Content-Type': 'application/json' },
+    });
+  });
+
+  it('sends a payment with its idempotency key', async () => {
+    await payments.create({ orderId: 42, card }, 'checkout-42-attempt-1');
+
+    expect(mockPaymentAxios.post).toHaveBeenCalledWith(
+      '/api/v1/payments',
+      { orderId: 42, card },
+      { headers: { 'Idempotency-Key': 'checkout-42-attempt-1' } },
+    );
+  });
+
+  it('reads payments, confirms 3-D Secure and lists them for admins on payment-service', async () => {
+    await payments.get(paymentId);
+    await payments.confirmThreeDs(paymentId, '123456');
+    await payments.forOrder(42);
+    await adminPayments.list();
+    await adminPayments.list('FAILED', 2, 5);
+
+    expect(mockPaymentAxios.get.mock.calls).toEqual([
+      [`/api/v1/payments/${paymentId}`],
+      ['/api/v1/orders/42/payments'],
+      ['/api/v1/admin/payments', { params: { page: 0, size: 20, status: undefined } }],
+      ['/api/v1/admin/payments', { params: { page: 2, size: 5, status: 'FAILED' } }],
+    ]);
+    expect(mockPaymentAxios.post).toHaveBeenCalledWith(`/api/v1/payments/${paymentId}/3ds`, { code: '123456' });
+    expect(mockAxios.get).not.toHaveBeenCalled();
+    expect(mockAxios.post).not.toHaveBeenCalled();
+    expect(mockWarehouseAxios.get).not.toHaveBeenCalled();
+  });
+
+  it('attaches the bearer token and client session id to payment requests', () => {
+    localStorage.setItem('token', 'payment-token');
+    localStorage.setItem('clientSessionId', 'client-session-pay');
+
+    const config = mockPaymentAxios.requestInterceptor({ url: '/api/v1/payments', headers: {} });
+
+    expect(config.headers.Authorization).toBe('Bearer payment-token');
+    expect(config.headers['X-Client-Session-Id']).toBe('client-session-pay');
+  });
+
+  it('stores the client session id returned by payment-service', () => {
+    const response = { headers: { 'x-client-session-id': 'payment-session' } };
+
+    expect(mockPaymentAxios.responseSuccessInterceptor(response)).toBe(response);
+    expect(localStorage.getItem('clientSessionId')).toBe('payment-session');
+  });
+
+  it('refreshes the token and retries a payment request on the payment instance', async () => {
+    localStorage.setItem('token', 'expired-token');
+    localStorage.setItem('refreshToken', 'refresh-123');
+    const refreshSpy = vi.spyOn(auth, 'refresh').mockResolvedValue({
+      data: { token: 'new-token', refreshToken: 'new-refresh' },
+    } as any);
+    mockPaymentAxios.mockResolvedValueOnce({ data: { retried: true } });
+
+    const response = await mockPaymentAxios.responseErrorInterceptor({
+      config: { url: '/api/v1/orders/42/payments', headers: {} },
+      response: { status: 401 },
+    });
+
+    expect(refreshSpy).toHaveBeenCalledWith({ refreshToken: 'refresh-123' });
+    expect(mockPaymentAxios).toHaveBeenCalledWith(expect.objectContaining({
+      url: '/api/v1/orders/42/payments',
+      _retry: true,
+      headers: expect.objectContaining({ Authorization: 'Bearer new-token' }),
+    }));
+    expect(mockAxios).not.toHaveBeenCalled();
+    expect(mockWarehouseAxios).not.toHaveBeenCalled();
+    expect(response).toEqual({ data: { retried: true } });
+  });
+
+  it('passes payment validation and conflict errors through without signing out', async () => {
+    localStorage.setItem('token', 'client-token');
+    const error = { config: { url: '/api/v1/payments', headers: {} }, response: { status: 409 } };
+
+    await expect(mockPaymentAxios.responseErrorInterceptor(error)).rejects.toBe(error);
+
+    expect(localStorage.getItem('token')).toBe('client-token');
+    expect(window.location.href).toBe('http://localhost/');
+  });
+});
+
+describe('shipment tracking API', () => {
+  beforeEach(() => {
+    mockAxios.get.mockReset();
+    mockAxios.post.mockReset();
+    mockWarehouseAxios.get.mockReset();
+    mockWarehouseAxios.post.mockReset();
+  });
+
+  it('reads order and public tracking and advances the simulated carrier on warehouse-service', async () => {
+    await tracking.forOrder(42);
+    await tracking.byNumber('1Z 999/AA');
+    await tracking.advance(7);
+
+    expect(mockWarehouseAxios.get.mock.calls).toEqual([
+      ['/api/v1/orders/42/shipment/tracking'],
+      ['/api/v1/tracking/1Z%20999%2FAA'],
+    ]);
+    expect(mockWarehouseAxios.post).toHaveBeenCalledWith('/api/v1/warehouse/shipments/7/carrier/advance');
+    expect(mockAxios.get).not.toHaveBeenCalled();
+    expect(mockAxios.post).not.toHaveBeenCalled();
+  });
+
+  it('leaves the tracking number out so warehouse-service simulates the carrier', async () => {
+    await warehouse.ship(7, 'INPOST');
+    await warehouse.ship(7, 'DPD', '');
+
+    expect(mockWarehouseAxios.post.mock.calls).toEqual([
+      ['/api/v1/warehouse/shipments/7/ship', { carrier: 'INPOST' }],
+      ['/api/v1/warehouse/shipments/7/ship', { carrier: 'DPD' }],
+    ]);
+  });
+});
+
+describe('backend commerce extensions API', () => {
+  beforeEach(() => {
+    mockAxios.get.mockReset();
+    mockAxios.post.mockReset();
+    mockAxios.put.mockReset();
+    mockAxios.delete.mockReset();
+    mockWarehouseAxios.get.mockReset();
+    mockPaymentAxios.get.mockReset();
+  });
+
+  it('searches products with repeated category parameters', async () => {
+    const params = { q: 'cable', category: ['Accessories', 'Audio'], minPrice: 5, inStock: true, sort: 'price_asc' as const, page: 1, size: 12 };
+
+    await productSearch.search(params);
+    await productSearch.search();
+
+    expect(mockAxios.get.mock.calls).toEqual([
+      ['/api/v1/products/search', { params, paramsSerializer: { indexes: null } }],
+      ['/api/v1/products/search', { params: {}, paramsSerializer: { indexes: null } }],
+    ]);
+  });
+
+  it('reads and maintains VAT rates and previews cart tax', async () => {
+    await vatRates.list();
+    await vatRates.get('PL');
+    await vatRates.preview('DE');
+    await vatRates.preview();
+    await vatRates.upsert('PL', { countryName: 'Poland', rate: 0.23 });
+
+    expect(mockAxios.get.mock.calls).toEqual([
+      ['/api/v1/vat-rates'],
+      ['/api/v1/vat-rates/PL'],
+      ['/api/v1/cart/tax-preview', { params: { country: 'DE' } }],
+      ['/api/v1/cart/tax-preview', { params: { country: undefined } }],
+    ]);
+    expect(mockAxios.put).toHaveBeenCalledWith('/api/v1/admin/vat-rates/PL', { countryName: 'Poland', rate: 0.23 });
+  });
+
+  it('lists, converts and maintains currencies', async () => {
+    await currencies.list();
+    await currencies.convert(19.99, 'USD', 'EUR');
+    await currencies.upsert('EUR', { name: 'Euro', symbol: '€', rateToUsd: 1.08 });
+
+    expect(mockAxios.get.mock.calls).toEqual([
+      ['/api/v1/currencies'],
+      ['/api/v1/currencies/convert', { params: { amount: 19.99, from: 'USD', to: 'EUR' } }],
+    ]);
+    expect(mockAxios.put).toHaveBeenCalledWith('/api/v1/admin/currencies/EUR', { name: 'Euro', symbol: '€', rateToUsd: 1.08 });
+  });
+
+  it('checks gift card balances and manages gift cards as admin', async () => {
+    await giftCards.balance('GC-AB12/CD');
+    await adminGiftCards.list();
+    await adminGiftCards.list('ACTIVE', 1, 5);
+    await adminGiftCards.get('GC-1');
+    await adminGiftCards.create({ amount: 50, recipientUsername: 'client' });
+    await adminGiftCards.disable('GC-1');
+
+    expect(mockAxios.get.mock.calls).toEqual([
+      ['/api/v1/gift-cards/GC-AB12%2FCD'],
+      ['/api/v1/admin/gift-cards', { params: { page: 0, size: 20, status: undefined } }],
+      ['/api/v1/admin/gift-cards', { params: { page: 1, size: 5, status: 'ACTIVE' } }],
+      ['/api/v1/admin/gift-cards/GC-1'],
+    ]);
+    expect(mockAxios.post.mock.calls).toEqual([
+      ['/api/v1/admin/gift-cards', { amount: 50, recipientUsername: 'client' }],
+      ['/api/v1/admin/gift-cards/GC-1/disable'],
+    ]);
+  });
+
+  it('reads the loyalty account and its paged transactions', async () => {
+    await loyalty.account();
+    await loyalty.transactions();
+    await loyalty.transactions(3, 10);
+
+    expect(mockAxios.get.mock.calls).toEqual([
+      ['/api/v1/loyalty'],
+      ['/api/v1/loyalty/transactions', { params: { page: 0, size: 20 } }],
+      ['/api/v1/loyalty/transactions', { params: { page: 3, size: 10 } }],
+    ]);
+  });
+
+  it('applies and removes gift card and loyalty point tenders on the cart', async () => {
+    await cartTenders.applyGiftCard('GC-1');
+    await cartTenders.applyPoints(250);
+    await cartTenders.removeGiftCard();
+    await cartTenders.removePoints();
+
+    expect(mockAxios.put.mock.calls).toEqual([
+      ['/api/v1/cart/gift-card', { code: 'GC-1' }],
+      ['/api/v1/cart/loyalty-points', { points: 250 }],
+    ]);
+    expect(mockAxios.delete.mock.calls).toEqual([
+      ['/api/v1/cart/gift-card'],
+      ['/api/v1/cart/loyalty-points'],
+    ]);
+  });
+
+  it('manages webhook subscriptions and their deliveries', async () => {
+    const deliveryId = '5b0c1d3e-1111-4a2b-8c3d-9e8f7a6b5c4d';
+    const subscription = { url: 'http://localhost:8081/hooks/abc', events: ['order.created'] };
+
+    await webhooks.list();
+    await webhooks.get(3);
+    await webhooks.eventTypes();
+    await webhooks.deliveries(3);
+    await webhooks.deliveries(3, 'FAILED', 1, 5);
+    await webhooks.delivery(3, deliveryId);
+    await webhooks.create(subscription);
+    await webhooks.rotateSecret(3);
+    await webhooks.test(3);
+    await webhooks.redeliver(3, deliveryId);
+    await webhooks.update(3, { ...subscription, active: false });
+    await webhooks.remove(3);
+
+    expect(mockAxios.get.mock.calls).toEqual([
+      ['/api/v1/webhooks'],
+      ['/api/v1/webhooks/3'],
+      ['/api/v1/webhooks/event-types'],
+      ['/api/v1/webhooks/3/deliveries', { params: { page: 0, size: 20, status: undefined } }],
+      ['/api/v1/webhooks/3/deliveries', { params: { page: 1, size: 5, status: 'FAILED' } }],
+      [`/api/v1/webhooks/3/deliveries/${deliveryId}`],
+    ]);
+    expect(mockAxios.post.mock.calls).toEqual([
+      ['/api/v1/webhooks', subscription],
+      ['/api/v1/webhooks/3/rotate-secret'],
+      ['/api/v1/webhooks/3/test'],
+      [`/api/v1/webhooks/3/deliveries/${deliveryId}/redeliver`],
+    ]);
+    expect(mockAxios.put).toHaveBeenCalledWith('/api/v1/webhooks/3', { ...subscription, active: false });
+    expect(mockAxios.delete).toHaveBeenCalledWith('/api/v1/webhooks/3');
+  });
+
+  it('manages webhook inboxes and lists subscriptions for admins', async () => {
+    await webhookInboxes.list();
+    await webhookInboxes.create();
+    await webhookInboxes.requests('tok/1');
+    await webhookInboxes.remove('tok/1');
+    await adminWebhooks.list();
+    await adminWebhooks.list('client', 2, 10);
+
+    expect(mockAxios.get.mock.calls).toEqual([
+      ['/api/v1/webhook-inboxes'],
+      ['/api/v1/webhook-inboxes/tok%2F1/requests'],
+      ['/api/v1/admin/webhooks', { params: { page: 0, size: 20, username: undefined } }],
+      ['/api/v1/admin/webhooks', { params: { page: 2, size: 10, username: 'client' } }],
+    ]);
+    expect(mockAxios.post).toHaveBeenCalledWith('/api/v1/webhook-inboxes');
+    expect(mockAxios.delete).toHaveBeenCalledWith('/api/v1/webhook-inboxes/tok%2F1');
+  });
+
+  it('keeps backend commerce extensions off the warehouse and payment instances', async () => {
+    await loyalty.account();
+    await giftCards.balance('GC-1');
+
+    expect(mockWarehouseAxios.get).not.toHaveBeenCalled();
+    expect(mockPaymentAxios.get).not.toHaveBeenCalled();
   });
 });

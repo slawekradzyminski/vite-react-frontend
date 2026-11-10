@@ -438,6 +438,69 @@
         },
         "type": "object"
       },
+      "PublicTrackingDto": {
+        "description": "Public carrier tracking of a parcel; contains no order or customer data",
+        "properties": {
+          "carrier": {
+            "description": "Carrier",
+            "enum": [
+              "INPOST",
+              "DPD",
+              "DHL",
+              "UPS"
+            ],
+            "example": "DHL",
+            "type": "string"
+          },
+          "currentStatus": {
+            "description": "Status of the latest scan",
+            "enum": [
+              "LABEL_CREATED",
+              "IN_TRANSIT",
+              "OUT_FOR_DELIVERY",
+              "DELIVERY_FAILED",
+              "DELIVERED"
+            ],
+            "example": "OUT_FOR_DELIVERY",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "estimatedDelivery": {
+            "description": "Expected delivery (the delivery time once delivered)",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "events": {
+            "description": "Carrier scans, oldest first",
+            "items": {
+              "$ref": "#/components/schemas/TrackingEventDto"
+            },
+            "type": "array"
+          },
+          "shipmentId": {
+            "description": "Shipment ID",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "simulated": {
+            "description": "True when the parcel was handed to the simulated carrier",
+            "example": true,
+            "type": "boolean"
+          },
+          "trackingNumber": {
+            "description": "Carrier tracking number",
+            "example": "1234567890",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "PurchaseOrderDto": {
         "description": "Purchase order",
         "properties": {
@@ -982,7 +1045,7 @@
         "type": "object"
       },
       "ShipShipmentDto": {
-        "description": "Carrier hand-over. INPOST: 24 digits, DPD: 14 digits, DHL: 10 digits, UPS: 1Z + 16 letters or digits.",
+        "description": "Carrier hand-over. INPOST: 24 digits, DPD: 14 digits, DHL: 10 digits, UPS: 1Z + 16 letters or digits. Omit trackingNumber to hand the parcel to the simulated carrier, which generates the number and delivers automatically.",
         "properties": {
           "carrier": {
             "description": "Carrier",
@@ -996,16 +1059,18 @@
             "type": "string"
           },
           "trackingNumber": {
-            "description": "Tracking number; surrounding spaces are ignored and letters are upper-cased",
+            "description": "Tracking number; surrounding spaces are ignored and letters are upper-cased. Omit it (or send null) for the simulated carrier.",
             "example": "1234567890",
             "minLength": 1,
-            "pattern": "\\S",
-            "type": "string"
+            "pattern": "(?s).*\\S.*",
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
-          "carrier",
-          "trackingNumber"
+          "carrier"
         ],
         "type": "object"
       },
@@ -1207,6 +1272,114 @@
           "leadTimeDays",
           "name"
         ],
+        "type": "object"
+      },
+      "TrackingDto": {
+        "description": "Carrier tracking of an order's shipment",
+        "properties": {
+          "carrier": {
+            "description": "Carrier, set when shipped",
+            "enum": [
+              "INPOST",
+              "DPD",
+              "DHL",
+              "UPS"
+            ],
+            "example": "DHL",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "currentStatus": {
+            "description": "Status of the latest scan; null before the hand-over",
+            "enum": [
+              "LABEL_CREATED",
+              "IN_TRANSIT",
+              "OUT_FOR_DELIVERY",
+              "DELIVERY_FAILED",
+              "DELIVERED"
+            ],
+            "example": "IN_TRANSIT",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "estimatedDelivery": {
+            "description": "Expected delivery (the delivery time once delivered); null before the hand-over",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "events": {
+            "description": "Carrier scans, oldest first",
+            "items": {
+              "$ref": "#/components/schemas/TrackingEventDto"
+            },
+            "type": "array"
+          },
+          "orderId": {
+            "description": "Order ID",
+            "example": 42,
+            "format": "int64",
+            "type": "integer"
+          },
+          "shipmentId": {
+            "description": "Shipment ID",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "simulated": {
+            "description": "True when the parcel was handed to the simulated carrier, which advances it automatically",
+            "example": true,
+            "type": "boolean"
+          },
+          "trackingNumber": {
+            "description": "Carrier tracking number, set when shipped",
+            "example": "1234567890",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "TrackingEventDto": {
+        "description": "One carrier scan",
+        "properties": {
+          "description": {
+            "description": "What happened",
+            "example": "Collected from the sender and sorted at the hub",
+            "type": "string"
+          },
+          "location": {
+            "description": "Where the parcel was scanned",
+            "example": "DHL Hub, Leipzig",
+            "type": "string"
+          },
+          "occurredAt": {
+            "description": "When the scan happened",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "status": {
+            "description": "Carrier status after this scan",
+            "enum": [
+              "LABEL_CREATED",
+              "IN_TRANSIT",
+              "OUT_FOR_DELIVERY",
+              "DELIVERY_FAILED",
+              "DELIVERED"
+            ],
+            "example": "IN_TRANSIT",
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "ValidationErrorsDto": {
@@ -2732,7 +2905,7 @@
     "/api/v1/orders/{id}/shipment": {
       "get": {
         "description": "Returns the shipment for one of the caller's orders. Administrators may track any order.",
-        "operationId": "track",
+        "operationId": "track_1",
         "parameters": [
           {
             "in": "path",
@@ -2792,6 +2965,74 @@
           }
         ],
         "summary": "Track order shipment",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/v1/orders/{id}/shipment/tracking": {
+      "get": {
+        "description": "Returns the carrier tracking (scans, current status, estimated delivery) for one of the caller's orders. Administrators may track any order. Before the hand-over to the carrier the events are empty.",
+        "operationId": "tracking",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackingDto"
+                }
+              }
+            },
+            "description": "Tracking returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Order not found, or not released to the warehouse yet"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Track order parcel",
         "tags": [
           "Orders"
         ]
@@ -3038,6 +3279,50 @@
         "summary": "Get my return",
         "tags": [
           "Returns"
+        ]
+      }
+    },
+    "/api/v1/tracking/{trackingNumber}": {
+      "get": {
+        "description": "Public, no authentication. Returns the carrier, current status, estimated delivery and scans of the parcel; no order id, customer or address. Surrounding spaces are ignored and letters are upper-cased.",
+        "operationId": "track",
+        "parameters": [
+          {
+            "description": "Carrier tracking number",
+            "example": 1234567890,
+            "in": "path",
+            "name": "trackingNumber",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicTrackingDto"
+                }
+              }
+            },
+            "description": "Tracking returned"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Tracking number not found"
+          }
+        },
+        "summary": "Track parcel by tracking number",
+        "tags": [
+          "Tracking"
         ]
       }
     },
@@ -3480,6 +3765,94 @@
         ]
       }
     },
+    "/api/v1/warehouse/shipments/{id}/carrier/advance": {
+      "post": {
+        "description": "Fast-forwards a simulated SHIPPED shipment by one carrier scan (IN_TRANSIT, OUT_FOR_DELIVERY, DELIVERY_FAILED or DELIVERED) without waiting for the step interval. The DELIVERED step delivers the shipment like the deliver endpoint.",
+        "operationId": "advanceCarrier",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackingDto"
+                }
+              }
+            },
+            "description": "Shipment advanced; returns its tracking"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Shipment not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Not a simulated shipment in status SHIPPED"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Advance simulated carrier",
+        "tags": [
+          "Warehouse"
+        ]
+      }
+    },
     "/api/v1/warehouse/shipments/{id}/deliver": {
       "post": {
         "description": "SHIPPED to DELIVERED. The order becomes DELIVERED, which enables reviews and returns, and the customer receives an email.",
@@ -3844,7 +4217,7 @@
     },
     "/api/v1/warehouse/shipments/{id}/ship": {
       "post": {
-        "description": "PACKED to SHIPPED. The tracking number must match the carrier format. The order becomes SHIPPED and the customer receives an email.",
+        "description": "PACKED to SHIPPED. The tracking number must match the carrier format. Without a tracking number the parcel goes to the simulated carrier, which generates a tracking number and moves the parcel through IN_TRANSIT and OUT_FOR_DELIVERY to DELIVERED on its own. The order becomes SHIPPED and the customer receives an email.",
         "operationId": "ship",
         "parameters": [
           {
@@ -3970,6 +4343,10 @@
     {
       "description": "Order management endpoints",
       "name": "Orders"
+    },
+    {
+      "description": "Public parcel tracking",
+      "name": "Tracking"
     },
     {
       "description": "Suppliers, purchase orders, goods receipts and reorder suggestions",

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_API_DOCS_URL,
+  DEFAULT_PAYMENT_API_DOCS_URL,
   DEFAULT_WAREHOUSE_API_DOCS_URL,
   describeDrift,
   resolveTarget,
@@ -87,6 +88,17 @@ describe('api-contract', () => {
         url: DEFAULT_WAREHOUSE_API_DOCS_URL,
       });
       expect(DEFAULT_WAREHOUSE_API_DOCS_URL).toBe('http://localhost:8081/warehouse/v3/api-docs');
+    });
+
+    it('targets the payment snapshot and its gateway URL', () => {
+      expect(resolveTarget(['check', 'payment'])).toMatchObject({
+        serviceName: 'payment',
+        service: { snapshot: 'openapi/payment-api-docs.json', urlEnv: 'PAYMENT_API_DOCS_URL', snapshotScript: 'api:snapshot:payment' },
+        url: DEFAULT_PAYMENT_API_DOCS_URL,
+      });
+      expect(DEFAULT_PAYMENT_API_DOCS_URL).toBe('http://localhost:8081/payment/v3/api-docs');
+      expect(resolveTarget(['check', 'payment'], { PAYMENT_API_DOCS_URL: 'http://payment:4004/v3/api-docs' }).url)
+        .toBe('http://payment:4004/v3/api-docs');
     });
 
     it('prefers an explicit URL over the service environment variable', () => {

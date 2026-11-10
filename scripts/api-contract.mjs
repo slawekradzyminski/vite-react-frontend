@@ -2,13 +2,14 @@
 // Keeps the OpenAPI snapshots in step with the service images pinned in docker-compose.yml.
 //   node scripts/api-contract.mjs snapshot [service] [url]  rewrites a snapshot from a running service
 //   node scripts/api-contract.mjs check [service] [url]     fails when a running service no longer matches its snapshot
-// `service` is `backend` (default, openapi/backend-api-docs.json) or `warehouse`
-// (openapi/warehouse-api-docs.json).
+// `service` is `backend` (default, openapi/backend-api-docs.json), `warehouse`
+// (openapi/warehouse-api-docs.json) or `payment` (openapi/payment-api-docs.json).
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 export const DEFAULT_API_DOCS_URL = 'http://localhost:8081/v3/api-docs';
 export const DEFAULT_WAREHOUSE_API_DOCS_URL = 'http://localhost:8081/warehouse/v3/api-docs';
+export const DEFAULT_PAYMENT_API_DOCS_URL = 'http://localhost:8081/payment/v3/api-docs';
 
 export const SERVICES = {
   backend: {
@@ -27,6 +28,14 @@ export const SERVICES = {
     urlEnv: 'WAREHOUSE_API_DOCS_URL',
     defaultUrl: DEFAULT_WAREHOUSE_API_DOCS_URL,
     snapshotScript: 'api:snapshot:warehouse',
+  },
+  payment: {
+    label: 'Payment service',
+    snapshot: 'openapi/payment-api-docs.json',
+    snapshotUrl: () => new URL('../openapi/payment-api-docs.json', import.meta.url),
+    urlEnv: 'PAYMENT_API_DOCS_URL',
+    defaultUrl: DEFAULT_PAYMENT_API_DOCS_URL,
+    snapshotScript: 'api:snapshot:payment',
   },
 };
 

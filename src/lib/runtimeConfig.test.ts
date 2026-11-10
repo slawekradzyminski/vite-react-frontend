@@ -1,5 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getAbsoluteApiUrl, getApiBaseUrl, getSsoConfig, getWarehouseApiBaseUrl, isWarehouseEnabled } from './runtimeConfig';
+import {
+  getAbsoluteApiUrl,
+  getApiBaseUrl,
+  getPaymentApiBaseUrl,
+  getSsoConfig,
+  getWarehouseApiBaseUrl,
+  isPaymentEnabled,
+  isWarehouseEnabled,
+} from './runtimeConfig';
 
 describe('runtimeConfig', () => {
   afterEach(() => {
@@ -162,6 +170,71 @@ describe('runtimeConfig', () => {
     it('follows the backend during local vite development and same-origin builds', () => {
       expect(getWarehouseApiBaseUrl({ DEV: true }, production)).toBe('http://localhost:4001');
       expect(getWarehouseApiBaseUrl({ DEV: false }, production)).toBe('https://awesome.byst.re');
+    });
+  });
+
+  describe('payment feature flag', () => {
+    it('is on unless a build sets VITE_PAYMENT_ENABLED=false', () => {
+      expect(isPaymentEnabled({})).toBe(true);
+      expect(isPaymentEnabled({ VITE_PAYMENT_ENABLED: '' })).toBe(true);
+      expect(isPaymentEnabled({ VITE_PAYMENT_ENABLED: 'true' })).toBe(true);
+    });
+
+    it('accepts false in any case and with surrounding whitespace', () => {
+      expect(isPaymentEnabled({ VITE_PAYMENT_ENABLED: 'false' })).toBe(false);
+      expect(isPaymentEnabled({ VITE_PAYMENT_ENABLED: '  FALSE  ' })).toBe(false);
+    });
+
+    it('is independent of the warehouse flag', () => {
+      expect(isPaymentEnabled({ VITE_WAREHOUSE_ENABLED: 'false' })).toBe(true);
+      expect(isWarehouseEnabled({ VITE_PAYMENT_ENABLED: 'false' })).toBe(true);
+    });
+
+    it('reads the Vite environment by default', () => {
+      expect(isPaymentEnabled()).toBe(true);
+      vi.stubEnv('VITE_PAYMENT_ENABLED', 'false');
+
+      expect(isPaymentEnabled()).toBe(false);
+    });
+  });
+
+  describe('payment API base URL', () => {
+    const production = { origin: 'https://awesome.byst.re' } as Location;
+
+    it('prefers VITE_PAYMENT_API_BASE_URL, trimmed and without trailing slashes', () => {
+      expect(
+        getPaymentApiBaseUrl(
+          {
+            VITE_API_BASE_URL: 'https://api.example.com',
+            VITE_WAREHOUSE_API_BASE_URL: 'http://localhost:4003',
+            VITE_PAYMENT_API_BASE_URL: '  http://localhost:4004//  ',
+          },
+          production,
+        ),
+      ).toBe('http://localhost:4004');
+    });
+
+    it('reads VITE_PAYMENT_API_BASE_URL from the Vite environment by default', () => {
+      vi.stubEnv('VITE_PAYMENT_API_BASE_URL', 'https://payment.example.com/');
+
+      expect(getPaymentApiBaseUrl()).toBe('https://payment.example.com');
+    });
+
+    it('falls back to the configured API base URL, not the warehouse one', () => {
+      expect(
+        getPaymentApiBaseUrl({ VITE_API_BASE_URL: 'https://api.example.com/', VITE_WAREHOUSE_API_BASE_URL: 'http://localhost:4003' }, production),
+      ).toBe('https://api.example.com');
+    });
+
+    it('treats a blank payment URL as unset', () => {
+      expect(
+        getPaymentApiBaseUrl({ VITE_API_BASE_URL: 'https://api.example.com', VITE_PAYMENT_API_BASE_URL: '   ' }, production),
+      ).toBe('https://api.example.com');
+    });
+
+    it('follows the backend during local vite development and same-origin builds', () => {
+      expect(getPaymentApiBaseUrl({ DEV: true }, production)).toBe('http://localhost:4001');
+      expect(getPaymentApiBaseUrl({ DEV: false }, production)).toBe('https://awesome.byst.re');
     });
   });
 

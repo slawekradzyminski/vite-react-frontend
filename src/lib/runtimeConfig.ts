@@ -4,8 +4,10 @@ type RuntimeEnv = {
   DEV?: boolean;
   VITE_API_BASE_URL?: string;
   VITE_WAREHOUSE_API_BASE_URL?: string;
+  VITE_PAYMENT_API_BASE_URL?: string;
   VITE_DOCKER?: string;
   VITE_WAREHOUSE_ENABLED?: string;
+  VITE_PAYMENT_ENABLED?: string;
   VITE_SSO_ENABLED?: string;
   VITE_SSO_AUTHORITY?: string;
   VITE_SSO_CLIENT_ID?: string;
@@ -52,6 +54,11 @@ export const getApiBaseUrl = (
 export const isWarehouseEnabled = (env: RuntimeEnv = import.meta.env) =>
   env.VITE_WAREHOUSE_ENABLED?.trim().toLowerCase() !== 'false';
 
+// Card payment screens need payment-service, which every profile runs.
+// A build without it sets VITE_PAYMENT_ENABLED=false to hide them and send no requests.
+export const isPaymentEnabled = (env: RuntimeEnv = import.meta.env) =>
+  env.VITE_PAYMENT_ENABLED?.trim().toLowerCase() !== 'false';
+
 // Shipments, returns, suppliers, purchase orders and reorder suggestions are served by
 // warehouse-service. Behind the gateway it shares the backend origin, so only direct-to-service
 // development needs a separate origin.
@@ -60,6 +67,20 @@ export const getWarehouseApiBaseUrl = (
   location: RuntimeLocation = window.location,
 ) => {
   const configuredBaseUrl = env.VITE_WAREHOUSE_API_BASE_URL?.trim();
+  if (configuredBaseUrl) {
+    return trimTrailingSlash(configuredBaseUrl);
+  }
+
+  return getApiBaseUrl(env, location);
+};
+
+// Card payments are served by payment-service. Behind the gateway it shares the backend origin,
+// so only direct-to-service development needs a separate origin.
+export const getPaymentApiBaseUrl = (
+  env: RuntimeEnv = import.meta.env,
+  location: RuntimeLocation = window.location,
+) => {
+  const configuredBaseUrl = env.VITE_PAYMENT_API_BASE_URL?.trim();
   if (configuredBaseUrl) {
     return trimTrailingSlash(configuredBaseUrl);
   }
