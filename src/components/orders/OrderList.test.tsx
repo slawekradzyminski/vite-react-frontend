@@ -1,5 +1,5 @@
 import type { Mock } from 'vitest';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { OrderList } from './OrderList';
 import { orders } from '../../lib/api';
@@ -382,4 +382,47 @@ describe('OrderList', () => {
       expect(orders.getUserOrders).toHaveBeenCalledWith(0, 10, 'DELIVERED');
     });
   });
-}); 
+
+  describe('awaiting payment hint', () => {
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    const twoOrders = {
+      data: {
+        content: [
+          { id: 1, status: 'PENDING' as OrderStatus, totalAmount: 10, createdAt: '2023-01-01T12:00:00Z', items: [] },
+          { id: 2, status: 'PAID' as OrderStatus, totalAmount: 20, createdAt: '2023-01-02T12:00:00Z', items: [] },
+        ],
+        totalPages: 1,
+        totalElements: 2,
+      },
+    };
+
+    it('marks pending orders as awaiting payment', async () => {
+      // given
+      (orders.getUserOrders as Mock).mockResolvedValueOnce(twoOrders);
+
+      // when
+      renderWithProviders();
+
+      // then
+      expect(await screen.findByTestId('order-awaiting-payment-1')).toHaveTextContent('Awaiting payment');
+      expect(screen.getByTestId('order-status-1')).toHaveTextContent('PENDING');
+      expect(screen.queryByTestId('order-awaiting-payment-2')).not.toBeInTheDocument();
+    });
+
+    it('shows no hint when a build disables payment-service', async () => {
+      // given
+      vi.stubEnv('VITE_PAYMENT_ENABLED', 'false');
+      (orders.getUserOrders as Mock).mockResolvedValueOnce(twoOrders);
+
+      // when
+      renderWithProviders();
+
+      // then
+      expect(await screen.findByTestId('order-status-1')).toBeInTheDocument();
+      expect(screen.queryByTestId('order-awaiting-payment-1')).not.toBeInTheDocument();
+    });
+  });
+});

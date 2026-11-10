@@ -671,4 +671,18 @@ describe('Navigation', () => {
       expect(screen.getByTestId('mobile-menu')).toBeInTheDocument();
     });
   });
+
+  it('links signed-in users to their loyalty account', async () => {
+    // given
+    localStorage.setItem('token', 'fake-token');
+    vi.mocked(auth.me).mockResolvedValue({ data: {
+      username: 'alice', firstName: 'Alice', lastName: 'Tester', roles: [Role.CLIENT],
+    } } as never);
+
+    // when
+    renderWithProviders(<Navigation />);
+
+    // then
+    expect(await screen.findByTestId('desktop-menu-loyalty')).toHaveAttribute('href', '/account/loyalty');
+  });
 });

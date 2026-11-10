@@ -35,6 +35,9 @@ import { AdminReviewsPage } from './pages/admin/reviewsPage';
 import { AdminReturnsPage } from './pages/admin/returnsPage';
 import { AdminPurchasingPage } from './pages/admin/purchasingPage';
 import { isWarehouseEnabled } from './lib/runtimeConfig';
+import { isPaymentEnabled } from './lib/runtimeConfig';
+import { OrderPaymentPage } from './pages/orders/orderPaymentPage';
+import { LoyaltyPage } from './pages/account/loyaltyPage';
 
 export function AppRoutes() {
   return (
@@ -237,6 +240,9 @@ export function AppRoutes() {
       
       {/* Commerce extensions */}
       <Route path="/wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
+      <Route path="/account/loyalty" element={<ProtectedRoute><LoyaltyPage /></ProtectedRoute>} />
+      {/* Served by payment-service; hidden when a build sets VITE_PAYMENT_ENABLED=false. */}
+      {isPaymentEnabled() && <Route path="/orders/:id/pay" element={<ProtectedRoute><OrderPaymentPage /></ProtectedRoute>} />}
       <Route path="/admin/coupons" element={<ProtectedRoute requiredRole="ADMIN"><AdminCouponsPage /></ProtectedRoute>} />
       <Route path="/admin/reviews" element={<ProtectedRoute requiredRole="ADMIN"><AdminReviewsPage /></ProtectedRoute>} />
       {/* Served by warehouse-service; hidden when a build sets VITE_WAREHOUSE_ENABLED=false. */}

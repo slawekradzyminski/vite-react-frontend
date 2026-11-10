@@ -94,6 +94,7 @@ export function Navigation() {
     { label: 'QR Code', path: '/qr' },
     { label: 'LLM', path: '/llm' },
     { label: 'Traffic Monitor', path: '/traffic' },
+    { label: 'Loyalty', path: '/account/loyalty' },
   ];
 
   const isWarehouse = hasRole(user?.data?.roles, 'WAREHOUSE');

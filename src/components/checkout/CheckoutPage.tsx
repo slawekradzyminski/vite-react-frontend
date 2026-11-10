@@ -7,6 +7,7 @@ import { CheckoutForm } from './CheckoutForm';
 import { Surface } from '../ui/surface';
 import { useEnrichedCart, type RawCartResponse } from '../../hooks/useEnrichedCart';
 import { formatPrice } from '../../lib/format';
+import { CartTendersSummary } from '../commerce/CartTendersSummary';
 
 export function CheckoutPage() {
   const { data: cartResponse, isLoading, error } = useQuery({
@@ -70,7 +71,7 @@ export function CheckoutPage() {
           <div className="p-6" data-testid="checkout-form-container">
             <CheckoutForm
               cartTotal={totalPrice}
-              payableTotal={couponCart?.couponCode && couponCart.couponValid ? couponCart.totalAfterDiscount : undefined}
+              payableTotal={couponCart?.amountDue ?? (couponCart?.couponCode && couponCart.couponValid ? couponCart.totalAfterDiscount : undefined)}
             />
           </div>
         </Surface>
@@ -99,6 +100,7 @@ export function CheckoutPage() {
                 </div>
               )}
             </div>
+            <div className="mt-4"><CartTendersSummary cart={couponCart} prefix="checkout" /></div>
           </div>
           
           <div className="overflow-x-auto">

@@ -11,6 +11,7 @@ import { useToast } from '../../hooks/useToast';
 import { Surface } from '../ui/surface';
 import { Badge } from '../ui/badge';
 import { formatPrice } from '../../lib/format';
+import { OrderPaymentSection } from '../payments/OrderPaymentPanel';
 
 export const OrderDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -182,6 +183,8 @@ export const OrderDetails = () => {
           <p data-testid="order-details-address-country">{order.shippingAddress.country}</p>
         </div>
       </Surface>
+
+      <OrderPaymentSection order={order} />
 
       {/* Warehouse tracking and returns are REST-only; GraphQL mode keeps every storefront call on /graphql. */}
       {isWarehouseEnabled() && commerceTransport === 'rest' && <OrderFulfilment order={order} />}
