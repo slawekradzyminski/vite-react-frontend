@@ -90,6 +90,26 @@ describe('ProductCard', () => {
     expect(screen.getByRole('img')).toHaveAttribute('src', 'test-image.jpg');
   });
 
+  it('shows the average rating of search results', () => {
+    // when
+    renderWithProviders(<ProductCard product={{ ...mockProduct, averageRating: 4.25, reviewCount: 12 }} />);
+
+    // then
+    expect(screen.getByTestId('product-rating')).toHaveTextContent('★ 4.3 (12)');
+    expect(screen.getByLabelText('Rated 4.3 out of 5 from 12 reviews')).toBeInTheDocument();
+  });
+
+  it('says when a search result has no reviews and hides ratings for plain products', () => {
+    // when
+    const { unmount } = renderWithProviders(<ProductCard product={{ ...mockProduct, averageRating: null, reviewCount: 0 }} />);
+
+    // then
+    expect(screen.getByTestId('product-rating')).toHaveTextContent('No reviews yet');
+    unmount();
+    renderWithProviders(<ProductCard product={mockProduct} />);
+    expect(screen.queryByTestId('product-rating')).not.toBeInTheDocument();
+  });
+
   it('shows out of stock message when stock is 0', () => {
     // given
     renderWithProviders(<ProductCard product={mockOutOfStockProduct} />);

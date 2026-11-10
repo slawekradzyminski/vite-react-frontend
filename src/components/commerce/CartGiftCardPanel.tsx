@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { cartTenders } from '../../lib/api';
 import { CART_COUPON_QUERY_KEY } from '../../lib/commerceQueryKeys';
-import { formatPrice } from '../../lib/format';
+import { useMoney } from '../../hooks/useMoney';
 import { serverMessage } from '../../lib/requestErrors';
 import type { CartWithCoupon } from '../../types/commerce';
 import { Button } from '../ui/button';
@@ -11,6 +11,7 @@ import { Label } from '../ui/label';
 
 /** Applies or removes a gift card on the cart and shows how much of the total it covers. */
 export function CartGiftCardPanel({ cart }: { cart?: CartWithCoupon }) {
+  const { formatMoney } = useMoney();
   const queryClient = useQueryClient();
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +46,7 @@ export function CartGiftCardPanel({ cart }: { cart?: CartWithCoupon }) {
         <div className="mt-3 flex flex-wrap items-center gap-3" data-testid="cart-gift-card-applied">
           <span className="rounded-full bg-slate-900 px-3 py-1 font-mono text-xs font-semibold tracking-wider text-stone-50" data-testid="cart-gift-card-code">{appliedCode}</span>
           {(cart?.giftCardAmount ?? 0) > 0 ? (
-            <span className="text-sm text-emerald-700" data-testid="cart-gift-card-amount">Covers {formatPrice(cart?.giftCardAmount ?? 0)}</span>
+            <span className="text-sm text-emerald-700" data-testid="cart-gift-card-amount">Covers {formatMoney(cart?.giftCardAmount ?? 0)}</span>
           ) : (
             <span className="text-sm text-amber-800" data-testid="cart-gift-card-unusable">This card cannot be used right now.</span>
           )}

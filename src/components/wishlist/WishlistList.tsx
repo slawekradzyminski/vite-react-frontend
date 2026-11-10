@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { wishlist } from '../../lib/api';
-import { formatPrice } from '../../lib/format';
+import { useMoney } from '../../hooks/useMoney';
 import { formatDateTime } from '../../lib/commerceFormat';
 import { PageHeader } from '../commerce/shared';
 import { Badge } from '../ui/badge';
@@ -10,6 +10,7 @@ import { Surface } from '../ui/surface';
 import { WISHLIST_QUERY_KEY } from '../../lib/commerceQueryKeys';
 
 export function WishlistList() {
+  const { formatMoney } = useMoney();
   const queryClient = useQueryClient();
   const { data, isLoading, isError } = useQuery({ queryKey: WISHLIST_QUERY_KEY, queryFn: wishlist.list });
   const refresh = () => queryClient.invalidateQueries({ queryKey: WISHLIST_QUERY_KEY });
@@ -37,7 +38,7 @@ export function WishlistList() {
               <div className="min-w-0">
                 <Link to={`/products/${item.productId}`} className="font-medium text-slate-950 hover:underline" data-testid={`wishlist-item-link-${item.productId}`}>{item.productName}</Link>
                 <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-600">
-                  <span data-testid={`wishlist-item-price-${item.productId}`}>{formatPrice(item.price ?? 0)}</span>
+                  <span data-testid={`wishlist-item-price-${item.productId}`}>{formatMoney(item.price ?? 0)}</span>
                   <Badge variant={item.stockStatus === 'OUT_OF_STOCK' ? 'error' : 'success'} data-testid={`wishlist-item-stock-${item.productId}`}>
                     {item.stockStatus === 'OUT_OF_STOCK' ? 'Out of stock' : `${item.stockQuantity} in stock`}
                   </Badge>

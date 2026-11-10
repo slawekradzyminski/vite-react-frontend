@@ -1,5 +1,5 @@
 import type { CartWithCoupon } from '../../types/commerce';
-import { formatPrice } from '../../lib/format';
+import { useMoney } from '../../hooks/useMoney';
 import { formatPoints } from '../../lib/payment';
 
 /**
@@ -7,6 +7,7 @@ import { formatPoints } from '../../lib/payment';
  * only carries `amountDue` while a gift card or points are applied, so nothing renders otherwise.
  */
 export function CartTendersSummary({ cart, prefix }: { cart?: CartWithCoupon; prefix: 'cart' | 'checkout' }) {
+  const { formatMoney } = useMoney();
   if (!cart || cart.amountDue == null) return null;
   const giftCard = cart.giftCardAmount ?? 0;
   const points = cart.pointsAmount ?? 0;
@@ -15,17 +16,17 @@ export function CartTendersSummary({ cart, prefix }: { cart?: CartWithCoupon; pr
       {cart.giftCardCode && (
         <>
           <dt className="text-slate-500">Gift card {cart.giftCardCode}</dt>
-          <dd className="text-right font-medium text-emerald-700" data-testid={`${prefix}-tenders-gift-card`}>−{formatPrice(giftCard)}</dd>
+          <dd className="text-right font-medium text-emerald-700" data-testid={`${prefix}-tenders-gift-card`}>−{formatMoney(giftCard)}</dd>
         </>
       )}
       {(cart.pointsRedeemed ?? 0) > 0 && (
         <>
           <dt className="text-slate-500">{formatPoints(cart.pointsRedeemed ?? 0)} points</dt>
-          <dd className="text-right font-medium text-emerald-700" data-testid={`${prefix}-tenders-points`}>−{formatPrice(points)}</dd>
+          <dd className="text-right font-medium text-emerald-700" data-testid={`${prefix}-tenders-points`}>−{formatMoney(points)}</dd>
         </>
       )}
       <dt className="font-semibold text-slate-950">Amount due</dt>
-      <dd className="text-right text-base font-bold text-slate-950" data-testid={`${prefix}-tenders-amount-due`}>{formatPrice(cart.amountDue)}</dd>
+      <dd className="text-right text-base font-bold text-slate-950" data-testid={`${prefix}-tenders-amount-due`}>{formatMoney(cart.amountDue)}</dd>
     </dl>
   );
 }

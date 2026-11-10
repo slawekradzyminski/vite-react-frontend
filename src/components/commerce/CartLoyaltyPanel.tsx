@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { cartTenders, loyalty } from '../../lib/api';
 import { CART_COUPON_QUERY_KEY } from '../../lib/commerceQueryKeys';
 import { LOYALTY_ACCOUNT_QUERY_KEY } from '../../lib/tenderQueryKeys';
-import { formatPrice } from '../../lib/format';
+import { useMoney } from '../../hooks/useMoney';
 import { formatPoints, pointsError, pointsValue, POINTS_PER_UNIT } from '../../lib/payment';
 import { serverMessage } from '../../lib/requestErrors';
 import type { CartWithCoupon } from '../../types/commerce';
@@ -13,6 +13,7 @@ import { Label } from '../ui/label';
 
 /** Shows the loyalty balance and redeems points (in hundreds) against the cart. */
 export function CartLoyaltyPanel({ cart }: { cart?: CartWithCoupon }) {
+  const { formatMoney } = useMoney();
   const queryClient = useQueryClient();
   const [points, setPoints] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -53,13 +54,13 @@ export function CartLoyaltyPanel({ cart }: { cart?: CartWithCoupon }) {
         <p className="mt-2 text-sm text-slate-500" data-testid="cart-loyalty-unavailable">Loyalty points are unavailable right now.</p>
       ) : (
         <p className="mt-2 text-sm text-slate-600" data-testid="cart-loyalty-balance">
-          Balance: <span className="font-semibold text-slate-950">{formatPoints(balance)} points</span> (worth {formatPrice(pointsValue(balance))})
+          Balance: <span className="font-semibold text-slate-950">{formatPoints(balance)} points</span> (worth {formatMoney(pointsValue(balance))})
         </p>
       )}
       {redeemed > 0 ? (
         <div className="mt-3 flex flex-wrap items-center gap-3" data-testid="cart-loyalty-applied">
           <span className="text-sm text-emerald-700" data-testid="cart-loyalty-redeemed">
-            Redeeming {formatPoints(redeemed)} points (−{formatPrice(cart?.pointsAmount ?? 0)})
+            Redeeming {formatPoints(redeemed)} points (−{formatMoney(cart?.pointsAmount ?? 0)})
           </span>
           <Button variant="outline" size="sm" onClick={() => remove.mutate()} disabled={remove.isPending} data-testid="cart-loyalty-remove">Remove</Button>
         </div>
@@ -98,7 +99,7 @@ export function CartLoyaltyPanel({ cart }: { cart?: CartWithCoupon }) {
       {redeemed === 0 && points.trim() !== '' && (
         validation
           ? <p className="mt-2 text-sm text-red-700" id="cart-loyalty-points-input-error" data-testid="cart-loyalty-validation">{validation}</p>
-          : <p className="mt-2 text-sm text-slate-600" id="cart-loyalty-preview" data-testid="cart-loyalty-preview">{formatPoints(parsed)} points = −{formatPrice(pointsValue(parsed))}</p>
+          : <p className="mt-2 text-sm text-slate-600" id="cart-loyalty-preview" data-testid="cart-loyalty-preview">{formatPoints(parsed)} points = −{formatMoney(pointsValue(parsed))}</p>
       )}
       {error && <p className="mt-2 text-sm text-red-700" role="alert" data-testid="cart-loyalty-error">{error}</p>}
     </div>

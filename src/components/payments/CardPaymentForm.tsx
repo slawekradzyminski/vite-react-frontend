@@ -7,6 +7,7 @@ import { Label } from '../ui/label';
 import { fieldErrorId } from '../../lib/fieldError';
 import { formatCardNumber, formatExpiry, type TestCard } from '../../lib/payment';
 import { formatPrice } from '../../lib/format';
+import { ChargedInUsdNote } from '../commerce/ChargedInUsdNote';
 import { createCardSchema, toPaymentCard, type CardFormValues } from '../../validators/payment';
 import type { PaymentCard } from '../../types/payment';
 import { TestCardsHelper } from './TestCardsHelper';
@@ -105,6 +106,7 @@ export function CardPaymentForm({ amountDue, submitting, error, onSubmit, now }:
         <Button type="submit" className="h-11 w-full" disabled={submitting} data-testid="payment-submit">
           {submitting ? 'Processing payment…' : `Pay ${formatPrice(amountDue)}`}
         </Button>
+        <ChargedInUsdNote amountUsd={amountDue} testId="payment-charged-in-usd" />
       </form>
     </div>
   );

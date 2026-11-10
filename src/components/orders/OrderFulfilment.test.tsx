@@ -2,13 +2,14 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { OrderFulfilment } from './OrderFulfilment';
-import { returns, warehouse } from '../../lib/api';
+import { returns, tracking, warehouse } from '../../lib/api';
 import { renderWithProviders } from '../../test/test-utils';
 import type { Order } from '../../types/order';
 
 vi.mock('../../lib/api', () => ({
   warehouse: { trackOrder: vi.fn() },
   returns: { create: vi.fn() },
+  tracking: { forOrder: vi.fn() },
 }));
 
 const order = (status: Order['status'], fulfilmentState?: Order['fulfilmentState']): Order => ({
@@ -80,5 +81,30 @@ describe('OrderFulfilment', () => {
 
     expect(await screen.findByTestId('order-return-error')).toHaveTextContent('The 30-day return window has passed');
     expect(screen.getByTestId('order-return-form')).toBeInTheDocument();
+  });
+
+  it('shows the carrier timeline once the parcel has shipped', async () => {
+    // given
+    vi.mocked(warehouse.trackOrder).mockResolvedValue({ data: { id: 7, status: 'SHIPPED', carrier: 'DHL', trackingNumber: '1234567890' } } as never);
+    vi.mocked(tracking.forOrder).mockResolvedValue({ data: {
+      orderId: 42, carrier: 'DHL', trackingNumber: '1234567890', currentStatus: 'DELIVERY_FAILED',
+      events: [{ status: 'DELIVERY_FAILED', location: 'Berlin', description: 'Nobody home', occurredAt: '2026-11-11T09:00:00' }],
+    } } as never);
+
+    // when
+    renderWithProviders(<OrderFulfilment order={order('SHIPPED', 'SHIPPED')} />);
+
+    // then
+    expect(await screen.findByTestId('tracking-current-status')).toHaveTextContent('Delivery attempt failed');
+    expect(tracking.forOrder).toHaveBeenCalledWith(42);
+  });
+
+  it('does not ask the carrier before the parcel ships', async () => {
+    vi.mocked(warehouse.trackOrder).mockResolvedValue({ data: { id: 7, status: 'PACKED' } } as never);
+    // A fresh order id: renderWithProviders shares one query cache between tests.
+    renderWithProviders(<OrderFulfilment order={{ ...order('PAID', 'PACKED'), id: 43 }} />);
+
+    expect(await screen.findByTestId('order-shipment-status')).toHaveTextContent(/packed/i);
+    expect(tracking.forOrder).not.toHaveBeenCalled();
   });
 });

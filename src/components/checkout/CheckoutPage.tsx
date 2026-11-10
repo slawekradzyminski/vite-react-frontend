@@ -6,10 +6,11 @@ import { cart, cartCoupon } from '../../lib/api';
 import { CheckoutForm } from './CheckoutForm';
 import { Surface } from '../ui/surface';
 import { useEnrichedCart, type RawCartResponse } from '../../hooks/useEnrichedCart';
-import { formatPrice } from '../../lib/format';
 import { CartTendersSummary } from '../commerce/CartTendersSummary';
+import { useMoney } from '../../hooks/useMoney';
 
 export function CheckoutPage() {
+  const { formatMoney } = useMoney();
   const { data: cartResponse, isLoading, error } = useQuery({
     queryKey: ['cart'],
     queryFn: cart.getCart,
@@ -89,14 +90,14 @@ export function CheckoutPage() {
               
               <div data-testid="checkout-total">
                 <span className="block text-sm font-medium uppercase text-slate-500">Total</span>
-                <span className="text-xl font-bold text-slate-950" data-testid="checkout-total-value">{formatPrice(totalPrice)}</span>
+                <span className="text-xl font-bold text-slate-950" data-testid="checkout-total-value">{formatMoney(totalPrice)}</span>
               </div>
 
               {couponCart?.couponCode && couponCart.couponValid && (
                 <div data-testid="checkout-discount">
                   <span className="block text-sm font-medium uppercase text-slate-500">Coupon {couponCart.couponCode}</span>
-                  <span className="text-lg text-emerald-700" data-testid="checkout-discount-value">−{formatPrice(couponCart.discountAmount ?? 0)}</span>
-                  <span className="block text-sm text-slate-600" data-testid="checkout-total-after-discount">You pay {formatPrice(couponCart.totalAfterDiscount ?? 0)}</span>
+                  <span className="text-lg text-emerald-700" data-testid="checkout-discount-value">−{formatMoney(couponCart.discountAmount ?? 0)}</span>
+                  <span className="block text-sm text-slate-600" data-testid="checkout-total-after-discount">You pay {formatMoney(couponCart.totalAfterDiscount ?? 0)}</span>
                 </div>
               )}
             </div>
@@ -142,13 +143,13 @@ export function CheckoutPage() {
                       </div>
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-500" data-testid={`checkout-item-price-${item.productId}`}>
-                      {formatPrice(item.unitPrice)}
+                      {formatMoney(item.unitPrice)}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-500" data-testid={`checkout-item-quantity-${item.productId}`}>
                       {item.quantity}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-900" data-testid={`checkout-item-total-${item.productId}`}>
-                      {formatPrice(item.totalPrice)}
+                      {formatMoney(item.totalPrice)}
                     </td>
                   </tr>
                 ))}

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
+import { renderWithQueryClient as render } from '../../test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { CardPaymentForm } from './CardPaymentForm';
 

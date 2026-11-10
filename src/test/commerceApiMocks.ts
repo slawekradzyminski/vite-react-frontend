@@ -29,5 +29,8 @@ export function commerceApiMocks() {
     },
     cartTenders: { applyGiftCard: vi.fn(), removeGiftCard: vi.fn(), applyPoints: vi.fn(), removePoints: vi.fn() },
     giftCards: { balance: vi.fn() },
+    tracking: { forOrder: vi.fn().mockRejectedValue({ isAxiosError: true, response: { status: 404 } }), byNumber: vi.fn(), advance: vi.fn() },
+    vatRates: { preview: vi.fn().mockRejectedValue({ isAxiosError: true, response: { status: 404 } }) },
+    currencies: { list: vi.fn().mockResolvedValue({ data: [] }) },
   };
 }

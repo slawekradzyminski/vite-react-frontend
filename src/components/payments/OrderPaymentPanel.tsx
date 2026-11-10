@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { auth, payments } from '../../lib/api';
 import { describeCard, describePaymentFailure, formatMoney, orderAmountDue } from '../../lib/payment';
 import { isPaymentEnabled } from '../../lib/runtimeConfig';
+import { useMoney } from '../../hooks/useMoney';
 import { Surface } from '../ui/surface';
 import { PaymentStatusBadge } from './PaymentStatusBadge';
 import type { Order } from '../../types/order';
@@ -47,6 +48,8 @@ export function OrderPaymentPanel({ order }: { order: Order }) {
   const latest = list[0];
   const ownsOrder = me?.data?.username === order.username;
   const amountDue = orderAmountDue(order);
+  // Payment records show what was charged; the amount still due follows the display currency.
+  const { formatMoney: formatDisplay } = useMoney();
   const canPay = order.status === 'PENDING' && ownsOrder && amountDue > 0;
 
   return (
@@ -64,7 +67,7 @@ export function OrderPaymentPanel({ order }: { order: Order }) {
         )}
       </div>
       {order.status === 'PENDING' && (
-        <p className="mb-3 text-sm text-amber-800" data-testid="order-payment-awaiting">Awaiting payment of {formatMoney(amountDue)}.</p>
+        <p className="mb-3 text-sm text-amber-800" data-testid="order-payment-awaiting">Awaiting payment of {formatDisplay(amountDue)}.</p>
       )}
       {paymentsQuery.isLoading && <p className="text-sm text-slate-500" data-testid="order-payment-loading">Loading payments…</p>}
       {paymentsQuery.isError && <p className="text-sm text-slate-500" data-testid="order-payment-unavailable">Payment details are unavailable right now.</p>}

@@ -26,6 +26,18 @@ vi.mock('../../components/products/ProductList', () => ({
   ProductList: (props) => mockProductList(props)
 }));
 
+// The catalogue below is the GraphQL (client-side) view; REST renders the server search.
+const transport = vi.hoisted(() => ({ value: 'graphql' as 'rest' | 'graphql' }));
+vi.mock('../../lib/commerceTransport', () => ({
+  get commerceTransport() {
+    return transport.value;
+  },
+}));
+
+vi.mock('../../components/products/ProductSearch', () => ({
+  ProductSearch: () => <div data-testid="product-search-mock">Server search</div>,
+}));
+
 // Mock React Query useQuery hook
 vi.mock('@tanstack/react-query', async () => {
   const actual = await vi.importActual('@tanstack/react-query');
@@ -86,6 +98,7 @@ describe('ProductsPage', () => {
   ];
 
   beforeEach(() => {
+    transport.value = 'graphql';
     user = userEvent.setup();
     vi.clearAllMocks();
     // The selected category lives in the URL, which jsdom shares between tests.
@@ -287,5 +300,18 @@ describe('ProductsPage', () => {
 
     // then
     await waitFor(() => expect(window.location.search).toBe('?sort=price-desc'));
+  });
+
+  it('uses the server-side search with the REST transport', () => {
+    // given
+    transport.value = 'rest';
+
+    // when
+    renderWithProviders(<ProductsPage />);
+
+    // then
+    expect(screen.getByTestId('product-search-mock')).toBeInTheDocument();
+    expect(mockProductList).not.toHaveBeenCalled();
+    expect(document.title).toContain('Products');
   });
 });

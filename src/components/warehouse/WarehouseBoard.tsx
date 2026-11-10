@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { warehouse } from '../../lib/api';
+import { tracking as trackingApi, warehouse } from '../../lib/api';
 import { formatPrice } from '../../lib/format';
 import { serverMessage } from '../../lib/requestErrors';
 import { validateTracking, validateWeight } from '../../lib/commerceValidation';
 import { CARRIER_FORMATS, type Carrier, type Shipment, type ShipmentStatus } from '../../types/commerce';
 import { formatDateTime, selectClassName } from '../../lib/commerceFormat';
+import { publicTrackingQueryKey, trackingStatusLabel } from '../../lib/tracking';
 import { PageHeader, StatusBadge } from '../commerce/shared';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -14,11 +15,43 @@ import { Surface } from '../ui/surface';
 
 const FILTERS: (ShipmentStatus | '')[] = ['', 'AWAITING_PICK', 'PICKED', 'PACKED', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
 
-function ShipmentActions({ shipment, onDone }: { shipment: Shipment; onDone: (updated: Shipment) => void }) {
+/** Fast-forwards a parcel handed to the simulated carrier by one scan. */
+function CarrierAdvance({ shipmentId, trackingNumber, onAdvanced }: { shipmentId: number; trackingNumber: string; onAdvanced: (message: string) => void }) {
+  const queryClient = useQueryClient();
+  const [error, setError] = useState<string | null>(null);
+  // ShipmentDto does not say whether the carrier is simulated; the public tracking view does.
+  const carrier = useQuery({
+    queryKey: publicTrackingQueryKey(trackingNumber),
+    queryFn: async () => (await trackingApi.byNumber(trackingNumber)).data,
+    retry: false,
+  });
+  const advance = useMutation({
+    mutationFn: () => trackingApi.advance(shipmentId),
+    onSuccess: (response) => {
+      setError(null);
+      queryClient.setQueryData(publicTrackingQueryKey(trackingNumber), response.data);
+      onAdvanced(`Shipment #${shipmentId} carrier status: ${trackingStatusLabel(response.data.currentStatus)}`);
+    },
+    onError: (mutationError) => setError(serverMessage(mutationError, 'Unable to advance the carrier.')),
+  });
+  if (!carrier.data?.simulated) return null;
+
+  return (
+    <div className="flex flex-wrap items-center gap-2" data-testid={`warehouse-carrier-${shipmentId}-simulated`}>
+      <span className="text-sm text-slate-600" data-testid={`warehouse-carrier-status-${shipmentId}`}>Simulated carrier · {trackingStatusLabel(carrier.data.currentStatus)}</span>
+      <Button variant="outline" onClick={() => advance.mutate()} disabled={advance.isPending} data-testid={`warehouse-advance-${shipmentId}`}>Advance carrier</Button>
+      {error && <p className="w-full text-sm text-red-700" role="alert" data-testid={`warehouse-advance-error-${shipmentId}`}>{error}</p>}
+    </div>
+  );
+}
+
+function ShipmentActions({ shipment, onDone, onAdvanced }: { shipment: Shipment; onDone: (updated: Shipment) => void; onAdvanced: (message: string) => void }) {
   const id = shipment.id as number;
   const [weight, setWeight] = useState('');
   const [carrier, setCarrier] = useState<Carrier>('DHL');
   const [tracking, setTracking] = useState('');
+  // The simulated carrier generates the tracking number and moves the parcel on its own.
+  const [simulated, setSimulated] = useState(false);
   const [touched, setTouched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const run = useMutation({
@@ -31,7 +64,7 @@ function ShipmentActions({ shipment, onDone }: { shipment: Shipment; onDone: (up
     onError: (mutationError) => setError(serverMessage(mutationError, 'This transition failed.')),
   });
   const weightError = validateWeight(weight);
-  const trackingError = validateTracking(carrier, tracking);
+  const trackingError = simulated ? null : validateTracking(carrier, tracking);
 
   return (
     <div className="space-y-3" data-testid={`warehouse-actions-${id}`}>
@@ -49,23 +82,32 @@ function ShipmentActions({ shipment, onDone }: { shipment: Shipment; onDone: (up
         </form>
       )}
       {shipment.status === 'PACKED' && (
-        <form className="flex flex-wrap items-end gap-2" onSubmit={(event) => { event.preventDefault(); setTouched(true); if (!trackingError) run.mutate(() => warehouse.ship(id, carrier, tracking.trim())); }} data-testid={`warehouse-ship-form-${id}`}>
+        <form className="flex flex-wrap items-end gap-2" onSubmit={(event) => { event.preventDefault(); setTouched(true); if (!trackingError) run.mutate(() => (simulated ? warehouse.ship(id, carrier) : warehouse.ship(id, carrier, tracking.trim()))); }} data-testid={`warehouse-ship-form-${id}`}>
           <div>
             <Label htmlFor={`warehouse-carrier-${id}`}>Carrier</Label>
             <select id={`warehouse-carrier-${id}`} value={carrier} onChange={(event) => setCarrier(event.target.value as Carrier)} className={`mt-1 w-32 ${selectClassName}`} data-testid={`warehouse-carrier-${id}`}>
               {(Object.keys(CARRIER_FORMATS) as Carrier[]).map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           </div>
-          <div className="flex-1">
-            <Label htmlFor={`warehouse-tracking-${id}`}>Tracking number</Label>
-            <Input id={`warehouse-tracking-${id}`} value={tracking} onChange={(event) => setTracking(event.target.value)} placeholder={CARRIER_FORMATS[carrier].hint} className="mt-1" data-testid={`warehouse-tracking-${id}`} />
-          </div>
+          {!simulated && (
+            <div className="flex-1">
+              <Label htmlFor={`warehouse-tracking-${id}`}>Tracking number</Label>
+              <Input id={`warehouse-tracking-${id}`} value={tracking} onChange={(event) => setTracking(event.target.value)} placeholder={CARRIER_FORMATS[carrier].hint} className="mt-1" data-testid={`warehouse-tracking-${id}`} />
+            </div>
+          )}
+          <label className="flex w-full items-center gap-2 text-sm text-slate-700">
+            <input type="checkbox" checked={simulated} onChange={(event) => setSimulated(event.target.checked)} data-testid={`warehouse-simulated-${id}`} />
+            Simulated carrier (auto tracking number)
+          </label>
           <Button type="submit" disabled={run.isPending} data-testid={`warehouse-ship-${id}`}>Hand to carrier</Button>
           {touched && trackingError && <p className="w-full text-xs text-red-700" role="alert" data-testid={`warehouse-tracking-error-${id}`}>{trackingError}</p>}
         </form>
       )}
       {shipment.status === 'SHIPPED' && (
         <Button onClick={() => run.mutate(() => warehouse.deliver(id))} disabled={run.isPending} data-testid={`warehouse-deliver-${id}`}>Confirm delivery</Button>
+      )}
+      {shipment.status === 'SHIPPED' && shipment.trackingNumber && (
+        <CarrierAdvance shipmentId={id} trackingNumber={shipment.trackingNumber} onAdvanced={onAdvanced} />
       )}
       {(shipment.status === 'AWAITING_PICK' || shipment.status === 'PICKED') && (
         <Button
@@ -207,6 +249,7 @@ export function WarehouseBoard() {
                   setFilter(updated.status ?? '');
                   refresh(`Shipment #${updated.id} is now ${updated.status?.replace('_', ' ')}`);
                 }}
+                onAdvanced={refresh}
               />
               <p className="text-xs text-slate-500">Last change by {selectedShipment.lastActor} · {formatDateTime(selectedShipment.updatedAt)}</p>
             </div>
