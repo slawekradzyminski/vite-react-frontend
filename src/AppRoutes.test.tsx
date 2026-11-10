@@ -43,6 +43,8 @@ vi.mock('./pages/returns/myReturnsPage', () => ({ MyReturnsPage: () => 'page:MyR
 vi.mock('./pages/warehouse/warehousePage', () => ({ WarehousePage: () => 'page:Warehouse' }));
 vi.mock('./pages/admin/returnsPage', () => ({ AdminReturnsPage: () => 'page:AdminReturns' }));
 vi.mock('./pages/admin/purchasingPage', () => ({ AdminPurchasingPage: () => 'page:AdminPurchasing' }));
+vi.mock('./pages/orders/orderPaymentPage', () => ({ OrderPaymentPage: () => 'page:OrderPayment' }));
+vi.mock('./pages/account/loyaltyPage', () => ({ LoyaltyPage: () => 'page:Loyalty' }));
 
 const publicRoutes: Array<[string, string]> = [
   ['/login', 'page:Login'],
@@ -70,6 +72,8 @@ const signedInRoutes: Array<[string, string]> = [
   ['/checkout', 'page:Checkout'],
   ['/orders', 'page:Profile'],
   ['/orders/3', 'page:OrderDetails'],
+  ['/orders/3/pay', 'page:OrderPayment'],
+  ['/account/loyalty', 'page:Loyalty'],
   ['/traffic', 'page:TrafficMonitor'],
 ];
 
@@ -205,5 +209,25 @@ describe('warehouse-service routes', () => {
     renderAt('/warehouse');
 
     expect(await screen.findByText('page:Home')).toBeInTheDocument();
+  });
+});
+
+describe('AppRoutes payment flag', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('does not render the card payment page when a build disables payment-service', async () => {
+    // given
+    vi.stubEnv('VITE_PAYMENT_ENABLED', 'false');
+    signInWithRoles(['ROLE_CLIENT']);
+
+    // when
+    const { container } = renderAt('/orders/3/pay');
+
+    // then
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(screen.queryByText('page:OrderPayment')).not.toBeInTheDocument();
+    expect(container).toBeEmptyDOMElement();
   });
 });

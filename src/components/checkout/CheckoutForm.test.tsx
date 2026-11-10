@@ -14,20 +14,28 @@ vi.mock('../../lib/api', async () => ({
   },
 }));
 
+const { mockNavigate, paymentEnabled } = vi.hoisted(() => ({ mockNavigate: vi.fn(), paymentEnabled: { value: true } }));
+
 // Mock react-router hooks
 vi.mock('react-router', async () => {
   const actual = await vi.importActual('react-router');
   return {
     ...actual,
-    useNavigate: () => vi.fn(),
+    useNavigate: () => mockNavigate,
   };
 });
+
+vi.mock('../../lib/runtimeConfig', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../lib/runtimeConfig')>()),
+  isPaymentEnabled: () => paymentEnabled.value,
+}));
 
 describe('CheckoutForm', () => {
   let queryClient: QueryClient;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    paymentEnabled.value = true;
     queryClient = new QueryClient({
       defaultOptions: {
         queries: {
@@ -231,4 +239,25 @@ describe('CheckoutForm', () => {
 
     alertSpy.mockRestore();
   });
-}); 
+
+  it.each([
+    [true, '/orders/1/pay'],
+    [false, '/orders/1'],
+  ])('with payments enabled=%s sends the new PENDING order to %s', async (enabled, target) => {
+    // given
+    paymentEnabled.value = enabled;
+    vi.mocked(orders.createOrder).mockResolvedValueOnce({ data: { id: 1 } } as never);
+    renderWithProviders();
+
+    // when
+    fireEvent.change(screen.getByLabelText(/street address/i), { target: { value: '123 Test St' } });
+    fireEvent.change(screen.getByLabelText(/city/i), { target: { value: 'Test City' } });
+    fireEvent.change(screen.getByLabelText(/state\/province/i), { target: { value: 'Test State' } });
+    fireEvent.change(screen.getByLabelText(/zip\/postal code/i), { target: { value: '12345' } });
+    fireEvent.change(screen.getByLabelText(/country/i), { target: { value: 'Test Country' } });
+    fireEvent.click(screen.getByRole('button', { name: /place order/i }));
+
+    // then
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith(target));
+  });
+});

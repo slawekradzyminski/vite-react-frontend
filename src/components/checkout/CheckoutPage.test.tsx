@@ -193,4 +193,23 @@ describe('CheckoutPage', () => {
     });
     consoleErrorSpy.mockRestore();
   });
-}); 
+
+  it('shows gift card and points tenders and passes the amount due to the form', async () => {
+    // given
+    const couponCart = { giftCardCode: 'GC-1', giftCardAmount: 10, pointsRedeemed: 500, pointsAmount: 5, amountDue: 20.5 };
+    vi.mocked(reactQuery.useQuery).mockImplementation(((options: { queryKey: unknown[] }) => ({
+      data: { data: options.queryKey[0] === 'cart' ? mockCartData : couponCart },
+      isLoading: false,
+      error: null,
+    })) as any);
+
+    // when
+    renderWithProviders(<CheckoutPage />);
+
+    // then
+    expect(await screen.findByTestId('checkout-tenders-gift-card')).toHaveTextContent('−$10.00');
+    expect(screen.getByTestId('checkout-tenders-points')).toHaveTextContent('−$5.00');
+    expect(screen.getByTestId('checkout-tenders-amount-due')).toHaveTextContent('$20.50');
+    expect(screen.getByTestId('checkout-total-amount')).toHaveTextContent('$20.50');
+  });
+});

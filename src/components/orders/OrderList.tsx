@@ -5,6 +5,7 @@ import { orders } from '../../lib/api';
 import { Order, OrderStatus } from '../../types/order';
 import { Badge } from '../ui/badge';
 import { formatPrice } from '../../lib/format';
+import { isPaymentEnabled } from '../../lib/runtimeConfig';
 
 export function OrderList() {
   const [currentPage, setCurrentPage] = useState(0);
@@ -109,6 +110,9 @@ export function OrderList() {
                 >
                   {order.status}
                 </Badge>
+                {order.status === 'PENDING' && isPaymentEnabled() && (
+                  <p className="mt-1 text-right text-xs font-medium text-amber-800" data-testid={`order-awaiting-payment-${order.id}`}>Awaiting payment</p>
+                )}
               </div>
             </div>
             

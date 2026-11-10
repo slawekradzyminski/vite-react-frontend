@@ -13,6 +13,7 @@ import { serverMessage } from '../../lib/requestErrors';
 import { CommerceGraphQlError } from '../../lib/commerceGraphql';
 import { fieldErrorId } from '../../lib/fieldError';
 import { formatPrice } from '../../lib/format';
+import { isPaymentEnabled } from '../../lib/runtimeConfig';
 
 interface CheckoutFormProps {
   cartTotal: number;
@@ -48,7 +49,8 @@ export function CheckoutForm({ cartTotal, payableTotal }: CheckoutFormProps) {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
       
       if (response?.data?.id) {
-        navigate(`/orders/${response.data.id}`);
+        // New orders are PENDING until paid; with payment-service the next step is the card form.
+        navigate(isPaymentEnabled() ? `/orders/${response.data.id}/pay` : `/orders/${response.data.id}`);
       } else {
         navigate('/orders');
       }
