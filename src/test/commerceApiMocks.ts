@@ -22,5 +22,8 @@ export function commerceApiMocks() {
     catalogCsv: { export: vi.fn(), import: vi.fn() },
     warehouse: { trackOrder: vi.fn().mockRejectedValue({ isAxiosError: true, response: { status: 404 } }) },
     returns: { create: vi.fn(), mine: vi.fn().mockResolvedValue(emptyPage) },
+    tracking: { forOrder: vi.fn().mockRejectedValue({ isAxiosError: true, response: { status: 404 } }), byNumber: vi.fn(), advance: vi.fn() },
+    vatRates: { preview: vi.fn().mockRejectedValue({ isAxiosError: true, response: { status: 404 } }) },
+    currencies: { list: vi.fn().mockResolvedValue({ data: [] }) },
   };
 }

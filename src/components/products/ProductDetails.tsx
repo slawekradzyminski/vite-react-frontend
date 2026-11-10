@@ -11,12 +11,13 @@ import { authStorage } from '../../lib/authStorage';
 import { Surface } from '../ui/surface';
 import { Badge } from '../ui/badge';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
-import { formatPrice } from '../../lib/format';
+import { useMoney } from '../../hooks/useMoney';
 import { describeCartError, responseStatus, retryServerErrors } from '../../lib/requestErrors';
 
 const parseProductId = (value: string | undefined) => (value && /^[1-9]\d*$/.test(value) ? Number(value) : null);
 
 export function ProductDetails() {
+  const { formatMoney } = useMoney();
   const { id } = useParams<{ id: string }>();
   const productId = parseProductId(id);
   const location = useLocation();
@@ -198,7 +199,7 @@ export function ProductDetails() {
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Product detail</p>
               <h1 className="mt-2 [overflow-wrap:anywhere] text-3xl font-semibold tracking-tight text-slate-950" data-testid="product-title">{productData.name}</h1>
             </div>
-            <Badge className="px-4 py-2 text-xl font-semibold text-slate-950" data-testid="product-price">{formatPrice(productData.price)}</Badge>
+            <Badge className="px-4 py-2 text-xl font-semibold text-slate-950" data-testid="product-price">{formatMoney(productData.price)}</Badge>
           </div>
           
           <div className="mt-8 grid gap-6 md:grid-cols-2">

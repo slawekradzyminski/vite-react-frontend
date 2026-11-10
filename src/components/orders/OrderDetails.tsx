@@ -1,5 +1,6 @@
 import { useParams } from 'react-router';
 import { OrderFulfilment } from './OrderFulfilment';
+import { OrderVat } from './OrderVat';
 import { isWarehouseEnabled } from '../../lib/runtimeConfig';
 import { commerceTransport } from '../../lib/commerceTransport';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -10,9 +11,10 @@ import { useState } from 'react';
 import { useToast } from '../../hooks/useToast';
 import { Surface } from '../ui/surface';
 import { Badge } from '../ui/badge';
-import { formatPrice } from '../../lib/format';
+import { useMoney } from '../../hooks/useMoney';
 
 export const OrderDetails = () => {
+  const { formatMoney } = useMoney();
   const { id } = useParams<{ id: string }>();
   const orderId = parseInt(id || '0', 10);
   const queryClient = useQueryClient();
@@ -154,22 +156,23 @@ export const OrderDetails = () => {
             <div key={item.id} className="flex min-w-0 flex-col items-start gap-2 border-b border-stone-200 pb-3 last:border-b-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between" data-testid={`order-item-${item.id}`}>
               <div className="min-w-0">
                 <p className="[overflow-wrap:anywhere] font-medium text-slate-900" data-testid={`order-item-name-${item.id}`}>{item.productName}</p>
-                <p className="text-sm text-slate-500" data-testid={`order-item-price-details-${item.id}`}>${item.unitPrice} x {item.quantity}</p>
+                <p className="text-sm text-slate-500" data-testid={`order-item-price-details-${item.id}`}>{formatMoney(item.unitPrice)} x {item.quantity}</p>
               </div>
-              <p className="shrink-0 self-end font-medium text-slate-900 sm:self-auto" data-testid={`order-item-total-${item.id}`}>{formatPrice(item.totalPrice)}</p>
+              <p className="shrink-0 self-end font-medium text-slate-900 sm:self-auto" data-testid={`order-item-total-${item.id}`}>{formatMoney(item.totalPrice)}</p>
             </div>
           ))}
         </div>
         {order.discountAmount != null && order.discountAmount > 0 && (
           <div className="mt-4 space-y-1 border-t border-stone-200 pt-3 text-sm" data-testid="order-details-discount">
-            <div className="flex items-center justify-between"><span className="text-slate-600">Subtotal</span><span data-testid="order-details-subtotal">{formatPrice(order.subtotalAmount ?? order.totalAmount)}</span></div>
-            <div className="flex items-center justify-between"><span className="text-slate-600">Coupon {order.couponCode}</span><span className="text-emerald-700" data-testid="order-details-discount-amount">−{formatPrice(order.discountAmount)}</span></div>
+            <div className="flex items-center justify-between"><span className="text-slate-600">Subtotal</span><span data-testid="order-details-subtotal">{formatMoney(order.subtotalAmount ?? order.totalAmount)}</span></div>
+            <div className="flex items-center justify-between"><span className="text-slate-600">Coupon {order.couponCode}</span><span className="text-emerald-700" data-testid="order-details-discount-amount">−{formatMoney(order.discountAmount)}</span></div>
           </div>
         )}
         <div className="mt-4 flex items-center justify-between border-t border-stone-200 pt-3" data-testid="order-details-total">
           <p className="font-semibold text-slate-700">Total</p>
-          <p className="font-bold text-lg text-slate-950" data-testid="order-details-total-amount">{formatPrice(order.totalAmount)}</p>
+          <p className="font-bold text-lg text-slate-950" data-testid="order-details-total-amount">{formatMoney(order.totalAmount)}</p>
         </div>
+        <OrderVat order={order} />
       </Surface>
 
       <Surface variant="inset" padding="md" className="mb-6" data-testid="order-details-shipping-section">

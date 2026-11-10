@@ -26,7 +26,7 @@ test.describe('Navigation keyboard accessibility', () => {
     if (await adminLink.count()) {
       expectedTabOrder.push('desktop-menu-admin');
     }
-    expectedTabOrder.push('commerce-transport', 'desktop-cart-icon', 'username-profile-link', 'logout-button');
+    expectedTabOrder.push('commerce-transport', 'currency-selector', 'desktop-cart-icon', 'username-profile-link', 'logout-button');
 
     const actualTabOrder = await page
       .locator('nav a, nav button, nav select')
@@ -71,6 +71,7 @@ test.describe('Navigation keyboard accessibility', () => {
     await brandLink.focus();
     await expect(brandLink).toBeFocused();
     await expectNextFocus(page, page.getByRole('combobox', { name: 'Shop API' }));
+    await expectNextFocus(page, page.getByRole('combobox', { name: 'Display currency' }));
     await expectNextFocus(page, cartButton);
     await expectNextFocus(page, menuToggle);
 

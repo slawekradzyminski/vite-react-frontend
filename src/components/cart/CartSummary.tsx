@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { Cart } from '../../types/cart';
 import { cart } from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
-import { formatPrice } from '../../lib/format';
+import { useMoney } from '../../hooks/useMoney';
 import { describeCartError } from '../../lib/requestErrors';
 
 interface CartSummaryProps {
@@ -13,6 +13,7 @@ interface CartSummaryProps {
 }
 
 export function CartSummary({ cartData, onUpdate, beforeCheckout }: CartSummaryProps) {
+  const { formatMoney } = useMoney();
   const [isClearing, setIsClearing] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const { toast } = useToast();
@@ -84,7 +85,7 @@ export function CartSummary({ cartData, onUpdate, beforeCheckout }: CartSummaryP
             
             <div data-testid="cart-summary-total">
               <span className="block text-sm font-medium uppercase text-slate-500">Total</span>
-              <span className="text-xl font-bold text-slate-950" data-testid="cart-summary-total-price">{formatPrice(safeCartData.totalPrice)}</span>
+              <span className="text-xl font-bold text-slate-950" data-testid="cart-summary-total-price">{formatMoney(safeCartData.totalPrice)}</span>
             </div>
           </div>
         </div>

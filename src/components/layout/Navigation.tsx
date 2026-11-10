@@ -9,6 +9,7 @@ import { hasRole } from '../../lib/roles';
 import { isWarehouseEnabled } from '../../lib/runtimeConfig';
 import { brandMarkSrc } from '../../lib/brandingAssets';
 import { CommerceTransportSelector } from './CommerceTransportSelector';
+import { CurrencySelector } from './CurrencySelector';
 
 const PRODUCT_NAME = 'Awesome Testing';
 const MOBILE_MENU_ID = 'mobile-main-menu';
@@ -155,6 +156,7 @@ export function Navigation() {
             {user?.data ? (
               <>
                 <CommerceTransportSelector />
+                <CurrencySelector />
                 <Link
                   to="/cart"
                   className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-stone-200 bg-white text-slate-600 shadow-[0_10px_25px_-20px_rgba(15,23,42,0.75)] transition hover:-translate-y-0.5 hover:border-stone-300 hover:text-slate-900"

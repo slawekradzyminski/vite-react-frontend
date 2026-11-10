@@ -168,6 +168,17 @@ describe('OrderDetails', () => {
     });
   });
 
+  it('shows the VAT contained in the total', async () => {
+    // given
+    vi.mocked(orders.getOrderById).mockResolvedValueOnce(createOrderResponse({ taxRate: 23, taxAmount: 7.48, netAmount: 32.5, taxCountry: 'PL' }));
+
+    // when
+    renderWithProviders();
+
+    // then
+    expect(await screen.findByTestId('order-details-vat')).toHaveTextContent('Includes VAT 23% (PL): $7.48, net: $32.50');
+  });
+
   it('renders order details correctly', async () => {
     // given
     renderWithProviders();

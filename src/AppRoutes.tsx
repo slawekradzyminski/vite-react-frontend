@@ -30,6 +30,7 @@ import { WebMcpPage } from './features/webmcp/WebMcpPage';
 import { WishlistPage } from './pages/wishlist/wishlistPage';
 import { MyReturnsPage } from './pages/returns/myReturnsPage';
 import { WarehousePage } from './pages/warehouse/warehousePage';
+import { TrackingPage } from './pages/tracking/trackingPage';
 import { AdminCouponsPage } from './pages/admin/couponsPage';
 import { AdminReviewsPage } from './pages/admin/reviewsPage';
 import { AdminReturnsPage } from './pages/admin/returnsPage';
@@ -242,6 +243,9 @@ export function AppRoutes() {
       {/* Served by warehouse-service; hidden when a build sets VITE_WAREHOUSE_ENABLED=false. */}
       {isWarehouseEnabled() && (
         <>
+          {/* Public parcel tracking: no login. */}
+          <Route path="/track" element={<TrackingPage />} />
+          <Route path="/track/:number" element={<TrackingPage />} />
           <Route path="/returns" element={<ProtectedRoute><MyReturnsPage /></ProtectedRoute>} />
           <Route path="/warehouse" element={<ProtectedRoute requiredRole={['WAREHOUSE', 'ADMIN']}><WarehousePage /></ProtectedRoute>} />
           <Route path="/admin/returns" element={<ProtectedRoute requiredRole="ADMIN"><AdminReturnsPage /></ProtectedRoute>} />

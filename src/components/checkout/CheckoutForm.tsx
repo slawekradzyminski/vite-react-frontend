@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { orders } from '../../lib/api';
@@ -12,7 +12,10 @@ import axios from 'axios';
 import { serverMessage } from '../../lib/requestErrors';
 import { CommerceGraphQlError } from '../../lib/commerceGraphql';
 import { fieldErrorId } from '../../lib/fieldError';
-import { formatPrice } from '../../lib/format';
+import { useMoney } from '../../hooks/useMoney';
+import { commerceTransport } from '../../lib/commerceTransport';
+import { ChargedInUsdNote } from '../commerce/ChargedInUsdNote';
+import { CheckoutTaxPreview } from './CheckoutTaxPreview';
 
 interface CheckoutFormProps {
   cartTotal: number;
@@ -21,6 +24,7 @@ interface CheckoutFormProps {
 }
 
 export function CheckoutForm({ cartTotal, payableTotal }: CheckoutFormProps) {
+  const { formatMoney } = useMoney();
   const navigate = useNavigate();
   // One key per checkout attempt: a retried submit after a timeout replays the
   // same order instead of placing a second one.
@@ -29,7 +33,7 @@ export function CheckoutForm({ cartTotal, payableTotal }: CheckoutFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
   
-  const { register, handleSubmit, formState: { errors } } = useForm<AddressDto>({
+  const { register, handleSubmit, control, formState: { errors } } = useForm<AddressDto>({
     defaultValues: {
       street: '',
       city: '',
@@ -39,6 +43,7 @@ export function CheckoutForm({ cartTotal, payableTotal }: CheckoutFormProps) {
     }
   });
   
+  const country = useWatch({ control, name: 'country' });
   const createOrderMutation = useMutation({
     mutationFn: (shippingAddress: AddressDto) => orders.createOrder(shippingAddress, idempotencyKey),
     onSuccess: (response) => {
@@ -179,10 +184,12 @@ export function CheckoutForm({ cartTotal, payableTotal }: CheckoutFormProps) {
         </div>
         
         <Surface variant="inset" padding="md" className="mt-6" data-testid="checkout-summary">
+          {commerceTransport === 'rest' && <CheckoutTaxPreview country={country ?? ''} cartTotal={payableTotal ?? cartTotal} />}
           <div className="flex justify-between items-center mb-4" data-testid="checkout-total">
             <span className="font-semibold text-slate-700" data-testid="checkout-total-label">Order Total:</span>
-            <span className="text-lg font-bold text-slate-950" data-testid="checkout-total-amount">{formatPrice(payableTotal ?? cartTotal)}</span>
+            <span className="text-lg font-bold text-slate-950" data-testid="checkout-total-amount">{formatMoney(payableTotal ?? cartTotal)}</span>
           </div>
+          <ChargedInUsdNote amountUsd={payableTotal ?? cartTotal} testId="checkout-charged-in-usd" />
           
           <Button
             type="submit"
