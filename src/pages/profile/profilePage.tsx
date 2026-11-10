@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Link } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { auth, prompts } from '../../lib/api';
 import { UserEditForm } from '../../components/user/UserEditForm';
@@ -190,6 +191,7 @@ export function Profile() {
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Signed in as</p>
             <p className="mt-1 text-sm font-medium text-slate-900">{currentUser.data.firstName} {currentUser.data.lastName}</p>
             <p className="text-sm text-slate-600">{currentUser.data.email}</p>
+            <Link to="/account/webhooks" className="mt-2 inline-block text-sm text-sky-700 hover:underline" data-testid="profile-webhooks-link">Manage webhooks →</Link>
           </div>
         </div>
       </Surface>

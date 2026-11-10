@@ -34,7 +34,13 @@ import { AdminCouponsPage } from './pages/admin/couponsPage';
 import { AdminReviewsPage } from './pages/admin/reviewsPage';
 import { AdminReturnsPage } from './pages/admin/returnsPage';
 import { AdminPurchasingPage } from './pages/admin/purchasingPage';
-import { isWarehouseEnabled } from './lib/runtimeConfig';
+import { WebhooksPage } from './pages/webhooks/webhooksPage';
+import { AdminGiftCardsPage } from './pages/admin/giftCardsPage';
+import { AdminVatRatesPage } from './pages/admin/vatRatesPage';
+import { AdminCurrenciesPage } from './pages/admin/currenciesPage';
+import { AdminPaymentsPage } from './pages/admin/paymentsPage';
+import { AdminWebhooksPage } from './pages/admin/webhooksPage';
+import { isPaymentEnabled, isWarehouseEnabled } from './lib/runtimeConfig';
 
 export function AppRoutes() {
   return (
@@ -247,6 +253,16 @@ export function AppRoutes() {
           <Route path="/admin/returns" element={<ProtectedRoute requiredRole="ADMIN"><AdminReturnsPage /></ProtectedRoute>} />
           <Route path="/admin/purchasing" element={<ProtectedRoute requiredRole="ADMIN"><AdminPurchasingPage /></ProtectedRoute>} />
         </>
+      )}
+      {/* Webhooks and commerce settings */}
+      <Route path="/account/webhooks" element={<ProtectedRoute><WebhooksPage /></ProtectedRoute>} />
+      <Route path="/admin/gift-cards" element={<ProtectedRoute requiredRole="ADMIN"><AdminGiftCardsPage /></ProtectedRoute>} />
+      <Route path="/admin/vat-rates" element={<ProtectedRoute requiredRole="ADMIN"><AdminVatRatesPage /></ProtectedRoute>} />
+      <Route path="/admin/currencies" element={<ProtectedRoute requiredRole="ADMIN"><AdminCurrenciesPage /></ProtectedRoute>} />
+      <Route path="/admin/webhooks" element={<ProtectedRoute requiredRole="ADMIN"><AdminWebhooksPage /></ProtectedRoute>} />
+      {/* Served by payment-service; hidden when a build sets VITE_PAYMENT_ENABLED=false. */}
+      {isPaymentEnabled() && (
+        <Route path="/admin/payments" element={<ProtectedRoute requiredRole="ADMIN"><AdminPaymentsPage /></ProtectedRoute>} />
       )}
       <Route
         path="/traffic"

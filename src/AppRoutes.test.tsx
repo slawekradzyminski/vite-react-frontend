@@ -43,6 +43,12 @@ vi.mock('./pages/returns/myReturnsPage', () => ({ MyReturnsPage: () => 'page:MyR
 vi.mock('./pages/warehouse/warehousePage', () => ({ WarehousePage: () => 'page:Warehouse' }));
 vi.mock('./pages/admin/returnsPage', () => ({ AdminReturnsPage: () => 'page:AdminReturns' }));
 vi.mock('./pages/admin/purchasingPage', () => ({ AdminPurchasingPage: () => 'page:AdminPurchasing' }));
+vi.mock('./pages/webhooks/webhooksPage', () => ({ WebhooksPage: () => 'page:Webhooks' }));
+vi.mock('./pages/admin/giftCardsPage', () => ({ AdminGiftCardsPage: () => 'page:AdminGiftCards' }));
+vi.mock('./pages/admin/vatRatesPage', () => ({ AdminVatRatesPage: () => 'page:AdminVatRates' }));
+vi.mock('./pages/admin/currenciesPage', () => ({ AdminCurrenciesPage: () => 'page:AdminCurrencies' }));
+vi.mock('./pages/admin/paymentsPage', () => ({ AdminPaymentsPage: () => 'page:AdminPayments' }));
+vi.mock('./pages/admin/webhooksPage', () => ({ AdminWebhooksPage: () => 'page:AdminWebhooks' }));
 
 const publicRoutes: Array<[string, string]> = [
   ['/login', 'page:Login'],
@@ -71,6 +77,7 @@ const signedInRoutes: Array<[string, string]> = [
   ['/orders', 'page:Profile'],
   ['/orders/3', 'page:OrderDetails'],
   ['/traffic', 'page:TrafficMonitor'],
+  ['/account/webhooks', 'page:Webhooks'],
 ];
 
 const adminRoutes: Array<[string, string]> = [
@@ -81,6 +88,11 @@ const adminRoutes: Array<[string, string]> = [
   ['/admin/orders', 'page:AdminOrders'],
   ['/admin/inventory', 'page:AdminInventory'],
   ['/admin/inventory/5', 'page:AdminInventory'],
+  ['/admin/gift-cards', 'page:AdminGiftCards'],
+  ['/admin/vat-rates', 'page:AdminVatRates'],
+  ['/admin/currencies', 'page:AdminCurrencies'],
+  ['/admin/payments', 'page:AdminPayments'],
+  ['/admin/webhooks', 'page:AdminWebhooks'],
 ];
 
 const meResponse = (roles: string[]) =>
@@ -205,5 +217,29 @@ describe('warehouse-service routes', () => {
     renderAt('/warehouse');
 
     expect(await screen.findByText('page:Home')).toBeInTheDocument();
+  });
+});
+
+describe('payment-service routes', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('does not render /admin/payments when a build disables payment-service', async () => {
+    // given
+    vi.stubEnv('VITE_PAYMENT_ENABLED', 'false');
+    signInWithRoles(['ROLE_ADMIN']);
+
+    // when
+    const { container } = renderAt('/admin/payments');
+
+    // then
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(screen.queryByText('page:AdminPayments')).not.toBeInTheDocument();
+    expect(container).toBeEmptyDOMElement();
   });
 });
