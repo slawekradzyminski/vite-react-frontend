@@ -254,9 +254,15 @@ test('original products UI works with page tools deliberately disabled', async (
   await expect(shop.page.getByTestId('shop-tool-status')).toHaveText('Tools disabled for the UI baseline');
   expect(await shop.page.webmcp.tools()).toEqual([]);
   await shop.page.getByTestId('product-search').fill(shop.cheap.name);
-  await shop.page.getByTestId('product-increase-quantity').click();
-  await shop.page.getByTestId('product-add-button').click();
-  await expect(shop.page.getByTestId('product-card-cart-quantity')).toHaveText('2 in cart');
+  // The search box is debounced into the URL and the previous results stay on screen until the
+  // new ones arrive, so wait for the committed query and act on the matching card only.
+  await expect(shop.page).toHaveURL((url) => url.searchParams.get('q') === shop.cheap.name);
+  const card = shop.page.getByTestId('product-item').filter({
+    has: shop.page.getByTestId('product-name').getByText(shop.cheap.name, { exact: true }),
+  });
+  await card.getByTestId('product-increase-quantity').click();
+  await card.getByTestId('product-add-button').click();
+  await expect(card.getByTestId('product-card-cart-quantity')).toHaveText('2 in cart');
   expect(await shop.saved()).toMatchObject({ totalItems: 2, totalPrice: 25 });
 });
 

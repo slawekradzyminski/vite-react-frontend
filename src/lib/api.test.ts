@@ -1119,7 +1119,7 @@ describe('warehouse-service API client', () => {
     expect(window.location.href).toBe('/login');
   });
 
-  it('redirects on a warehouse 403 without refreshing', async () => {
+  it('keeps the session on a warehouse 403 without refreshing', async () => {
     localStorage.setItem('token', 'client-token');
     localStorage.setItem('refreshToken', 'refresh-123');
     const refreshSpy = vi.spyOn(auth, 'refresh');
@@ -1128,6 +1128,18 @@ describe('warehouse-service API client', () => {
     await expect(mockWarehouseAxios.responseErrorInterceptor(error)).rejects.toBe(error);
 
     expect(refreshSpy).not.toHaveBeenCalled();
+    expect(localStorage.getItem('token')).toBe('client-token');
+    expect(window.location.href).toBe('http://localhost/');
+  });
+
+  it('signs out on a warehouse 401 when no refresh token is stored', async () => {
+    localStorage.setItem('token', 'expired-token');
+    const error = { config: { url: '/api/v1/returns', headers: {} }, response: { status: 401 } };
+
+    await expect(mockWarehouseAxios.responseErrorInterceptor(error)).rejects.toBe(error);
+
+    expect(mockWarehouseAxios).not.toHaveBeenCalled();
+    expect(localStorage.getItem('token')).toBeNull();
     expect(window.location.href).toBe('/login');
   });
 
@@ -1247,6 +1259,58 @@ describe('payment-service API client', () => {
     expect(mockAxios).not.toHaveBeenCalled();
     expect(mockWarehouseAxios).not.toHaveBeenCalled();
     expect(response).toEqual({ data: { retried: true } });
+  });
+
+  it('keeps the session when payment-service denies access to an order', async () => {
+    localStorage.setItem('token', 'client-token');
+    localStorage.setItem('refreshToken', 'refresh-123');
+    const refreshSpy = vi.spyOn(auth, 'refresh');
+    const error = { config: { url: '/api/v1/orders/2/payments', headers: {} }, response: { status: 403 } };
+
+    await expect(mockPaymentAxios.responseErrorInterceptor(error)).rejects.toBe(error);
+
+    expect(refreshSpy).not.toHaveBeenCalled();
+    expect(localStorage.getItem('token')).toBe('client-token');
+    expect(localStorage.getItem('refreshToken')).toBe('refresh-123');
+    expect(window.location.href).toBe('http://localhost/');
+  });
+
+  it('keeps the refreshed session when payment-service still answers 401 after the retry', async () => {
+    localStorage.setItem('token', 'fresh-token');
+    localStorage.setItem('refreshToken', 'refresh-123');
+    const refreshSpy = vi.spyOn(auth, 'refresh');
+    const error = { config: { url: '/api/v1/orders/2/payments', headers: {}, _retry: true }, response: { status: 401 } };
+
+    await expect(mockPaymentAxios.responseErrorInterceptor(error)).rejects.toBe(error);
+
+    expect(refreshSpy).not.toHaveBeenCalled();
+    expect(mockPaymentAxios).not.toHaveBeenCalled();
+    expect(localStorage.getItem('token')).toBe('fresh-token');
+    expect(window.location.href).toBe('http://localhost/');
+  });
+
+  it('signs out on a payment 401 that carries no request config', async () => {
+    localStorage.setItem('token', 'expired-token');
+    const error = { response: { status: 401 } };
+
+    await expect(mockPaymentAxios.responseErrorInterceptor(error)).rejects.toBe(error);
+
+    expect(localStorage.getItem('token')).toBeNull();
+    expect(window.location.href).toBe('/login');
+  });
+
+  it('signs out when the refresh behind a payment 401 fails', async () => {
+    localStorage.setItem('token', 'expired-token');
+    localStorage.setItem('refreshToken', 'refresh-123');
+    vi.spyOn(auth, 'refresh').mockRejectedValue(new Error('Invalid refresh token'));
+
+    await expect(mockPaymentAxios.responseErrorInterceptor({
+      config: { url: '/api/v1/orders/2/payments', headers: {} },
+      response: { status: 401 },
+    })).rejects.toThrow('Invalid refresh token');
+
+    expect(localStorage.getItem('token')).toBeNull();
+    expect(window.location.href).toBe('/login');
   });
 
   it('passes payment validation and conflict errors through without signing out', async () => {

@@ -194,8 +194,11 @@ const redirectToLogin = () => {
 };
 
 // Applied to every instance so each one sends the session and bearer headers and retries
-// its own requests after a shared token refresh.
-const installAuthInterceptors = (instance: AxiosInstance) => {
+// its own requests after a shared token refresh. Only the backend owns the session: a 401 or
+// 403 from it signs the user out. warehouse-service and payment-service only accept the
+// backend's tokens, so a 403 from them (someone else's order, a missing role) or a 401 that
+// survives a successful refresh is their own answer and must not end the session.
+const installAuthInterceptors = (instance: AxiosInstance, ownsSession: boolean) => {
   instance.interceptors.request.use((config) => {
     config.headers = config.headers ?? {};
     config.headers[CLIENT_SESSION_ID_HEADER] = authStorage.getClientSessionId();
@@ -246,7 +249,10 @@ const installAuthInterceptors = (instance: AxiosInstance) => {
         }
       }
 
-      if (status === 401 || status === 403) {
+      const sessionRejected = ownsSession
+        ? status === 401 || status === 403
+        : status === 401 && !originalRequest?._retry;
+      if (sessionRejected) {
         redirectToLogin();
       }
       return Promise.reject(error);
@@ -254,9 +260,9 @@ const installAuthInterceptors = (instance: AxiosInstance) => {
   );
 };
 
-installAuthInterceptors(api);
-installAuthInterceptors(warehouseApi);
-installAuthInterceptors(paymentApi);
+installAuthInterceptors(api, true);
+installAuthInterceptors(warehouseApi, false);
+installAuthInterceptors(paymentApi, false);
 
 const buildStreamingHeaders = (token: string | null) => ({
   'Content-Type': 'application/json',

@@ -143,9 +143,9 @@ services:
     build:
       context: .
       args:
-        # warehouse-service runs here for its API checks, but the E2E suite does not cover the
-        # warehouse screens yet, so they stay off in this build.
-        VITE_WAREHOUSE_ENABLED: "false"
+        # The E2E suite covers warehouse-service screens (public tracking, order delivery and
+        # carrier timeline), so this build keeps them on.
+        VITE_WAREHOUSE_ENABLED: "true"
     expose:
       - "80"
     hostname: frontend

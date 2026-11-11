@@ -38,7 +38,10 @@ for (const transport of ['rest', 'graphql'] as const) {
     const commerceRequests: { path: string; query: string }[] = [];
     page.on('request', req => {
       const path = new URL(req.url()).pathname;
-      if (/^\/api\/v1\/(graphql|products|cart|orders|admin\/inventory)(\/|$)/.test(path)) {
+      // Payments and shipments of an order belong to payment-service and warehouse-service,
+      // which are REST-only, so they are not commerce transport traffic.
+      const serviceCall = /^\/api\/v1\/orders\/\d+\/(payments|shipment|returns)(\/|$)/.test(path);
+      if (!serviceCall && /^\/api\/v1\/(graphql|products|cart|orders|admin\/inventory)(\/|$)/.test(path)) {
         commerceRequests.push({ path, query: req.postDataJSON()?.query ?? '' });
       }
     });
@@ -59,8 +62,10 @@ for (const transport of ['rest', 'graphql'] as const) {
       await page.getByTestId(`checkout-${name}-input`).fill(value);
     }
     await page.getByTestId('checkout-submit-button').click();
-    await expect(page).toHaveURL(/\/orders\/\d+$/);
-    const orderUrl = page.url();
+    // Checkout continues to the card payment page; the order itself stays PENDING until paid.
+    await expect(page).toHaveURL(/\/orders\/\d+\/pay$/);
+    const orderUrl = page.url().replace(/\/pay$/, '');
+    await page.goto(orderUrl);
     await expect(page.getByTestId('order-details-total-amount')).toHaveText('$19.99');
     await page.goto('/profile');
     await expect(page.getByText('Total: $19.99', { exact: true }).first()).toBeVisible();

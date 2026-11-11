@@ -22,7 +22,12 @@ test.describe('Navigation keyboard accessibility', () => {
       'desktop-menu-qr-code',
       'desktop-menu-llm',
       'desktop-menu-traffic-monitor',
+      'desktop-menu-loyalty',
     ];
+    // Staff links follow the shared menu: Warehouse for admins and warehouse staff, then Admin.
+    if (await page.getByTestId('desktop-menu-warehouse').count()) {
+      expectedTabOrder.push('desktop-menu-warehouse');
+    }
     if (await adminLink.count()) {
       expectedTabOrder.push('desktop-menu-admin');
     }
