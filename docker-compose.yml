@@ -2,7 +2,7 @@ services:
   backend:
     # 3.15.0 adds VAT, currencies, gift cards, loyalty, webhooks and product search, and calls
     # payment-service. Not published yet: pin its digest once it is (BACKEND_IMAGE overrides it).
-    image: ${BACKEND_IMAGE:-slawekradzyminski/backend:3.15.0}
+    image: ${BACKEND_IMAGE:-slawekradzyminski/backend:3.15.0@sha256:c2f38b95515a7578d3cc1eff72a2d6c3112263cd223c2704c266e7cb7ff4d24b}
     expose:
       - "4001"
     hostname: backend
@@ -53,7 +53,7 @@ services:
   warehouse-service:
     # Shipments, simulated carrier tracking, returns and purchasing. 1.2.0 is not published yet:
     # pin its digest once it is (WAREHOUSE_IMAGE overrides it).
-    image: ${WAREHOUSE_IMAGE:-slawekradzyminski/warehouse-service:1.2.0}
+    image: ${WAREHOUSE_IMAGE:-slawekradzyminski/warehouse-service:1.2.0@sha256:b6849b65e8d17b36c031e7d67fb585a2f057c1d33ad5db80fec2fb03263c97d7}
     expose:
       - "4003"
     hostname: warehouse-service
@@ -77,7 +77,7 @@ services:
   payment-service:
     # Card payments with test cards and 3-D Secure. 1.0.0 is not published yet:
     # pin its digest once it is (PAYMENT_IMAGE overrides it).
-    image: ${PAYMENT_IMAGE:-slawekradzyminski/payment-service:1.0.0}
+    image: ${PAYMENT_IMAGE:-slawekradzyminski/payment-service:1.0.0@sha256:e8b7d82af4f64c94e23e6c1e87d118b645a306e2acc9bed979f8d71f6923aaed}
     expose:
       - "4004"
     hostname: payment-service
