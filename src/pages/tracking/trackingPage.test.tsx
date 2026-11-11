@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -48,7 +48,7 @@ describe('TrackingPage', () => {
     await userEvent.type(screen.getByLabelText('Tracking number'), ' 12345 67890{Enter}');
 
     // then
-    expect(screen.getByTestId('location')).toHaveTextContent('/track/1234567890');
+    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('/track/1234567890'));
     expect(await screen.findByTestId('tracking-current-status')).toHaveTextContent('Out for delivery');
     expect(tracking.byNumber).toHaveBeenCalledWith('1234567890');
   });
