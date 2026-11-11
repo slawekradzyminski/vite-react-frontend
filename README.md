@@ -226,6 +226,30 @@ npx playwright test e2e/tests/sso.spec.ts e2e/tests/sso-fixture.spec.ts
 
 CI uses this repository's `docker-compose.yml`, so the backend image referenced there must already contain the SSO exchange endpoint. After backend changes, publish a new backend image from `../test-secure-backend` with `./build-multiarch.sh <version>`, then run frontend CI with `BACKEND_IMAGE=slawekradzyminski/backend:<version>` or update the compose default tag. `WAREHOUSE_IMAGE` and `PAYMENT_IMAGE` override warehouse-service and payment-service the same way.
 
+## Release pipeline
+
+Pushing a `vX.Y.Z` tag runs `.github/workflows/publish-image.yml`:
+
+1. `validate` checks that the commit is on `main` and that the tag matches the project version.
+2. `check-prior-verification` reads the git tree of the tagged commit and compares it with
+   the trees of the commits behind the last 100 successful `ci.yml` runs (GitHub API,
+   `actions: read`). PRs are squash-merged, so the tag commit is new but its tree is the
+   tree of the PR head that passed CI (when the branch was up to date with `main`), or
+   of the `main` push whose run has already finished.
+3. When a matching run exists, `verify` (unit tests and build) and the sharded `e2e-tests`
+   are skipped and the run summary links the CI run that verified the tree.
+   Otherwise they run as before. Manual (`workflow_dispatch`) prereleases always run them,
+   and any API error falls back to the full verification. A failed or cancelled
+   verification job still blocks the release.
+4. `publish` builds the amd64 runtime image, smoke-tests `/` and `/login` on both paths
+   (CI only builds the image with E2E build arguments), then pushes the multi-platform image.
+
+A tag whose tree already passed `ci.yml` publishes in about 4 minutes instead of 9.
+
+The release does not reuse an image from the PR: CI builds the image with E2E build
+arguments and never pushes it, and the published image carries the
+release commit in its labels.
+
 ## Commerce transport
 
 The signed-in **Shop API** selector switches products, carts, orders, and admin

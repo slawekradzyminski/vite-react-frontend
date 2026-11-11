@@ -74,8 +74,53 @@ jobs:
           esac
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
+  # A tag push releases a squash-merge commit whose git tree is identical to a PR head that already
+  # passed the CI workflow. When any successful CI run tested that exact tree, re-running the same
+  # tests here only delays the release. Manual prereleases and unmatched trees stay fully verified.
+  check-prior-verification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      verified: ${{ steps.lookup.outputs.verified }}
+    steps:
+      - name: Look for a successful CI run on the same git tree
+        id: lookup
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI_WORKFLOW: ci.yml
+          EVENT_NAME: ${{ github.event_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -uo pipefail
+          verified=false
+          if [ "$EVENT_NAME" != "push" ]; then
+            echo "Manual prerelease: running the full verification."
+          elif ! tree=$(gh api "repos/$REPO/git/commits/$GITHUB_SHA" --jq .tree.sha) || [ -z "$tree" ]; then
+            echo "::warning::Could not read the tree of $GITHUB_SHA; running the full verification."
+          elif ! runs=$(gh api "repos/$REPO/actions/workflows/$CI_WORKFLOW/runs?status=success&per_page=100" \
+              --jq '.workflow_runs[] | "\(.head_sha) \(.html_url)"'); then
+            echo "::warning::Could not list successful $CI_WORKFLOW runs; running the full verification."
+          else
+            echo "Release commit $GITHUB_SHA has tree $tree."
+            while read -r sha url; do
+              [ -n "$sha" ] || continue
+              if [ "$(gh api "repos/$REPO/git/commits/$sha" --jq .tree.sha 2>/dev/null)" = "$tree" ]; then
+                echo "Tree $tree already passed $CI_WORKFLOW on $sha: $url"
+                echo "Verification skipped: tree \`$tree\` already passed $CI_WORKFLOW in $url" >> "$GITHUB_STEP_SUMMARY"
+                verified=true
+                break
+              fi
+            done < <(awk '!seen[$1]++' <<< "$runs")
+            [ "$verified" = true ] || echo "No successful $CI_WORKFLOW run tested tree $tree; running the full verification."
+          fi
+          echo "verified=$verified" >> "$GITHUB_OUTPUT"
+
   verify:
-    needs: validate
+    needs: [validate, check-prior-verification]
+    if: needs.check-prior-verification.outputs.verified != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -91,25 +136,9 @@ jobs:
       - run: npm test
       - run: npm run build
 
-      - name: Build and smoke-test the runtime image
-        run: |
-          docker build --tag frontend:release-candidate .
-          docker run --detach --name frontend-release-candidate --publish 127.0.0.1:8084:80 frontend:release-candidate
-          trap 'docker rm --force frontend-release-candidate' EXIT
-          for attempt in $(seq 1 30); do
-            if curl --fail --silent http://127.0.0.1:8084/ >/dev/null; then
-              break
-            fi
-            if [ "$attempt" -eq 30 ]; then
-              docker logs frontend-release-candidate
-              exit 1
-            fi
-            sleep 1
-          done
-          test "$(curl --fail --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:8084/login)" = "200"
-
   e2e-tests:
-    needs: validate
+    needs: [validate, check-prior-verification]
+    if: needs.check-prior-verification.outputs.verified != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -163,7 +192,16 @@ jobs:
         run: docker compose down --volumes
 
   publish:
-    needs: [validate, verify, e2e-tests]
+    needs: [validate, check-prior-verification, verify, e2e-tests]
+    # verify and e2e-tests are skipped when the same tree already passed ci.yml. !cancelled() lets this
+    # job start despite those skips; a failed, cancelled or otherwise skipped verification still blocks.
+    if: >-
+      !cancelled() &&
+      needs.validate.result == 'success' &&
+      needs.check-prior-verification.result == 'success' &&
+      (needs.check-prior-verification.outputs.verified == 'true' || (
+        needs.verify.result == 'success' &&
+        needs.e2e-tests.result == 'success'))
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -211,6 +249,33 @@ jobs:
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.version=${{ needs.validate.outputs.version }}
+
+      # Runs on both paths: ci.yml only builds the image with E2E build arguments, never the published
+      # configuration. The amd64 layers stay in this builder's cache, so the push below reuses them.
+      - name: Build the amd64 runtime image for the smoke test
+        uses: docker/build-push-action@v7.4.0
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: frontend:release-candidate
+          cache-from: type=gha
+
+      - name: Smoke-test the runtime image
+        run: |
+          docker run --detach --name frontend-release-candidate --publish 127.0.0.1:8084:80 frontend:release-candidate
+          trap 'docker rm --force frontend-release-candidate' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8084/ >/dev/null; then
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              docker logs frontend-release-candidate
+              exit 1
+            fi
+            sleep 1
+          done
+          test "$(curl --fail --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:8084/login)" = "200"
 
       - name: Build and publish multi-platform image
         id: build
