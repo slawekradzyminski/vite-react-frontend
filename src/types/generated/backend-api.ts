@@ -15,13 +15,13 @@ export interface paths {
          * List coupons
          * @description Lists coupons newest first with their effective status. Negative page is clamped to zero; size is clamped to 1-100.
          */
-        get: operations["list_1"];
+        get: operations["list_4"];
         put?: never;
         /**
          * Create coupon
          * @description Creates a coupon. Codes are case-insensitive and stored upper-case. PERCENTAGE values above 100 and validity windows that end before they start are rejected.
          */
-        post: operations["create_1"];
+        post: operations["create_3"];
         delete?: never;
         options?: never;
         head?: never;
@@ -39,18 +39,102 @@ export interface paths {
          * Get coupon
          * @description Returns one coupon with its redemption count and effective status.
          */
-        get: operations["get"];
+        get: operations["get_1"];
         /**
          * Update coupon
          * @description Replaces a coupon definition. The redemption count is preserved.
          */
-        put: operations["update_1"];
+        put: operations["update_2"];
         post?: never;
         /**
          * Delete coupon
          * @description Deletes a coupon that was never redeemed and removes it from carts. Redeemed coupons return 409; deactivate them instead.
          */
-        delete: operations["delete_2"];
+        delete: operations["delete_3"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/currencies/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Create or update currency
+         * @description Sets the name, symbol and USD rate (greater than 0, at most 6 decimals) of a currency. The code is a 3-letter ISO 4217 code, case-insensitive. USD is the base currency and its rate must stay 1.
+         */
+        put: operations["upsert_2"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/gift-cards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List gift cards
+         * @description Lists gift cards newest first, optionally only those with the given effective status. Negative page is clamped to zero; size is clamped to 1-100.
+         */
+        get: operations["list_3"];
+        put?: never;
+        /**
+         * Issue gift card
+         * @description Issues a gift card of 1.00-1000.00 with a generated GC-XXXX-XXXX-XXXX code. With recipientUsername the user receives a GIFT_CARD_ISSUED email with the code.
+         */
+        post: operations["issue"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/gift-cards/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get gift card
+         * @description Returns one gift card with its recipient, note and ledger (ISSUED, REDEEMED, RESTORED, DISABLED), oldest first. The code is case-insensitive.
+         */
+        get: operations["get_4"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/gift-cards/{code}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Disable gift card
+         * @description Disables a gift card permanently. The balance is kept but can no longer be applied or spent; checkout with a cart that still holds the card fails with 409.
+         */
+        post: operations["disable_1"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -67,7 +151,7 @@ export interface paths {
          * List inventory
          * @description Lists inventory with optional stock and catalog filters. Negative page is clamped to zero; size is clamped to 1–100. lowStockThreshold must be at least 1.
          */
-        get: operations["list_4"];
+        get: operations["list_10"];
         put?: never;
         post?: never;
         delete?: never;
@@ -87,7 +171,7 @@ export interface paths {
          * Get inventory item
          * @description Returns the available quantity for one product.
          */
-        get: operations["get_1"];
+        get: operations["get_3"];
         put?: never;
         post?: never;
         delete?: never;
@@ -187,7 +271,7 @@ export interface paths {
          * List reviews for moderation
          * @description Lists reviews oldest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1-100.
          */
-        get: operations["list_3"];
+        get: operations["list_9"];
         put?: never;
         post?: never;
         delete?: never;
@@ -209,6 +293,46 @@ export interface paths {
          * @description Approves or rejects a review. Rejection requires a note that the author can see. A review can be moderated again later.
          */
         put: operations["moderate"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/vat-rates/{countryCode}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Create or update VAT rate
+         * @description Sets the VAT rate (0-50, at most 2 decimals) and name of a country. The code is an ISO 3166-1 alpha-2 code, case-insensitive; UK is stored as GB. Existing orders keep the rate they were created with.
+         */
+        put: operations["upsert_1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/webhooks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List all webhook subscriptions
+         * @description Administrators list every user's subscriptions by id, optionally for one username. Secrets are never included. Negative page is clamped to zero; size is clamped to 1–100.
+         */
+        get: operations["list_8"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -252,13 +376,37 @@ export interface paths {
          * Apply coupon to cart
          * @description Validates the coupon against the current cart and attaches it, replacing any previous coupon. Checkout validates it again.
          */
-        put: operations["apply"];
+        put: operations["apply_2"];
         post?: never;
         /**
          * Remove coupon from cart
          * @description Detaches the coupon from the cart. Succeeds even when no coupon is applied.
          */
-        delete: operations["remove_1"];
+        delete: operations["remove_3"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cart/gift-card": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Apply gift card to cart
+         * @description Validates the gift card and attaches it to the cart, replacing any previous one. The cart then shows giftCardCode, giftCardAmount and amountDue; the card pays after the coupon discount and before loyalty points. Checkout validates the card again.
+         */
+        put: operations["apply_1"];
+        post?: never;
+        /**
+         * Remove gift card from cart
+         * @description Detaches the gift card from the cart. Succeeds even when no gift card is applied.
+         */
+        delete: operations["remove_2"];
         options?: never;
         head?: never;
         patch?: never;
@@ -308,6 +456,90 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/cart/loyalty-points": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Apply loyalty points to cart
+         * @description Reserves loyalty points for checkout in whole multiples of 100 (100 points = 1.00), replacing any previous amount. Points pay after the coupon discount and the gift card; the cart shows pointsRedeemed, capped at what the remaining total needs, pointsAmount and amountDue. Checkout checks the balance again.
+         */
+        put: operations["apply"];
+        post?: never;
+        /**
+         * Remove loyalty points from cart
+         * @description Stops using loyalty points for this cart. Succeeds even when no points are applied.
+         */
+        delete: operations["remove_1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cart/tax-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview cart VAT
+         * @description Returns the VAT contained in the cart total (after any coupon) for a shipping country given as a code or name. The cart itself is unchanged.
+         */
+        get: operations["preview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/currencies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List currencies
+         * @description Lists the display currencies ordered by code. rateToUsd is the USD value of one unit; USD is the base currency.
+         */
+        get: operations["list_7"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/currencies/convert": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Convert amount
+         * @description Converts an amount (0 or more, at most 2 decimals) between two currencies through their USD rates. converted is rounded half-up to 2 decimals from the exact rate; rate is rounded half-up to 6 decimals. Currency codes are case-insensitive.
+         */
+        get: operations["convert"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/email": {
         parameters: {
             query?: never;
@@ -322,6 +554,26 @@ export interface paths {
          * @description Queues an email message for asynchronous delivery through the configured JMS destination.
          */
         post: operations["sendEmail"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gift-cards/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Check gift card balance
+         * @description Returns the balance, effective status and expiry of a gift card. Any signed-in user holding the code may check it; the recipient and note are never shown. Lookups share a per-user rate limit with applying gift cards to the cart.
+         */
+        get: operations["lookup"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -347,6 +599,46 @@ export interface paths {
          * @description Deletes all messages currently stored in the local email outbox buffer.
          */
         delete: operations["clearOutbox"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/loyalty": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get loyalty account
+         * @description Returns the caller's points balance, lifetime points, tier and the value of the balance. Points are earned when an order becomes PAID (1 point per full 1.00 of its total, excluding the part paid with points) and redeemed at 100 points = 1.00. Users who never earned points get a zero balance.
+         */
+        get: operations["account"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/loyalty/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List loyalty transactions
+         * @description Lists the caller's points ledger newest first: EARNED, REDEEMED, RESTORED and REVOKED with signed points. Negative page is clamped to zero; size is clamped to 1-100.
+         */
+        get: operations["transactions"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -563,6 +855,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/products/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search products
+         * @description Searches the catalog with an optional case-insensitive text query over name, category and description (substring match; % and _ are literal characters), category, price, rating and stock filters, sorting and paging. Ratings are averages of approved reviews. Facets cover the products matching every filter except category, so the category facet lists the alternatives to the selected categories; priceRange and inStockCount use the same set. relevance (the default when q is given) ranks name matches above category matches above description matches; without q the default and the relevance fallback is newest. Every invalid parameter is reported in one 400 response keyed by parameter name, including values of the wrong type.
+         */
+        get: operations["search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/products/{id}": {
         parameters: {
             query?: never;
@@ -602,13 +914,13 @@ export interface paths {
          * List approved reviews
          * @description Lists approved reviews for a product, newest first. Negative page is clamped to zero; size is clamped to 1-50.
          */
-        get: operations["list"];
+        get: operations["list_2"];
         put?: never;
         /**
          * Create review
          * @description Creates a PENDING review. Only users with a DELIVERED order containing the product may review it, once per product.
          */
-        post: operations["create"];
+        post: operations["create_2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -631,13 +943,13 @@ export interface paths {
          * Edit my review
          * @description Replaces the caller's review content. The review returns to PENDING and its moderation note is cleared.
          */
-        put: operations["update"];
+        put: operations["update_1"];
         post?: never;
         /**
          * Delete my review
          * @description Deletes the caller's review for the product.
          */
-        delete: operations["delete_1"];
+        delete: operations["delete_2"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1133,7 +1445,7 @@ export interface paths {
          * Delete user
          * @description Deletes a user account and user-owned data. Requires an administrator role.
          */
-        delete: operations["delete"];
+        delete: operations["delete_1"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1159,6 +1471,282 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/vat-rates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List VAT rates
+         * @description Lists the standard VAT rate of every configured country, ordered by country code. A rate of 0 means VAT is not applicable.
+         */
+        get: operations["list_6"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/vat-rates/{country}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get VAT rate
+         * @description Returns the VAT rate for a country given as an ISO alpha-2 or alpha-3 code or an English name (also common variants such as UK, USA, Polska or Deutschland), ignoring case.
+         */
+        get: operations["get_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhook-inboxes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List my webhook inboxes
+         * @description Returns the caller's inboxes, oldest first.
+         */
+        get: operations["list_1"];
+        put?: never;
+        /**
+         * Create webhook inbox
+         * @description Creates a receiver addressed as inbox://<token>. Use that URL in a subscription; deliveries to it are signed and logged like HTTP deliveries but stored here. At most 3 inboxes per user.
+         */
+        post: operations["create_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhook-inboxes/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete webhook inbox
+         * @description Deletes the inbox and its requests. Subscriptions that target it fail until they are updated.
+         */
+        delete: operations["delete_4"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhook-inboxes/{token}/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List received webhook requests
+         * @description Requests delivered to the inbox with their headers and body, newest first; the last 50 are kept.
+         */
+        get: operations["requests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List my webhook subscriptions
+         * @description Returns the caller's subscriptions, oldest first. Secrets are never included.
+         */
+        get: operations["list"];
+        put?: never;
+        /**
+         * Create webhook subscription
+         * @description Subscribes a public http(s) URL on port 80 or 443 (or inbox://<token> of one of your inboxes) to your order events. URLs resolving to loopback, private, link-local or other internal addresses are rejected. The response contains the signing secret, which is shown only once. At most 5 subscriptions per user.
+         */
+        post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/event-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List webhook event types
+         * @description Event names a subscription can list in events[]; each is also sent as X-Webhook-Event.
+         */
+        get: operations["eventTypes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get webhook subscription
+         * @description Returns one of the caller's subscriptions.
+         */
+        get: operations["get"];
+        /**
+         * Update webhook subscription
+         * @description Replaces url, events and description; active=false pauses deliveries and active=true re-enables an (auto-)disabled subscription and resets its failure counter. The URL is checked again. The secret is unchanged.
+         */
+        put: operations["update"];
+        post?: never;
+        /**
+         * Delete webhook subscription
+         * @description Deletes the subscription and its delivery log.
+         */
+        delete: operations["delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/{id}/deliveries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List webhook deliveries
+         * @description Delivery log of a subscription, newest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1–100.
+         */
+        get: operations["deliveries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/{id}/deliveries/{deliveryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get webhook delivery
+         * @description Returns one delivery with its payload, last status code, error and response snippet.
+         */
+        get: operations["delivery"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/{id}/deliveries/{deliveryId}/redeliver": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Redeliver webhook
+         * @description Sends the event of an earlier delivery again, now, as a new delivery with the same event id and body and a fresh signature. The original delivery is unchanged.
+         */
+        post: operations["redeliver"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/{id}/rotate-secret": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rotate webhook secret
+         * @description Replaces the signing secret and returns the new one once. Later deliveries, including retries of earlier events, are signed with it.
+         */
+        post: operations["rotateSecret"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/webhooks/{id}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send test webhook
+         * @description Sends a webhook.ping event now (waiting up to 5 seconds for the receiver) and returns the recorded delivery. A failed ping is retried like any other delivery.
+         */
+        post: operations["test"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/wishlist": {
         parameters: {
             query?: never;
@@ -1170,7 +1758,7 @@ export interface paths {
          * Get wishlist
          * @description Returns the caller's wishlist, most recently added first, with current price and stock.
          */
-        get: operations["list_2"];
+        get: operations["list_5"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1243,7 +1831,29 @@ export interface components {
              */
             code: string;
         };
+        /** @description Gift card code to apply to the cart */
+        ApplyGiftCardDto: {
+            /**
+             * @description Case-insensitive code in the format GC-XXXX-XXXX-XXXX
+             * @example gc-7kq2-m9xd-4hpa
+             */
+            code: string;
+        };
+        /** @description Loyalty points to redeem at checkout, in whole multiples of 100 (100 points = 1.00) */
+        ApplyLoyaltyPointsDto: {
+            /**
+             * Format: int64
+             * @description Points to redeem
+             * @example 500
+             */
+            points: number;
+        };
         CartDto: {
+            /**
+             * @description What remains to pay after the coupon, gift card and points; only present when a gift card or points are applied
+             * @example 149.6
+             */
+            amountDue?: number | null;
             /**
              * @description Coupon applied to the cart
              * @example WELCOME10
@@ -1261,7 +1871,28 @@ export interface components {
              * @example 19.96
              */
             discountAmount?: number;
+            /**
+             * @description Part of the total checkout would pay with the gift card (zero when the card cannot be used)
+             * @example 25
+             */
+            giftCardAmount?: number | null;
+            /**
+             * @description Gift card applied to the cart; omitted when none is applied
+             * @example GC-7KQ2-M9XD-4HPA
+             */
+            giftCardCode?: string | null;
             items?: components["schemas"]["CartItemDto"][];
+            /**
+             * @description Value of the redeemed points (100 points = 1.00)
+             * @example 5
+             */
+            pointsAmount?: number | null;
+            /**
+             * Format: int64
+             * @description Loyalty points checkout would redeem, capped at what the remaining total needs
+             * @example 500
+             */
+            pointsRedeemed?: number | null;
             /**
              * @description Total price after the discount
              * @example 179.6
@@ -1297,6 +1928,20 @@ export interface components {
              * @example 1
              */
             quantity: number;
+        };
+        /** @description Number of matching products in one category */
+        CategoryFacetDto: {
+            /**
+             * Format: int64
+             * @description Matching products in this category
+             * @example 7
+             */
+            count?: number;
+            /**
+             * @description Category as stored on the products
+             * @example Electronics
+             */
+            value?: string;
         };
         ChatMessageDto: {
             content?: string | null;
@@ -1510,6 +2155,80 @@ export interface components {
              */
             text: string;
         };
+        /** @description Amount converted between two currencies through their USD rates */
+        CurrencyConversionDto: {
+            /**
+             * @description Amount in the source currency
+             * @example 100
+             */
+            amount?: number;
+            /**
+             * @description Converted amount, rounded half-up to 2 decimals from the exact rate
+             * @example 92.59
+             */
+            converted?: number;
+            /**
+             * @description Source currency code
+             * @example USD
+             */
+            from?: string;
+            /**
+             * @description Units of the target currency per unit of the source currency, rounded half-up to 6 decimals
+             * @example 0.925926
+             */
+            rate?: number;
+            /**
+             * @description Target currency code
+             * @example EUR
+             */
+            to?: string;
+        };
+        /** @description Display currency with a fixed demo exchange rate. Prices are stored in USD. */
+        CurrencyDto: {
+            /**
+             * @description ISO 4217 code
+             * @example EUR
+             */
+            code?: string;
+            /**
+             * @description Currency name
+             * @example Euro
+             */
+            name?: string;
+            /**
+             * @description Value of one unit in USD
+             * @example 1.08
+             */
+            rateToUsd?: number;
+            /**
+             * @description Display symbol
+             * @example €
+             */
+            symbol?: string;
+            /**
+             * Format: local-date-time
+             * @description Last change (server-local)
+             */
+            updatedAt?: string;
+        };
+        /** @description Currency definition. USD is the base currency and its rate must stay 1. */
+        CurrencyRequestDto: {
+            /**
+             * @description Currency name
+             * @example Euro
+             */
+            name: string;
+            /**
+             * @description Value of one unit in USD
+             * @example 1.08
+             */
+            rateToUsd: number;
+            /**
+             * @description Display symbol
+             * @example €
+             */
+            symbol: string;
+        };
         EmailDto: {
             /**
              * @description Email content
@@ -1529,7 +2248,7 @@ export interface components {
              * @description Optional template identifier used by downstream consumers; may be null in local outbox payloads
              * @enum {string|null}
              */
-            template?: "GENERIC" | "PASSWORD_RESET_REQUESTED" | "PASSWORD_RESET_CONFIRMED" | "BACK_IN_STOCK" | "ORDER_SHIPPED" | "ORDER_DELIVERED" | "RETURN_UPDATED" | null;
+            template?: "GENERIC" | "PASSWORD_RESET_REQUESTED" | "PASSWORD_RESET_CONFIRMED" | "BACK_IN_STOCK" | "ORDER_SHIPPED" | "ORDER_DELIVERED" | "RETURN_UPDATED" | "PAYMENT_RECEIVED" | "PAYMENT_FAILED" | "SHIPMENT_OUT_FOR_DELIVERY" | "SHIPMENT_DELIVERY_FAILED" | "LOYALTY_POINTS_EARNED" | "GIFT_CARD_ISSUED" | null;
             /**
              * Format: email
              * @description Email recipient
@@ -1559,7 +2278,7 @@ export interface components {
              * @description Email template or event type
              * @enum {string}
              */
-            type?: "GENERIC" | "PASSWORD_RESET_REQUESTED" | "PASSWORD_RESET_CONFIRMED" | "BACK_IN_STOCK" | "ORDER_SHIPPED" | "ORDER_DELIVERED" | "RETURN_UPDATED";
+            type?: "GENERIC" | "PASSWORD_RESET_REQUESTED" | "PASSWORD_RESET_CONFIRMED" | "BACK_IN_STOCK" | "ORDER_SHIPPED" | "ORDER_DELIVERED" | "RETURN_UPDATED" | "PAYMENT_RECEIVED" | "PAYMENT_FAILED" | "SHIPMENT_OUT_FOR_DELIVERY" | "SHIPMENT_DELIVERY_FAILED" | "LOYALTY_POINTS_EARNED" | "GIFT_CARD_ISSUED";
             /**
              * Format: date-time
              * @description When the email event status was last updated
@@ -1601,6 +2320,144 @@ export interface components {
             thinking?: string | null;
             /** Format: int64 */
             total_duration?: number | null;
+        };
+        /** @description Public view of a gift card: balance, status and expiry only */
+        GiftCardBalanceDto: {
+            /**
+             * @description Remaining balance
+             * @example 25
+             */
+            balance?: number;
+            /**
+             * @description Gift card code
+             * @example GC-7KQ2-M9XD-4HPA
+             */
+            code?: string;
+            /**
+             * Format: local-date-time
+             * @description Server-local end of validity
+             */
+            expiresAt?: string | null;
+            /**
+             * @description Effective status
+             * @example ACTIVE
+             * @enum {string}
+             */
+            status?: "ACTIVE" | "REDEEMED" | "EXPIRED" | "DISABLED";
+        };
+        /** @description Gift card to issue. The code is generated by the server. */
+        GiftCardCreateDto: {
+            /**
+             * @description Initial balance
+             * @example 50
+             */
+            amount: number;
+            /**
+             * Format: local-date-time
+             * @description Server-local end of validity; must be in the future. Null means the card never expires
+             */
+            expiresAt?: string | null;
+            /**
+             * @description Internal note, visible to administrators only
+             * @example Apology for a late delivery
+             */
+            note?: string | null;
+            /**
+             * @description Existing user who receives a GIFT_CARD_ISSUED email with the code
+             * @example client
+             */
+            recipientUsername?: string | null;
+        };
+        /** @description Gift card as seen by administrators */
+        GiftCardDto: {
+            /**
+             * @description Remaining balance
+             * @example 25
+             */
+            balance?: number;
+            /**
+             * @description Generated code
+             * @example GC-7KQ2-M9XD-4HPA
+             */
+            code?: string;
+            /**
+             * Format: local-date-time
+             * @description Creation timestamp
+             */
+            createdAt?: string;
+            /**
+             * @description Administrator who issued the card
+             * @example admin
+             */
+            createdBy?: string;
+            /**
+             * Format: local-date-time
+             * @description Server-local end of validity
+             */
+            expiresAt?: string | null;
+            /**
+             * @description Amount the card was issued with
+             * @example 50
+             */
+            initialAmount?: number;
+            /**
+             * @description Internal note
+             * @example Apology for a late delivery
+             */
+            note?: string | null;
+            /**
+             * @description User who was emailed the code
+             * @example client
+             */
+            recipientUsername?: string | null;
+            /**
+             * @description Effective status
+             * @example ACTIVE
+             * @enum {string}
+             */
+            status?: "ACTIVE" | "REDEEMED" | "EXPIRED" | "DISABLED";
+            /** @description Ledger, oldest first; only in single-card responses */
+            transactions?: components["schemas"]["GiftCardTransactionDto"][];
+            /**
+             * Format: local-date-time
+             * @description Last update timestamp
+             */
+            updatedAt?: string;
+        };
+        /** @description Gift card ledger entry */
+        GiftCardTransactionDto: {
+            /**
+             * @description Administrator or customer who caused the change
+             * @example admin
+             */
+            actor?: string | null;
+            /**
+             * @description Signed balance change: positive for ISSUED and RESTORED, negative for REDEEMED, zero for DISABLED
+             * @example -25
+             */
+            amount?: number;
+            /**
+             * @description Balance after the change
+             * @example 25
+             */
+            balanceAfter?: number;
+            /**
+             * Format: local-date-time
+             * @description When the change happened
+             */
+            createdAt?: string;
+            /**
+             * Format: int64
+             * @description Order that redeemed or got money back
+             * @example 42
+             */
+            orderId?: number | null;
+            /**
+             * @description Kind of change
+             * @example REDEEMED
+             * @enum {string}
+             */
+            type?: "ISSUED" | "REDEEMED" | "RESTORED" | "DISABLED";
         };
         /** @description Result of a product CSV import. Nothing is persisted when errors is non-empty or dryRun is true. */
         ImportReportDto: {
@@ -1768,6 +2625,70 @@ export interface components {
              */
             username?: string;
         };
+        /** @description Loyalty account of the signed-in user. 1 point is earned per full 1.00 of a paid order; 100 points redeem 1.00. */
+        LoyaltyAccountDto: {
+            /**
+             * Format: int64
+             * @description Points available to redeem
+             * @example 1250
+             */
+            balance?: number;
+            /**
+             * Format: int64
+             * @description Points earned over the account's lifetime
+             * @example 1800
+             */
+            lifetimeEarned?: number;
+            /**
+             * @description Tier from lifetime points: BRONZE, SILVER from 1000, GOLD from 5000
+             * @example SILVER
+             * @enum {string}
+             */
+            tier?: "BRONZE" | "SILVER" | "GOLD";
+            /**
+             * @description What the balance is worth at checkout (100 points = 1.00)
+             * @example 12.5
+             */
+            valueOfBalance?: number;
+        };
+        /** @description Loyalty ledger entry */
+        LoyaltyTransactionDto: {
+            /**
+             * Format: int64
+             * @description Balance after the change
+             * @example 1250
+             */
+            balanceAfter?: number;
+            /**
+             * Format: local-date-time
+             * @description When the change happened
+             */
+            createdAt?: string;
+            /**
+             * Format: int64
+             * @description Entry ID
+             * @example 7
+             */
+            id?: number;
+            /**
+             * Format: int64
+             * @description Order that caused the change
+             * @example 42
+             */
+            orderId?: number | null;
+            /**
+             * Format: int64
+             * @description Signed change: positive for EARNED and RESTORED, negative for REDEEMED and REVOKED
+             * @example 120
+             */
+            points?: number;
+            /**
+             * @description Kind of change
+             * @example EARNED
+             * @enum {string}
+             */
+            type?: "EARNED" | "REDEEMED" | "RESTORED" | "REVOKED";
+        };
         MfaChallengeRequestDto: {
             /** @description Short-lived challenge returned after password verification */
             challengeToken: string;
@@ -1908,6 +2829,11 @@ export interface components {
         /** @description Order data transfer object */
         OrderDto: {
             /**
+             * @description Total minus the gift card and points parts, which a card payment must cover; only present when a gift card or points were used
+             * @example 1969.98
+             */
+            amountDue?: number | null;
+            /**
              * @description Coupon code applied at checkout
              * @example WELCOME10
              */
@@ -1929,6 +2855,16 @@ export interface components {
              */
             fulfilmentState?: "NONE" | "AWAITING_PICK" | "PICKED" | "PACKED" | "SHIPPED" | "DELIVERED" | "CANCELLED" | null;
             /**
+             * @description Part of the total paid with the gift card
+             * @example 25
+             */
+            giftCardAmount?: number | null;
+            /**
+             * @description Gift card used at checkout; omitted when none was used
+             * @example GC-7KQ2-M9XD-4HPA
+             */
+            giftCardCode?: string | null;
+            /**
              * Format: int64
              * @description Order ID
              * @example 1
@@ -1936,6 +2872,27 @@ export interface components {
             id?: number;
             /** @description Order items */
             items?: components["schemas"]["OrderItemDto"][];
+            /**
+             * @description Total without VAT (totalAmount - taxAmount)
+             * @example 1626
+             */
+            netAmount?: number | null;
+            /**
+             * @description Part of the total paid with loyalty points (100 points = 1.00)
+             * @example 5
+             */
+            pointsAmount?: number | null;
+            /**
+             * Format: int64
+             * @description Loyalty points redeemed at checkout
+             * @example 500
+             */
+            pointsRedeemed?: number | null;
+            /**
+             * @description Amount refunded for returned items; omitted until a refund is booked
+             * @example 49.99
+             */
+            refundedAmount?: number | null;
             /** @description Shipping address */
             shippingAddress: components["schemas"]["AddressDto"];
             /**
@@ -1949,6 +2906,21 @@ export interface components {
              * @example 2222.2
              */
             subtotalAmount?: number;
+            /**
+             * @description VAT contained in the VAT-inclusive total
+             * @example 373.98
+             */
+            taxAmount?: number | null;
+            /**
+             * @description ISO country code whose VAT is contained in the total; omitted when no VAT rate applies
+             * @example PL
+             */
+            taxCountry?: string | null;
+            /**
+             * @description VAT rate in percent at checkout; 0 means VAT is not applicable
+             * @example 23
+             */
+            taxRate?: number | null;
             /**
              * @description Total amount
              * @example 1999.98
@@ -2012,6 +2984,17 @@ export interface components {
             /** Format: int32 */
             totalPages?: number;
         };
+        PageDtoGiftCardDto: {
+            content?: components["schemas"]["GiftCardDto"][];
+            /** Format: int32 */
+            pageNumber?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: int64 */
+            totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
+        };
         PageDtoInventoryItemDto: {
             content?: components["schemas"]["InventoryItemDto"][];
             /** Format: int32 */
@@ -2025,6 +3008,17 @@ export interface components {
         };
         PageDtoInventoryMovementDto: {
             content?: components["schemas"]["InventoryMovementDto"][];
+            /** Format: int32 */
+            pageNumber?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: int64 */
+            totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
+        };
+        PageDtoLoyaltyTransactionDto: {
+            content?: components["schemas"]["LoyaltyTransactionDto"][];
             /** Format: int32 */
             pageNumber?: number;
             /** Format: int32 */
@@ -2066,6 +3060,35 @@ export interface components {
             totalElements?: number;
             /** Format: int32 */
             totalPages?: number;
+        };
+        PageDtoWebhookDeliveryDto: {
+            content?: components["schemas"]["WebhookDeliveryDto"][];
+            /** Format: int32 */
+            pageNumber?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: int64 */
+            totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
+        };
+        PageDtoWebhookSubscriptionDto: {
+            content?: components["schemas"]["WebhookSubscriptionDto"][];
+            /** Format: int32 */
+            pageNumber?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: int64 */
+            totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
+        };
+        /** @description Lowest and highest price of the products the facets cover; both null when none match */
+        PriceRangeFacetDto: {
+            /** @example 1299 */
+            max?: number | null;
+            /** @example 9.99 */
+            min?: number | null;
         };
         /** @description Create product data transfer object */
         ProductCreateDto: {
@@ -2123,6 +3146,82 @@ export interface components {
              * @example 2026-09-10T10:30:02.809462
              */
             updatedAt?: string;
+        };
+        /** @description Facets over every filter except category, so a client can offer the other categories */
+        ProductSearchFacetsDto: {
+            /** @description Categories with their product counts, largest first, then by value */
+            categories?: components["schemas"]["CategoryFacetDto"][];
+            /**
+             * Format: int64
+             * @description Products with stock above zero
+             * @example 18
+             */
+            inStockCount?: number;
+            priceRange?: components["schemas"]["PriceRangeFacetDto"];
+        };
+        /** @description Product search hit: the product fields plus its approved-review rating */
+        ProductSearchItemDto: {
+            /**
+             * @description Average of approved review ratings rounded half-up to one decimal; null without approved reviews
+             * @example 4.3
+             */
+            averageRating?: number | null;
+            category?: string;
+            /**
+             * Format: local-date-time
+             * @description Server local date and time without an offset. The server timezone is deployment-dependent; this value does not identify an absolute instant.
+             * @example 2026-09-10T10:30:02.809462
+             */
+            createdAt?: string;
+            description?: string;
+            /** Format: int64 */
+            id?: number;
+            imageUrl?: string | null;
+            name?: string;
+            price?: number;
+            /**
+             * Format: int64
+             * @description Number of approved reviews
+             * @example 12
+             */
+            reviewCount?: number;
+            /** Format: int32 */
+            stockQuantity?: number;
+            /**
+             * Format: local-date-time
+             * @description Server local date and time without an offset. The server timezone is deployment-dependent; this value does not identify an absolute instant.
+             * @example 2026-09-10T10:30:02.809462
+             */
+            updatedAt?: string;
+        };
+        /** @description One page of product search hits with facets */
+        ProductSearchResultDto: {
+            content?: components["schemas"]["ProductSearchItemDto"][];
+            facets?: components["schemas"]["ProductSearchFacetsDto"];
+            /**
+             * Format: int32
+             * @description Zero-based page index
+             * @example 0
+             */
+            pageNumber?: number;
+            /**
+             * Format: int32
+             * @description Requested page size
+             * @example 20
+             */
+            pageSize?: number;
+            /**
+             * Format: int64
+             * @description Products matching every filter
+             * @example 42
+             */
+            totalElements?: number;
+            /**
+             * Format: int32
+             * @description Number of pages of pageSize
+             * @example 3
+             */
+            totalPages?: number;
         };
         /** @description Update product data transfer object */
         ProductUpdateDto: {
@@ -2311,6 +3410,34 @@ export interface components {
              * @example false
              */
             think?: boolean;
+        };
+        /** @description VAT contained in the cart total (after any coupon) for a shipping country */
+        TaxPreviewDto: {
+            /**
+             * @description Resolved ISO 3166-1 alpha-2 country code
+             * @example PL
+             */
+            country?: string;
+            /**
+             * @description Total without VAT
+             * @example 81.29
+             */
+            netAmount?: number;
+            /**
+             * @description VAT rate in percent
+             * @example 23
+             */
+            rate?: number;
+            /**
+             * @description VAT contained in the total
+             * @example 18.7
+             */
+            taxAmount?: number;
+            /**
+             * @description VAT-inclusive cart total after any coupon discount
+             * @example 99.99
+             */
+            totalAmount?: number;
         };
         TokenRefreshResponseDto: {
             /** @description Rotated refresh token */
@@ -2538,6 +3665,296 @@ export interface components {
         } & {
             [key: string]: string;
         };
+        /** @description Standard VAT rate of a country. Prices are VAT-inclusive; a rate of 0 means VAT is not applicable. */
+        VatRateDto: {
+            /**
+             * @description ISO 3166-1 alpha-2 country code
+             * @example PL
+             */
+            countryCode?: string;
+            /**
+             * @description Country name
+             * @example Poland
+             */
+            countryName?: string;
+            /**
+             * @description Rate in percent
+             * @example 23
+             */
+            rate?: number;
+            /**
+             * Format: local-date-time
+             * @description Last change (server-local)
+             */
+            updatedAt?: string;
+        };
+        /** @description VAT rate definition. Changes apply to orders created afterwards; existing orders keep their rate. */
+        VatRateRequestDto: {
+            /**
+             * @description Country name
+             * @example Poland
+             */
+            countryName: string;
+            /**
+             * @description Rate in percent; 0 means VAT is not applicable
+             * @example 23
+             */
+            rate: number;
+        };
+        /** @description New webhook subscription */
+        WebhookCreateDto: {
+            /**
+             * @description Free-text label
+             * @example Order sync
+             */
+            description?: string | null;
+            /** @description Event types to receive; see GET /api/v1/webhooks/event-types */
+            events: string[];
+            /**
+             * @description Public http(s) endpoint on port 80 or 443, or inbox://<token> of one of your inboxes
+             * @example https://example.com/webhooks/shop
+             */
+            url: string;
+        };
+        /** @description One event sent to a webhook subscription and the outcome of its last attempt */
+        WebhookDeliveryDto: {
+            /**
+             * Format: int32
+             * @description Attempts made so far
+             * @example 1
+             */
+            attempts?: number;
+            /**
+             * Format: date-time
+             * @description Creation time (UTC)
+             * @example 2026-11-10T20:40:33Z
+             */
+            createdAt?: string;
+            /**
+             * Format: date-time
+             * @description When a 2xx response was received
+             */
+            deliveredAt?: string | null;
+            /**
+             * Format: int64
+             * @description Duration of the last attempt in milliseconds
+             * @example 42
+             */
+            durationMs?: number | null;
+            /**
+             * Format: uuid
+             * @description Event id (the payload's id); shared by redeliveries of the same event
+             * @example 6a1f0f57-0f7c-4bb4-8a43-2f9d8f7e8c11
+             */
+            eventId?: string;
+            /**
+             * @description Event type, sent as X-Webhook-Event
+             * @example order.created
+             */
+            eventType?: string;
+            /**
+             * Format: uuid
+             * @description Delivery id, sent as X-Webhook-Id
+             * @example 0b8f4f0e-3f43-4b8e-9d55-4a3f1c1f6a10
+             */
+            id?: string;
+            /**
+             * @description Why the last attempt failed
+             * @example HTTP 500
+             */
+            lastError?: string | null;
+            /**
+             * Format: int32
+             * @description HTTP status of the last attempt, if a response arrived
+             * @example 200
+             */
+            lastStatusCode?: number | null;
+            /**
+             * Format: date-time
+             * @description When the next retry is due (PENDING only)
+             */
+            nextAttemptAt?: string | null;
+            /**
+             * @description The exact JSON body that was signed and sent
+             * @example {
+             *       "createdAt": "2026-11-10T20:40:33.120Z",
+             *       "data": {
+             *         "orderId": 1,
+             *         "status": "PENDING",
+             *         "totalAmount": 40
+             *       },
+             *       "id": "6a1f0f57-0f7c-4bb4-8a43-2f9d8f7e8c11",
+             *       "type": "order.created"
+             *     }
+             */
+            payload?: string;
+            /**
+             * @description First 500 characters of the last response body
+             * @example ok
+             */
+            responseSnippet?: string | null;
+            /**
+             * @description Delivery status
+             * @example DELIVERED
+             * @enum {string}
+             */
+            status?: "PENDING" | "DELIVERED" | "FAILED";
+            /**
+             * Format: int64
+             * @description Subscription id
+             * @example 1
+             */
+            subscriptionId?: number;
+        };
+        /** @description An event type a webhook can subscribe to */
+        WebhookEventTypeDto: {
+            /**
+             * @description When it is sent
+             * @example An order was placed
+             */
+            description?: string;
+            /**
+             * @description Wire name used in events[] and X-Webhook-Event
+             * @example order.created
+             */
+            name?: string;
+        };
+        /** @description Built-in webhook receiver */
+        WebhookInboxDto: {
+            /**
+             * Format: date-time
+             * @description Creation time (UTC)
+             * @example 2026-11-10T20:40:33Z
+             */
+            createdAt?: string;
+            /**
+             * @description Inbox token
+             * @example Q2xhdWRlIGlzIGEgZ29vZCBib3QgOik
+             */
+            token?: string;
+            /**
+             * @description Webhook URL to subscribe with
+             * @example inbox://Q2xhdWRlIGlzIGEgZ29vZCBib3QgOik
+             */
+            url?: string;
+        };
+        /** @description A webhook request received by an inbox */
+        WebhookInboxRequestDto: {
+            /**
+             * @description Raw request body (at most 16 KB)
+             * @example {
+             *       "id": "...",
+             *       "type": "webhook.ping"
+             *     }
+             */
+            body?: string;
+            /**
+             * @description Request headers
+             * @example {
+             *       "X-Webhook-Event": "webhook.ping",
+             *       "X-Webhook-Signature": "t=1794346833,v1=5f2b..."
+             *     }
+             */
+            headers?: {
+                [key: string]: string;
+            };
+            /**
+             * Format: int64
+             * @description Request id
+             * @example 7
+             */
+            id?: number;
+            /**
+             * Format: date-time
+             * @description Receive time (UTC)
+             * @example 2026-11-10T20:40:33Z
+             */
+            receivedAt?: string;
+        };
+        /** @description Webhook subscription */
+        WebhookSubscriptionDto: {
+            /**
+             * @description Whether events are delivered
+             * @example true
+             */
+            active?: boolean;
+            /**
+             * Format: int32
+             * @description Failed attempts since the last successful delivery; 20 disables the subscription
+             * @example 0
+             */
+            consecutiveFailures?: number;
+            /**
+             * Format: date-time
+             * @description Creation time (UTC)
+             * @example 2026-11-10T20:40:33Z
+             */
+            createdAt?: string;
+            /**
+             * @description Free-text label
+             * @example Order sync
+             */
+            description?: string | null;
+            /**
+             * @description Why the subscription was disabled automatically
+             * @example Disabled after 20 consecutive failed deliveries
+             */
+            disabledReason?: string | null;
+            /**
+             * @description Subscribed event types
+             * @example [
+             *       "order.created"
+             *     ]
+             */
+            events?: string[];
+            /**
+             * Format: int64
+             * @description Subscription id
+             * @example 1
+             */
+            id?: number;
+            /**
+             * @description Signing secret. Returned only by create and rotate-secret; store it, it is never shown again.
+             * @example whsec_q9nZ2l0aHViLmNvbS93ZWJob29rcy1zZWNyZXQtZXhhbXBsZQ
+             */
+            secret?: string;
+            /**
+             * Format: date-time
+             * @description Last change (UTC)
+             * @example 2026-11-10T20:40:33Z
+             */
+            updatedAt?: string;
+            /**
+             * @description Target URL
+             * @example https://example.com/webhooks/shop
+             */
+            url?: string;
+            /**
+             * @description Owner
+             * @example client
+             */
+            username?: string;
+        };
+        /** @description Replacement settings of a webhook subscription */
+        WebhookUpdateDto: {
+            /**
+             * @description Enable or disable deliveries; null keeps the current value. Re-enabling an auto-disabled subscription resets its failure counter.
+             * @example true
+             */
+            active?: boolean | null;
+            /**
+             * @description Free-text label; null clears it
+             * @example Order sync
+             */
+            description?: string | null;
+            /** @description Event types to receive */
+            events: string[];
+            /**
+             * @description Public http(s) endpoint on port 80 or 443, or inbox://<token> of one of your inboxes
+             * @example https://example.com/webhooks/shop
+             */
+            url: string;
+        };
         /** @description Wishlist entry with the product's current price and availability */
         WishlistItemDto: {
             /**
@@ -2603,7 +4020,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    list_1: {
+    list_4: {
         parameters: {
             query?: {
                 /** @description Zero-based page index */
@@ -2646,7 +4063,7 @@ export interface operations {
             };
         };
     };
-    create_1: {
+    create_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -2706,7 +4123,7 @@ export interface operations {
             };
         };
     };
-    get: {
+    get_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -2755,7 +4172,7 @@ export interface operations {
             };
         };
     };
-    update_1: {
+    update_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -2826,7 +4243,7 @@ export interface operations {
             };
         };
     };
-    delete_2: {
+    delete_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -2882,7 +4299,320 @@ export interface operations {
             };
         };
     };
-    list_4: {
+    upsert_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description ISO 4217 currency code
+                 * @example EUR
+                 */
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CurrencyRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Currency updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CurrencyDto"];
+                };
+            };
+            /** @description Currency created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CurrencyDto"];
+                };
+            };
+            /** @description Invalid currency code or definition */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    list_3: {
+        parameters: {
+            query?: {
+                /** @description Effective status filter */
+                status?: "ACTIVE" | "REDEEMED" | "EXPIRED" | "DISABLED";
+                /** @description Zero-based page index */
+                page?: number;
+                /** @description Page size, 1-100 */
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Gift cards returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageDtoGiftCardDto"];
+                };
+            };
+            /** @description Unknown status */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    issue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GiftCardCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Gift card issued */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GiftCardDto"];
+                };
+            };
+            /** @description Amount out of range, expiresAt not in the future, or field too long */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Recipient user not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    get_4: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Gift card code
+                 * @example GC-7KQ2-M9XD-4HPA
+                 */
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Gift card returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GiftCardDto"];
+                };
+            };
+            /** @description Malformed code */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Gift card not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    disable_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Gift card code
+                 * @example GC-7KQ2-M9XD-4HPA
+                 */
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Gift card disabled */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GiftCardDto"];
+                };
+            };
+            /** @description Malformed code */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Gift card not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Gift card is already disabled */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    list_10: {
         parameters: {
             query?: {
                 page?: number;
@@ -2937,7 +4667,7 @@ export interface operations {
             };
         };
     };
-    get_1: {
+    get_3: {
         parameters: {
             query?: {
                 /** @description Inclusive upper bound for LOW_STOCK; at least one */
@@ -3237,7 +4967,7 @@ export interface operations {
             };
         };
     };
-    list_3: {
+    list_9: {
         parameters: {
             query?: {
                 status?: "PENDING" | "APPROVED" | "REJECTED";
@@ -3343,6 +5073,124 @@ export interface operations {
             };
         };
     };
+    upsert_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description ISO 3166-1 alpha-2 country code
+                 * @example PL
+                 */
+                countryCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VatRateRequestDto"];
+            };
+        };
+        responses: {
+            /** @description VAT rate updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["VatRateDto"];
+                };
+            };
+            /** @description VAT rate created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["VatRateDto"];
+                };
+            };
+            /** @description Invalid country code or rate definition */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    list_8: {
+        parameters: {
+            query?: {
+                /** @description Only this user's subscriptions */
+                username?: string;
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Subscriptions returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageDtoWebhookSubscriptionDto"];
+                };
+            };
+            /** @description Invalid parameter */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
     getCart: {
         parameters: {
             query?: never;
@@ -3399,7 +5247,7 @@ export interface operations {
             };
         };
     };
-    apply: {
+    apply_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -3459,7 +5307,7 @@ export interface operations {
             };
         };
     };
-    remove_1: {
+    remove_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -3469,6 +5317,95 @@ export interface operations {
         requestBody?: never;
         responses: {
             /** @description Coupon removed; the updated cart is returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CartDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    apply_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApplyGiftCardDto"];
+            };
+        };
+        responses: {
+            /** @description Gift card applied; the cart shows the gift card amount */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CartDto"];
+                };
+            };
+            /** @description Empty cart, malformed code, disabled or expired gift card */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Gift card not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Gift card has no remaining balance */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    remove_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Gift card removed; the updated cart is returned */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3659,6 +5596,231 @@ export interface operations {
             };
         };
     };
+    apply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApplyLoyaltyPointsDto"];
+            };
+        };
+        responses: {
+            /** @description Points applied; the cart shows the points amount */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CartDto"];
+                };
+            };
+            /** @description Empty cart, or points below 100 or not a multiple of 100 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Insufficient loyalty points */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    remove_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Points removed; the updated cart is returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CartDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    preview: {
+        parameters: {
+            query?: {
+                /**
+                 * @description Shipping country code or name
+                 * @example PL
+                 */
+                country?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description VAT preview returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaxPreviewDto"];
+                };
+            };
+            /** @description Country missing */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Country not recognised or no rate configured */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    list_7: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Currencies returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CurrencyDto"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    convert: {
+        parameters: {
+            query?: {
+                /**
+                 * @description Amount in the source currency
+                 * @example 100
+                 */
+                amount?: string;
+                /**
+                 * @description Source currency code; defaults to USD
+                 * @example USD
+                 */
+                from?: string;
+                /**
+                 * @description Target currency code
+                 * @example EUR
+                 */
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Amount converted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CurrencyConversionDto"];
+                };
+            };
+            /** @description Missing or invalid amount or currency code */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Currency not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
     sendEmail: {
         parameters: {
             query?: never;
@@ -3690,6 +5852,59 @@ export interface operations {
             };
             /** @description Unauthorized */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    lookup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Case-insensitive gift card code
+                 * @example GC-7KQ2-M9XD-4HPA
+                 */
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Gift card balance returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["GiftCardBalanceDto"];
+                };
+            };
+            /** @description Malformed code */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Gift card not found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3777,6 +5992,69 @@ export interface operations {
             };
             /** @description Unexpected error while clearing outbox */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    account: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Loyalty account returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LoyaltyAccountDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    transactions: {
+        parameters: {
+            query?: {
+                /** @description Zero-based page index */
+                page?: number;
+                /** @description Page size, 1-100 */
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Loyalty transactions returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageDtoLoyaltyTransactionDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -4433,6 +6711,75 @@ export interface operations {
             };
         };
     };
+    search: {
+        parameters: {
+            query?: {
+                /**
+                 * @description Text to find in name, category or description; trimmed, case-insensitive, at most 100 characters
+                 * @example laptop
+                 */
+                q?: string;
+                /** @description Category filter, case-insensitive; repeat the parameter or separate values with commas (at most 20) */
+                category?: string[];
+                /**
+                 * @description Lowest price, inclusive, zero or greater
+                 * @example 10
+                 */
+                minPrice?: number;
+                /**
+                 * @description Highest price, inclusive, zero or greater and not below minPrice
+                 * @example 500
+                 */
+                maxPrice?: number;
+                /**
+                 * @description Lowest average approved-review rating, 1-5; products without approved reviews are excluded
+                 * @example 4
+                 */
+                minRating?: number;
+                /** @description true returns only products with stock above zero; false or omitted applies no stock filter */
+                inStock?: boolean;
+                /** @description relevance (default with q), newest (default without q), price_asc, price_desc, name_asc or rating_desc */
+                sort?: "relevance" | "newest" | "price_asc" | "price_desc" | "name_asc" | "rating_desc";
+                /** @description Zero-based page index */
+                page?: number;
+                /** @description Page size, 1-100 */
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Search page with facets */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProductSearchResultDto"];
+                };
+            };
+            /** @description Invalid search parameters */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
     getProductById: {
         parameters: {
             query?: never;
@@ -4633,7 +6980,7 @@ export interface operations {
             };
         };
     };
-    list: {
+    list_2: {
         parameters: {
             query?: {
                 /** @description Zero-based page index */
@@ -4678,7 +7025,7 @@ export interface operations {
             };
         };
     };
-    create: {
+    create_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -4789,7 +7136,7 @@ export interface operations {
             };
         };
     };
-    update: {
+    update_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -4842,7 +7189,7 @@ export interface operations {
             };
         };
     };
-    delete_1: {
+    delete_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -6065,7 +8412,7 @@ export interface operations {
             };
         };
     };
-    delete: {
+    delete_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -6161,7 +8508,788 @@ export interface operations {
             };
         };
     };
-    list_2: {
+    list_6: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description VAT rates returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["VatRateDto"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    get_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Country code or name
+                 * @example PL
+                 */
+                country: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description VAT rate returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["VatRateDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Country not recognised or no rate configured */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    list_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Inboxes returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebhookInboxDto"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    create_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Inbox created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebhookInboxDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Inbox limit reached */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    delete_4: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Inbox deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Inbox not found (or it belongs to another user) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    requests: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Requests returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebhookInboxRequestDto"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Inbox not found (or it belongs to another user) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Subscriptions returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebhookSubscriptionDto"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WebhookCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Subscription created; secret included once */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebhookSubscriptionDto"];
+                };
+            };
+            /** @description Invalid body, unknown event type or rejected URL */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Subscription limit reached */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    eventTypes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Event types returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebhookEventTypeDto"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Subscription returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebhookSubscriptionDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description The subscription belongs to another user */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Subscription not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WebhookUpdateDto"];
+            };
+        };
+        responses: {
+            /** @description Subscription updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebhookSubscriptionDto"];
+                };
+            };
+            /** @description Invalid body, unknown event type or rejected URL */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description The subscription belongs to another user */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Subscription not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Subscription deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description The subscription belongs to another user */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Subscription not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    deliveries: {
+        parameters: {
+            query?: {
+                status?: "PENDING" | "DELIVERED" | "FAILED";
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deliveries returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageDtoWebhookDeliveryDto"];
+                };
+            };
+            /** @description Invalid parameter */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description The subscription belongs to another user */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Subscription not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    delivery: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                deliveryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Delivery returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebhookDeliveryDto"];
+                };
+            };
+            /** @description Invalid delivery id */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description The subscription belongs to another user */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Subscription or delivery not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    redeliver: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                deliveryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Redelivery sent; the new delivery shows the outcome */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebhookDeliveryDto"];
+                };
+            };
+            /** @description Invalid delivery id */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description The subscription belongs to another user */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Subscription or delivery not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Subscription is disabled */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    rotateSecret: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Secret rotated; new secret included once */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebhookSubscriptionDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description The subscription belongs to another user */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Subscription not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    test: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ping sent; the delivery shows the outcome */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WebhookDeliveryDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description The subscription belongs to another user */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Subscription not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Subscription is disabled */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    list_5: {
         parameters: {
             query?: never;
             header?: never;

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { OrderDetails } from './OrderDetails';
-import { orders, auth, warehouse } from '../../lib/api';
+import { orders, auth, warehouse, payments } from '../../lib/api';
 import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { OrderStatus } from '../../types/order';
@@ -166,6 +166,45 @@ describe('OrderDetails', () => {
       expect(await screen.findByTestId('order-fulfilment')).toBeInTheDocument();
       await waitFor(() => expect(warehouse.trackOrder).toHaveBeenCalledWith(1));
     });
+  });
+
+  describe('payment section', () => {
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    it('shows the payment panel for the order by default', async () => {
+      // given / when
+      renderWithProviders();
+
+      // then
+      expect(await screen.findByTestId('order-payment-panel')).toBeInTheDocument();
+      await waitFor(() => expect(payments.forOrder).toHaveBeenCalledWith(1));
+    });
+
+    it('neither shows nor requests payments when a build disables payment-service', async () => {
+      // given
+      vi.stubEnv('VITE_PAYMENT_ENABLED', 'false');
+
+      // when
+      renderWithProviders();
+
+      // then
+      expect(await screen.findByText('Order #1')).toBeInTheDocument();
+      expect(screen.queryByTestId('order-payment-panel')).not.toBeInTheDocument();
+      expect(payments.forOrder).not.toHaveBeenCalled();
+    });
+  });
+
+  it('shows the VAT contained in the total', async () => {
+    // given
+    vi.mocked(orders.getOrderById).mockResolvedValueOnce(createOrderResponse({ taxRate: 23, taxAmount: 7.48, netAmount: 32.5, taxCountry: 'PL' }));
+
+    // when
+    renderWithProviders();
+
+    // then
+    expect(await screen.findByTestId('order-details-vat')).toHaveTextContent('Includes VAT 23% (PL): $7.48, net: $32.50');
   });
 
   it('renders order details correctly', async () => {

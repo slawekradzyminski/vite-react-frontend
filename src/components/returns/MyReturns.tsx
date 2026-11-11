@@ -1,12 +1,13 @@
 import { Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { returns } from '../../lib/api';
-import { formatPrice } from '../../lib/format';
+import { useMoney } from '../../hooks/useMoney';
 import { formatDateTime } from '../../lib/commerceFormat';
 import { PageHeader, StatusBadge } from '../commerce/shared';
 import { Surface } from '../ui/surface';
 
 export function MyReturns() {
+  const { formatMoney } = useMoney();
   const { data, isLoading, isError } = useQuery({ queryKey: ['my-returns'], queryFn: () => returns.mine() });
   const items = data?.data.content ?? [];
   return (
@@ -28,7 +29,7 @@ export function MyReturns() {
               </div>
               <p className="mt-2 text-sm text-slate-600">{(item.items ?? []).map((line) => `${line.quantity} × ${line.productName}`).join(', ')}</p>
               <p className="mt-1 text-sm text-slate-600" data-testid={`my-return-refund-${item.id}`}>
-                {item.refundAmount != null ? `Refunded ${formatPrice(item.refundAmount)}` : `Estimated refund ${formatPrice(item.estimatedRefund ?? 0)}`}
+                {item.refundAmount != null ? `Refunded ${formatMoney(item.refundAmount)}` : `Estimated refund ${formatMoney(item.estimatedRefund ?? 0)}`}
               </p>
               {item.resolutionNote && <p className="mt-1 text-sm text-red-700" data-testid={`my-return-note-${item.id}`}>{item.resolutionNote}</p>}
               <p className="mt-1 text-xs text-slate-500">Requested {formatDateTime(item.createdAt)}</p>

@@ -40,12 +40,24 @@ import type {
   Coupon,
   CouponRequest,
   CreateReturnRequest,
+  Currency,
+  CurrencyConversion,
+  CurrencyRequest,
+  GiftCard,
+  GiftCardBalance,
+  GiftCardCreateRequest,
+  GiftCardStatus,
   ImportReport,
   ItemCondition,
+  LoyaltyAccount,
+  LoyaltyTransaction,
   ModerationRequest,
   MyReview,
   Page,
   PickList,
+  ProductSearchParams,
+  ProductSearchResult,
+  PublicTracking,
   PurchaseOrder,
   PurchaseOrderRequest,
   PurchaseOrderStatus,
@@ -61,12 +73,25 @@ import type {
   ShipmentStatus,
   Supplier,
   SupplierRequest,
+  TaxPreview,
+  Tracking,
+  VatRate,
+  VatRateRequest,
+  WebhookCreateRequest,
+  WebhookDelivery,
+  WebhookDeliveryStatus,
+  WebhookEventType,
+  WebhookInbox,
+  WebhookInboxRequest,
+  WebhookSubscription,
+  WebhookUpdateRequest,
   WishlistItem,
 } from '../types/commerce';
+import type { CreatePaymentRequest, Payment, PaymentPage, PaymentStatus } from '../types/payment';
 import { authStorage } from './authStorage';
 import { commerceTransport } from './commerceTransport';
 import { createCommerceGraphql } from './commerceGraphql';
-import { getAbsoluteApiUrl, getApiBaseUrl, getWarehouseApiBaseUrl } from './runtimeConfig';
+import { getAbsoluteApiUrl, getApiBaseUrl, getPaymentApiBaseUrl, getWarehouseApiBaseUrl } from './runtimeConfig';
 
 const api = axios.create({
   baseURL: getApiBaseUrl(),
@@ -79,6 +104,14 @@ const api = axios.create({
 // warehouse-service. It accepts the backend's tokens, so it shares the auth interceptors.
 const warehouseApi = axios.create({
   baseURL: getWarehouseApiBaseUrl(),
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Card payments live in payment-service, which also accepts the backend's tokens.
+const paymentApi = axios.create({
+  baseURL: getPaymentApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
@@ -99,6 +132,14 @@ const COUPONS_API = `${ADMIN_API}/coupons`;
 const WISHLIST_API = `${API_V1_PREFIX}/wishlist`;
 const WAREHOUSE_API = `${API_V1_PREFIX}/warehouse`;
 const RETURNS_API = `${API_V1_PREFIX}/returns`;
+const PAYMENTS_API = `${API_V1_PREFIX}/payments`;
+const TRACKING_API = `${API_V1_PREFIX}/tracking`;
+const VAT_RATES_API = `${API_V1_PREFIX}/vat-rates`;
+const CURRENCIES_API = `${API_V1_PREFIX}/currencies`;
+const GIFT_CARDS_API = `${API_V1_PREFIX}/gift-cards`;
+const LOYALTY_API = `${API_V1_PREFIX}/loyalty`;
+const WEBHOOKS_API = `${API_V1_PREFIX}/webhooks`;
+const WEBHOOK_INBOXES_API = `${API_V1_PREFIX}/webhook-inboxes`;
 const CLIENT_SESSION_ID_HEADER = 'X-Client-Session-Id';
 
 const PUBLIC_ENDPOINTS = [
@@ -153,8 +194,11 @@ const redirectToLogin = () => {
 };
 
 // Applied to every instance so each one sends the session and bearer headers and retries
-// its own requests after a shared token refresh.
-const installAuthInterceptors = (instance: AxiosInstance) => {
+// its own requests after a shared token refresh. Only the backend owns the session: a 401 or
+// 403 from it signs the user out. warehouse-service and payment-service only accept the
+// backend's tokens, so a 403 from them (someone else's order, a missing role) or a 401 that
+// survives a successful refresh is their own answer and must not end the session.
+const installAuthInterceptors = (instance: AxiosInstance, ownsSession: boolean) => {
   instance.interceptors.request.use((config) => {
     config.headers = config.headers ?? {};
     config.headers[CLIENT_SESSION_ID_HEADER] = authStorage.getClientSessionId();
@@ -205,7 +249,10 @@ const installAuthInterceptors = (instance: AxiosInstance) => {
         }
       }
 
-      if (status === 401 || status === 403) {
+      const sessionRejected = ownsSession
+        ? status === 401 || status === 403
+        : status === 401 && !originalRequest?._retry;
+      if (sessionRejected) {
         redirectToLogin();
       }
       return Promise.reject(error);
@@ -213,8 +260,9 @@ const installAuthInterceptors = (instance: AxiosInstance) => {
   );
 };
 
-installAuthInterceptors(api);
-installAuthInterceptors(warehouseApi);
+installAuthInterceptors(api, true);
+installAuthInterceptors(warehouseApi, false);
+installAuthInterceptors(paymentApi, false);
 
 const buildStreamingHeaders = (token: string | null) => ({
   'Content-Type': 'application/json',
@@ -513,8 +561,9 @@ export const warehouse = {
   pickList: (id: number) => warehouseApi.get<PickList>(`${WAREHOUSE_API}/shipments/${id}/pick-list`),
   pick: (id: number) => warehouseApi.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/pick`),
   pack: (id: number, weightKg: number) => warehouseApi.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/pack`, { weightKg }),
-  ship: (id: number, carrier: Carrier, trackingNumber: string) =>
-    warehouseApi.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/ship`, { carrier, trackingNumber }),
+  // Without a tracking number warehouse-service generates one and simulates the carrier.
+  ship: (id: number, carrier: Carrier, trackingNumber?: string) =>
+    warehouseApi.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/ship`, trackingNumber ? { carrier, trackingNumber } : { carrier }),
   deliver: (id: number) => warehouseApi.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/deliver`),
   cancel: (id: number) => warehouseApi.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/cancel`),
   trackOrder: (orderId: number) => warehouseApi.get<Shipment>(`${ORDERS_API}/${orderId}/shipment`),
@@ -548,13 +597,115 @@ export const purchasing = {
     warehouseApi.get<ReorderSuggestion[]>(`${INVENTORY_API}/reorder-suggestions`, { params: { lowStockThreshold } }),
 };
 
+// Shipment tracking is served by warehouse-service; lookup by tracking number needs no login.
+export const tracking = {
+  forOrder: (orderId: number) => warehouseApi.get<Tracking>(`${ORDERS_API}/${orderId}/shipment/tracking`),
+  byNumber: (trackingNumber: string) =>
+    warehouseApi.get<PublicTracking>(`${TRACKING_API}/${encodeURIComponent(trackingNumber)}`),
+  advance: (shipmentId: number) => warehouseApi.post<Tracking>(`${WAREHOUSE_API}/shipments/${shipmentId}/carrier/advance`),
+};
+
+export const payments = {
+  // The key makes a retried submit replay the first result instead of charging twice.
+  create: (data: CreatePaymentRequest, idempotencyKey: string) =>
+    paymentApi.post<Payment>(PAYMENTS_API, data, { headers: { 'Idempotency-Key': idempotencyKey } }),
+  get: (id: string) => paymentApi.get<Payment>(`${PAYMENTS_API}/${id}`),
+  confirmThreeDs: (id: string, code: string) => paymentApi.post<Payment>(`${PAYMENTS_API}/${id}/3ds`, { code }),
+  forOrder: (orderId: number) => paymentApi.get<Payment[]>(`${ORDERS_API}/${orderId}/payments`),
+};
+
+export const adminPayments = {
+  list: (status?: PaymentStatus, page = 0, size = 20) =>
+    paymentApi.get<PaymentPage>(`${ADMIN_API}/payments`, pageParams(page, size, { status })),
+};
+
+export const productSearch = {
+  // Repeated `category` values (category=a&category=b), the form Spring binds to a list.
+  search: (params: ProductSearchParams = {}) =>
+    api.get<ProductSearchResult>(`${PRODUCTS_API}/search`, { params, paramsSerializer: { indexes: null } }),
+};
+
+export const vatRates = {
+  list: () => api.get<VatRate[]>(VAT_RATES_API),
+  get: (countryCode: string) => api.get<VatRate>(`${VAT_RATES_API}/${encodeURIComponent(countryCode)}`),
+  upsert: (countryCode: string, data: VatRateRequest) =>
+    api.put<VatRate>(`${ADMIN_API}/vat-rates/${encodeURIComponent(countryCode)}`, data),
+  // Tax on the current cart for a destination country; without one the backend uses its default.
+  preview: (country?: string) => api.get<TaxPreview>(`${CART_API}/tax-preview`, { params: { country } }),
+};
+
+export const currencies = {
+  list: () => api.get<Currency[]>(CURRENCIES_API),
+  convert: (amount: number | string, from: string, to: string) =>
+    api.get<CurrencyConversion>(`${CURRENCIES_API}/convert`, { params: { amount, from, to } }),
+  upsert: (code: string, data: CurrencyRequest) =>
+    api.put<Currency>(`${ADMIN_API}/currencies/${encodeURIComponent(code)}`, data),
+};
+
+export const giftCards = {
+  balance: (code: string) => api.get<GiftCardBalance>(`${GIFT_CARDS_API}/${encodeURIComponent(code)}`),
+};
+
+export const adminGiftCards = {
+  list: (status?: GiftCardStatus, page = 0, size = 20) =>
+    api.get<Page<GiftCard>>(`${ADMIN_API}/gift-cards`, pageParams(page, size, { status })),
+  get: (code: string) => api.get<GiftCard>(`${ADMIN_API}/gift-cards/${encodeURIComponent(code)}`),
+  create: (data: GiftCardCreateRequest) => api.post<GiftCard>(`${ADMIN_API}/gift-cards`, data),
+  disable: (code: string) => api.post<GiftCard>(`${ADMIN_API}/gift-cards/${encodeURIComponent(code)}/disable`),
+};
+
+export const loyalty = {
+  account: () => api.get<LoyaltyAccount>(LOYALTY_API),
+  transactions: (page = 0, size = 20) =>
+    api.get<Page<LoyaltyTransaction>>(`${LOYALTY_API}/transactions`, pageParams(page, size)),
+};
+
+// Gift card and loyalty point tenders on the cart; like coupons they always use REST.
+export const cartTenders = {
+  applyGiftCard: (code: string) => api.put<CartWithCoupon>(`${CART_API}/gift-card`, { code }),
+  removeGiftCard: () => api.delete<CartWithCoupon>(`${CART_API}/gift-card`),
+  applyPoints: (points: number) => api.put<CartWithCoupon>(`${CART_API}/loyalty-points`, { points }),
+  removePoints: () => api.delete<CartWithCoupon>(`${CART_API}/loyalty-points`),
+};
+
+export const webhooks = {
+  list: () => api.get<WebhookSubscription[]>(WEBHOOKS_API),
+  get: (id: number) => api.get<WebhookSubscription>(`${WEBHOOKS_API}/${id}`),
+  create: (data: WebhookCreateRequest) => api.post<WebhookSubscription>(WEBHOOKS_API, data),
+  update: (id: number, data: WebhookUpdateRequest) => api.put<WebhookSubscription>(`${WEBHOOKS_API}/${id}`, data),
+  remove: (id: number) => api.delete(`${WEBHOOKS_API}/${id}`),
+  eventTypes: () => api.get<WebhookEventType[]>(`${WEBHOOKS_API}/event-types`),
+  rotateSecret: (id: number) => api.post<WebhookSubscription>(`${WEBHOOKS_API}/${id}/rotate-secret`),
+  test: (id: number) => api.post<WebhookDelivery>(`${WEBHOOKS_API}/${id}/test`),
+  deliveries: (id: number, status?: WebhookDeliveryStatus, page = 0, size = 20) =>
+    api.get<Page<WebhookDelivery>>(`${WEBHOOKS_API}/${id}/deliveries`, pageParams(page, size, { status })),
+  delivery: (id: number, deliveryId: string) =>
+    api.get<WebhookDelivery>(`${WEBHOOKS_API}/${id}/deliveries/${deliveryId}`),
+  redeliver: (id: number, deliveryId: string) =>
+    api.post<WebhookDelivery>(`${WEBHOOKS_API}/${id}/deliveries/${deliveryId}/redeliver`),
+};
+
+// Disposable receivers for webhook deliveries, so a training user needs no public server.
+export const webhookInboxes = {
+  list: () => api.get<WebhookInbox[]>(WEBHOOK_INBOXES_API),
+  create: () => api.post<WebhookInbox>(WEBHOOK_INBOXES_API),
+  remove: (token: string) => api.delete(`${WEBHOOK_INBOXES_API}/${encodeURIComponent(token)}`),
+  requests: (token: string) =>
+    api.get<WebhookInboxRequest[]>(`${WEBHOOK_INBOXES_API}/${encodeURIComponent(token)}/requests`),
+};
+
+export const adminWebhooks = {
+  list: (username?: string, page = 0, size = 20) =>
+    api.get<Page<WebhookSubscription>>(`${ADMIN_API}/webhooks`, pageParams(page, size, { username })),
+};
+
 const graphqlCommerce = createCommerceGraphql(api);
 export const products = commerceTransport === 'graphql' ? graphqlCommerce.products : restProducts;
 export const cart = commerceTransport === 'graphql' ? graphqlCommerce.cart : restCart;
 export const orders = commerceTransport === 'graphql' ? graphqlCommerce.orders : restOrders;
 export const inventory = commerceTransport === 'graphql' ? graphqlCommerce.inventory : restInventory;
 
-export { getAbsoluteApiUrl, getApiBaseUrl, getWarehouseApiBaseUrl } from './runtimeConfig';
-export { warehouseApi };
+export { getAbsoluteApiUrl, getApiBaseUrl, getPaymentApiBaseUrl, getWarehouseApiBaseUrl } from './runtimeConfig';
+export { paymentApi, warehouseApi };
 
 export default api; 

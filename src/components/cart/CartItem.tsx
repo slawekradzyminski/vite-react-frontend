@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { CartItem as CartItemType } from '../../types/cart';
 import { cart, products } from '../../lib/api';
 import { useToast } from '../../hooks/useToast';
-import { formatPrice } from '../../lib/format';
+import { useMoney } from '../../hooks/useMoney';
 import { describeCartError, responseStatus } from '../../lib/requestErrors';
 
 interface CartItemProps {
@@ -15,6 +15,7 @@ interface CartItemProps {
 }
 
 export function CartItem({ item, onUpdate, onPendingChange }: CartItemProps) {
+  const { formatMoney } = useMoney();
   const safeItem = {
     productId: item?.productId || 0,
     quantity: item?.quantity || 1,
@@ -124,7 +125,7 @@ export function CartItem({ item, onUpdate, onPendingChange }: CartItemProps) {
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600" data-testid={`cart-item-price-${safeItem.productId}`}>
-        {formatPrice(safeItem.unitPrice)}
+        {formatMoney(safeItem.unitPrice)}
       </td>
       <td className="px-6 py-4 whitespace-nowrap" data-testid={`cart-item-quantity-cell-${safeItem.productId}`}>
         <div className="flex flex-col sm:flex-row items-start sm:items-center">
@@ -171,7 +172,7 @@ export function CartItem({ item, onUpdate, onPendingChange }: CartItemProps) {
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900" data-testid={`cart-item-total-${safeItem.productId}`}>
-        {formatPrice(safeItem.totalPrice)}
+        {formatMoney(safeItem.totalPrice)}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
         <button

@@ -25,3 +25,9 @@ export function renderWithProviders(ui: ReactNode) {
 
   return render(ui, { wrapper: Wrapper });
 }
+
+// Components that format money read the display currency through React Query.
+export function renderWithQueryClient(ui: ReactNode) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(ui, { wrapper: ({ children }) => <QueryClientProvider client={client}>{children}</QueryClientProvider> });
+}

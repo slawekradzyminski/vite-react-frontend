@@ -12,6 +12,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Surface } from '../ui/surface';
 import { Textarea } from '../ui/textarea';
+import { OrderTracking } from '../tracking/OrderTracking';
 
 const REASONS: { value: ReturnReason; label: string }[] = [
   { value: 'DAMAGED', label: 'Arrived damaged' },
@@ -86,6 +87,7 @@ export function OrderFulfilment({ order }: { order: Order }) {
             </ol>
           )}
           {tracked.deliveredAt && <p className="text-xs text-slate-500" data-testid="order-shipment-delivered-at">Delivered {formatDateTime(tracked.deliveredAt)}</p>}
+          {(tracked.status === 'SHIPPED' || tracked.status === 'DELIVERED') && <OrderTracking orderId={order.id} />}
         </div>
       )}
 

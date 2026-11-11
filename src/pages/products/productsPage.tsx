@@ -6,9 +6,17 @@ import { products } from '../../lib/api';
 import type { Product } from '../../types/product';
 import { Surface } from '../../components/ui/surface';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { commerceTransport } from '../../lib/commerceTransport';
+import { ProductSearch } from '../../components/products/ProductSearch';
+import { ProductsHero } from '../../components/products/ProductsHero';
 
 export function ProductsPage() {
   useDocumentTitle('Products');
+  // REST searches on the server; GraphQL keeps filtering the full catalogue in the browser.
+  return commerceTransport === 'rest' ? <ProductSearch /> : <CatalogProductsPage />;
+}
+
+function CatalogProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const selectedCategory = searchParams.get('category') ?? undefined;
   const setSelectedCategory = useCallback((category: string | undefined) => {
@@ -36,27 +44,7 @@ export function ProductsPage() {
   
   return (
     <div className="space-y-6 pb-10" data-testid="products-page">
-      <Surface
-        as="section"
-        variant="hero"
-        padding="xl"
-        data-testid="products-hero"
-      >
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Catalog</p>
-        <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl" data-testid="products-title">
-              Products
-            </h1>
-            <p className="max-w-2xl text-sm leading-6 text-slate-600">
-              Browse the live assortment, narrow by category, and move directly into product detail or cart actions.
-            </p>
-          </div>
-          <div className="rounded-[1.4rem] border border-stone-200 bg-white/80 px-4 py-3 text-sm text-slate-600" data-testid="products-count-summary">
-            {allProducts.length} products across {categories.length || 1} categories
-          </div>
-        </div>
-      </Surface>
+      <ProductsHero summary={`${allProducts.length} products across ${categories.length || 1} categories`} />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[280px_minmax(0,1fr)]" data-testid="products-layout">
         <aside className="xl:sticky xl:top-24 xl:self-start" data-testid="products-sidebar">

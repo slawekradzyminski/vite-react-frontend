@@ -1,12 +1,26 @@
 import { Page } from "@playwright/test";
-import { fulfillWithSchema, type BackendSchema } from "./backendContract";
+import { fulfillWithPaymentSchema, fulfillWithSchema, type BackendSchema, type PaymentSchema } from "./backendContract";
 
 export type OrderState = BackendSchema<'OrderDto'> & { id: number };
 
 export const orderMocks = {
-    async mockOrderWithState(page: Page, orderState: OrderState) {
+    // Order details also asks payment-service for the order's payments and warehouse-service for
+    // its shipment. A mocked order does not exist there (or belongs to someone else), so both are
+    // mocked with it: no payments and no shipment yet. Register a shipment mock after this one to
+    // override the latter.
+    async mockOrderWithState(page: Page, orderState: OrderState, payments: PaymentSchema<'PaymentDto'>[] = []) {
         await page.route(`**/api/v1/orders/${orderState.id}`, async (route) => {
             await fulfillWithSchema(route, 'OrderDto', orderState);
+        });
+        await orderMocks.mockOrderPayments(page, orderState.id, payments);
+        await page.route(`**/api/v1/orders/${orderState.id}/shipment`, async (route) => {
+            await route.fulfill({ status: 404, contentType: 'application/json', body: JSON.stringify({ message: 'Shipment not found' }) });
+        });
+    },
+
+    async mockOrderPayments(page: Page, orderId: number, payments: PaymentSchema<'PaymentDto'>[] = []) {
+        await page.route(`**/api/v1/orders/${orderId}/payments`, async (route) => {
+            await fulfillWithPaymentSchema(route, 'PaymentDto', payments);
         });
     },
 

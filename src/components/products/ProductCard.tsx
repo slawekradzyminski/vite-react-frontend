@@ -7,15 +7,17 @@ import { useToast } from '../../hooks/useToast';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { authStorage } from '../../lib/authStorage';
 import { Badge } from '../ui/badge';
-import { formatPrice } from '../../lib/format';
+import { useMoney } from '../../hooks/useMoney';
 import { describeCartError } from '../../lib/requestErrors';
 
 interface ProductCardProps {
-  product: Product;
+  /** Search results also carry review statistics, shown when present. */
+  product: Product & { averageRating?: number | null; reviewCount?: number };
   onAddToCart?: (productId: number, quantity: number) => void;
 }
 
 export function ProductCard({ product, onAddToCart }: ProductCardProps) {
+  const { formatMoney } = useMoney();
   const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -153,11 +155,21 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
             </Link>
           </h3>
           <Badge className="text-sm font-semibold text-slate-900" data-testid="product-price">
-            {formatPrice(product.price)}
+            {formatMoney(product.price)}
           </Badge>
         </div>
         {product.category && (
           <Badge tone="tracking" variant="outline" className="mt-2 w-fit text-[11px] tracking-[0.18em]" data-testid="product-category">{product.category}</Badge>
+        )}
+        {product.reviewCount !== undefined && (
+          <p className="mt-2 text-sm text-slate-600" data-testid="product-rating">
+            {product.reviewCount > 0 && product.averageRating != null ? (
+              <span aria-label={`Rated ${product.averageRating.toFixed(1)} out of 5 from ${product.reviewCount} ${product.reviewCount === 1 ? 'review' : 'reviews'}`}>
+                <span aria-hidden="true" className="text-amber-500">★</span> {product.averageRating.toFixed(1)}{' '}
+                <span className="text-slate-500">({product.reviewCount})</span>
+              </span>
+            ) : 'No reviews yet'}
+          </p>
         )}
         <p className="mt-3 grow text-sm leading-6 text-slate-600 line-clamp-3" data-testid="product-description">{product.description}</p>
         <div className="mt-5 border-t border-stone-200/80 pt-4" data-testid="product-controls">

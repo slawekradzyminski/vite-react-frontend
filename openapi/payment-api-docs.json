@@ -1,0 +1,763 @@
+{
+  "components": {
+    "schemas": {
+      "CardDto": {
+        "description": "Card details; only brand and last four digits are stored",
+        "properties": {
+          "cvc": {
+            "description": "Card verification code, 3-4 digits",
+            "example": "123",
+            "minLength": 1,
+            "pattern": "^[0-9]{3,4}$",
+            "type": "string"
+          },
+          "expiryMonth": {
+            "description": "Expiry month, 1-12",
+            "example": 12,
+            "format": "int32",
+            "maximum": 12,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "expiryYear": {
+            "description": "Four-digit expiry year",
+            "example": 2030,
+            "format": "int32",
+            "maximum": 2099,
+            "minimum": 2000,
+            "type": "integer"
+          },
+          "holderName": {
+            "description": "Name on the card",
+            "example": "Jan Kowalski",
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "number": {
+            "description": "Card number, 12-19 digits; spaces and dashes are ignored",
+            "example": "4242 4242 4242 4242",
+            "minLength": 1,
+            "pattern": "^[0-9][0-9 -]{10,36}[0-9]$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "cvc",
+          "expiryMonth",
+          "expiryYear",
+          "holderName",
+          "number"
+        ],
+        "type": "object"
+      },
+      "CreatePaymentDto": {
+        "description": "Pays a PENDING order by card",
+        "properties": {
+          "card": {
+            "$ref": "#/components/schemas/CardDto"
+          },
+          "orderId": {
+            "description": "Backend order id",
+            "example": 42,
+            "exclusiveMinimum": 0,
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "card",
+          "orderId"
+        ],
+        "type": "object"
+      },
+      "ErrorDto": {
+        "additionalProperties": false,
+        "properties": {
+          "message": {
+            "description": "Error message",
+            "example": "Error message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "type": "object"
+      },
+      "NextActionDto": {
+        "description": "What the customer must do before the payment can complete",
+        "properties": {
+          "hint": {
+            "description": "Hint for the simulated challenge",
+            "example": "Enter code 123456 to approve",
+            "type": "string"
+          },
+          "type": {
+            "description": "Action type",
+            "example": "THREE_DS_CHALLENGE",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PageDtoPaymentDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/PaymentDto"
+            },
+            "type": "array"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PaymentDto": {
+        "description": "A card payment",
+        "properties": {
+          "amount": {
+            "example": 126,
+            "type": "number"
+          },
+          "cardBrand": {
+            "enum": [
+              "VISA",
+              "MASTERCARD",
+              "AMEX",
+              "OTHER"
+            ],
+            "type": "string"
+          },
+          "cardLast4": {
+            "example": "4242",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "currency": {
+            "example": "USD",
+            "type": "string"
+          },
+          "failureCode": {
+            "description": "CARD_DECLINED, INSUFFICIENT_FUNDS, THREE_DS_FAILED, PROVIDER_TIMEOUT or ORDER_NOT_PAYABLE (voided); null otherwise",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "failureMessage": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "nextAction": {
+            "$ref": "#/components/schemas/NextActionDto",
+            "description": "Present while the payment is REQUIRES_ACTION",
+            "type": "null"
+          },
+          "orderId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "refundedAmount": {
+            "example": 0,
+            "type": "number"
+          },
+          "status": {
+            "enum": [
+              "REQUIRES_ACTION",
+              "PROCESSING",
+              "CAPTURED",
+              "FAILED",
+              "PARTIALLY_REFUNDED",
+              "REFUNDED",
+              "VOIDED"
+            ],
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount",
+          "cardBrand",
+          "cardLast4",
+          "createdAt",
+          "currency",
+          "id",
+          "orderId",
+          "refundedAmount",
+          "status",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "ThreeDsDto": {
+        "description": "3-D Secure challenge answer",
+        "properties": {
+          "code": {
+            "description": "One-time code; 123456 approves, anything else fails",
+            "example": "123456",
+            "maxLength": 32,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "type": "object"
+      },
+      "ValidationErrorsDto": {
+        "additionalProperties": {
+          "description": "Validation messages keyed by field name; invalid arguments use the error key",
+          "example": {
+            "email": "Email should be valid"
+          },
+          "type": "string"
+        },
+        "description": "Validation messages keyed by field name; invalid arguments use the error key",
+        "example": {
+          "email": "Email should be valid"
+        },
+        "properties": {
+          "empty": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "bearerFormat": "JWT",
+        "name": "bearerAuth",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "Simulated card payments for orders: test cards, 3-D Secure, payment history. Uses the access tokens issued by the backend.",
+    "title": "Payment Service API",
+    "version": "1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/admin/payments": {
+      "get": {
+        "description": "Lists payments of every customer newest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1-100.",
+        "operationId": "all",
+        "parameters": [
+          {
+            "description": "Only payments in this status",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "REQUIRES_ACTION",
+                "PROCESSING",
+                "CAPTURED",
+                "FAILED",
+                "PARTIALLY_REFUNDED",
+                "REFUNDED",
+                "VOIDED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Zero-based page index",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page size, 1-100",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoPaymentDto"
+                }
+              }
+            },
+            "description": "Payments listed"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unknown status"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Admin role required"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List all payments",
+        "tags": [
+          "Payments (admin)"
+        ]
+      }
+    },
+    "/api/v1/orders/{orderId}/payments": {
+      "get": {
+        "description": "Lists every payment attempt for the caller's order, newest first; admins see any order.",
+        "operationId": "forOrder",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "orderId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PaymentDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Payments listed"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Not your order or payment, or role not allowed"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Order not found"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List an order's payments",
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/api/v1/payments": {
+      "post": {
+        "description": "Charges the order's amount due (USD) to a test card. The outcome depends on the card number: 4242 4242 4242 4242 and 5555 5555 5555 4444 are captured, 4000 0000 0000 0002 is declined (CARD_DECLINED), 4000 0000 0000 9995 fails with INSUFFICIENT_FUNDS, 4000 0000 0000 3220 requires 3-D Secure (code 123456), 4000 0000 0000 0077 is PROCESSING and settles to CAPTURED, 4000 0000 0000 0119 is PROCESSING and fails with PROVIDER_TIMEOUT, 4000 0000 0000 0259 is captured and its result is delivered to the backend twice. Any other Luhn-valid number is captured. Repeating a request with the same Idempotency-Key and body returns the original payment with 200 and Idempotent-Replayed: true.",
+        "operationId": "create",
+        "parameters": [
+          {
+            "description": "Unique per payment attempt, 8-64 characters of [A-Za-z0-9_-]",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDto"
+                }
+              }
+            },
+            "description": "Idempotent replay of an earlier request",
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "true",
+                "schema": {
+                  "type": "string"
+                },
+                "style": "simple"
+              }
+            }
+          },
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDto"
+                }
+              }
+            },
+            "description": "Payment created (any status, including FAILED)"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid body, Idempotency-Key, card number (Luhn) or expired card"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Not your order or payment, or role not allowed"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Order not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Order not payable (not PENDING, already paid, or another payment in progress), or Idempotency-Key reused with a different body"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Pay an order by card",
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/api/v1/payments/{id}": {
+      "get": {
+        "description": "Returns one of the caller's payments; admins see any payment.",
+        "operationId": "get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDto"
+                }
+              }
+            },
+            "description": "Payment found"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Not your order or payment, or role not allowed"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Payment not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get a payment",
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/api/v1/payments/{id}/3ds": {
+      "post": {
+        "description": "Completes a REQUIRES_ACTION payment: code 123456 captures it, any other code fails it with THREE_DS_FAILED.",
+        "operationId": "threeDs",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ThreeDsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDto"
+                }
+              }
+            },
+            "description": "Challenge answered"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Missing code"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Not your order or payment, or role not allowed"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Payment not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Payment is not REQUIRES_ACTION"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Answer the 3-D Secure challenge",
+        "tags": [
+          "Payments"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "description": "All payments",
+      "name": "Payments (admin)"
+    },
+    {
+      "description": "Simulated card payments for orders",
+      "name": "Payments"
+    }
+  ]
+}

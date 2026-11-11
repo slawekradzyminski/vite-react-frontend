@@ -98,12 +98,16 @@ The frontend runtime behavior is controlled by these environment variables. Vite
   Optional, default `true`. The warehouse board, My returns, admin returns and purchasing screens and order shipment tracking need warehouse-service. Set it to `false` for a build that runs without warehouse-service; the frontend then hides those screens and sends no requests to their endpoints. The Dockerfile accepts it as a build argument.
 - `VITE_WAREHOUSE_API_BASE_URL`
   Optional. Origin of warehouse-service for shipments, order tracking, returns, suppliers, purchase orders and reorder suggestions. Defaults to the resolved API origin, which is correct behind the gateway. Set it to `http://localhost:4003` only when the Vite dev server talks to the services directly. The Dockerfile accepts it as a build argument.
+- `VITE_PAYMENT_ENABLED`
+  Optional, default `true`. Card payment screens need payment-service. Set it to `false` for a build that runs without payment-service; the frontend then hides those screens and sends no requests to their endpoints. The Dockerfile accepts it as a build argument.
+- `VITE_PAYMENT_API_BASE_URL`
+  Optional. Origin of payment-service for payments and the admin payment list. Defaults to the resolved API origin, which is correct behind the gateway. Set it to `http://localhost:4004` only when the Vite dev server talks to the services directly. The Dockerfile accepts it as a build argument.
 - `VITE_DOCKER`
   Dev-only flag. When `true`, Vite development mode targets `http://host.docker.internal:4001` instead of `http://localhost:4001`.
 
 Default behavior by profile:
 
-- local Vite dev: API `http://localhost:4001` (warehouse calls too, unless `VITE_WAREHOUSE_API_BASE_URL` is set), reset base `${window.location.origin}/reset`
+- local Vite dev: API `http://localhost:4001` (warehouse and payment calls too, unless `VITE_WAREHOUSE_API_BASE_URL` or `VITE_PAYMENT_API_BASE_URL` is set), reset base `${window.location.origin}/reset`
 - Dockerized Vite dev: API `http://host.docker.internal:4001` when `VITE_DOCKER=true`
 - built Docker/server runtime: API same-origin via `window.location.origin`, reset base `${window.location.origin}/reset` unless overridden
 
@@ -205,7 +209,7 @@ npx playwright test    # E2E tests (requires docker compose gateway on :8081 and
 ```
 
 Before launching Playwright:
-1. Run `docker compose up -d` from this repository. The compose stack builds the frontend nginx image and starts backend, Keycloak, Ollama mock, and the `8081` gateway.
+1. Run `docker compose up -d` from this repository. The compose stack builds the frontend nginx image and starts backend, warehouse-service, payment-service, Keycloak, Ollama mock, and the `8081` gateway.
 2. Wait for the stack with `./scripts/wait-for-backend.sh`, `./scripts/wait-for-keycloak.sh`, and `./scripts/wait-for-frontend.sh`.
 3. Run `npx playwright test`.
 
@@ -220,7 +224,7 @@ npx playwright test e2e/tests/sso.spec.ts e2e/tests/sso-fixture.spec.ts
 - `sso.spec.ts` drives the real browser redirect through Keycloak.
 - `sso-fixture.spec.ts` obtains a Keycloak ID token over HTTP, exchanges it with the backend, and starts the page with app-issued tokens already in local storage.
 
-CI uses this repository's `docker-compose.yml`, so the backend image referenced there must already contain the SSO exchange endpoint. After backend changes, publish a new backend image from `../test-secure-backend` with `./build-multiarch.sh <version>`, then run frontend CI with `BACKEND_IMAGE=slawekradzyminski/backend:<version>` or update the compose default tag.
+CI uses this repository's `docker-compose.yml`, so the backend image referenced there must already contain the SSO exchange endpoint. After backend changes, publish a new backend image from `../test-secure-backend` with `./build-multiarch.sh <version>`, then run frontend CI with `BACKEND_IMAGE=slawekradzyminski/backend:<version>` or update the compose default tag. `WAREHOUSE_IMAGE` and `PAYMENT_IMAGE` override warehouse-service and payment-service the same way.
 
 ## Commerce transport
 

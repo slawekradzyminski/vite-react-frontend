@@ -1,9 +1,10 @@
-// Compile-time contract between the hand-written API types and the backend and warehouse-service
-// OpenAPI snapshots.
+// Compile-time contract between the hand-written API types and the backend, warehouse-service and
+// payment-service OpenAPI snapshots.
 // `npm run typecheck` fails here when a backend change renames, removes, or retypes a field
 // the frontend relies on; the runtime test only keeps Vitest from reporting an empty file.
 import type { components } from './generated/backend-api';
 import type { components as warehouseComponents } from './generated/warehouse-api';
+import type { components as paymentComponents } from './generated/payment-api';
 import type { RawCartResponse } from '../hooks/useEnrichedCart';
 import type {
   ForgotPasswordRequest,
@@ -26,17 +27,34 @@ import type {
   UserEditDTO,
 } from './auth';
 import type { CartItemDto, UpdateCartItemDto } from './cart';
+import type {
+  CurrencyConversion,
+  GiftCard,
+  GiftCardBalance,
+  LoyaltyAccount,
+  LoyaltyTransaction,
+  ProductSearchResult,
+  PublicTracking,
+  TaxPreview,
+  Tracking,
+  VatRate,
+  WebhookDelivery,
+  WebhookInbox,
+  WebhookSubscription,
+} from './commerce';
 import type { EmailDto } from './email';
 import type { InventoryAdjustmentRequest, InventoryItem, InventoryMovement, PageDto } from './inventory';
 import type { ChatRequestDto, GenerateRequestDto, OllamaToolDefinition } from './ollama';
 import type { Address, AddressDto, FulfilmentState, Order, OrderItem, PageDtoOrderDto } from './order';
 import type { Product, ProductCreateDto, ProductUpdateDto } from './product';
 import type { ChatSystemPromptDto, ToolSystemPromptDto } from './prompts';
+import type { CreatePaymentRequest, Payment, PaymentPage, ThreeDsRequest } from './payment';
 import type { CreateQrDto } from './qr';
 import type { TrafficInfoDto } from './traffic';
 
 type Schemas = components['schemas'];
 type WarehouseSchemas = warehouseComponents['schemas'];
+type PaymentSchemas = paymentComponents['schemas'];
 
 // springdoc marks few response fields as required, so a response is compared as if the
 // backend always sends every field it declares; nulls are left to the frontend's own guards.
@@ -148,6 +166,32 @@ describe('backend API contract', () => {
   it('reads only fields warehouse-service sends', () => {
     // The warehouse queue returns orders in the same page shape as the backend.
     expectTypeOf<ResponseViolations<PageDtoOrderDto, WarehouseSchemas['PageDtoOrderDto']>>().toEqualTypeOf<never>();
+  });
+
+  it('reads only fields warehouse-service sends for tracking', () => {
+    expectTypeOf<ResponseViolations<Tracking, WarehouseSchemas['TrackingDto']>>().toEqualTypeOf<never>();
+    expectTypeOf<ResponseViolations<PublicTracking, WarehouseSchemas['PublicTrackingDto']>>().toEqualTypeOf<never>();
+  });
+
+  it('reads only fields the backend sends for search, tax, currencies, gift cards, loyalty and webhooks', () => {
+    expectTypeOf<ResponseViolations<ProductSearchResult, Schemas['ProductSearchResultDto']>>().toEqualTypeOf<never>();
+    expectTypeOf<ResponseViolations<VatRate, Schemas['VatRateDto']>>().toEqualTypeOf<never>();
+    expectTypeOf<ResponseViolations<TaxPreview, Schemas['TaxPreviewDto']>>().toEqualTypeOf<never>();
+    expectTypeOf<ResponseViolations<CurrencyConversion, Schemas['CurrencyConversionDto']>>().toEqualTypeOf<never>();
+    expectTypeOf<ResponseViolations<GiftCard, Schemas['GiftCardDto']>>().toEqualTypeOf<never>();
+    expectTypeOf<ResponseViolations<GiftCardBalance, Schemas['GiftCardBalanceDto']>>().toEqualTypeOf<never>();
+    expectTypeOf<ResponseViolations<LoyaltyAccount, Schemas['LoyaltyAccountDto']>>().toEqualTypeOf<never>();
+    expectTypeOf<ResponseViolations<LoyaltyTransaction, Schemas['LoyaltyTransactionDto']>>().toEqualTypeOf<never>();
+    expectTypeOf<ResponseViolations<WebhookSubscription, Schemas['WebhookSubscriptionDto']>>().toEqualTypeOf<never>();
+    expectTypeOf<ResponseViolations<WebhookDelivery, Schemas['WebhookDeliveryDto']>>().toEqualTypeOf<never>();
+    expectTypeOf<ResponseViolations<WebhookInbox, Schemas['WebhookInboxDto']>>().toEqualTypeOf<never>();
+  });
+
+  it('reads only fields payment-service sends and sends only fields it accepts', () => {
+    expectTypeOf<ResponseViolations<Payment, PaymentSchemas['PaymentDto']>>().toEqualTypeOf<never>();
+    expectTypeOf<ResponseViolations<PaymentPage, PaymentSchemas['PageDtoPaymentDto']>>().toEqualTypeOf<never>();
+    expectTypeOf<RequestViolations<CreatePaymentRequest, PaymentSchemas['CreatePaymentDto']>>().toEqualTypeOf<never>();
+    expectTypeOf<RequestViolations<ThreeDsRequest, PaymentSchemas['ThreeDsDto']>>().toEqualTypeOf<never>();
   });
 
   it('tracks the backend fulfilment state values', () => {

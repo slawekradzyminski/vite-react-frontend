@@ -300,4 +300,22 @@ describe('CartPage', () => {
     expect(cart.updateCartItem).toHaveBeenCalledTimes(1);
     expect(cart.updateCartItem).toHaveBeenCalledWith(1, { quantity: 3 });
   });
+
+  it('offers coupon, gift card and loyalty point tenders next to the summary', async () => {
+    // given
+    vi.mocked(reactQuery.useQuery).mockReturnValue({
+      data: { data: mockCartData },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    } as any);
+
+    // when
+    renderWithProviders(<CartPage />);
+
+    // then
+    expect(await screen.findByTestId('cart-coupon-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('cart-gift-card-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('cart-loyalty-panel')).toBeInTheDocument();
+  });
 });

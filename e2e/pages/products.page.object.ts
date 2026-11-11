@@ -56,8 +56,12 @@ export class ProductsPage {
     await this.sortDropdown.selectOption(option);
   }
 
+  // REST shows category checkboxes with counts; GraphQL shows one button per category.
   async filterByCategory(category: string) {
-    await this.categoryFilter.locator(`button:has-text("${category}")`).click();
+    await this.categoryFilter
+      .getByRole('checkbox', { name: category })
+      .or(this.categoryFilter.getByRole('button', { name: category, exact: true }))
+      .click();
   }
 
   async isNoProductsMessageVisible() {

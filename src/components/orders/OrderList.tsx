@@ -4,9 +4,11 @@ import { Link } from 'react-router';
 import { orders } from '../../lib/api';
 import { Order, OrderStatus } from '../../types/order';
 import { Badge } from '../ui/badge';
-import { formatPrice } from '../../lib/format';
+import { isPaymentEnabled } from '../../lib/runtimeConfig';
+import { useMoney } from '../../hooks/useMoney';
 
 export function OrderList() {
+  const { formatMoney } = useMoney();
   const [currentPage, setCurrentPage] = useState(0);
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | undefined>(undefined);
   
@@ -109,11 +111,14 @@ export function OrderList() {
                 >
                   {order.status}
                 </Badge>
+                {order.status === 'PENDING' && isPaymentEnabled() && (
+                  <p className="mt-1 text-right text-xs font-medium text-amber-800" data-testid={`order-awaiting-payment-${order.id}`}>Awaiting payment</p>
+                )}
               </div>
             </div>
             
             <div className="mb-3">
-              <p className="font-medium text-slate-900" data-testid={`order-total-${order.id}`}>Total: {formatPrice(order.totalAmount)}</p>
+              <p className="font-medium text-slate-900" data-testid={`order-total-${order.id}`}>Total: {formatMoney(order.totalAmount)}</p>
               <p className="text-sm text-slate-600" data-testid={`order-items-count-${order.id}`}>{order.items.length} items</p>
             </div>
             

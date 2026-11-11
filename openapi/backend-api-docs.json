@@ -66,8 +66,50 @@
         ],
         "type": "object"
       },
+      "ApplyGiftCardDto": {
+        "description": "Gift card code to apply to the cart",
+        "properties": {
+          "code": {
+            "description": "Case-insensitive code in the format GC-XXXX-XXXX-XXXX",
+            "example": "gc-7kq2-m9xd-4hpa",
+            "maxLength": 32,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "type": "object"
+      },
+      "ApplyLoyaltyPointsDto": {
+        "description": "Loyalty points to redeem at checkout, in whole multiples of 100 (100 points = 1.00)",
+        "properties": {
+          "points": {
+            "description": "Points to redeem",
+            "example": 500,
+            "format": "int64",
+            "maximum": 100000000,
+            "minimum": 100,
+            "multipleOf": 100,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "points"
+        ],
+        "type": "object"
+      },
       "CartDto": {
         "properties": {
+          "amountDue": {
+            "description": "What remains to pay after the coupon, gift card and points; only present when a gift card or points are applied",
+            "example": 149.6,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
           "couponCode": {
             "description": "Coupon applied to the cart",
             "example": "WELCOME10",
@@ -96,11 +138,44 @@
             "example": 19.96,
             "type": "number"
           },
+          "giftCardAmount": {
+            "description": "Part of the total checkout would pay with the gift card (zero when the card cannot be used)",
+            "example": 25,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "giftCardCode": {
+            "description": "Gift card applied to the cart; omitted when none is applied",
+            "example": "GC-7KQ2-M9XD-4HPA",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "items": {
             "items": {
               "$ref": "#/components/schemas/CartItemDto"
             },
             "type": "array"
+          },
+          "pointsAmount": {
+            "description": "Value of the redeemed points (100 points = 1.00)",
+            "example": 5,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "pointsRedeemed": {
+            "description": "Loyalty points checkout would redeem, capped at what the remaining total needs",
+            "example": 500,
+            "format": "int64",
+            "type": [
+              "integer",
+              "null"
+            ]
           },
           "totalAfterDiscount": {
             "description": "Total price after the discount",
@@ -146,6 +221,23 @@
           "productId",
           "quantity"
         ],
+        "type": "object"
+      },
+      "CategoryFacetDto": {
+        "description": "Number of matching products in one category",
+        "properties": {
+          "count": {
+            "description": "Matching products in this category",
+            "example": 7,
+            "format": "int64",
+            "type": "integer"
+          },
+          "value": {
+            "description": "Category as stored on the products",
+            "example": "Electronics",
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "ChatMessageDto": {
@@ -534,6 +626,104 @@
         ],
         "type": "object"
       },
+      "CurrencyConversionDto": {
+        "description": "Amount converted between two currencies through their USD rates",
+        "properties": {
+          "amount": {
+            "description": "Amount in the source currency",
+            "example": 100,
+            "type": "number"
+          },
+          "converted": {
+            "description": "Converted amount, rounded half-up to 2 decimals from the exact rate",
+            "example": 92.59,
+            "type": "number"
+          },
+          "from": {
+            "description": "Source currency code",
+            "example": "USD",
+            "type": "string"
+          },
+          "rate": {
+            "description": "Units of the target currency per unit of the source currency, rounded half-up to 6 decimals",
+            "example": 0.925926,
+            "type": "number"
+          },
+          "to": {
+            "description": "Target currency code",
+            "example": "EUR",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CurrencyDto": {
+        "description": "Display currency with a fixed demo exchange rate. Prices are stored in USD.",
+        "properties": {
+          "code": {
+            "description": "ISO 4217 code",
+            "example": "EUR",
+            "type": "string"
+          },
+          "name": {
+            "description": "Currency name",
+            "example": "Euro",
+            "type": "string"
+          },
+          "rateToUsd": {
+            "description": "Value of one unit in USD",
+            "example": 1.08,
+            "type": "number"
+          },
+          "symbol": {
+            "description": "Display symbol",
+            "example": "€",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "Last change (server-local)",
+            "format": "local-date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CurrencyRequestDto": {
+        "description": "Currency definition. USD is the base currency and its rate must stay 1.",
+        "properties": {
+          "name": {
+            "description": "Currency name",
+            "example": "Euro",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "rateToUsd": {
+            "description": "Value of one unit in USD",
+            "example": 1.08,
+            "exclusiveMinimum": 0,
+            "maximum": 999999.999999,
+            "minimum": 0.000001,
+            "multipleOf": 0.000001,
+            "type": "number"
+          },
+          "symbol": {
+            "description": "Display symbol",
+            "example": "€",
+            "maxLength": 8,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "rateToUsd",
+          "symbol"
+        ],
+        "type": "object"
+      },
       "EmailDto": {
         "properties": {
           "message": {
@@ -567,6 +757,12 @@
               "ORDER_SHIPPED",
               "ORDER_DELIVERED",
               "RETURN_UPDATED",
+              "PAYMENT_RECEIVED",
+              "PAYMENT_FAILED",
+              "SHIPMENT_OUT_FOR_DELIVERY",
+              "SHIPMENT_DELIVERY_FAILED",
+              "LOYALTY_POINTS_EARNED",
+              "GIFT_CARD_ISSUED",
               null
             ],
             "type": [
@@ -624,7 +820,13 @@
               "BACK_IN_STOCK",
               "ORDER_SHIPPED",
               "ORDER_DELIVERED",
-              "RETURN_UPDATED"
+              "RETURN_UPDATED",
+              "PAYMENT_RECEIVED",
+              "PAYMENT_FAILED",
+              "SHIPMENT_OUT_FOR_DELIVERY",
+              "SHIPMENT_DELIVERY_FAILED",
+              "LOYALTY_POINTS_EARNED",
+              "GIFT_CARD_ISSUED"
             ],
             "type": "string"
           },
@@ -741,6 +943,213 @@
               "integer",
               "null"
             ]
+          }
+        },
+        "type": "object"
+      },
+      "GiftCardBalanceDto": {
+        "description": "Public view of a gift card: balance, status and expiry only",
+        "properties": {
+          "balance": {
+            "description": "Remaining balance",
+            "example": 25,
+            "type": "number"
+          },
+          "code": {
+            "description": "Gift card code",
+            "example": "GC-7KQ2-M9XD-4HPA",
+            "type": "string"
+          },
+          "expiresAt": {
+            "description": "Server-local end of validity",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "description": "Effective status",
+            "enum": [
+              "ACTIVE",
+              "REDEEMED",
+              "EXPIRED",
+              "DISABLED"
+            ],
+            "example": "ACTIVE",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GiftCardCreateDto": {
+        "description": "Gift card to issue. The code is generated by the server.",
+        "properties": {
+          "amount": {
+            "description": "Initial balance",
+            "example": 50,
+            "maximum": 1000,
+            "minimum": 1,
+            "multipleOf": 0.01,
+            "type": "number"
+          },
+          "expiresAt": {
+            "description": "Server-local end of validity; must be in the future. Null means the card never expires",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "note": {
+            "description": "Internal note, visible to administrators only",
+            "example": "Apology for a late delivery",
+            "maxLength": 255,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "recipientUsername": {
+            "description": "Existing user who receives a GIFT_CARD_ISSUED email with the code",
+            "example": "client",
+            "maxLength": 255,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "amount"
+        ],
+        "type": "object"
+      },
+      "GiftCardDto": {
+        "description": "Gift card as seen by administrators",
+        "properties": {
+          "balance": {
+            "description": "Remaining balance",
+            "example": 25,
+            "type": "number"
+          },
+          "code": {
+            "description": "Generated code",
+            "example": "GC-7KQ2-M9XD-4HPA",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "Creation timestamp",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "createdBy": {
+            "description": "Administrator who issued the card",
+            "example": "admin",
+            "type": "string"
+          },
+          "expiresAt": {
+            "description": "Server-local end of validity",
+            "format": "local-date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "initialAmount": {
+            "description": "Amount the card was issued with",
+            "example": 50,
+            "type": "number"
+          },
+          "note": {
+            "description": "Internal note",
+            "example": "Apology for a late delivery",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "recipientUsername": {
+            "description": "User who was emailed the code",
+            "example": "client",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "description": "Effective status",
+            "enum": [
+              "ACTIVE",
+              "REDEEMED",
+              "EXPIRED",
+              "DISABLED"
+            ],
+            "example": "ACTIVE",
+            "type": "string"
+          },
+          "transactions": {
+            "description": "Ledger, oldest first; only in single-card responses",
+            "items": {
+              "$ref": "#/components/schemas/GiftCardTransactionDto"
+            },
+            "type": "array"
+          },
+          "updatedAt": {
+            "description": "Last update timestamp",
+            "format": "local-date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GiftCardTransactionDto": {
+        "description": "Gift card ledger entry",
+        "properties": {
+          "actor": {
+            "description": "Administrator or customer who caused the change",
+            "example": "admin",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "amount": {
+            "description": "Signed balance change: positive for ISSUED and RESTORED, negative for REDEEMED, zero for DISABLED",
+            "example": -25,
+            "type": "number"
+          },
+          "balanceAfter": {
+            "description": "Balance after the change",
+            "example": 25,
+            "type": "number"
+          },
+          "createdAt": {
+            "description": "When the change happened",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "orderId": {
+            "description": "Order that redeemed or got money back",
+            "example": 42,
+            "format": "int64",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "type": {
+            "description": "Kind of change",
+            "enum": [
+              "ISSUED",
+              "REDEEMED",
+              "RESTORED",
+              "DISABLED"
+            ],
+            "example": "REDEEMED",
+            "type": "string"
           }
         },
         "type": "object"
@@ -1035,6 +1444,88 @@
           "username": {
             "description": "Username",
             "example": "johndoe",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "LoyaltyAccountDto": {
+        "description": "Loyalty account of the signed-in user. 1 point is earned per full 1.00 of a paid order; 100 points redeem 1.00.",
+        "properties": {
+          "balance": {
+            "description": "Points available to redeem",
+            "example": 1250,
+            "format": "int64",
+            "type": "integer"
+          },
+          "lifetimeEarned": {
+            "description": "Points earned over the account's lifetime",
+            "example": 1800,
+            "format": "int64",
+            "type": "integer"
+          },
+          "tier": {
+            "description": "Tier from lifetime points: BRONZE, SILVER from 1000, GOLD from 5000",
+            "enum": [
+              "BRONZE",
+              "SILVER",
+              "GOLD"
+            ],
+            "example": "SILVER",
+            "type": "string"
+          },
+          "valueOfBalance": {
+            "description": "What the balance is worth at checkout (100 points = 1.00)",
+            "example": 12.5,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "LoyaltyTransactionDto": {
+        "description": "Loyalty ledger entry",
+        "properties": {
+          "balanceAfter": {
+            "description": "Balance after the change",
+            "example": 1250,
+            "format": "int64",
+            "type": "integer"
+          },
+          "createdAt": {
+            "description": "When the change happened",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Entry ID",
+            "example": 7,
+            "format": "int64",
+            "type": "integer"
+          },
+          "orderId": {
+            "description": "Order that caused the change",
+            "example": 42,
+            "format": "int64",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "points": {
+            "description": "Signed change: positive for EARNED and RESTORED, negative for REDEEMED and REVOKED",
+            "example": 120,
+            "format": "int64",
+            "type": "integer"
+          },
+          "type": {
+            "description": "Kind of change",
+            "enum": [
+              "EARNED",
+              "REDEEMED",
+              "RESTORED",
+              "REVOKED"
+            ],
+            "example": "EARNED",
             "type": "string"
           }
         },
@@ -1342,6 +1833,14 @@
       "OrderDto": {
         "description": "Order data transfer object",
         "properties": {
+          "amountDue": {
+            "description": "Total minus the gift card and points parts, which a card payment must cover; only present when a gift card or points were used",
+            "example": 1969.98,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
           "couponCode": {
             "description": "Coupon code applied at checkout",
             "example": "WELCOME10",
@@ -1378,6 +1877,22 @@
               "null"
             ]
           },
+          "giftCardAmount": {
+            "description": "Part of the total paid with the gift card",
+            "example": 25,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "giftCardCode": {
+            "description": "Gift card used at checkout; omitted when none was used",
+            "example": "GC-7KQ2-M9XD-4HPA",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "id": {
             "description": "Order ID",
             "example": 1,
@@ -1390,6 +1905,39 @@
               "$ref": "#/components/schemas/OrderItemDto"
             },
             "type": "array"
+          },
+          "netAmount": {
+            "description": "Total without VAT (totalAmount - taxAmount)",
+            "example": 1626,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "pointsAmount": {
+            "description": "Part of the total paid with loyalty points (100 points = 1.00)",
+            "example": 5,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "pointsRedeemed": {
+            "description": "Loyalty points redeemed at checkout",
+            "example": 500,
+            "format": "int64",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "refundedAmount": {
+            "description": "Amount refunded for returned items; omitted until a refund is booked",
+            "example": 49.99,
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "shippingAddress": {
             "$ref": "#/components/schemas/AddressDto",
@@ -1411,6 +1959,30 @@
             "description": "Sum of item prices before discounts",
             "example": 2222.2,
             "type": "number"
+          },
+          "taxAmount": {
+            "description": "VAT contained in the VAT-inclusive total",
+            "example": 373.98,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "taxCountry": {
+            "description": "ISO country code whose VAT is contained in the total; omitted when no VAT rate applies",
+            "example": "PL",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "taxRate": {
+            "description": "VAT rate in percent at checkout; 0 means VAT is not applicable",
+            "example": 23,
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "totalAmount": {
             "description": "Total amount",
@@ -1504,6 +2076,33 @@
         },
         "type": "object"
       },
+      "PageDtoGiftCardDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/GiftCardDto"
+            },
+            "type": "array"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
       "PageDtoInventoryItemDto": {
         "properties": {
           "content": {
@@ -1536,6 +2135,33 @@
           "content": {
             "items": {
               "$ref": "#/components/schemas/InventoryMovementDto"
+            },
+            "type": "array"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageDtoLoyaltyTransactionDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/LoyaltyTransactionDto"
             },
             "type": "array"
           },
@@ -1639,6 +2265,80 @@
         },
         "type": "object"
       },
+      "PageDtoWebhookDeliveryDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/WebhookDeliveryDto"
+            },
+            "type": "array"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageDtoWebhookSubscriptionDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/WebhookSubscriptionDto"
+            },
+            "type": "array"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PriceRangeFacetDto": {
+        "description": "Lowest and highest price of the products the facets cover; both null when none match",
+        "properties": {
+          "max": {
+            "example": 1299,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "min": {
+            "example": 9.99,
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
       "ProductCreateDto": {
         "description": "Create product data transfer object",
         "properties": {
@@ -1738,6 +2438,125 @@
             "example": "2026-09-10T10:30:02.809462",
             "format": "local-date-time",
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ProductSearchFacetsDto": {
+        "description": "Facets over every filter except category, so a client can offer the other categories",
+        "properties": {
+          "categories": {
+            "description": "Categories with their product counts, largest first, then by value",
+            "items": {
+              "$ref": "#/components/schemas/CategoryFacetDto"
+            },
+            "type": "array"
+          },
+          "inStockCount": {
+            "description": "Products with stock above zero",
+            "example": 18,
+            "format": "int64",
+            "type": "integer"
+          },
+          "priceRange": {
+            "$ref": "#/components/schemas/PriceRangeFacetDto"
+          }
+        },
+        "type": "object"
+      },
+      "ProductSearchItemDto": {
+        "description": "Product search hit: the product fields plus its approved-review rating",
+        "properties": {
+          "averageRating": {
+            "description": "Average of approved review ratings rounded half-up to one decimal; null without approved reviews",
+            "example": 4.3,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "category": {
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "Server local date and time without an offset. The server timezone is deployment-dependent; this value does not identify an absolute instant.",
+            "example": "2026-09-10T10:30:02.809462",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "imageUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "reviewCount": {
+            "description": "Number of approved reviews",
+            "example": 12,
+            "format": "int64",
+            "type": "integer"
+          },
+          "stockQuantity": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "updatedAt": {
+            "description": "Server local date and time without an offset. The server timezone is deployment-dependent; this value does not identify an absolute instant.",
+            "example": "2026-09-10T10:30:02.809462",
+            "format": "local-date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ProductSearchResultDto": {
+        "description": "One page of product search hits with facets",
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/ProductSearchItemDto"
+            },
+            "type": "array"
+          },
+          "facets": {
+            "$ref": "#/components/schemas/ProductSearchFacetsDto"
+          },
+          "pageNumber": {
+            "description": "Zero-based page index",
+            "example": 0,
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "description": "Requested page size",
+            "example": 20,
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "description": "Products matching every filter",
+            "example": 42,
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "description": "Number of pages of pageSize",
+            "example": 3,
+            "format": "int32",
+            "type": "integer"
           }
         },
         "type": "object"
@@ -2054,6 +2873,37 @@
           "model",
           "prompt"
         ],
+        "type": "object"
+      },
+      "TaxPreviewDto": {
+        "description": "VAT contained in the cart total (after any coupon) for a shipping country",
+        "properties": {
+          "country": {
+            "description": "Resolved ISO 3166-1 alpha-2 country code",
+            "example": "PL",
+            "type": "string"
+          },
+          "netAmount": {
+            "description": "Total without VAT",
+            "example": 81.29,
+            "type": "number"
+          },
+          "rate": {
+            "description": "VAT rate in percent",
+            "example": 23,
+            "type": "number"
+          },
+          "taxAmount": {
+            "description": "VAT contained in the total",
+            "example": 18.7,
+            "type": "number"
+          },
+          "totalAmount": {
+            "description": "VAT-inclusive cart total after any coupon discount",
+            "example": 99.99,
+            "type": "number"
+          }
+        },
         "type": "object"
       },
       "TokenRefreshResponseDto": {
@@ -2511,6 +3361,406 @@
         },
         "type": "object"
       },
+      "VatRateDto": {
+        "description": "Standard VAT rate of a country. Prices are VAT-inclusive; a rate of 0 means VAT is not applicable.",
+        "properties": {
+          "countryCode": {
+            "description": "ISO 3166-1 alpha-2 country code",
+            "example": "PL",
+            "type": "string"
+          },
+          "countryName": {
+            "description": "Country name",
+            "example": "Poland",
+            "type": "string"
+          },
+          "rate": {
+            "description": "Rate in percent",
+            "example": 23,
+            "type": "number"
+          },
+          "updatedAt": {
+            "description": "Last change (server-local)",
+            "format": "local-date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "VatRateRequestDto": {
+        "description": "VAT rate definition. Changes apply to orders created afterwards; existing orders keep their rate.",
+        "properties": {
+          "countryName": {
+            "description": "Country name",
+            "example": "Poland",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "rate": {
+            "description": "Rate in percent; 0 means VAT is not applicable",
+            "example": 23,
+            "maximum": 50,
+            "minimum": 0,
+            "multipleOf": 0.01,
+            "type": "number"
+          }
+        },
+        "required": [
+          "countryName",
+          "rate"
+        ],
+        "type": "object"
+      },
+      "WebhookCreateDto": {
+        "description": "New webhook subscription",
+        "properties": {
+          "description": {
+            "description": "Free-text label",
+            "example": "Order sync",
+            "maxLength": 255,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "events": {
+            "description": "Event types to receive; see GET /api/v1/webhooks/event-types",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "minItems": 0,
+            "type": "array"
+          },
+          "url": {
+            "description": "Public http(s) endpoint on port 80 or 443, or inbox://<token> of one of your inboxes",
+            "example": "https://example.com/webhooks/shop",
+            "maxLength": 2048,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "events",
+          "url"
+        ],
+        "type": "object"
+      },
+      "WebhookDeliveryDto": {
+        "description": "One event sent to a webhook subscription and the outcome of its last attempt",
+        "properties": {
+          "attempts": {
+            "description": "Attempts made so far",
+            "example": 1,
+            "format": "int32",
+            "type": "integer"
+          },
+          "createdAt": {
+            "description": "Creation time (UTC)",
+            "example": "2026-11-10T20:40:33Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "deliveredAt": {
+            "description": "When a 2xx response was received",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "durationMs": {
+            "description": "Duration of the last attempt in milliseconds",
+            "example": 42,
+            "format": "int64",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "eventId": {
+            "description": "Event id (the payload's id); shared by redeliveries of the same event",
+            "example": "6a1f0f57-0f7c-4bb4-8a43-2f9d8f7e8c11",
+            "format": "uuid",
+            "type": "string"
+          },
+          "eventType": {
+            "description": "Event type, sent as X-Webhook-Event",
+            "example": "order.created",
+            "type": "string"
+          },
+          "id": {
+            "description": "Delivery id, sent as X-Webhook-Id",
+            "example": "0b8f4f0e-3f43-4b8e-9d55-4a3f1c1f6a10",
+            "format": "uuid",
+            "type": "string"
+          },
+          "lastError": {
+            "description": "Why the last attempt failed",
+            "example": "HTTP 500",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastStatusCode": {
+            "description": "HTTP status of the last attempt, if a response arrived",
+            "example": 200,
+            "format": "int32",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "nextAttemptAt": {
+            "description": "When the next retry is due (PENDING only)",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "payload": {
+            "description": "The exact JSON body that was signed and sent",
+            "example": {
+              "createdAt": "2026-11-10T20:40:33.120Z",
+              "data": {
+                "orderId": 1,
+                "status": "PENDING",
+                "totalAmount": 40
+              },
+              "id": "6a1f0f57-0f7c-4bb4-8a43-2f9d8f7e8c11",
+              "type": "order.created"
+            },
+            "type": "string"
+          },
+          "responseSnippet": {
+            "description": "First 500 characters of the last response body",
+            "example": "ok",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "description": "Delivery status",
+            "enum": [
+              "PENDING",
+              "DELIVERED",
+              "FAILED"
+            ],
+            "example": "DELIVERED",
+            "type": "string"
+          },
+          "subscriptionId": {
+            "description": "Subscription id",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "WebhookEventTypeDto": {
+        "description": "An event type a webhook can subscribe to",
+        "properties": {
+          "description": {
+            "description": "When it is sent",
+            "example": "An order was placed",
+            "type": "string"
+          },
+          "name": {
+            "description": "Wire name used in events[] and X-Webhook-Event",
+            "example": "order.created",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WebhookInboxDto": {
+        "description": "Built-in webhook receiver",
+        "properties": {
+          "createdAt": {
+            "description": "Creation time (UTC)",
+            "example": "2026-11-10T20:40:33Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "token": {
+            "description": "Inbox token",
+            "example": "Q2xhdWRlIGlzIGEgZ29vZCBib3QgOik",
+            "type": "string"
+          },
+          "url": {
+            "description": "Webhook URL to subscribe with",
+            "example": "inbox://Q2xhdWRlIGlzIGEgZ29vZCBib3QgOik",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WebhookInboxRequestDto": {
+        "description": "A webhook request received by an inbox",
+        "properties": {
+          "body": {
+            "description": "Raw request body (at most 16 KB)",
+            "example": {
+              "id": "...",
+              "type": "webhook.ping"
+            },
+            "type": "string"
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Request headers",
+            "example": {
+              "X-Webhook-Event": "webhook.ping",
+              "X-Webhook-Signature": "t=1794346833,v1=5f2b..."
+            },
+            "type": "object"
+          },
+          "id": {
+            "description": "Request id",
+            "example": 7,
+            "format": "int64",
+            "type": "integer"
+          },
+          "receivedAt": {
+            "description": "Receive time (UTC)",
+            "example": "2026-11-10T20:40:33Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WebhookSubscriptionDto": {
+        "description": "Webhook subscription",
+        "properties": {
+          "active": {
+            "description": "Whether events are delivered",
+            "example": true,
+            "type": "boolean"
+          },
+          "consecutiveFailures": {
+            "description": "Failed attempts since the last successful delivery; 20 disables the subscription",
+            "example": 0,
+            "format": "int32",
+            "type": "integer"
+          },
+          "createdAt": {
+            "description": "Creation time (UTC)",
+            "example": "2026-11-10T20:40:33Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "description": "Free-text label",
+            "example": "Order sync",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "disabledReason": {
+            "description": "Why the subscription was disabled automatically",
+            "example": "Disabled after 20 consecutive failed deliveries",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "events": {
+            "description": "Subscribed event types",
+            "example": [
+              "order.created"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "description": "Subscription id",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "secret": {
+            "description": "Signing secret. Returned only by create and rotate-secret; store it, it is never shown again.",
+            "example": "whsec_q9nZ2l0aHViLmNvbS93ZWJob29rcy1zZWNyZXQtZXhhbXBsZQ",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "Last change (UTC)",
+            "example": "2026-11-10T20:40:33Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "url": {
+            "description": "Target URL",
+            "example": "https://example.com/webhooks/shop",
+            "type": "string"
+          },
+          "username": {
+            "description": "Owner",
+            "example": "client",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WebhookUpdateDto": {
+        "description": "Replacement settings of a webhook subscription",
+        "properties": {
+          "active": {
+            "description": "Enable or disable deliveries; null keeps the current value. Re-enabling an auto-disabled subscription resets its failure counter.",
+            "example": true,
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "description": {
+            "description": "Free-text label; null clears it",
+            "example": "Order sync",
+            "maxLength": 255,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "events": {
+            "description": "Event types to receive",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "minItems": 0,
+            "type": "array"
+          },
+          "url": {
+            "description": "Public http(s) endpoint on port 80 or 443, or inbox://<token> of one of your inboxes",
+            "example": "https://example.com/webhooks/shop",
+            "maxLength": 2048,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "events",
+          "url"
+        ],
+        "type": "object"
+      },
       "WishlistItemDto": {
         "description": "Wishlist entry with the product's current price and availability",
         "properties": {
@@ -2613,7 +3863,7 @@
     "/api/v1/admin/coupons": {
       "get": {
         "description": "Lists coupons newest first with their effective status. Negative page is clamped to zero; size is clamped to 1-100.",
-        "operationId": "list_1",
+        "operationId": "list_4",
         "parameters": [
           {
             "description": "Zero-based page index",
@@ -2682,7 +3932,7 @@
       },
       "post": {
         "description": "Creates a coupon. Codes are case-insensitive and stored upper-case. PERCENTAGE values above 100 and validity windows that end before they start are rejected.",
-        "operationId": "create_1",
+        "operationId": "create_3",
         "requestBody": {
           "content": {
             "application/json": {
@@ -2766,7 +4016,7 @@
     "/api/v1/admin/coupons/{id}": {
       "delete": {
         "description": "Deletes a coupon that was never redeemed and removes it from carts. Redeemed coupons return 409; deactivate them instead.",
-        "operationId": "delete_2",
+        "operationId": "delete_3",
         "parameters": [
           {
             "in": "path",
@@ -2835,7 +4085,7 @@
       },
       "get": {
         "description": "Returns one coupon with its redemption count and effective status.",
-        "operationId": "get",
+        "operationId": "get_1",
         "parameters": [
           {
             "in": "path",
@@ -2901,7 +4151,7 @@
       },
       "put": {
         "description": "Replaces a coupon definition. The redemption count is preserved.",
-        "operationId": "update_1",
+        "operationId": "update_2",
         "parameters": [
           {
             "in": "path",
@@ -3003,10 +4253,452 @@
         ]
       }
     },
+    "/api/v1/admin/currencies/{code}": {
+      "put": {
+        "description": "Sets the name, symbol and USD rate (greater than 0, at most 6 decimals) of a currency. The code is a 3-letter ISO 4217 code, case-insensitive. USD is the base currency and its rate must stay 1.",
+        "operationId": "upsert_2",
+        "parameters": [
+          {
+            "description": "ISO 4217 currency code",
+            "example": "EUR",
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CurrencyRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrencyDto"
+                }
+              }
+            },
+            "description": "Currency updated"
+          },
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrencyDto"
+                }
+              }
+            },
+            "description": "Currency created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid currency code or definition"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create or update currency",
+        "tags": [
+          "Currencies"
+        ]
+      }
+    },
+    "/api/v1/admin/gift-cards": {
+      "get": {
+        "description": "Lists gift cards newest first, optionally only those with the given effective status. Negative page is clamped to zero; size is clamped to 1-100.",
+        "operationId": "list_3",
+        "parameters": [
+          {
+            "description": "Effective status filter",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "ACTIVE",
+                "REDEEMED",
+                "EXPIRED",
+                "DISABLED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Zero-based page index",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page size, 1-100",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoGiftCardDto"
+                }
+              }
+            },
+            "description": "Gift cards returned"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unknown status"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List gift cards",
+        "tags": [
+          "Gift cards"
+        ]
+      },
+      "post": {
+        "description": "Issues a gift card of 1.00-1000.00 with a generated GC-XXXX-XXXX-XXXX code. With recipientUsername the user receives a GIFT_CARD_ISSUED email with the code.",
+        "operationId": "issue",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GiftCardCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GiftCardDto"
+                }
+              }
+            },
+            "description": "Gift card issued"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Amount out of range, expiresAt not in the future, or field too long"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Recipient user not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Issue gift card",
+        "tags": [
+          "Gift cards"
+        ]
+      }
+    },
+    "/api/v1/admin/gift-cards/{code}": {
+      "get": {
+        "description": "Returns one gift card with its recipient, note and ledger (ISSUED, REDEEMED, RESTORED, DISABLED), oldest first. The code is case-insensitive.",
+        "operationId": "get_4",
+        "parameters": [
+          {
+            "description": "Gift card code",
+            "example": "GC-7KQ2-M9XD-4HPA",
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GiftCardDto"
+                }
+              }
+            },
+            "description": "Gift card returned"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Malformed code"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Gift card not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get gift card",
+        "tags": [
+          "Gift cards"
+        ]
+      }
+    },
+    "/api/v1/admin/gift-cards/{code}/disable": {
+      "post": {
+        "description": "Disables a gift card permanently. The balance is kept but can no longer be applied or spent; checkout with a cart that still holds the card fails with 409.",
+        "operationId": "disable_1",
+        "parameters": [
+          {
+            "description": "Gift card code",
+            "example": "GC-7KQ2-M9XD-4HPA",
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GiftCardDto"
+                }
+              }
+            },
+            "description": "Gift card disabled"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Malformed code"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Gift card not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Gift card is already disabled"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Disable gift card",
+        "tags": [
+          "Gift cards"
+        ]
+      }
+    },
     "/api/v1/admin/inventory": {
       "get": {
         "description": "Lists inventory with optional stock and catalog filters. Negative page is clamped to zero; size is clamped to 1–100. lowStockThreshold must be at least 1.",
-        "operationId": "list_4",
+        "operationId": "list_10",
         "parameters": [
           {
             "in": "query",
@@ -3124,7 +4816,7 @@
     "/api/v1/admin/inventory/{productId}": {
       "get": {
         "description": "Returns the available quantity for one product.",
-        "operationId": "get_1",
+        "operationId": "get_3",
         "parameters": [
           {
             "in": "path",
@@ -3567,7 +5259,7 @@
     "/api/v1/admin/reviews": {
       "get": {
         "description": "Lists reviews oldest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1-100.",
-        "operationId": "list_3",
+        "operationId": "list_9",
         "parameters": [
           {
             "in": "query",
@@ -3743,6 +5435,190 @@
         ]
       }
     },
+    "/api/v1/admin/vat-rates/{countryCode}": {
+      "put": {
+        "description": "Sets the VAT rate (0-50, at most 2 decimals) and name of a country. The code is an ISO 3166-1 alpha-2 code, case-insensitive; UK is stored as GB. Existing orders keep the rate they were created with.",
+        "operationId": "upsert_1",
+        "parameters": [
+          {
+            "description": "ISO 3166-1 alpha-2 country code",
+            "example": "PL",
+            "in": "path",
+            "name": "countryCode",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VatRateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/VatRateDto"
+                }
+              }
+            },
+            "description": "VAT rate updated"
+          },
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/VatRateDto"
+                }
+              }
+            },
+            "description": "VAT rate created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid country code or rate definition"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create or update VAT rate",
+        "tags": [
+          "VAT"
+        ]
+      }
+    },
+    "/api/v1/admin/webhooks": {
+      "get": {
+        "description": "Administrators list every user's subscriptions by id, optionally for one username. Secrets are never included. Negative page is clamped to zero; size is clamped to 1–100.",
+        "operationId": "list_8",
+        "parameters": [
+          {
+            "description": "Only this user's subscriptions",
+            "in": "query",
+            "name": "username",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoWebhookSubscriptionDto"
+                }
+              }
+            },
+            "description": "Subscriptions returned"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Invalid parameter"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List all webhook subscriptions",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
     "/api/v1/cart": {
       "delete": {
         "description": "Removes all items from the authenticated user's cart.",
@@ -3811,7 +5687,7 @@
     "/api/v1/cart/coupon": {
       "delete": {
         "description": "Detaches the coupon from the cart. Succeeds even when no coupon is applied.",
-        "operationId": "remove_1",
+        "operationId": "remove_3",
         "responses": {
           "200": {
             "content": {
@@ -3846,7 +5722,7 @@
       },
       "put": {
         "description": "Validates the coupon against the current cart and attaches it, replacing any previous coupon. Checkout validates it again.",
-        "operationId": "apply",
+        "operationId": "apply_2",
         "requestBody": {
           "content": {
             "application/json": {
@@ -3922,6 +5798,125 @@
           }
         ],
         "summary": "Apply coupon to cart",
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/api/v1/cart/gift-card": {
+      "delete": {
+        "description": "Detaches the gift card from the cart. Succeeds even when no gift card is applied.",
+        "operationId": "remove_2",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartDto"
+                }
+              }
+            },
+            "description": "Gift card removed; the updated cart is returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Remove gift card from cart",
+        "tags": [
+          "Cart"
+        ]
+      },
+      "put": {
+        "description": "Validates the gift card and attaches it to the cart, replacing any previous one. The cart then shows giftCardCode, giftCardAmount and amountDue; the card pays after the coupon discount and before loyalty points. Checkout validates the card again.",
+        "operationId": "apply_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyGiftCardDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartDto"
+                }
+              }
+            },
+            "description": "Gift card applied; the cart shows the gift card amount"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Empty cart, malformed code, disabled or expired gift card"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Gift card not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Gift card has no remaining balance"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Apply gift card to cart",
         "tags": [
           "Cart"
         ]
@@ -4158,6 +6153,313 @@
         ]
       }
     },
+    "/api/v1/cart/loyalty-points": {
+      "delete": {
+        "description": "Stops using loyalty points for this cart. Succeeds even when no points are applied.",
+        "operationId": "remove_1",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartDto"
+                }
+              }
+            },
+            "description": "Points removed; the updated cart is returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Remove loyalty points from cart",
+        "tags": [
+          "Cart"
+        ]
+      },
+      "put": {
+        "description": "Reserves loyalty points for checkout in whole multiples of 100 (100 points = 1.00), replacing any previous amount. Points pay after the coupon discount and the gift card; the cart shows pointsRedeemed, capped at what the remaining total needs, pointsAmount and amountDue. Checkout checks the balance again.",
+        "operationId": "apply",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplyLoyaltyPointsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartDto"
+                }
+              }
+            },
+            "description": "Points applied; the cart shows the points amount"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Empty cart, or points below 100 or not a multiple of 100"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Insufficient loyalty points"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Apply loyalty points to cart",
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/api/v1/cart/tax-preview": {
+      "get": {
+        "description": "Returns the VAT contained in the cart total (after any coupon) for a shipping country given as a code or name. The cart itself is unchanged.",
+        "operationId": "preview",
+        "parameters": [
+          {
+            "description": "Shipping country code or name",
+            "example": "PL",
+            "in": "query",
+            "name": "country",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxPreviewDto"
+                }
+              }
+            },
+            "description": "VAT preview returned"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Country missing"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Country not recognised or no rate configured"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Preview cart VAT",
+        "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/api/v1/currencies": {
+      "get": {
+        "description": "Lists the display currencies ordered by code. rateToUsd is the USD value of one unit; USD is the base currency.",
+        "operationId": "list_7",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CurrencyDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Currencies returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List currencies",
+        "tags": [
+          "Currencies"
+        ]
+      }
+    },
+    "/api/v1/currencies/convert": {
+      "get": {
+        "description": "Converts an amount (0 or more, at most 2 decimals) between two currencies through their USD rates. converted is rounded half-up to 2 decimals from the exact rate; rate is rounded half-up to 6 decimals. Currency codes are case-insensitive.",
+        "operationId": "convert",
+        "parameters": [
+          {
+            "description": "Amount in the source currency",
+            "example": 100,
+            "in": "query",
+            "name": "amount",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Source currency code; defaults to USD",
+            "example": "USD",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Target currency code",
+            "example": "EUR",
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrencyConversionDto"
+                }
+              }
+            },
+            "description": "Amount converted"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Missing or invalid amount or currency code"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Currency not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Convert amount",
+        "tags": [
+          "Currencies"
+        ]
+      }
+    },
     "/api/v1/email": {
       "post": {
         "description": "Queues an email message for asynchronous delivery through the configured JMS destination.",
@@ -4205,6 +6507,75 @@
         "summary": "Send email",
         "tags": [
           "email"
+        ]
+      }
+    },
+    "/api/v1/gift-cards/{code}": {
+      "get": {
+        "description": "Returns the balance, effective status and expiry of a gift card. Any signed-in user holding the code may check it; the recipient and note are never shown. Lookups share a per-user rate limit with applying gift cards to the cart.",
+        "operationId": "lookup",
+        "parameters": [
+          {
+            "description": "Case-insensitive gift card code",
+            "example": "GC-7KQ2-M9XD-4HPA",
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GiftCardBalanceDto"
+                }
+              }
+            },
+            "description": "Gift card balance returned"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Malformed code"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Gift card not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Check gift card balance",
+        "tags": [
+          "Gift cards"
         ]
       }
     },
@@ -4323,6 +6694,104 @@
         "summary": "Fetch all queued emails produced in the local profile",
         "tags": [
           "local-email-outbox"
+        ]
+      }
+    },
+    "/api/v1/loyalty": {
+      "get": {
+        "description": "Returns the caller's points balance, lifetime points, tier and the value of the balance. Points are earned when an order becomes PAID (1 point per full 1.00 of its total, excluding the part paid with points) and redeemed at 100 points = 1.00. Users who never earned points get a zero balance.",
+        "operationId": "account",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoyaltyAccountDto"
+                }
+              }
+            },
+            "description": "Loyalty account returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get loyalty account",
+        "tags": [
+          "Loyalty"
+        ]
+      }
+    },
+    "/api/v1/loyalty/transactions": {
+      "get": {
+        "description": "Lists the caller's points ledger newest first: EARNED, REDEEMED, RESTORED and REVOKED with signed points. Negative page is clamped to zero; size is clamped to 1-100.",
+        "operationId": "transactions",
+        "parameters": [
+          {
+            "description": "Zero-based page index",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page size, 1-100",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoLoyaltyTransactionDto"
+                }
+              }
+            },
+            "description": "Loyalty transactions returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List loyalty transactions",
+        "tags": [
+          "Loyalty"
         ]
       }
     },
@@ -5361,6 +7830,161 @@
         ]
       }
     },
+    "/api/v1/products/search": {
+      "get": {
+        "description": "Searches the catalog with an optional case-insensitive text query over name, category and description (substring match; % and _ are literal characters), category, price, rating and stock filters, sorting and paging. Ratings are averages of approved reviews. Facets cover the products matching every filter except category, so the category facet lists the alternatives to the selected categories; priceRange and inStockCount use the same set. relevance (the default when q is given) ranks name matches above category matches above description matches; without q the default and the relevance fallback is newest. Every invalid parameter is reported in one 400 response keyed by parameter name, including values of the wrong type.",
+        "operationId": "search",
+        "parameters": [
+          {
+            "description": "Text to find in name, category or description; trimmed, case-insensitive, at most 100 characters",
+            "example": "laptop",
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Category filter, case-insensitive; repeat the parameter or separate values with commas (at most 20)",
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "items": {
+                "example": "Electronics",
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "description": "Lowest price, inclusive, zero or greater",
+            "example": 10,
+            "in": "query",
+            "name": "minPrice",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "description": "Highest price, inclusive, zero or greater and not below minPrice",
+            "example": 500,
+            "in": "query",
+            "name": "maxPrice",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "description": "Lowest average approved-review rating, 1-5; products without approved reviews are excluded",
+            "example": 4,
+            "in": "query",
+            "name": "minRating",
+            "required": false,
+            "schema": {
+              "maximum": 5,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "description": "true returns only products with stock above zero; false or omitted applies no stock filter",
+            "in": "query",
+            "name": "inStock",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "relevance (default with q), newest (default without q), price_asc, price_desc, name_asc or rating_desc",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "enum": [
+                "relevance",
+                "newest",
+                "price_asc",
+                "price_desc",
+                "name_asc",
+                "rating_desc"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Zero-based page index",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Page size, 1-100",
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductSearchResultDto"
+                }
+              }
+            },
+            "description": "Search page with facets"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid search parameters"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Search products",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
     "/api/v1/products/{id}": {
       "delete": {
         "description": "Deletes an existing product by identifier. Referenced products return 409 without removing existing data. Requires an administrator role.",
@@ -5641,7 +8265,7 @@
     "/api/v1/products/{productId}/reviews": {
       "get": {
         "description": "Lists approved reviews for a product, newest first. Negative page is clamped to zero; size is clamped to 1-50.",
-        "operationId": "list",
+        "operationId": "list_2",
         "parameters": [
           {
             "in": "path",
@@ -5719,7 +8343,7 @@
       },
       "post": {
         "description": "Creates a PENDING review. Only users with a DELIVERED order containing the product may review it, once per product.",
-        "operationId": "create",
+        "operationId": "create_2",
         "parameters": [
           {
             "in": "path",
@@ -5817,7 +8441,7 @@
     "/api/v1/products/{productId}/reviews/mine": {
       "delete": {
         "description": "Deletes the caller's review for the product.",
-        "operationId": "delete_1",
+        "operationId": "delete_2",
         "parameters": [
           {
             "in": "path",
@@ -5922,7 +8546,7 @@
       },
       "put": {
         "description": "Replaces the caller's review content. The review returns to PENDING and its moderation note is cleared.",
-        "operationId": "update",
+        "operationId": "update_1",
         "parameters": [
           {
             "in": "path",
@@ -7453,7 +10077,7 @@
     "/api/v1/users/{username}": {
       "delete": {
         "description": "Deletes a user account and user-owned data. Requires an administrator role.",
-        "operationId": "delete",
+        "operationId": "delete_1",
         "parameters": [
           {
             "description": "Username",
@@ -7714,10 +10338,1117 @@
         ]
       }
     },
+    "/api/v1/vat-rates": {
+      "get": {
+        "description": "Lists the standard VAT rate of every configured country, ordered by country code. A rate of 0 means VAT is not applicable.",
+        "operationId": "list_6",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/VatRateDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "VAT rates returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List VAT rates",
+        "tags": [
+          "VAT"
+        ]
+      }
+    },
+    "/api/v1/vat-rates/{country}": {
+      "get": {
+        "description": "Returns the VAT rate for a country given as an ISO alpha-2 or alpha-3 code or an English name (also common variants such as UK, USA, Polska or Deutschland), ignoring case.",
+        "operationId": "get_2",
+        "parameters": [
+          {
+            "description": "Country code or name",
+            "example": "PL",
+            "in": "path",
+            "name": "country",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/VatRateDto"
+                }
+              }
+            },
+            "description": "VAT rate returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Country not recognised or no rate configured"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get VAT rate",
+        "tags": [
+          "VAT"
+        ]
+      }
+    },
+    "/api/v1/webhook-inboxes": {
+      "get": {
+        "description": "Returns the caller's inboxes, oldest first.",
+        "operationId": "list_1",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WebhookInboxDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Inboxes returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List my webhook inboxes",
+        "tags": [
+          "Webhook inboxes"
+        ]
+      },
+      "post": {
+        "description": "Creates a receiver addressed as inbox://<token>. Use that URL in a subscription; deliveries to it are signed and logged like HTTP deliveries but stored here. At most 3 inboxes per user.",
+        "operationId": "create_1",
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookInboxDto"
+                }
+              }
+            },
+            "description": "Inbox created"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Inbox limit reached"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create webhook inbox",
+        "tags": [
+          "Webhook inboxes"
+        ]
+      }
+    },
+    "/api/v1/webhook-inboxes/{token}": {
+      "delete": {
+        "description": "Deletes the inbox and its requests. Subscriptions that target it fail until they are updated.",
+        "operationId": "delete_4",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Inbox deleted"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Inbox not found (or it belongs to another user)"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete webhook inbox",
+        "tags": [
+          "Webhook inboxes"
+        ]
+      }
+    },
+    "/api/v1/webhook-inboxes/{token}/requests": {
+      "get": {
+        "description": "Requests delivered to the inbox with their headers and body, newest first; the last 50 are kept.",
+        "operationId": "requests",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WebhookInboxRequestDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Requests returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Inbox not found (or it belongs to another user)"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List received webhook requests",
+        "tags": [
+          "Webhook inboxes"
+        ]
+      }
+    },
+    "/api/v1/webhooks": {
+      "get": {
+        "description": "Returns the caller's subscriptions, oldest first. Secrets are never included.",
+        "operationId": "list",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WebhookSubscriptionDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Subscriptions returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List my webhook subscriptions",
+        "tags": [
+          "Webhooks"
+        ]
+      },
+      "post": {
+        "description": "Subscribes a public http(s) URL on port 80 or 443 (or inbox://<token> of one of your inboxes) to your order events. URLs resolving to loopback, private, link-local or other internal addresses are rejected. The response contains the signing secret, which is shown only once. At most 5 subscriptions per user.",
+        "operationId": "create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookSubscriptionDto"
+                }
+              }
+            },
+            "description": "Subscription created; secret included once"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid body, unknown event type or rejected URL"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription limit reached"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create webhook subscription",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/event-types": {
+      "get": {
+        "description": "Event names a subscription can list in events[]; each is also sent as X-Webhook-Event.",
+        "operationId": "eventTypes",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WebhookEventTypeDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Event types returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List webhook event types",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/{id}": {
+      "delete": {
+        "description": "Deletes the subscription and its delivery log.",
+        "operationId": "delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Subscription deleted"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The subscription belongs to another user"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete webhook subscription",
+        "tags": [
+          "Webhooks"
+        ]
+      },
+      "get": {
+        "description": "Returns one of the caller's subscriptions.",
+        "operationId": "get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookSubscriptionDto"
+                }
+              }
+            },
+            "description": "Subscription returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The subscription belongs to another user"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get webhook subscription",
+        "tags": [
+          "Webhooks"
+        ]
+      },
+      "put": {
+        "description": "Replaces url, events and description; active=false pauses deliveries and active=true re-enables an (auto-)disabled subscription and resets its failure counter. The URL is checked again. The secret is unchanged.",
+        "operationId": "update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookSubscriptionDto"
+                }
+              }
+            },
+            "description": "Subscription updated"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid body, unknown event type or rejected URL"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The subscription belongs to another user"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update webhook subscription",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/{id}/deliveries": {
+      "get": {
+        "description": "Delivery log of a subscription, newest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1–100.",
+        "operationId": "deliveries",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "PENDING",
+                "DELIVERED",
+                "FAILED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoWebhookDeliveryDto"
+                }
+              }
+            },
+            "description": "Deliveries returned"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Invalid parameter"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The subscription belongs to another user"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List webhook deliveries",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/{id}/deliveries/{deliveryId}": {
+      "get": {
+        "description": "Returns one delivery with its payload, last status code, error and response snippet.",
+        "operationId": "delivery",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "deliveryId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookDeliveryDto"
+                }
+              }
+            },
+            "description": "Delivery returned"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Invalid delivery id"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The subscription belongs to another user"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription or delivery not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get webhook delivery",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/{id}/deliveries/{deliveryId}/redeliver": {
+      "post": {
+        "description": "Sends the event of an earlier delivery again, now, as a new delivery with the same event id and body and a fresh signature. The original delivery is unchanged.",
+        "operationId": "redeliver",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "deliveryId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookDeliveryDto"
+                }
+              }
+            },
+            "description": "Redelivery sent; the new delivery shows the outcome"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Invalid delivery id"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The subscription belongs to another user"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription or delivery not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription is disabled"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Redeliver webhook",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/{id}/rotate-secret": {
+      "post": {
+        "description": "Replaces the signing secret and returns the new one once. Later deliveries, including retries of earlier events, are signed with it.",
+        "operationId": "rotateSecret",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookSubscriptionDto"
+                }
+              }
+            },
+            "description": "Secret rotated; new secret included once"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The subscription belongs to another user"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Rotate webhook secret",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/{id}/test": {
+      "post": {
+        "description": "Sends a webhook.ping event now (waiting up to 5 seconds for the receiver) and returns the recorded delivery. A failed ping is retried like any other delivery.",
+        "operationId": "test",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookDeliveryDto"
+                }
+              }
+            },
+            "description": "Ping sent; the delivery shows the outcome"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The subscription belongs to another user"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription is disabled"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Send test webhook",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
     "/api/v1/wishlist": {
       "get": {
         "description": "Returns the caller's wishlist, most recently added first, with current price and stock.",
-        "operationId": "list_2",
+        "operationId": "list_5",
         "responses": {
           "200": {
             "content": {
@@ -7937,8 +11668,16 @@
       "name": "email"
     },
     {
+      "description": "Built-in webhook receivers, so no external server is needed",
+      "name": "Webhook inboxes"
+    },
+    {
       "description": "Administrator coupon management",
       "name": "Coupons"
+    },
+    {
+      "description": "Administrator gift card management",
+      "name": "Gift cards"
     },
     {
       "description": "Shopping cart management endpoints",
@@ -7949,12 +11688,32 @@
       "name": "Wishlist"
     },
     {
+      "description": "Display currencies with fixed demo exchange rates; prices and orders stay in USD",
+      "name": "Currencies"
+    },
+    {
+      "description": "VAT rates. Prices are VAT-inclusive; orders show the VAT their total contains.",
+      "name": "VAT"
+    },
+    {
       "description": "Order management endpoints",
       "name": "Orders"
     },
     {
       "description": "TOTP enrollment and two-factor sign-in",
       "name": "two-factor authentication"
+    },
+    {
+      "description": "Signed HTTP callbacks for your order events, with a delivery log and retries",
+      "name": "Webhooks"
+    },
+    {
+      "description": "Gift card balance check",
+      "name": "Gift cards"
+    },
+    {
+      "description": "Loyalty points of the signed-in user",
+      "name": "Loyalty"
     }
   ]
 }

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { cartCoupon } from '../../lib/api';
 import { CART_COUPON_QUERY_KEY } from '../../lib/commerceQueryKeys';
-import { formatPrice } from '../../lib/format';
+import { useMoney } from '../../hooks/useMoney';
 import { serverMessage } from '../../lib/requestErrors';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -10,6 +10,7 @@ import { Label } from '../ui/label';
 
 /** Applies and removes a cart coupon and previews the discount checkout will use. */
 export function CartCouponPanel() {
+  const { formatMoney } = useMoney();
   const queryClient = useQueryClient();
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -50,9 +51,9 @@ export function CartCouponPanel() {
           {cart?.couponValid ? (
             <dl className="grid max-w-xs grid-cols-2 gap-1 text-sm" data-testid="cart-coupon-totals">
               <dt className="text-slate-500">Discount</dt>
-              <dd className="text-right font-medium text-emerald-700" data-testid="cart-coupon-discount">−{formatPrice(cart.discountAmount ?? 0)}</dd>
+              <dd className="text-right font-medium text-emerald-700" data-testid="cart-coupon-discount">−{formatMoney(cart.discountAmount ?? 0)}</dd>
               <dt className="text-slate-500">After discount</dt>
-              <dd className="text-right font-semibold text-slate-950" data-testid="cart-coupon-total-after">{formatPrice(cart.totalAfterDiscount ?? 0)}</dd>
+              <dd className="text-right font-semibold text-slate-950" data-testid="cart-coupon-total-after">{formatMoney(cart.totalAfterDiscount ?? 0)}</dd>
             </dl>
           ) : (
             <p className="text-sm text-amber-800" role="status" data-testid="cart-coupon-invalid">

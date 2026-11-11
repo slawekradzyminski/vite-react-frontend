@@ -1,8 +1,11 @@
-// Types for the coupon, review, wishlist, fulfilment, returns and purchasing APIs.
+// Types for the coupon, review, wishlist, fulfilment, returns, purchasing, tracking, search, tax,
+// currency, gift card, loyalty and webhook APIs.
 // They alias the generated OpenAPI schemas directly, so they cannot drift from the service
-// that owns them: coupons, reviews, wishlist and CSV import come from the backend; shipments,
-// returns, suppliers, purchase orders and reorder suggestions come from warehouse-service.
-import type { components } from './generated/backend-api';
+// that owns them: coupons, reviews, wishlist, CSV import, product search, VAT, currencies, gift
+// cards, loyalty and webhooks come from the backend; shipments, tracking, returns, suppliers,
+// purchase orders and reorder suggestions come from warehouse-service. Payments live in
+// ./payment (payment-service).
+import type { components, operations } from './generated/backend-api';
 import type { components as warehouseComponents } from './generated/warehouse-api';
 
 type Schemas = components['schemas'];
@@ -31,6 +34,11 @@ export type ShipmentStatus = NonNullable<Shipment['status']>;
 export type Carrier = NonNullable<WarehouseSchemas['ShipShipmentDto']['carrier']>;
 export type PickList = WarehouseSchemas['PickListDto'];
 
+export type Tracking = WarehouseSchemas['TrackingDto'];
+export type PublicTracking = WarehouseSchemas['PublicTrackingDto'];
+export type TrackingEvent = WarehouseSchemas['TrackingEventDto'];
+export type TrackingStatus = NonNullable<TrackingEvent['status']>;
+
 export type ReturnRequest = WarehouseSchemas['ReturnDto'];
 export type ReturnStatus = NonNullable<ReturnRequest['status']>;
 export type ReturnReason = NonNullable<WarehouseSchemas['CreateReturnDto']['reason']>;
@@ -44,6 +52,41 @@ export type PurchaseOrderStatus = NonNullable<PurchaseOrder['status']>;
 export type PurchaseOrderRequest = WarehouseSchemas['PurchaseOrderRequestDto'];
 export type ReceiptRequest = WarehouseSchemas['ReceiptRequestDto'];
 export type ReorderSuggestion = WarehouseSchemas['ReorderSuggestionDto'];
+
+export type ProductSearchResult = Schemas['ProductSearchResultDto'];
+export type ProductSearchItem = Schemas['ProductSearchItemDto'];
+export type ProductSearchFacets = Schemas['ProductSearchFacetsDto'];
+export type CategoryFacet = Schemas['CategoryFacetDto'];
+export type PriceRangeFacet = Schemas['PriceRangeFacetDto'];
+export type ProductSearchParams = NonNullable<operations['search']['parameters']['query']>;
+export type ProductSearchSort = NonNullable<ProductSearchParams['sort']>;
+
+export type VatRate = Schemas['VatRateDto'];
+export type VatRateRequest = Schemas['VatRateRequestDto'];
+export type TaxPreview = Schemas['TaxPreviewDto'];
+
+export type Currency = Schemas['CurrencyDto'];
+export type CurrencyRequest = Schemas['CurrencyRequestDto'];
+export type CurrencyConversion = Schemas['CurrencyConversionDto'];
+
+export type GiftCard = Schemas['GiftCardDto'];
+export type GiftCardStatus = NonNullable<GiftCard['status']>;
+export type GiftCardBalance = Schemas['GiftCardBalanceDto'];
+export type GiftCardCreateRequest = Schemas['GiftCardCreateDto'];
+export type GiftCardTransaction = Schemas['GiftCardTransactionDto'];
+
+export type LoyaltyAccount = Schemas['LoyaltyAccountDto'];
+export type LoyaltyTier = NonNullable<LoyaltyAccount['tier']>;
+export type LoyaltyTransaction = Schemas['LoyaltyTransactionDto'];
+
+export type WebhookSubscription = Schemas['WebhookSubscriptionDto'];
+export type WebhookCreateRequest = Schemas['WebhookCreateDto'];
+export type WebhookUpdateRequest = Schemas['WebhookUpdateDto'];
+export type WebhookDelivery = Schemas['WebhookDeliveryDto'];
+export type WebhookDeliveryStatus = NonNullable<WebhookDelivery['status']>;
+export type WebhookEventType = Schemas['WebhookEventTypeDto'];
+export type WebhookInbox = Schemas['WebhookInboxDto'];
+export type WebhookInboxRequest = Schemas['WebhookInboxRequestDto'];
 
 export interface Page<T> {
   content?: T[];

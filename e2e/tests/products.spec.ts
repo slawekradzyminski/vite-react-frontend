@@ -31,9 +31,8 @@ test.describe('Products Page', () => {
     //  when
     await productsPage.searchForProduct(searchTerm);
 
-    //  then
-    const productNames = await productsPage.getAllProductNames();
-    expect(productNames).toEqual(['Product A']);
+    //  then: the catalogue searches on the server, so wait for the new results
+    await expect.poll(() => productsPage.getAllProductNames()).toEqual(['Product A']);
   });
 
   test('should filter products by category', async ({ authenticatedPage }) => {
@@ -63,8 +62,7 @@ test.describe('Products Page', () => {
     await productsPage.sortBy(sortOrder);
 
     //  then
-    const prices = await productsPage.getAllProductPrices();
-    expect(prices).toEqual(prices.slice().sort((a, b) => a - b));
+    await expect.poll(() => productsPage.getAllProductPrices()).toEqual([100, 150, 200, 300]);
   });
 
   test('should sort products by price descending', async ({ authenticatedPage }) => {
@@ -77,8 +75,7 @@ test.describe('Products Page', () => {
     await productsPage.sortBy(sortOrder);
 
     //  then
-    const prices = await productsPage.getAllProductPrices();
-    expect(prices).toEqual(prices.slice().sort((a, b) => b - a));
+    await expect.poll(() => productsPage.getAllProductPrices()).toEqual([300, 200, 150, 100]);
   });
 
   test('should display message when no products are found', async ({ authenticatedPage }) => {

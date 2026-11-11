@@ -287,7 +287,27 @@ export interface paths {
          * Track order shipment
          * @description Returns the shipment for one of the caller's orders. Administrators may track any order.
          */
-        get: operations["track"];
+        get: operations["track_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{id}/shipment/tracking": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Track order parcel
+         * @description Returns the carrier tracking (scans, current status, estimated delivery) for one of the caller's orders. Administrators may track any order. Before the hand-over to the carrier the events are empty.
+         */
+        get: operations["tracking"];
         put?: never;
         post?: never;
         delete?: never;
@@ -348,6 +368,26 @@ export interface paths {
          * @description Returns one of the caller's returns with its estimated or paid refund.
          */
         get: operations["get_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tracking/{trackingNumber}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Track parcel by tracking number
+         * @description Public, no authentication. Returns the carrier, current status, estimated delivery and scans of the parcel; no order id, customer or address. Surrounding spaces are ignored and letters are upper-cased.
+         */
+        get: operations["track"];
         put?: never;
         post?: never;
         delete?: never;
@@ -434,6 +474,26 @@ export interface paths {
          * @description Cancels an AWAITING_PICK or PICKED shipment. The order is cancelled, stock is restored and any coupon redemption is released.
          */
         post: operations["cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/warehouse/shipments/{id}/carrier/advance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Advance simulated carrier
+         * @description Fast-forwards a simulated SHIPPED shipment by one carrier scan (IN_TRANSIT, OUT_FOR_DELIVERY, DELIVERY_FAILED or DELIVERED) without waiting for the step interval. The DELIVERED step delivers the shipment like the deliver endpoint.
+         */
+        post: operations["advanceCarrier"];
         delete?: never;
         options?: never;
         head?: never;
@@ -531,7 +591,7 @@ export interface paths {
         put?: never;
         /**
          * Hand shipment to carrier
-         * @description PACKED to SHIPPED. The tracking number must match the carrier format. The order becomes SHIPPED and the customer receives an email.
+         * @description PACKED to SHIPPED. The tracking number must match the carrier format. Without a tracking number the parcel goes to the simulated carrier, which generates a tracking number and moves the parcel through IN_TRANSIT and OUT_FOR_DELIVERY to DELIVERED on its own. The order becomes SHIPPED and the customer receives an email.
          */
         post: operations["ship"];
         delete?: never;
@@ -801,6 +861,44 @@ export interface components {
              * @example 2
              */
             quantity?: number;
+        };
+        /** @description Public carrier tracking of a parcel; contains no order or customer data */
+        PublicTrackingDto: {
+            /**
+             * @description Carrier
+             * @example DHL
+             * @enum {string}
+             */
+            carrier?: "INPOST" | "DPD" | "DHL" | "UPS";
+            /**
+             * @description Status of the latest scan
+             * @example OUT_FOR_DELIVERY
+             * @enum {string|null}
+             */
+            currentStatus?: "LABEL_CREATED" | "IN_TRANSIT" | "OUT_FOR_DELIVERY" | "DELIVERY_FAILED" | "DELIVERED" | null;
+            /**
+             * Format: local-date-time
+             * @description Expected delivery (the delivery time once delivered)
+             */
+            estimatedDelivery?: string | null;
+            /** @description Carrier scans, oldest first */
+            events?: components["schemas"]["TrackingEventDto"][];
+            /**
+             * Format: int64
+             * @description Shipment ID
+             * @example 1
+             */
+            shipmentId?: number;
+            /**
+             * @description True when the parcel was handed to the simulated carrier
+             * @example true
+             */
+            simulated?: boolean;
+            /**
+             * @description Carrier tracking number
+             * @example 1234567890
+             */
+            trackingNumber?: string;
         };
         /** @description Purchase order */
         PurchaseOrderDto: {
@@ -1165,7 +1263,7 @@ export interface components {
              */
             quantity: number;
         };
-        /** @description Carrier hand-over. INPOST: 24 digits, DPD: 14 digits, DHL: 10 digits, UPS: 1Z + 16 letters or digits. */
+        /** @description Carrier hand-over. INPOST: 24 digits, DPD: 14 digits, DHL: 10 digits, UPS: 1Z + 16 letters or digits. Omit trackingNumber to hand the parcel to the simulated carrier, which generates the number and delivers automatically. */
         ShipShipmentDto: {
             /**
              * @description Carrier
@@ -1174,10 +1272,10 @@ export interface components {
              */
             carrier: "INPOST" | "DPD" | "DHL" | "UPS";
             /**
-             * @description Tracking number; surrounding spaces are ignored and letters are upper-cased
+             * @description Tracking number; surrounding spaces are ignored and letters are upper-cased. Omit it (or send null) for the simulated carrier.
              * @example 1234567890
              */
-            trackingNumber: string;
+            trackingNumber?: string | null;
         };
         /** @description Warehouse shipment for one order */
         ShipmentDto: {
@@ -1321,6 +1419,74 @@ export interface components {
              * @example Nordic Electronics
              */
             name: string;
+        };
+        /** @description Carrier tracking of an order's shipment */
+        TrackingDto: {
+            /**
+             * @description Carrier, set when shipped
+             * @example DHL
+             * @enum {string|null}
+             */
+            carrier?: "INPOST" | "DPD" | "DHL" | "UPS" | null;
+            /**
+             * @description Status of the latest scan; null before the hand-over
+             * @example IN_TRANSIT
+             * @enum {string|null}
+             */
+            currentStatus?: "LABEL_CREATED" | "IN_TRANSIT" | "OUT_FOR_DELIVERY" | "DELIVERY_FAILED" | "DELIVERED" | null;
+            /**
+             * Format: local-date-time
+             * @description Expected delivery (the delivery time once delivered); null before the hand-over
+             */
+            estimatedDelivery?: string | null;
+            /** @description Carrier scans, oldest first */
+            events?: components["schemas"]["TrackingEventDto"][];
+            /**
+             * Format: int64
+             * @description Order ID
+             * @example 42
+             */
+            orderId?: number;
+            /**
+             * Format: int64
+             * @description Shipment ID
+             * @example 1
+             */
+            shipmentId?: number;
+            /**
+             * @description True when the parcel was handed to the simulated carrier, which advances it automatically
+             * @example true
+             */
+            simulated?: boolean;
+            /**
+             * @description Carrier tracking number, set when shipped
+             * @example 1234567890
+             */
+            trackingNumber?: string | null;
+        };
+        /** @description One carrier scan */
+        TrackingEventDto: {
+            /**
+             * @description What happened
+             * @example Collected from the sender and sorted at the hub
+             */
+            description?: string;
+            /**
+             * @description Where the parcel was scanned
+             * @example DHL Hub, Leipzig
+             */
+            location?: string;
+            /**
+             * Format: local-date-time
+             * @description When the scan happened
+             */
+            occurredAt?: string;
+            /**
+             * @description Carrier status after this scan
+             * @example IN_TRANSIT
+             * @enum {string}
+             */
+            status?: "LABEL_CREATED" | "IN_TRANSIT" | "OUT_FOR_DELIVERY" | "DELIVERY_FAILED" | "DELIVERED";
         };
         /**
          * @description Validation messages keyed by field name; invalid arguments use the error key
@@ -2405,7 +2571,7 @@ export interface operations {
             };
         };
     };
-    track: {
+    track_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -2423,6 +2589,55 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ShipmentDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Order not found, or not released to the warehouse yet */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    tracking: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Tracking returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TrackingDto"];
                 };
             };
             /** @description Unauthorized */
@@ -2608,6 +2823,41 @@ export interface operations {
             };
             /** @description Backend unavailable */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    track: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description Carrier tracking number
+                 * @example 1234567890
+                 */
+                trackingNumber: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Tracking returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PublicTrackingDto"];
+                };
+            };
+            /** @description Tracking number not found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2906,6 +3156,73 @@ export interface operations {
                 };
             };
             /** @description Transition not allowed from the current shipment status */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    advanceCarrier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Shipment advanced; returns its tracking */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TrackingDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Shipment not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Not a simulated shipment in status SHIPPED */
             409: {
                 headers: {
                     [name: string]: unknown;

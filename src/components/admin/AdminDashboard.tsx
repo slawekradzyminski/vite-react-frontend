@@ -6,6 +6,15 @@ import { formatPrice } from '../../lib/format';
 import { Surface } from '../ui/surface';
 import { Badge } from '../ui/badge';
 import { AdminSectionNav } from './AdminSectionNav';
+import { isPaymentEnabled } from '../../lib/runtimeConfig';
+
+const settingsLinks = [
+  { label: 'Gift cards', path: '/admin/gift-cards', testId: 'admin-dashboard-gift-cards-link', hint: 'Issue cards and review their ledger' },
+  { label: 'VAT rates', path: '/admin/vat-rates', testId: 'admin-dashboard-vat-rates-link', hint: 'Per-country tax rates' },
+  { label: 'Currencies', path: '/admin/currencies', testId: 'admin-dashboard-currencies-link', hint: 'Display currencies and USD rates' },
+  { label: 'Payments', path: '/admin/payments', testId: 'admin-dashboard-payments-link', hint: 'Card payments from payment-service', payment: true },
+  { label: 'Webhooks', path: '/admin/webhooks', testId: 'admin-dashboard-webhooks-link', hint: 'Every user\'s subscriptions' },
+];
 
 const ORDERS_PAGE_SIZE = 50;
 // Upper bound on dashboard requests; beyond it the metrics are labelled as partial.
@@ -236,6 +245,20 @@ export function AdminDashboard() {
           )}
         </Surface>
       </div>
+
+      <Surface as="section" variant="default" padding="lg" aria-labelledby="admin-dashboard-settings-heading" data-testid="admin-dashboard-settings">
+        <h2 id="admin-dashboard-settings-heading" className="mb-4 text-lg font-semibold text-slate-950">Commerce settings</h2>
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {settingsLinks.filter((link) => !link.payment || isPaymentEnabled()).map((link) => (
+            <li key={link.path}>
+              <Link to={link.path} className="block h-full rounded-[1.25rem] border border-stone-200 bg-stone-50/80 p-4 transition hover:border-stone-300 hover:bg-white" data-testid={link.testId}>
+                <span className="font-medium text-slate-950">{link.label} →</span>
+                <span className="mt-1 block text-xs text-slate-500">{link.hint}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </Surface>
     </div>
   );
 }
