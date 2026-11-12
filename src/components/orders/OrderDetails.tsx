@@ -133,7 +133,11 @@ export const OrderDetails = () => {
   }
 
   if (!order) {
-    return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="order-details-not-found">Order not found</Surface>;
+    return (
+      <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="order-details-not-found">
+        <h1 className="text-lg font-semibold text-slate-700">Order not found</h1>
+      </Surface>
+    );
   }
 
   return (

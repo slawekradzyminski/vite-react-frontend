@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures/mocked-session.fixture';
-import { fulfillWithSchema } from '../mocks/backendContract';
+import { eventStream, fulfillWithSchema } from '../mocks/backendContract';
 import { cartMocks } from '../mocks/cartMocks';
 import { productSearchMocks } from '../mocks/productSearchMocks';
 import { expectNoAxeViolations } from '../utils/axe.utils';
@@ -220,4 +220,116 @@ test.describe('Axe accessibility scans (mocked backend)', () => {
       await expectNoAxeViolations(page);
     });
   }
+
+  test('admin inventory with a selected product (T-047)', async ({ mockedAdmin }) => {
+    // given
+    const { page } = mockedAdmin;
+    const item = { productId: 7, name: 'Desk Lamp', category: 'Home', availableQuantity: 4, stockStatus: 'LOW_STOCK' as const, lastChangedAt: '2026-11-01T10:00:00Z' };
+    await page.route(/\/api\/v1\/admin\/inventory(\?.*)?$/, (route) => fulfillWithSchema(route, 'PageDtoInventoryItemDto', {
+      content: [item], pageNumber: 0, pageSize: 20, totalElements: 1, totalPages: 1,
+    }));
+    await page.route(/\/api\/v1\/admin\/inventory\/7(\?.*)?$/, (route) => fulfillWithSchema(route, 'InventoryItemDto', item));
+    await page.route(/\/api\/v1\/admin\/inventory\/7\/movements(\?.*)?$/, (route) => fulfillWithSchema(route, 'PageDtoInventoryMovementDto', {
+      content: [], pageNumber: 0, pageSize: 20, totalElements: 0, totalPages: 0,
+    }));
+    await page.goto('/admin/inventory');
+
+    // when
+    await page.getByTestId('inventory-row-link-7').focus();
+    await page.keyboard.press('Enter');
+
+    // then
+    await expect(page).toHaveURL(/\/admin\/inventory\/7$/);
+    await expect(page.getByTestId('inventory-selected-name')).toHaveText('Desk Lamp');
+    await expectNoAxeViolations(page);
+  });
+
+  test('order details for an administrator, and a missing order (T-048, T-064)', async ({ mockedAdmin }) => {
+    // given
+    const { page } = mockedAdmin;
+    await page.route('**/api/v1/orders/42', (route) => fulfillWithSchema(route, 'OrderDto', {
+      id: 42, username: 'client', items: [{ id: 1, productId: 7, productName: 'Desk Lamp', quantity: 1, unitPrice: 25, totalPrice: 25 }],
+      totalAmount: 25, status: 'PAID', createdAt: '2026-11-01T10:00:00Z', updatedAt: '2026-11-01T10:00:00Z',
+      shippingAddress: { street: 'Main 1', city: 'Warsaw', state: 'Mazowieckie', zipCode: '00-001', country: 'Poland' },
+    }));
+
+    // when
+    await page.goto('/orders/42');
+
+    // then
+    await expect(page.getByRole('combobox', { name: 'Order status' })).toBeVisible();
+    await expectNoAxeViolations(page);
+
+    // when
+    await page.goto('/orders/9223372036854775807');
+
+    // then
+    await expect(page.getByTestId('order-details-not-found')).toBeVisible();
+    await expectNoAxeViolations(page);
+  });
+
+  test('register page with a filled form (T-001)', async ({ page }) => {
+    // given
+    await page.goto('/register');
+
+    // when
+    await page.getByTestId('register-username-input').fill('new-user');
+
+    // then
+    await expectNoAxeViolations(page);
+  });
+
+  test('open mobile menu (T-060)', async ({ mockedAdmin }) => {
+    // given
+    const { page } = mockedAdmin;
+    await page.setViewportSize({ width: 390, height: 560 });
+    await page.goto('/');
+
+    // when
+    await page.getByTestId('mobile-menu-toggle').click();
+
+    // then
+    await expect(page.getByTestId('mobile-menu')).toBeVisible();
+    await expectNoAxeViolations(page);
+  });
+
+  test('chat and tool chat conversations on a phone (T-043, T-045, T-046)', async ({ mockedClient }) => {
+    // given
+    const { page } = mockedClient;
+    await page.setViewportSize({ width: 360, height: 800 });
+    await page.route('**/api/v1/ollama/chat', (route) => route.fulfill({
+      status: 200,
+      headers: { 'content-type': 'text/event-stream' },
+      body: eventStream('ChatResponseDto', [{ message: { role: 'assistant', content: 'The mock is ready.' }, done: true }]),
+    }));
+    await page.route('**/api/v1/ollama/chat/tools', (route) => route.fulfill({
+      status: 200,
+      headers: { 'content-type': 'text/event-stream' },
+      body: eventStream('ChatResponseDto', [
+        { message: { role: 'assistant', content: '', tool_calls: [{ function: { name: 'list_products', arguments: { category: 'beauty', inStockOnly: true } } }] }, done: true },
+        { message: { role: 'tool', tool_name: 'list_products', content: '{"products":[],"total":0}' }, done: false },
+        { message: { role: 'assistant', content: 'No Beauty products yet.' }, done: true },
+      ]),
+    }));
+
+    // when
+    await page.goto('/llm/chat');
+    await page.getByTestId('chat-input').fill('Give me a quick status update');
+    await page.getByTestId('chat-send-button').click();
+
+    // then
+    await expect(page.getByTestId('chat-message-content-assistant')).toHaveText('The mock is ready.');
+    await expect(page.getByTestId('chat-input')).toBeEnabled();
+    await expectNoAxeViolations(page);
+
+    // when
+    await page.goto('/llm/tools');
+    await page.getByTestId('chat-input').fill('What Beauty products do we have available?');
+    await page.getByTestId('chat-send-button').click();
+
+    // then
+    await expect(page.getByTestId('chat-message-content-assistant')).toHaveText('No Beauty products yet.');
+    await expect(page.getByTestId('chat-input')).toBeEnabled();
+    await expectNoAxeViolations(page);
+  });
 });
