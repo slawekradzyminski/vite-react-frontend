@@ -1,6 +1,5 @@
 import * as React from 'react';
 import * as ToastPrimitive from '@radix-ui/react-toast';
-import { useLocation } from 'react-router';
 import { AlertCircle, CheckCircle2, Info, X } from 'lucide-react';
 import { ToastProps, ToastContext } from '../../hooks/useToast';
 import styles from './ToastProvider.module.css';
@@ -30,12 +29,9 @@ const toastMeta = {
   },
 } as const;
 
+// One provider for the whole app: a toast raised right before a navigation (a saved form that
+// returns to its list, a registration that opens the login page) stays on screen on the next page.
 export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const location = useLocation();
-  return <InternalToastProvider key={location.pathname}>{children}</InternalToastProvider>;
-}
-
-function InternalToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = React.useState<InternalToast[]>([]);
 
   const addToast = React.useCallback((props: ToastProps) => {

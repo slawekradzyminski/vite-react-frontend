@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act, within } from '@testing-library/react';
 import { ToastProvider } from './ToastProvider';
 import { useToast } from '../../hooks/useToast';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, Route, Routes, useNavigate } from 'react-router';
 
 // Create a test component that uses the toast hook
 function TestComponent() {
@@ -26,6 +26,22 @@ function TestComponent() {
         Dismiss Errors
       </button>
     </div>
+  );
+}
+
+function SaveAndLeave() {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  return (
+    <button
+      onClick={() => {
+        toast({ variant: 'success', title: 'Saved', description: 'Your changes are saved.' });
+        navigate('/list');
+      }}
+      data-testid="save-and-leave-button"
+    >
+      Save
+    </button>
   );
 }
 
@@ -203,5 +219,41 @@ describe('ToastProvider', () => {
     // then
     expect(screen.queryByText('Error message')).not.toBeInTheDocument();
     expect(screen.getByText('Test Description')).toBeInTheDocument();
+  });
+
+  it('keeps a toast raised right before a navigation on the next page', () => {
+    // given
+    render(
+      <MemoryRouter initialEntries={['/form']}>
+        <ToastProvider>
+          <Routes>
+            <Route path="/form" element={<SaveAndLeave />} />
+            <Route path="/list" element={<div data-testid="list-page">List</div>} />
+          </Routes>
+        </ToastProvider>
+      </MemoryRouter>
+    );
+
+    // when
+    act(() => {
+      screen.getByTestId('save-and-leave-button').click();
+    });
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+
+    // then
+    expect(screen.getByTestId('list-page')).toBeInTheDocument();
+    expect(screen.getByTestId('toast-title')).toHaveTextContent('Saved');
+    expect(screen.getByTestId('toast-description')).toHaveTextContent('Your changes are saved.');
+    expect(within(screen.getByTestId('toast-viewport')).getAllByTestId(/^toast-\d/)[0]).toHaveAttribute('data-state', 'open');
+
+    // when
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
+
+    // then
+    expect(screen.queryByText('Your changes are saved.')).not.toBeInTheDocument();
   });
 });

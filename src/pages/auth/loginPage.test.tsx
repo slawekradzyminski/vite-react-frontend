@@ -306,27 +306,6 @@ describe('LoginPage', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/register');
   });
 
-  it('displays toast from location state if present', async () => {
-    // given
-    mockLocation.state = { 
-      toast: { 
-        title: 'Success', 
-        description: 'Account created successfully', 
-        variant: 'success' 
-      } 
-    } as any; // Type assertion to avoid type error
-    
-    // Mock history.replaceState
-    window.history.replaceState = vi.fn();
-    
-    // when
-    render(<LoginPage />);
-    
-    // then
-    expect(mockToast).toHaveBeenCalledWith((mockLocation.state as any)?.toast);
-    expect(window.history.replaceState).toHaveBeenCalled();
-  });
-
   it('lets browsers and password managers fill the credentials', () => {
     // when
     render(<LoginPage />);

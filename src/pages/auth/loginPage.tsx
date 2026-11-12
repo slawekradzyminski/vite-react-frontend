@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,13 +33,6 @@ export function LoginPage() {
     resolver: zodResolver(loginSchema),
     mode: 'onSubmit',
   });
-
-  useEffect(() => {
-    if (location.state?.toast) {
-      toast(location.state.toast);
-      window.history.replaceState({}, document.title);
-    }
-  }, [location, toast]);
 
   const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
