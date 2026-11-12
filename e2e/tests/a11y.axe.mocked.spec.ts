@@ -206,4 +206,18 @@ test.describe('Axe accessibility scans (mocked backend)', () => {
     await expect(page.getByTestId('qr-text-byte-count')).toHaveText('2,954 / 2,953 bytes');
     await expectNoAxeViolations(page);
   });
+
+  for (const path of ['/llm/generate', '/llm/chat', '/llm/tools']) {
+    test(`${path} with the settings panel collapsed (T-044)`, async ({ mockedClient }) => {
+      // given
+      const { page } = mockedClient;
+
+      // when
+      await page.goto(path);
+
+      // then
+      await expect(page.locator('[inert][aria-hidden="true"]')).toHaveCount(1);
+      await expectNoAxeViolations(page);
+    });
+  }
 });
