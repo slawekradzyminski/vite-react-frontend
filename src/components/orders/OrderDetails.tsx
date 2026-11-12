@@ -206,7 +206,9 @@ export const OrderDetails = () => {
 
         {isAdmin && (
           <div className="flex w-full flex-col gap-2 sm:ml-auto sm:w-auto sm:flex-row sm:items-center" data-testid="order-details-admin-controls">
+            <label htmlFor="order-details-status-select" className="text-sm font-medium text-slate-700">Order status</label>
             <select
+              id="order-details-status-select"
               value={effectiveSelectedStatus ?? ''}
               onChange={handleStatusChange}
               className="h-11 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white sm:w-auto"

@@ -297,7 +297,7 @@ describe('OrderDetails', () => {
 
     // then
     await waitFor(() => {
-      expect(screen.getByRole('combobox')).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: 'Order status' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /update/i })).toBeInTheDocument();
     });
   });
@@ -317,11 +317,11 @@ describe('OrderDetails', () => {
     renderWithProviders();
     
     await waitFor(() => {
-      expect(screen.getByRole('combobox')).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: 'Order status' })).toBeInTheDocument();
     });
 
     // when
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'SHIPPED' } });
+    fireEvent.change(screen.getByRole('combobox', { name: 'Order status' }), { target: { value: 'SHIPPED' } });
 
     // then
     await waitFor(() => {
@@ -344,11 +344,11 @@ describe('OrderDetails', () => {
     renderWithProviders();
     
     await waitFor(() => {
-      expect(screen.getByRole('combobox')).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: 'Order status' })).toBeInTheDocument();
     });
 
     // when
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'SHIPPED' } });
+    fireEvent.change(screen.getByRole('combobox', { name: 'Order status' }), { target: { value: 'SHIPPED' } });
     fireEvent.click(screen.getByRole('button', { name: /update/i }));
 
     // then
@@ -375,8 +375,8 @@ describe('OrderDetails', () => {
     queryClient.invalidateQueries = vi.fn();
     renderWithProviders();
 
-    await waitFor(() => expect(screen.getByRole('combobox')).toBeInTheDocument());
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'CANCELLED' } });
+    await waitFor(() => expect(screen.getByRole('combobox', { name: 'Order status' })).toBeInTheDocument());
+    fireEvent.change(screen.getByRole('combobox', { name: 'Order status' }), { target: { value: 'CANCELLED' } });
     fireEvent.click(screen.getByRole('button', { name: /update/i }));
 
     await waitFor(() => {
@@ -424,11 +424,11 @@ describe('OrderDetails', () => {
     renderWithProviders();
     
     await waitFor(() => {
-      expect(screen.getByRole('combobox')).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: 'Order status' })).toBeInTheDocument();
     });
 
     // when
-    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'SHIPPED' } });
+    fireEvent.change(screen.getByRole('combobox', { name: 'Order status' }), { target: { value: 'SHIPPED' } });
     fireEvent.click(screen.getByRole('button', { name: /update/i }));
 
     // then
