@@ -16,8 +16,6 @@ vi.mock('../../components/products/AdminProductForm', () => ({
 }));
 
 const mockNavigate = vi.fn();
-const mockToast = vi.fn();
-vi.mock('../../hooks/useToast', () => ({ useToast: () => ({ toast: mockToast }) }));
 
 // Mock the react-router hooks
 vi.mock('react-router', async () => {
@@ -89,7 +87,6 @@ describe('AdminProductFormPage', () => {
     fireEvent.click(screen.getByTestId('admin-product-form-mock-save'));
 
     // then
-    expect(mockToast).toHaveBeenCalledWith({ variant: 'success', title, description });
-    expect(mockNavigate).toHaveBeenCalledWith('/admin/products');
+    expect(mockNavigate).toHaveBeenCalledWith('/admin/products', { state: { toast: { variant: 'success', title, description } } });
   });
 });

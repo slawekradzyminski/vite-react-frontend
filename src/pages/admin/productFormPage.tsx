@@ -1,5 +1,4 @@
 import { useNavigate, useParams } from 'react-router';
-import { useToast } from '../../hooks/useToast';
 import { AdminProductForm } from '../../components/products/AdminProductForm';
 import { Surface } from '../../components/ui/surface';
 import { AdminSectionNav } from '../../components/admin/AdminSectionNav';
@@ -11,15 +10,19 @@ export function AdminProductFormPage() {
   const isEditing = !!productId;
   useDocumentTitle(isEditing ? 'Edit Product' : 'Add New Product');
   const navigate = useNavigate();
-  const { toast } = useToast();
+  // The toast provider is keyed by path, so the list page shows the confirmation after navigating.
   const handleSaved = () => {
-    toast({
-      variant: 'success',
-      title: isEditing ? 'Product updated' : 'Product created',
-      description: isEditing ? 'Your changes are saved.' : 'The product is now in the catalogue.',
+    navigate('/admin/products', {
+      state: {
+        toast: {
+          variant: 'success',
+          title: isEditing ? 'Product updated' : 'Product created',
+          description: isEditing ? 'Your changes are saved.' : 'The product is now in the catalogue.',
+        },
+      },
     });
-    navigate('/admin/products');
   };
+
 
   return (
     <div className="space-y-6 pb-10" data-testid="admin-product-form-page">
