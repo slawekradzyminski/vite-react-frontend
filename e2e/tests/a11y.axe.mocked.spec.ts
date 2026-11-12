@@ -126,4 +126,25 @@ test.describe('Axe accessibility scans (mocked backend)', () => {
     await expect(page.getByTestId('product-add-button')).toBeDisabled();
     await expectNoAxeViolations(page);
   });
+
+  test('admin coupons page (T-068)', async ({ mockedAdmin }) => {
+    // given
+    const { page } = mockedAdmin;
+    await page.route(/\/api\/v1\/admin\/coupons(\?.*)?$/, (route) => fulfillWithSchema(route, 'PageDtoCouponDto', {
+      content: [{
+        id: 5, code: 'WINTER10', description: 'Winter sale', type: 'PERCENTAGE', value: 10, minOrderAmount: null,
+        validFrom: '2026-11-12T09:00:00', validUntil: '2026-11-30T22:30:00', maxRedemptions: null, perUserLimit: 1,
+        redemptionCount: 0, active: true, status: 'ACTIVE', createdAt: '2026-11-01T10:00:00', updatedAt: '2026-11-01T10:00:00',
+      }],
+      pageNumber: 0, pageSize: 50, totalElements: 1, totalPages: 1,
+    }));
+
+    // when
+    await page.goto('/admin/coupons');
+    await page.getByTestId('coupon-edit-5').click();
+
+    // then
+    await expect(page.getByTestId('coupon-valid-from')).not.toHaveValue('');
+    await expectNoAxeViolations(page);
+  });
 });
