@@ -258,4 +258,53 @@ describe('QrCodeGenerator', () => {
     await waitFor(() => expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'nearest' }));
     expect(scrollIntoView).toHaveBeenCalledTimes(1);
   });
+
+  it('counts the text in UTF-8 bytes against the QR capacity (T-037)', async () => {
+    // given
+    renderComponent();
+
+    // when
+    await user.type(screen.getByRole('textbox'), 'zażółć');
+
+    // then
+    expect(screen.getByTestId('qr-text-byte-count')).toHaveTextContent('10 / 2,953 bytes');
+    expect(screen.getByRole('textbox')).toHaveAccessibleDescription('10 / 2,953 bytes');
+  });
+
+  it('explains a text longer than any QR code can hold without calling the API (T-037)', async () => {
+    // given
+    renderComponent();
+    await user.click(screen.getByRole('textbox'));
+    await user.paste('a'.repeat(2954));
+
+    // when
+    await user.click(screen.getByRole('button', { name: /generate/i }));
+
+    // then
+    expect(await screen.findByTestId('qr-text-error')).toHaveTextContent('Text is too long for a QR code: 2,954 of 2,953 bytes');
+    expect(screen.getByRole('textbox')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByRole('textbox')).toHaveFocus();
+    expect(qr.create).not.toHaveBeenCalled();
+  });
+
+  it('shows the reason the API gives for rejecting the text (T-037)', async () => {
+    // given
+    const body = new Blob([JSON.stringify({ text: 'Text is too long for a QR code' })], { type: 'application/json' });
+    vi.mocked(qr.create).mockRejectedValueOnce(Object.assign(new Error('Bad Request'), { isAxiosError: true, response: { status: 400, data: body } }));
+    renderComponent();
+    await user.type(screen.getByRole('textbox'), '😀 emoji text');
+
+    // when
+    await user.click(screen.getByRole('button', { name: /generate/i }));
+
+    // then
+    expect(await screen.findByTestId('qr-text-error')).toHaveTextContent('Text is too long for a QR code');
+    expect(mockToast).not.toHaveBeenCalled();
+
+    // when
+    await user.type(screen.getByRole('textbox'), '!');
+
+    // then
+    expect(screen.queryByTestId('qr-text-error')).not.toBeInTheDocument();
+  });
 });
