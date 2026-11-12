@@ -39,6 +39,15 @@ describe('ForgotPasswordPage', () => {
     expect(screen.getByTestId('forgot-identifier-input')).toBeInTheDocument();
   });
 
+  it('does not promise a neutral response while the local profile shows the token', () => {
+    render(<ForgotPasswordPage />);
+
+    expect(screen.getByTestId('forgot-info-safe-flow-title')).toHaveTextContent('Account privacy');
+    expect(screen.getByTestId('forgot-info-safe-flow-description')).toHaveTextContent(
+      'Shared environments answer the same way whether or not the account exists. The local profile shows the reset token, which reveals it.'
+    );
+  });
+
   it('shows validation errors for empty identifier', async () => {
     render(<ForgotPasswordPage />);
 
