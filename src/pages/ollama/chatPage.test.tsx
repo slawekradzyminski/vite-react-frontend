@@ -279,4 +279,11 @@ describe('OllamaChatPage', () => {
   });
 
   // Clear conversation button was removed from the UI.
+
+  it('names the message field for assistive technology (X-34)', () => {
+    render(<OllamaChatPage />);
+
+    const field = screen.getByRole('textbox', { name: 'Message' });
+    expect(field).toBe(screen.getByTestId('chat-input'));
+  });
 });

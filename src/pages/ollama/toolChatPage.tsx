@@ -126,6 +126,7 @@ export function OllamaToolChatPage({ hideTitle = false }: OllamaToolChatPageProp
               onKeyDown={handleKeyPress}
               placeholder="Ask about catalog items or sports..."
               disabled={isChatting}
+              aria-label="Message"
               data-testid="chat-input"
             />
             <Button
