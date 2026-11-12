@@ -2,7 +2,7 @@ services:
   backend:
     # Release train pin, same digest as awesome-localstack's lightweight-docker-compose.yml.
     # openapi/backend-api-docs.json is this image's document (BACKEND_IMAGE overrides it).
-    image: ${BACKEND_IMAGE:-slawekradzyminski/backend:3.17.1@sha256:d954473d10971a32acc9d08b07179c6d35b80af2bbba46a0895a6a08f95b5383}
+    image: ${BACKEND_IMAGE:-slawekradzyminski/backend:3.18.0@sha256:7b5ffeade75935ec76053d88136e6dd769d534b983cbdc35dfde19991e4c32c3}
     expose:
       - "4001"
     hostname: backend
@@ -14,9 +14,6 @@ services:
       PASSWORD_RESET_FRONTEND_BASE_URL: http://localhost:8081/reset
       SWAGGER_UI_OAUTH2_REDIRECT_URL: http://localhost:8081/swagger-ui/oauth2-redirect.html
       OLLAMA_BASE_URL: http://ollama-mock:11434
-      # The stack has no identity provider. Backend 3.17.x still turns its SSO exchange on by
-      # default, so switch it off like awesome-localstack does.
-      APP_SSO_ENABLED: "false"
       APP_CORS_ALLOWED_ORIGIN_PATTERNS: http://localhost:8081,http://127.0.0.1:8081
       # warehouse-service and payment-service verify access tokens with the backend JWKS
       # and call its internal API with these service tokens. The backend calls payment-service
@@ -162,7 +159,7 @@ services:
       - my-private-ntwk
 
   ollama-mock:
-    image: slawekradzyminski/ollama-mock:1.0.11@sha256:2dc7b225ed7351e4dc60cbdd9cb7a817bcfb4d671ccb7551a0fe1969ff065a29
+    image: slawekradzyminski/ollama-mock:1.0.12@sha256:ee8a22bbc6b0f00959cf751e6f78d523fcc74eb32759ead0b9b274dc098d310f
     restart: always
     ports:
       - "11434:11434"

@@ -86,6 +86,25 @@ describe("CartItem", () => {
     expect(screen.getByText("$20.00")).toBeInTheDocument();
   });
 
+  it("tells the shopper the price changed and which price the cart keeps", () => {
+    // given
+    renderCartItem({ ...mockItem, priceChanged: true, currentPrice: 12.5 });
+
+    // then
+    expect(screen.getByTestId('cart-item-price-changed-1')).toHaveTextContent(
+      'Price changed: now $12.50. Your cart keeps $10.00 until you update this item.',
+    );
+    expect(screen.getByRole('status')).toBe(screen.getByTestId('cart-item-price-changed-1'));
+  });
+
+  it("shows no price notice for an unchanged price", () => {
+    // given
+    renderCartItem();
+
+    // then
+    expect(screen.queryByTestId('cart-item-price-changed-1')).not.toBeInTheDocument();
+  });
+
   it("increases quantity when + button is clicked", () => {
     // given
     renderCartItem();

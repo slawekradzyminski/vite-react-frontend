@@ -126,6 +126,15 @@ export function CartItem({ item, onUpdate, onPendingChange }: CartItemProps) {
       </td>
       <td className="block text-sm text-slate-600 before:mb-1 before:block before:text-xs before:font-medium before:uppercase before:tracking-wider before:text-slate-500 lg:before:content-none before:content-['Price'] lg:table-cell lg:px-6 lg:py-4 lg:whitespace-nowrap" data-testid={`cart-item-price-${safeItem.productId}`}>
         {formatMoney(safeItem.unitPrice)}
+        {item?.priceChanged && item.currentPrice !== undefined && (
+          <p
+            className="mt-1 whitespace-normal text-xs text-amber-800"
+            role="status"
+            data-testid={`cart-item-price-changed-${safeItem.productId}`}
+          >
+            Price changed: now {formatMoney(item.currentPrice)}. Your cart keeps {formatMoney(safeItem.unitPrice)} until you update this item.
+          </p>
+        )}
       </td>
       <td className="col-span-2 row-start-3 block before:mb-1 before:block before:text-xs before:font-medium before:uppercase before:tracking-wider before:text-slate-500 lg:before:content-none before:content-['Quantity'] lg:table-cell lg:px-6 lg:py-4 lg:whitespace-nowrap" data-testid={`cart-item-quantity-cell-${safeItem.productId}`}>
         <div className="flex flex-row flex-wrap items-center gap-2 lg:gap-0">
