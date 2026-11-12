@@ -300,6 +300,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/users/identity-issues": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List accounts that break the username and email rules (Admin only)
+         * @description Accounts created before usernames became case-insensitive with a fixed character set and emails became case-insensitive keep working; this lists them for clean-up: usernames outside 4-255 letters, digits, '.', '_' or '-', case-variant duplicates, a username equal to another account's email, and blank, invalid or non-lower-case emails. Ordered by id.
+         */
+        get: operations["identityIssues"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/vat-rates/{countryCode}": {
         parameters: {
             query?: never;
@@ -678,6 +698,7 @@ export interface paths {
          * @description Available tools: get_product_snapshot, list_products.
          *     Use GET /api/v1/ollama/chat/tools/definitions for the full JSON schema.
          *     This endpoint requires the caller to resend the full conversation on every request.
+         *     The stream may run several model iterations with tool calls in between; done=true is sent only on the terminal event of the whole orchestration.
          *     Small local models stay grounded only when they keep everything in the product lane—always snapshot a SKU first and follow up with list_products if it needs comparisons.
          */
         post: operations["chatWithTools"];
@@ -821,7 +842,7 @@ export interface paths {
         get?: never;
         /**
          * Update order status (Admin only)
-         * @description Sets the supplied status using administrator privileges. CANCELLED is allowed only from PENDING or PAID and restores deducted stock; other status values are assigned directly.
+         * @description Sets the supplied status using administrator privileges. Statuses only move forward (PENDING -> PAID -> SHIPPED -> DELIVERED; steps may be skipped) and DELIVERED and CANCELLED are terminal, so an order is never reopened. Setting the current status is a no-op. CANCELLED is allowed only from PENDING or PAID and restores deducted stock.
          */
         put: operations["updateOrderStatus"];
         post?: never;
@@ -986,7 +1007,7 @@ export interface paths {
         put?: never;
         /**
          * Generate QR code
-         * @description Generates a PNG QR code for the supplied text payload.
+         * @description Generates a PNG QR code for the supplied text payload. Non-ASCII text (Polish letters, emoji) is encoded as UTF-8 and decodes to exactly the submitted text. The capacity is counted in UTF-8 bytes: about 2953 bytes, so fewer characters for multi-byte text; longer text answers 400 {"text": "Text is too long for a QR code"}.
          */
         post: operations["createQrCode"];
         delete?: never;
@@ -1189,7 +1210,7 @@ export interface paths {
         get: operations["getChatSystemPrompt"];
         /**
          * Update your chat system prompt
-         * @description Stores a new chat prompt override for the authenticated user. Null, an omitted field, or an empty string resets the override; PUT echoes the stored value and GET returns the effective default.
+         * @description Stores a new chat prompt override for the authenticated user. Null, an omitted field, or a blank string resets the override. PUT answers with the effective prompt, the same value the next GET returns: the stored override, or the default after a reset.
          */
         put: operations["updateChatSystemPrompt"];
         post?: never;
@@ -1379,26 +1400,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/users/sso/exchange": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Exchange a valid OIDC ID token for an app JWT token pair
-         * @description Verifies an external OIDC ID token, provisions or updates the matching user, and returns application tokens.
-         */
-        post: operations["exchange"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/users/tool-system-prompt": {
         parameters: {
             query?: never;
@@ -1413,7 +1414,7 @@ export interface paths {
         get: operations["getToolSystemPrompt"];
         /**
          * Update your tool system prompt
-         * @description Stores a new tool-calling prompt override for the authenticated user. Null, an omitted field, or an empty string resets the override; PUT echoes the stored value and GET returns the effective default.
+         * @description Stores a new tool-calling prompt override for the authenticated user. Null, an omitted field, or a blank string resets the override. PUT answers with the effective prompt, the same value the next GET returns: the stored override, or the default after a reset.
          */
         put: operations["updateToolSystemPrompt"];
         post?: never;
@@ -1917,6 +1918,16 @@ export interface components {
         };
         CartItemDto: {
             /**
+             * @description Current product price, which adding to or updating the line takes; present only when the price changed
+             * @example 12.5
+             */
+            readonly currentPrice?: number | null;
+            /**
+             * @description Present (true) only when the product price changed after the line was last added or updated
+             * @example true
+             */
+            readonly priceChanged?: boolean | null;
+            /**
              * Format: int64
              * @description Product id
              * @example 13
@@ -1928,6 +1939,11 @@ export interface components {
              * @example 1
              */
             quantity: number;
+            /**
+             * @description Unit price the cart keeps and checkout charges; present only when the price changed
+             * @example 10
+             */
+            readonly unitPrice?: number | null;
         };
         /** @description Number of matching products in one category */
         CategoryFacetDto: {
@@ -2308,7 +2324,7 @@ export interface components {
         ForgotPasswordResponseDto: {
             /** @description Human readable status message */
             message?: string;
-            /** @description Raw password reset token only when password-reset.expose-token-in-response is enabled and a local account matches; otherwise null */
+            /** @description Raw password reset token only when password-reset.expose-token-in-response is enabled and an account matches; otherwise null */
             token?: string | null;
         };
         GenerateResponseDto: {
@@ -2573,12 +2589,12 @@ export interface components {
              * @description Password
              * @example admin
              */
-            password?: string;
+            password: string;
             /**
              * @description Username
              * @example admin
              */
-            username?: string;
+            username: string;
         };
         LoginResponseDto: {
             /**
@@ -3103,7 +3119,7 @@ export interface components {
              */
             description: string;
             /**
-             * @description Product image URL
+             * @description Absolute http(s) URL of the product image, or empty for none
              * @example https://example.com/iphone13.jpg
              */
             imageUrl?: string | null;
@@ -3226,7 +3242,7 @@ export interface components {
         /** @description Update product data transfer object */
         ProductUpdateDto: {
             /**
-             * @description Product category
+             * @description Product category; null or an empty string leaves it unchanged
              * @example Electronics
              */
             category?: string | null;
@@ -3236,7 +3252,7 @@ export interface components {
              */
             description?: string | null;
             /**
-             * @description Product image URL
+             * @description Absolute http(s) URL of the product image, or empty for none
              * @example https://example.com/iphone13.jpg
              */
             imageUrl?: string | null;
@@ -3268,7 +3284,7 @@ export interface components {
              */
             confirmPassword: string;
             /**
-             * @description New password
+             * @description New password of at least 8 characters and at most 72 bytes in UTF-8 (the BCrypt limit)
              * @example password123
              */
             newPassword: string;
@@ -3373,11 +3389,6 @@ export interface components {
              * @example 12
              */
             reviewCount?: number;
-        };
-        /** @description SSO exchange request */
-        SsoExchangeRequestDto: {
-            /** @description OIDC ID token returned by the configured identity provider */
-            idToken: string;
         };
         StoredEmail: {
             destination?: string;
@@ -3576,25 +3587,32 @@ export interface components {
              */
             lastName?: string | null;
         };
-        UserEntity: {
-            authProvider?: string | null;
-            chatSystemPrompt?: string | null;
-            email?: string;
-            emailVerified?: boolean | null;
-            firstName?: string | null;
-            /** Format: int32 */
-            id?: number;
-            lastName?: string | null;
-            providerSubject?: string | null;
-            roles?: ("ROLE_ADMIN" | "ROLE_CLIENT" | "ROLE_WAREHOUSE")[];
-            toolSystemPrompt?: string | null;
-            username?: string;
+        /** @description An account that predates the username and email rules and should be cleaned up */
+        UserIdentityIssueDto: {
+            /**
+             * @description Email as stored
+             * @example Alice@Example.com
+             */
+            email: string;
+            /**
+             * Format: int32
+             * @description User id
+             * @example 42
+             */
+            id: number;
+            /** @description Rules the account breaks */
+            issues: ("USERNAME_FORMAT" | "USERNAME_CASE_DUPLICATE" | "USERNAME_IS_ANOTHER_USERS_EMAIL" | "EMAIL_INVALID" | "EMAIL_NOT_CANONICAL" | "EMAIL_CASE_DUPLICATE")[];
+            /**
+             * @description Username as stored
+             * @example Client
+             */
+            username: string;
         };
         /** @description Signup User */
         UserRegisterDto: {
             /**
              * Format: email
-             * @description Email address
+             * @description Email address; stored lower-case and unique regardless of letter case
              * @example john.doe@example.com
              */
             email: string;
@@ -3609,12 +3627,12 @@ export interface components {
              */
             lastName: string;
             /**
-             * @description Password
+             * @description Password of at least 8 characters and at most 72 bytes in UTF-8 (the BCrypt limit; a character outside ASCII takes 2 to 4 bytes)
              * @example password123
              */
             password: string;
             /**
-             * @description Username
+             * @description Username of letters, digits, dots, underscores and hyphens; unique regardless of letter case
              * @example johndoe
              */
             username: string;
@@ -4044,7 +4062,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PageDtoCouponDto"];
+                    "application/json": components["schemas"]["PageDtoCouponDto"];
                 };
             };
             /** @description Unauthorized */
@@ -4089,7 +4107,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CouponDto"];
+                    "application/json": components["schemas"]["CouponDto"];
                 };
             };
             /** @description Invalid coupon definition */
@@ -4152,7 +4170,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CouponDto"];
+                    "application/json": components["schemas"]["CouponDto"];
                 };
             };
             /** @description Unauthorized */
@@ -4209,7 +4227,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CouponDto"];
+                    "application/json": components["schemas"]["CouponDto"];
                 };
             };
             /** @description Invalid coupon definition */
@@ -4351,7 +4369,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CurrencyDto"];
+                    "application/json": components["schemas"]["CurrencyDto"];
                 };
             };
             /** @description Currency created */
@@ -4361,7 +4379,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CurrencyDto"];
+                    "application/json": components["schemas"]["CurrencyDto"];
                 };
             };
             /** @description Invalid currency code or definition */
@@ -4419,7 +4437,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PageDtoGiftCardDto"];
+                    "application/json": components["schemas"]["PageDtoGiftCardDto"];
                 };
             };
             /** @description Unknown status */
@@ -4474,7 +4492,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["GiftCardDto"];
+                    "application/json": components["schemas"]["GiftCardDto"];
                 };
             };
             /** @description Amount out of range, expiresAt not in the future, or field too long */
@@ -4541,7 +4559,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["GiftCardDto"];
+                    "application/json": components["schemas"]["GiftCardDto"];
                 };
             };
             /** @description Malformed code */
@@ -4608,7 +4626,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["GiftCardDto"];
+                    "application/json": components["schemas"]["GiftCardDto"];
                 };
             };
             /** @description Malformed code */
@@ -4687,7 +4705,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PageDtoInventoryItemDto"];
+                    "application/json": components["schemas"]["PageDtoInventoryItemDto"];
                 };
             };
             /** @description Invalid parameter */
@@ -4743,7 +4761,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["InventoryItemDto"];
+                    "application/json": components["schemas"]["InventoryItemDto"];
                 };
             };
             /** @description Invalid parameter */
@@ -4810,7 +4828,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["InventoryMovementDto"];
+                    "application/json": components["schemas"]["InventoryMovementDto"];
                 };
             };
             /** @description Invalid adjustment or product identifier */
@@ -4886,7 +4904,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PageDtoInventoryMovementDto"];
+                    "application/json": components["schemas"]["PageDtoInventoryMovementDto"];
                 };
             };
             /** @description Invalid parameter */
@@ -5001,7 +5019,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ImportReportDto"];
+                    "application/json": components["schemas"]["ImportReportDto"];
                 };
             };
             /** @description Invalid file or rows; the report lists every error when the file could be parsed */
@@ -5068,7 +5086,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PageDtoReviewDto"];
+                    "application/json": components["schemas"]["PageDtoReviewDto"];
                 };
             };
             /** @description Unauthorized */
@@ -5115,7 +5133,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ReviewDto"];
+                    "application/json": components["schemas"]["ReviewDto"];
                 };
             };
             /** @description Invalid decision or missing rejection note */
@@ -5160,6 +5178,47 @@ export interface operations {
             };
         };
     };
+    identityIssues: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Accounts with at least one issue; empty when all comply */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserIdentityIssueDto"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
     upsert_1: {
         parameters: {
             query?: never;
@@ -5186,7 +5245,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["VatRateDto"];
+                    "application/json": components["schemas"]["VatRateDto"];
                 };
             };
             /** @description VAT rate created */
@@ -5196,7 +5255,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["VatRateDto"];
+                    "application/json": components["schemas"]["VatRateDto"];
                 };
             };
             /** @description Invalid country code or rate definition */
@@ -5252,7 +5311,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PageDtoWebhookSubscriptionDto"];
+                    "application/json": components["schemas"]["PageDtoWebhookSubscriptionDto"];
                 };
             };
             /** @description Invalid parameter */
@@ -5303,7 +5362,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CartDto"];
+                    "application/json": components["schemas"]["CartDto"];
                 };
             };
             /** @description Unauthorized */
@@ -5367,7 +5426,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CartDto"];
+                    "application/json": components["schemas"]["CartDto"];
                 };
             };
             /** @description Empty cart, inactive, not yet valid or expired coupon, or subtotal below the minimum */
@@ -5428,7 +5487,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CartDto"];
+                    "application/json": components["schemas"]["CartDto"];
                 };
             };
             /** @description Unauthorized */
@@ -5463,7 +5522,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CartDto"];
+                    "application/json": components["schemas"]["CartDto"];
                 };
             };
             /** @description Empty cart, malformed code, disabled or expired gift card */
@@ -5524,7 +5583,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CartDto"];
+                    "application/json": components["schemas"]["CartDto"];
                 };
             };
             /** @description Unauthorized */
@@ -5559,7 +5618,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CartDto"];
+                    "application/json": components["schemas"]["CartDto"];
                 };
             };
             /** @description Invalid input */
@@ -5626,7 +5685,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CartDto"];
+                    "application/json": components["schemas"]["CartDto"];
                 };
             };
             /** @description Invalid input */
@@ -5689,7 +5748,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CartDto"];
+                    "application/json": components["schemas"]["CartDto"];
                 };
             };
             /** @description Bad request */
@@ -5744,7 +5803,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CartDto"];
+                    "application/json": components["schemas"]["CartDto"];
                 };
             };
             /** @description Empty cart, or points below 100 or not a multiple of 100 */
@@ -5795,7 +5854,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CartDto"];
+                    "application/json": components["schemas"]["CartDto"];
                 };
             };
             /** @description Unauthorized */
@@ -5832,7 +5891,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["TaxPreviewDto"];
+                    "application/json": components["schemas"]["TaxPreviewDto"];
                 };
             };
             /** @description Country missing */
@@ -5883,7 +5942,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CurrencyDto"][];
+                    "application/json": components["schemas"]["CurrencyDto"][];
                 };
             };
             /** @description Unauthorized */
@@ -5930,7 +5989,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CurrencyConversionDto"];
+                    "application/json": components["schemas"]["CurrencyConversionDto"];
                 };
             };
             /** @description Missing or invalid amount or currency code */
@@ -6030,7 +6089,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["GiftCardBalanceDto"];
+                    "application/json": components["schemas"]["GiftCardBalanceDto"];
                 };
             };
             /** @description Malformed code */
@@ -6083,7 +6142,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["StoredEmail"][];
+                    "application/json": components["schemas"]["StoredEmail"][];
                 };
             };
             /** @description Unauthorized or invalid Bearer token */
@@ -6175,7 +6234,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["LoyaltyAccountDto"];
+                    "application/json": components["schemas"]["LoyaltyAccountDto"];
                 };
             };
             /** @description Unauthorized */
@@ -6211,7 +6270,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PageDtoLoyaltyTransactionDto"];
+                    "application/json": components["schemas"]["PageDtoLoyaltyTransactionDto"];
                 };
             };
             /** @description Unauthorized */
@@ -6392,7 +6451,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["OllamaToolDefinitionDto"][];
+                    "application/json": components["schemas"]["OllamaToolDefinitionDto"][];
                 };
             };
             /** @description Unauthorized */
@@ -6504,7 +6563,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PageDtoOrderDto"];
+                    "application/json": components["schemas"]["PageDtoOrderDto"];
                 };
             };
             /** @description Bad request */
@@ -6554,7 +6613,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["OrderDto"];
+                    "application/json": components["schemas"]["OrderDto"];
                 };
             };
             /** @description Invalid input or empty cart */
@@ -6621,7 +6680,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PageDtoOrderDto"];
+                    "application/json": components["schemas"]["PageDtoOrderDto"];
                 };
             };
             /** @description Bad request */
@@ -6674,7 +6733,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["OrderDto"];
+                    "application/json": components["schemas"]["OrderDto"];
                 };
             };
             /** @description Bad request */
@@ -6727,7 +6786,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["OrderDto"];
+                    "application/json": components["schemas"]["OrderDto"];
                 };
             };
             /** @description Order cannot be cancelled */
@@ -6794,10 +6853,10 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["OrderDto"];
+                    "application/json": components["schemas"]["OrderDto"];
                 };
             };
-            /** @description Invalid status transition */
+            /** @description Invalid status transition, for example "Cannot change order status from CANCELLED to PAID" */
             400: {
                 headers: {
                     "X-Request-Id": components["headers"]["X-Request-Id"];
@@ -6855,7 +6914,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ProductDto"][];
+                    "application/json": components["schemas"]["ProductDto"][];
                 };
             };
             /** @description Unauthorized */
@@ -6890,7 +6949,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ProductDto"];
+                    "application/json": components["schemas"]["ProductDto"];
                 };
             };
             /** @description Invalid input */
@@ -6972,7 +7031,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ProductSearchResultDto"];
+                    "application/json": components["schemas"]["ProductSearchResultDto"];
                 };
             };
             /** @description Invalid search parameters */
@@ -7020,7 +7079,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ProductDto"];
+                    "application/json": components["schemas"]["ProductDto"];
                 };
             };
             /** @description If-None-Match matches the current version; empty response body */
@@ -7090,7 +7149,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ProductDto"];
+                    "application/json": components["schemas"]["ProductDto"];
                 };
             };
             /** @description Invalid input */
@@ -7237,7 +7296,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PageDtoReviewDto"];
+                    "application/json": components["schemas"]["PageDtoReviewDto"];
                 };
             };
             /** @description Unauthorized */
@@ -7284,7 +7343,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ReviewDto"];
+                    "application/json": components["schemas"]["ReviewDto"];
                 };
             };
             /** @description Invalid review */
@@ -7357,7 +7416,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["MyReviewDto"];
+                    "application/json": components["schemas"]["MyReviewDto"];
                 };
             };
             /** @description Unauthorized */
@@ -7404,7 +7463,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ReviewDto"];
+                    "application/json": components["schemas"]["ReviewDto"];
                 };
             };
             /** @description Invalid review */
@@ -7498,7 +7557,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ReviewSummaryDto"];
+                    "application/json": components["schemas"]["ReviewSummaryDto"];
                 };
             };
             /** @description Unauthorized */
@@ -7546,7 +7605,7 @@ export interface operations {
                     "image/png": string;
                 };
             };
-            /** @description Invalid input */
+            /** @description Invalid input: blank text, or text too long for a QR code */
             400: {
                 headers: {
                     "X-Request-Id": components["headers"]["X-Request-Id"];
@@ -7587,7 +7646,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["TrafficInfoDto"];
+                    "application/json": components["schemas"]["TrafficInfoDto"];
                 };
             };
             /** @description Invalid session header, pagination or time filter */
@@ -7644,7 +7703,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PageDtoTrafficLogEntryDto"];
+                    "application/json": components["schemas"]["PageDtoTrafficLogEntryDto"];
                 };
             };
             /** @description Invalid session header, pagination or time filter */
@@ -7690,7 +7749,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["TrafficLogEntryDto"];
+                    "application/json": components["schemas"]["TrafficLogEntryDto"];
                 };
             };
             /** @description Invalid session header, pagination or time filter */
@@ -7739,7 +7798,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["UserResponseDto"][];
+                    "application/json": components["schemas"]["UserResponseDto"][];
                 };
             };
             /** @description Unauthorized */
@@ -7774,7 +7833,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["MfaRecoveryCodesResponseDto"];
+                    "application/json": components["schemas"]["MfaRecoveryCodesResponseDto"];
                 };
             };
             /** @description Field validation failed */
@@ -7922,7 +7981,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["MfaRecoveryCodesResponseDto"];
+                    "application/json": components["schemas"]["MfaRecoveryCodesResponseDto"];
                 };
             };
             /** @description Field validation failed */
@@ -7993,7 +8052,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["MfaSetupResponseDto"];
+                    "application/json": components["schemas"]["MfaSetupResponseDto"];
                 };
             };
             /** @description Unauthorized */
@@ -8044,7 +8103,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["MfaStatusResponseDto"];
+                    "application/json": components["schemas"]["MfaStatusResponseDto"];
                 };
             };
             /** @description Unauthorized */
@@ -8075,7 +8134,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ChatSystemPromptDto"];
+                    "application/json": components["schemas"]["ChatSystemPromptDto"];
                 };
             };
             /** @description Unauthorized */
@@ -8110,7 +8169,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ChatSystemPromptDto"];
+                    "application/json": components["schemas"]["ChatSystemPromptDto"];
                 };
             };
             /** @description Bad request */
@@ -8180,7 +8239,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["UserResponseDto"];
+                    "application/json": components["schemas"]["UserResponseDto"];
                 };
             };
             /** @description Unauthorized */
@@ -8211,7 +8270,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["EmailEventDto"][];
+                    "application/json": components["schemas"]["EmailEventDto"][];
                 };
             };
             /** @description Unauthorized */
@@ -8246,7 +8305,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ForgotPasswordResponseDto"];
+                    "application/json": components["schemas"]["ForgotPasswordResponseDto"];
                 };
             };
             /** @description Invalid payload */
@@ -8334,7 +8393,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["TokenRefreshResponseDto"];
+                    "application/json": components["schemas"]["TokenRefreshResponseDto"];
                 };
             };
             /** @description Bad request */
@@ -8379,7 +8438,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["LoginResponseDto"];
+                    "application/json": components["schemas"]["LoginResponseDto"];
                 };
             };
             /** @description Field validation failed */
@@ -8434,7 +8493,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["LoginResponseDto"];
+                    "application/json": components["schemas"]["LoginResponseDto"];
                 };
             };
             /** @description Field validation failed */
@@ -8502,71 +8561,6 @@ export interface operations {
             };
         };
     };
-    exchange: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SsoExchangeRequestDto"];
-            };
-        };
-        responses: {
-            /** @description Successfully authenticated with SSO */
-            200: {
-                headers: {
-                    "X-Request-Id": components["headers"]["X-Request-Id"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["LoginResponseDto"];
-                };
-            };
-            /** @description Field validation failed */
-            400: {
-                headers: {
-                    "X-Request-Id": components["headers"]["X-Request-Id"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ValidationErrorsDto"];
-                };
-            };
-            /** @description Invalid SSO token */
-            401: {
-                headers: {
-                    "X-Request-Id": components["headers"]["X-Request-Id"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorDto"];
-                };
-            };
-            /** @description SSO login is disabled */
-            404: {
-                headers: {
-                    "X-Request-Id": components["headers"]["X-Request-Id"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorDto"];
-                };
-            };
-            /** @description SSO identity conflicts with an existing local account */
-            409: {
-                headers: {
-                    "X-Request-Id": components["headers"]["X-Request-Id"];
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorDto"];
-                };
-            };
-        };
-    };
     getToolSystemPrompt: {
         parameters: {
             query?: never;
@@ -8583,7 +8577,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ToolSystemPromptDto"];
+                    "application/json": components["schemas"]["ToolSystemPromptDto"];
                 };
             };
             /** @description Unauthorized */
@@ -8618,7 +8612,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ToolSystemPromptDto"];
+                    "application/json": components["schemas"]["ToolSystemPromptDto"];
                 };
             };
             /** @description Bad request */
@@ -8662,7 +8656,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["UserResponseDto"];
+                    "application/json": components["schemas"]["UserResponseDto"];
                 };
             };
             /** @description Unauthorized */
@@ -8710,17 +8704,17 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["UserEntity"];
+                    "application/json": components["schemas"]["UserResponseDto"];
                 };
             };
-            /** @description Bad request */
+            /** @description Invalid fields, or the email is already used by another account */
             400: {
                 headers: {
                     "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ValidationErrorsDto"];
+                    "application/json": components["schemas"]["ValidationErrorsDto"] | components["schemas"]["ErrorDto"];
                 };
             };
             /** @description Unauthorized */
@@ -8733,7 +8727,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
-            /** @description Forbidden */
+            /** @description A non-administrator addressed any username other than their own */
             403: {
                 headers: {
                     "X-Request-Id": components["headers"]["X-Request-Id"];
@@ -8743,8 +8737,18 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
-            /** @description The user doesn't exist */
+            /** @description The user doesn't exist (administrators only) */
             404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description A concurrent change claimed the same email */
+            409: {
                 headers: {
                     "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
@@ -8875,7 +8879,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["VatRateDto"][];
+                    "application/json": components["schemas"]["VatRateDto"][];
                 };
             };
             /** @description Unauthorized */
@@ -8912,7 +8916,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["VatRateDto"];
+                    "application/json": components["schemas"]["VatRateDto"];
                 };
             };
             /** @description Unauthorized */
@@ -8953,7 +8957,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["WebhookInboxDto"][];
+                    "application/json": components["schemas"]["WebhookInboxDto"][];
                 };
             };
             /** @description Unauthorized */
@@ -8984,7 +8988,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["WebhookInboxDto"];
+                    "application/json": components["schemas"]["WebhookInboxDto"];
                 };
             };
             /** @description Unauthorized */
@@ -9068,7 +9072,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["WebhookInboxRequestDto"][];
+                    "application/json": components["schemas"]["WebhookInboxRequestDto"][];
                 };
             };
             /** @description Unauthorized */
@@ -9109,7 +9113,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["WebhookSubscriptionDto"][];
+                    "application/json": components["schemas"]["WebhookSubscriptionDto"][];
                 };
             };
             /** @description Unauthorized */
@@ -9144,7 +9148,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["WebhookSubscriptionDto"];
+                    "application/json": components["schemas"]["WebhookSubscriptionDto"];
                 };
             };
             /** @description Invalid body, unknown event type or rejected URL */
@@ -9195,7 +9199,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["WebhookEventTypeDto"][];
+                    "application/json": components["schemas"]["WebhookEventTypeDto"][];
                 };
             };
             /** @description Unauthorized */
@@ -9228,7 +9232,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["WebhookSubscriptionDto"];
+                    "application/json": components["schemas"]["WebhookSubscriptionDto"];
                 };
             };
             /** @description Unauthorized */
@@ -9285,7 +9289,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["WebhookSubscriptionDto"];
+                    "application/json": components["schemas"]["WebhookSubscriptionDto"];
                 };
             };
             /** @description Invalid body, unknown event type or rejected URL */
@@ -9403,7 +9407,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PageDtoWebhookDeliveryDto"];
+                    "application/json": components["schemas"]["PageDtoWebhookDeliveryDto"];
                 };
             };
             /** @description Invalid parameter */
@@ -9467,7 +9471,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["WebhookDeliveryDto"];
+                    "application/json": components["schemas"]["WebhookDeliveryDto"];
                 };
             };
             /** @description Invalid delivery id */
@@ -9531,7 +9535,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["WebhookDeliveryDto"];
+                    "application/json": components["schemas"]["WebhookDeliveryDto"];
                 };
             };
             /** @description Invalid delivery id */
@@ -9604,7 +9608,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["WebhookSubscriptionDto"];
+                    "application/json": components["schemas"]["WebhookSubscriptionDto"];
                 };
             };
             /** @description Unauthorized */
@@ -9657,7 +9661,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["WebhookDeliveryDto"];
+                    "application/json": components["schemas"]["WebhookDeliveryDto"];
                 };
             };
             /** @description Unauthorized */
@@ -9718,7 +9722,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["WishlistItemDto"][];
+                    "application/json": components["schemas"]["WishlistItemDto"][];
                 };
             };
             /** @description Unauthorized */
@@ -9755,7 +9759,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["WishlistItemDto"];
+                    "application/json": components["schemas"]["WishlistItemDto"];
                 };
             };
             /** @description Wishlist entry created */
@@ -9765,7 +9769,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["WishlistItemDto"];
+                    "application/json": components["schemas"]["WishlistItemDto"];
                 };
             };
             /** @description Unauthorized */

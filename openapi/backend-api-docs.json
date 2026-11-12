@@ -18,6 +18,7 @@
           "city": {
             "description": "City",
             "example": "New York",
+            "maxLength": 255,
             "minLength": 1,
             "pattern": "\\S",
             "type": "string"
@@ -25,6 +26,7 @@
           "country": {
             "description": "Country",
             "example": "Poland",
+            "maxLength": 255,
             "minLength": 1,
             "pattern": "\\S",
             "type": "string"
@@ -32,6 +34,7 @@
           "state": {
             "description": "State",
             "example": "NY",
+            "maxLength": 255,
             "minLength": 1,
             "pattern": "\\S",
             "type": "string"
@@ -39,6 +42,7 @@
           "street": {
             "description": "Street address",
             "example": "123 Main St",
+            "maxLength": 255,
             "minLength": 1,
             "pattern": "\\S",
             "type": "string"
@@ -46,6 +50,7 @@
           "zipCode": {
             "description": "Postal/ZIP code",
             "example": "35-119",
+            "maxLength": 10,
             "minLength": 1,
             "pattern": "^[0-9]{2}(-[0-9]{3})?|[0-9]{5}(-[0-9]{4})?$",
             "type": "string"
@@ -215,6 +220,24 @@
       },
       "CartItemDto": {
         "properties": {
+          "currentPrice": {
+            "description": "Current product price, which adding to or updating the line takes; present only when the price changed",
+            "example": 12.5,
+            "readOnly": true,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "priceChanged": {
+            "description": "Present (true) only when the product price changed after the line was last added or updated",
+            "example": true,
+            "readOnly": true,
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
           "productId": {
             "description": "Product id",
             "example": 13,
@@ -227,6 +250,15 @@
             "format": "int32",
             "minimum": 1,
             "type": "integer"
+          },
+          "unitPrice": {
+            "description": "Unit price the cart keeps and checkout charges; present only when the price changed",
+            "example": 10,
+            "readOnly": true,
+            "type": [
+              "number",
+              "null"
+            ]
           }
         },
         "required": [
@@ -901,7 +933,7 @@
             "type": "string"
           },
           "token": {
-            "description": "Raw password reset token only when password-reset.expose-token-in-response is enabled and a local account matches; otherwise null",
+            "description": "Raw password reset token only when password-reset.expose-token-in-response is enabled and an account matches; otherwise null",
             "type": [
               "string",
               "null"
@@ -1379,6 +1411,10 @@
             "type": "string"
           }
         },
+        "required": [
+          "password",
+          "username"
+        ],
         "type": "object"
       },
       "LoginResponseDto": {
@@ -2357,6 +2393,7 @@
           "category": {
             "description": "Product category",
             "example": "Electronics",
+            "maxLength": 255,
             "minLength": 1,
             "pattern": "\\S",
             "type": "string"
@@ -2370,9 +2407,10 @@
             "type": "string"
           },
           "imageUrl": {
-            "description": "Product image URL",
+            "description": "Absolute http(s) URL of the product image, or empty for none",
             "example": "https://example.com/iphone13.jpg",
-            "pattern": "^(https?://.*|)$",
+            "maxLength": 255,
+            "minLength": 0,
             "type": [
               "string",
               "null"
@@ -2577,8 +2615,10 @@
         "description": "Update product data transfer object",
         "properties": {
           "category": {
-            "description": "Product category",
+            "description": "Product category; null or an empty string leaves it unchanged",
             "example": "Electronics",
+            "maxLength": 255,
+            "minLength": 0,
             "type": [
               "string",
               "null"
@@ -2595,9 +2635,10 @@
             ]
           },
           "imageUrl": {
-            "description": "Product image URL",
+            "description": "Absolute http(s) URL of the product image, or empty for none",
             "example": "https://example.com/iphone13.jpg",
-            "pattern": "^(https?://.*|)$",
+            "maxLength": 255,
+            "minLength": 0,
             "type": [
               "string",
               "null"
@@ -2608,6 +2649,7 @@
             "example": "iPhone 13",
             "maxLength": 100,
             "minLength": 3,
+            "pattern": "\\S",
             "type": [
               "string",
               "null"
@@ -2661,9 +2703,9 @@
             "type": "string"
           },
           "newPassword": {
-            "description": "New password",
+            "description": "New password of at least 8 characters and at most 72 bytes in UTF-8 (the BCrypt limit)",
             "example": "password123",
-            "maxLength": 2147483647,
+            "maxLength": 72,
             "minLength": 8,
             "pattern": "\\S",
             "type": "string"
@@ -2759,7 +2801,7 @@
             "description": "Review text",
             "example": "Battery lasts two days and the camera is excellent.",
             "maxLength": 2000,
-            "minLength": 1,
+            "minLength": 10,
             "pattern": "\\S",
             "type": "string"
           },
@@ -2775,7 +2817,7 @@
             "description": "Review title",
             "example": "Great phone",
             "maxLength": 120,
-            "minLength": 1,
+            "minLength": 3,
             "pattern": "\\S",
             "type": "string"
           }
@@ -2819,21 +2861,6 @@
             "type": "integer"
           }
         },
-        "type": "object"
-      },
-      "SsoExchangeRequestDto": {
-        "description": "SSO exchange request",
-        "properties": {
-          "idToken": {
-            "description": "OIDC ID token returned by the configured identity provider",
-            "minLength": 1,
-            "pattern": "\\S",
-            "type": "string"
-          }
-        },
-        "required": [
-          "idToken"
-        ],
         "type": "object"
       },
       "StoredEmail": {
@@ -3152,6 +3179,7 @@
             "example": "John",
             "maxLength": 255,
             "minLength": 4,
+            "pattern": "\\S",
             "type": [
               "string",
               "null"
@@ -3162,6 +3190,7 @@
             "example": "Boyd",
             "maxLength": 255,
             "minLength": 4,
+            "pattern": "\\S",
             "type": [
               "string",
               "null"
@@ -3173,95 +3202,59 @@
         ],
         "type": "object"
       },
-      "UserEntity": {
+      "UserIdentityIssueDto": {
+        "description": "An account that predates the username and email rules and should be cleaned up",
         "properties": {
-          "authProvider": {
-            "maxLength": 100,
-            "minLength": 0,
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "chatSystemPrompt": {
-            "maxLength": 5000,
-            "minLength": 0,
-            "type": [
-              "string",
-              "null"
-            ]
-          },
           "email": {
+            "description": "Email as stored",
+            "example": "Alice@Example.com",
             "type": "string"
           },
-          "emailVerified": {
-            "type": [
-              "boolean",
-              "null"
-            ]
-          },
-          "firstName": {
-            "maxLength": 255,
-            "minLength": 0,
-            "type": [
-              "string",
-              "null"
-            ]
-          },
           "id": {
+            "description": "User id",
+            "example": 42,
             "format": "int32",
             "type": "integer"
           },
-          "lastName": {
-            "maxLength": 255,
-            "minLength": 0,
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "providerSubject": {
-            "maxLength": 255,
-            "minLength": 0,
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "roles": {
+          "issues": {
+            "description": "Rules the account breaks",
             "items": {
+              "description": "Why an existing account does not meet the current username and email rules",
               "enum": [
-                "ROLE_ADMIN",
-                "ROLE_CLIENT",
-                "ROLE_WAREHOUSE"
+                "USERNAME_FORMAT",
+                "USERNAME_CASE_DUPLICATE",
+                "USERNAME_IS_ANOTHER_USERS_EMAIL",
+                "EMAIL_INVALID",
+                "EMAIL_NOT_CANONICAL",
+                "EMAIL_CASE_DUPLICATE"
               ],
               "type": "string"
             },
             "type": "array"
           },
-          "toolSystemPrompt": {
-            "maxLength": 5000,
-            "minLength": 0,
-            "type": [
-              "string",
-              "null"
-            ]
-          },
           "username": {
-            "maxLength": 255,
-            "minLength": 4,
+            "description": "Username as stored",
+            "example": "Client",
             "type": "string"
           }
         },
+        "required": [
+          "email",
+          "id",
+          "issues",
+          "username"
+        ],
         "type": "object"
       },
       "UserRegisterDto": {
         "description": "Signup User",
         "properties": {
           "email": {
-            "description": "Email address",
+            "description": "Email address; stored lower-case and unique regardless of letter case",
             "example": "john.doe@example.com",
             "format": "email",
+            "minLength": 1,
+            "pattern": "\\S",
             "type": "string"
           },
           "firstName": {
@@ -3269,6 +3262,7 @@
             "example": "John",
             "maxLength": 255,
             "minLength": 4,
+            "pattern": "\\S",
             "type": "string"
           },
           "lastName": {
@@ -3276,20 +3270,23 @@
             "example": "Boyd",
             "maxLength": 255,
             "minLength": 4,
+            "pattern": "\\S",
             "type": "string"
           },
           "password": {
-            "description": "Password",
+            "description": "Password of at least 8 characters and at most 72 bytes in UTF-8 (the BCrypt limit; a character outside ASCII takes 2 to 4 bytes)",
             "example": "password123",
-            "maxLength": 255,
+            "maxLength": 72,
             "minLength": 8,
+            "pattern": "\\S",
             "type": "string"
           },
           "username": {
-            "description": "Username",
+            "description": "Username of letters, digits, dots, underscores and hyphens; unique regardless of letter case",
             "example": "johndoe",
             "maxLength": 255,
             "minLength": 4,
+            "pattern": "^[A-Za-z0-9._-]*$",
             "type": "string"
           }
         },
@@ -3903,7 +3900,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PageDtoCouponDto"
                 }
@@ -3973,7 +3970,7 @@
         "responses": {
           "201": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CouponDto"
                 }
@@ -4177,7 +4174,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CouponDto"
                 }
@@ -4273,7 +4270,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CouponDto"
                 }
@@ -4409,7 +4406,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CurrencyDto"
                 }
@@ -4424,7 +4421,7 @@
           },
           "201": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CurrencyDto"
                 }
@@ -4547,7 +4544,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PageDtoGiftCardDto"
                 }
@@ -4632,7 +4629,7 @@
         "responses": {
           "201": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GiftCardDto"
                 }
@@ -4743,7 +4740,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GiftCardDto"
                 }
@@ -4847,7 +4844,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GiftCardDto"
                 }
@@ -5015,7 +5012,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PageDtoInventoryItemDto"
                 }
@@ -5113,7 +5110,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/InventoryItemDto"
                 }
@@ -5226,7 +5223,7 @@
         "responses": {
           "201": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/InventoryMovementDto"
                 }
@@ -5371,7 +5368,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PageDtoInventoryMovementDto"
                 }
@@ -5556,7 +5553,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ImportReportDto"
                 }
@@ -5692,7 +5689,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PageDtoReviewDto"
                 }
@@ -5775,7 +5772,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ReviewDto"
                 }
@@ -5867,6 +5864,71 @@
         ]
       }
     },
+    "/api/v1/admin/users/identity-issues": {
+      "get": {
+        "description": "Accounts created before usernames became case-insensitive with a fixed character set and emails became case-insensitive keep working; this lists them for clean-up: usernames outside 4-255 letters, digits, '.', '_' or '-', case-variant duplicates, a username equal to another account's email, and blank, invalid or non-lower-case emails. Ordered by id.",
+        "operationId": "identityIssues",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UserIdentityIssueDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Accounts with at least one issue; empty when all comply",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List accounts that break the username and email rules (Admin only)",
+        "tags": [
+          "users"
+        ]
+      }
+    },
     "/api/v1/admin/vat-rates/{countryCode}": {
       "put": {
         "description": "Sets the VAT rate (0-50, at most 2 decimals) and name of a country. The code is an ISO 3166-1 alpha-2 code, case-insensitive; UK is stored as GB. Existing orders keep the rate they were created with.",
@@ -5896,7 +5958,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/VatRateDto"
                 }
@@ -5911,7 +5973,7 @@
           },
           "201": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/VatRateDto"
                 }
@@ -6026,7 +6088,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PageDtoWebhookSubscriptionDto"
                 }
@@ -6141,7 +6203,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CartDto"
                 }
@@ -6188,7 +6250,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CartDto"
                 }
@@ -6243,7 +6305,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CartDto"
                 }
@@ -6342,7 +6404,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CartDto"
                 }
@@ -6397,7 +6459,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CartDto"
                 }
@@ -6506,7 +6568,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CartDto"
                 }
@@ -6609,7 +6671,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CartDto"
                 }
@@ -6705,7 +6767,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CartDto"
                 }
@@ -6797,7 +6859,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CartDto"
                 }
@@ -6852,7 +6914,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CartDto"
                 }
@@ -6948,7 +7010,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TaxPreviewDto"
                 }
@@ -7025,7 +7087,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "items": {
                     "$ref": "#/components/schemas/CurrencyDto"
@@ -7107,7 +7169,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CurrencyConversionDto"
                 }
@@ -7261,7 +7323,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GiftCardBalanceDto"
                 }
@@ -7426,7 +7488,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "items": {
                     "$ref": "#/components/schemas/StoredEmail"
@@ -7491,7 +7553,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LoyaltyAccountDto"
                 }
@@ -7562,7 +7624,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PageDtoLoyaltyTransactionDto"
                 }
@@ -7745,7 +7807,7 @@
     },
     "/api/v1/ollama/chat/tools": {
       "post": {
-        "description": "Available tools: get_product_snapshot, list_products.\nUse GET /api/v1/ollama/chat/tools/definitions for the full JSON schema.\nThis endpoint requires the caller to resend the full conversation on every request.\nSmall local models stay grounded only when they keep everything in the product lane—always snapshot a SKU first and follow up with list_products if it needs comparisons.",
+        "description": "Available tools: get_product_snapshot, list_products.\nUse GET /api/v1/ollama/chat/tools/definitions for the full JSON schema.\nThis endpoint requires the caller to resend the full conversation on every request.\nThe stream may run several model iterations with tool calls in between; done=true is sent only on the terminal event of the whole orchestration.\nSmall local models stay grounded only when they keep everything in the product lane—always snapshot a SKU first and follow up with list_products if it needs comparisons.",
         "operationId": "chatWithTools",
         "requestBody": {
           "content": {
@@ -7891,7 +7953,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "items": {
                     "$ref": "#/components/schemas/OllamaToolDefinitionDto"
@@ -8119,7 +8181,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PageDtoOrderDto"
                 }
@@ -8207,7 +8269,7 @@
         "responses": {
           "201": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrderDto"
                 }
@@ -8351,7 +8413,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PageDtoOrderDto"
                 }
@@ -8446,7 +8508,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrderDto"
                 }
@@ -8541,7 +8603,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrderDto"
                 }
@@ -8635,7 +8697,7 @@
     },
     "/api/v1/orders/{id}/status": {
       "put": {
-        "description": "Sets the supplied status using administrator privileges. CANCELLED is allowed only from PENDING or PAID and restores deducted stock; other status values are assigned directly.",
+        "description": "Sets the supplied status using administrator privileges. Statuses only move forward (PENDING -> PAID -> SHIPPED -> DELIVERED; steps may be skipped) and DELIVERED and CANCELLED are terminal, so an order is never reopened. Setting the current status is a no-op. CANCELLED is allowed only from PENDING or PAID and restores deducted stock.",
         "operationId": "updateOrderStatus",
         "parameters": [
           {
@@ -8668,7 +8730,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrderDto"
                 }
@@ -8696,7 +8758,7 @@
                 }
               }
             },
-            "description": "Invalid status transition",
+            "description": "Invalid status transition, for example \"Cannot change order status from CANCELLED to PAID\"",
             "headers": {
               "X-Request-Id": {
                 "$ref": "#/components/headers/X-Request-Id"
@@ -8767,7 +8829,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "items": {
                     "$ref": "#/components/schemas/ProductDto"
@@ -8825,7 +8887,7 @@
         "responses": {
           "201": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductDto"
                 }
@@ -9010,7 +9072,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductSearchResultDto"
                 }
@@ -9194,7 +9256,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductDto"
                 }
@@ -9315,7 +9377,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProductDto"
                 }
@@ -9463,7 +9525,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PageDtoReviewDto"
                 }
@@ -9544,7 +9606,7 @@
         "responses": {
           "201": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ReviewDto"
                 }
@@ -9726,7 +9788,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MyReviewDto"
                 }
@@ -9807,7 +9869,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ReviewDto"
                 }
@@ -9895,7 +9957,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ReviewSummaryDto"
                 }
@@ -9952,7 +10014,7 @@
     },
     "/api/v1/qr/create": {
       "post": {
-        "description": "Generates a PNG QR code for the supplied text payload.",
+        "description": "Generates a PNG QR code for the supplied text payload. Non-ASCII text (Polish letters, emoji) is encoded as UTF-8 and decodes to exactly the submitted text. The capacity is counted in UTF-8 bytes: about 2953 bytes, so fewer characters for multi-byte text; longer text answers 400 {\"text\": \"Text is too long for a QR code\"}.",
         "operationId": "createQrCode",
         "requestBody": {
           "content": {
@@ -9989,7 +10051,7 @@
                 }
               }
             },
-            "description": "Invalid input",
+            "description": "Invalid input: blank text, or text too long for a QR code",
             "headers": {
               "X-Request-Id": {
                 "$ref": "#/components/headers/X-Request-Id"
@@ -10041,7 +10103,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TrafficInfoDto"
                 }
@@ -10186,7 +10248,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PageDtoTrafficLogEntryDto"
                 }
@@ -10267,7 +10329,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TrafficLogEntryDto"
                 }
@@ -10337,7 +10399,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "items": {
                     "$ref": "#/components/schemas/UserResponseDto"
@@ -10397,7 +10459,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MfaRecoveryCodesResponseDto"
                 }
@@ -10624,7 +10686,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MfaRecoveryCodesResponseDto"
                 }
@@ -10731,7 +10793,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MfaSetupResponseDto"
                 }
@@ -10808,7 +10870,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MfaStatusResponseDto"
                 }
@@ -10855,7 +10917,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ChatSystemPromptDto"
                 }
@@ -10895,7 +10957,7 @@
         ]
       },
       "put": {
-        "description": "Stores a new chat prompt override for the authenticated user. Null, an omitted field, or an empty string resets the override; PUT echoes the stored value and GET returns the effective default.",
+        "description": "Stores a new chat prompt override for the authenticated user. Null, an omitted field, or a blank string resets the override. PUT answers with the effective prompt, the same value the next GET returns: the stored override, or the default after a reset.",
         "operationId": "updateChatSystemPrompt",
         "requestBody": {
           "content": {
@@ -10910,7 +10972,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ChatSystemPromptDto"
                 }
@@ -11012,7 +11074,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserResponseDto"
                 }
@@ -11059,7 +11121,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "items": {
                     "$ref": "#/components/schemas/EmailEventDto"
@@ -11119,7 +11181,7 @@
         "responses": {
           "202": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ForgotPasswordResponseDto"
                 }
@@ -11260,7 +11322,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TokenRefreshResponseDto"
                 }
@@ -11327,7 +11389,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LoginResponseDto"
                 }
@@ -11409,7 +11471,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/LoginResponseDto"
                 }
@@ -11526,103 +11588,6 @@
         ]
       }
     },
-    "/api/v1/users/sso/exchange": {
-      "post": {
-        "description": "Verifies an external OIDC ID token, provisions or updates the matching user, and returns application tokens.",
-        "operationId": "exchange",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SsoExchangeRequestDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/LoginResponseDto"
-                }
-              }
-            },
-            "description": "Successfully authenticated with SSO",
-            "headers": {
-              "X-Request-Id": {
-                "$ref": "#/components/headers/X-Request-Id"
-              }
-            }
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorsDto"
-                }
-              }
-            },
-            "description": "Field validation failed",
-            "headers": {
-              "X-Request-Id": {
-                "$ref": "#/components/headers/X-Request-Id"
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDto"
-                }
-              }
-            },
-            "description": "Invalid SSO token",
-            "headers": {
-              "X-Request-Id": {
-                "$ref": "#/components/headers/X-Request-Id"
-              }
-            }
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDto"
-                }
-              }
-            },
-            "description": "SSO login is disabled",
-            "headers": {
-              "X-Request-Id": {
-                "$ref": "#/components/headers/X-Request-Id"
-              }
-            }
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorDto"
-                }
-              }
-            },
-            "description": "SSO identity conflicts with an existing local account",
-            "headers": {
-              "X-Request-Id": {
-                "$ref": "#/components/headers/X-Request-Id"
-              }
-            }
-          }
-        },
-        "summary": "Exchange a valid OIDC ID token for an app JWT token pair",
-        "tags": [
-          "users"
-        ]
-      }
-    },
     "/api/v1/users/tool-system-prompt": {
       "get": {
         "description": "Returns the authenticated user's tool-calling prompt override, or the default prompt when no override is stored.",
@@ -11630,7 +11595,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ToolSystemPromptDto"
                 }
@@ -11670,7 +11635,7 @@
         ]
       },
       "put": {
-        "description": "Stores a new tool-calling prompt override for the authenticated user. Null, an omitted field, or an empty string resets the override; PUT echoes the stored value and GET returns the effective default.",
+        "description": "Stores a new tool-calling prompt override for the authenticated user. Null, an omitted field, or a blank string resets the override. PUT answers with the effective prompt, the same value the next GET returns: the stored override, or the default after a reset.",
         "operationId": "updateToolSystemPrompt",
         "requestBody": {
           "content": {
@@ -11685,7 +11650,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ToolSystemPromptDto"
                 }
@@ -11837,7 +11802,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserResponseDto"
                 }
@@ -11918,9 +11883,9 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserEntity"
+                  "$ref": "#/components/schemas/UserResponseDto"
                 }
               }
             },
@@ -11935,11 +11900,18 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
                 }
               }
             },
-            "description": "Bad request",
+            "description": "Invalid fields, or the email is already used by another account",
             "headers": {
               "X-Request-Id": {
                 "$ref": "#/components/headers/X-Request-Id"
@@ -11969,7 +11941,7 @@
                 }
               }
             },
-            "description": "Forbidden",
+            "description": "A non-administrator addressed any username other than their own",
             "headers": {
               "X-Request-Id": {
                 "$ref": "#/components/headers/X-Request-Id"
@@ -11984,7 +11956,22 @@
                 }
               }
             },
-            "description": "The user doesn't exist",
+            "description": "The user doesn't exist (administrators only)",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "A concurrent change claimed the same email",
             "headers": {
               "X-Request-Id": {
                 "$ref": "#/components/headers/X-Request-Id"
@@ -12091,7 +12078,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "items": {
                     "$ref": "#/components/schemas/VatRateDto"
@@ -12153,7 +12140,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/VatRateDto"
                 }
@@ -12215,7 +12202,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "items": {
                     "$ref": "#/components/schemas/WebhookInboxDto"
@@ -12263,7 +12250,7 @@
         "responses": {
           "201": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WebhookInboxDto"
                 }
@@ -12400,7 +12387,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "items": {
                     "$ref": "#/components/schemas/WebhookInboxRequestDto"
@@ -12465,7 +12452,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "items": {
                     "$ref": "#/components/schemas/WebhookSubscriptionDto"
@@ -12523,7 +12510,7 @@
         "responses": {
           "201": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WebhookSubscriptionDto"
                 }
@@ -12607,7 +12594,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "items": {
                     "$ref": "#/components/schemas/WebhookEventTypeDto"
@@ -12747,7 +12734,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WebhookSubscriptionDto"
                 }
@@ -12843,7 +12830,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WebhookSubscriptionDto"
                 }
@@ -12986,7 +12973,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PageDtoWebhookDeliveryDto"
                 }
@@ -13098,7 +13085,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WebhookDeliveryDto"
                 }
@@ -13210,7 +13197,7 @@
         "responses": {
           "201": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WebhookDeliveryDto"
                 }
@@ -13328,7 +13315,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WebhookSubscriptionDto"
                 }
@@ -13416,7 +13403,7 @@
         "responses": {
           "201": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WebhookDeliveryDto"
                 }
@@ -13508,7 +13495,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "items": {
                     "$ref": "#/components/schemas/WishlistItemDto"
@@ -13642,7 +13629,7 @@
         "responses": {
           "200": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WishlistItemDto"
                 }
@@ -13657,7 +13644,7 @@
           },
           "201": {
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/WishlistItemDto"
                 }
