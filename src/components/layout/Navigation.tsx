@@ -149,62 +149,68 @@ export function Navigation() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2" data-testid="navigation-actions">
+          {/* Below 640 px the two selectors do not fit next to the logo, cart and menu (320 px phones),
+              so they take their own row above the cart and menu; reading and focus order stay the same. */}
+          <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center" data-testid="navigation-actions">
             {user?.data ? (
               <>
-                <CommerceTransportSelector />
-                <CurrencySelector />
-                <Link
-                  to="/cart"
-                  className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-stone-200 bg-white text-slate-600 shadow-[0_10px_25px_-20px_rgba(15,23,42,0.75)] transition hover:-translate-y-0.5 hover:border-stone-300 hover:text-slate-900"
-                  aria-label={cartItemCount > 0 ? `Cart, ${cartItemCount} ${cartItemCount === 1 ? 'item' : 'items'}` : 'Cart'}
-                  data-testid="desktop-cart-icon"
-                >
-                  <ShoppingCart className="h-5 w-5" aria-hidden="true" />
-                  {cartItemCount > 0 && (
-                    <span
-                      className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-sky-600 text-xs font-bold text-white"
-                      data-testid="cart-item-count"
-                    >
-                      {cartItemCount}
-                    </span>
-                  )}
-                </Link>
-
-                <div className="hidden xl:flex xl:items-center xl:gap-3" data-testid="user-actions">
-                  <Link
-                    to="/profile" 
-                    className="rounded-full border border-transparent px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-stone-200 hover:bg-white hover:text-slate-900"
-                    data-testid="username-profile-link"
-                  >
-                    {user.data.firstName} {user.data.lastName}
-                  </Link>
-                  <Button
-                    variant="ghost"
-                    onClick={handleLogout}
-                    className="rounded-full px-4 text-sm font-medium text-slate-600 hover:bg-white hover:text-slate-900"
-                    data-testid="logout-button"
-                  >
-                    Logout
-                  </Button>
+                <div className="flex items-center gap-2" data-testid="navigation-preferences">
+                  <CommerceTransportSelector />
+                  <CurrencySelector />
                 </div>
-                <div className="flex items-center xl:hidden">
-                  <button
-                    ref={menuToggleRef}
-                    type="button"
-                    onClick={toggleMenu}
-                    aria-expanded={isOpen}
-                    aria-controls={MOBILE_MENU_ID}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-stone-200 bg-white text-slate-600 transition hover:border-stone-300 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-sky-600"
-                    data-testid="mobile-menu-toggle"
+                <div className="flex items-center gap-2" data-testid="navigation-account-actions">
+                  <Link
+                    to="/cart"
+                    className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-stone-200 bg-white text-slate-600 shadow-[0_10px_25px_-20px_rgba(15,23,42,0.75)] transition hover:-translate-y-0.5 hover:border-stone-300 hover:text-slate-900"
+                    aria-label={cartItemCount > 0 ? `Cart, ${cartItemCount} ${cartItemCount === 1 ? 'item' : 'items'}` : 'Cart'}
+                    data-testid="desktop-cart-icon"
                   >
-                    <span className="sr-only">{isOpen ? 'Close main menu' : 'Open main menu'}</span>
-                    {isOpen ? (
-                      <X className="block h-5 w-5" aria-hidden="true" data-testid="mobile-menu-close-icon" />
-                    ) : (
-                      <Menu className="block h-5 w-5" aria-hidden="true" data-testid="mobile-menu-open-icon" />
+                    <ShoppingCart className="h-5 w-5" aria-hidden="true" />
+                    {cartItemCount > 0 && (
+                      <span
+                        className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-sky-600 text-xs font-bold text-white"
+                        data-testid="cart-item-count"
+                      >
+                        {cartItemCount}
+                      </span>
                     )}
-                  </button>
+                  </Link>
+
+                  <div className="hidden xl:flex xl:items-center xl:gap-3" data-testid="user-actions">
+                    <Link
+                      to="/profile" 
+                      className="rounded-full border border-transparent px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-stone-200 hover:bg-white hover:text-slate-900"
+                      data-testid="username-profile-link"
+                    >
+                      {user.data.firstName} {user.data.lastName}
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      onClick={handleLogout}
+                      className="rounded-full px-4 text-sm font-medium text-slate-600 hover:bg-white hover:text-slate-900"
+                      data-testid="logout-button"
+                    >
+                      Logout
+                    </Button>
+                  </div>
+                  <div className="flex items-center xl:hidden">
+                    <button
+                      ref={menuToggleRef}
+                      type="button"
+                      onClick={toggleMenu}
+                      aria-expanded={isOpen}
+                      aria-controls={MOBILE_MENU_ID}
+                      className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-stone-200 bg-white text-slate-600 transition hover:border-stone-300 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-sky-600"
+                      data-testid="mobile-menu-toggle"
+                    >
+                      <span className="sr-only">{isOpen ? 'Close main menu' : 'Open main menu'}</span>
+                      {isOpen ? (
+                        <X className="block h-5 w-5" aria-hidden="true" data-testid="mobile-menu-close-icon" />
+                      ) : (
+                        <Menu className="block h-5 w-5" aria-hidden="true" data-testid="mobile-menu-open-icon" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </>
             ) : (
@@ -230,8 +236,9 @@ export function Navigation() {
       </div>
       {isOpen && user?.data && (
         // The nav is sticky, so a menu taller than the screen scrolls inside itself; the border and
-        // shadow separate it from the page content underneath.
-        <div className="max-h-[calc(100dvh-4.5rem)] overflow-y-auto overscroll-contain border-t border-b-2 border-stone-200/80 border-b-stone-300 bg-stone-50 px-4 pb-4 pt-3 shadow-[0_24px_40px_-24px_rgba(15,23,42,0.45)] xl:hidden" id={MOBILE_MENU_ID} data-testid="mobile-menu">
+        // shadow separate it from the page content underneath. The header above it is two rows
+        // (about 8rem) below 640 px and one row (4.5rem) above.
+        <div className="max-h-[calc(100dvh-8rem)] overflow-y-auto sm:max-h-[calc(100dvh-4.5rem)] overscroll-contain border-t border-b-2 border-stone-200/80 border-b-stone-300 bg-stone-50 px-4 pb-4 pt-3 shadow-[0_24px_40px_-24px_rgba(15,23,42,0.45)] xl:hidden" id={MOBILE_MENU_ID} data-testid="mobile-menu">
           <div className="space-y-2">
             {authMenuItems.map((item) => {
               const className = `block rounded-2xl px-4 py-3 text-base font-medium transition ${
