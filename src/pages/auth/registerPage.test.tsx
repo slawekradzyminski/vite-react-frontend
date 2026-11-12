@@ -259,6 +259,88 @@ describe('RegisterPage', () => {
     });
   });
 
+  const fillValidForm = async (overrides: Partial<Record<'username' | 'email' | 'password' | 'firstname' | 'lastname', string>> = {}) => {
+    const values = { username: 'testuser', email: 'test@example.com', password: 'password123', firstname: 'Test', lastname: 'User', ...overrides };
+    for (const [field, value] of Object.entries(values)) {
+      await user.type(screen.getByTestId(`register-${field}-input`), value);
+    }
+  };
+
+  it('rejects a whitespace-only username on the client with the required message', async () => {
+    const { auth } = await import('../../lib/api');
+    render(<RegisterPage />);
+
+    await fillValidForm({ username: '     ' });
+    await user.click(screen.getByTestId('register-submit-button'));
+
+    expect(await screen.findByTestId('register-username-error')).toHaveTextContent('Username is required');
+    expect(auth.register).not.toHaveBeenCalled();
+  });
+
+  it('rejects username characters the backend does not accept', async () => {
+    const { auth } = await import('../../lib/api');
+    render(<RegisterPage />);
+
+    await fillValidForm({ username: 'john doe' });
+    await user.click(screen.getByTestId('register-submit-button'));
+
+    expect(await screen.findByTestId('register-username-error'))
+      .toHaveTextContent('Username may only contain letters, digits, dots, underscores and hyphens');
+    expect(auth.register).not.toHaveBeenCalled();
+  });
+
+  it('sends the names and email trimmed but the password as typed', async () => {
+    const { auth } = await import('../../lib/api');
+    vi.mocked(auth.register).mockResolvedValue({ data: 'ok' } as AxiosResponse);
+    render(<RegisterPage />);
+
+    await fillValidForm({ username: '  testuser ', email: ' test@example.com ', password: ' pass word1 ', firstname: ' Test ', lastname: ' User ' });
+    await user.click(screen.getByTestId('register-submit-button'));
+
+    await waitFor(() => expect(auth.register).toHaveBeenCalledWith({
+      username: 'testuser',
+      email: 'test@example.com',
+      password: ' pass word1 ',
+      firstName: 'Test',
+      lastName: 'User',
+    }));
+  });
+
+  it('shows the server field errors under their fields instead of a generic failure', async () => {
+    const { auth } = await import('../../lib/api');
+    vi.mocked(auth.register).mockRejectedValue({
+      isAxiosError: true,
+      response: { status: 400, data: { username: 'Minimum username length: 4 characters', lastName: 'lastName is required' } },
+    });
+    render(<RegisterPage />);
+
+    await fillValidForm();
+    await user.click(screen.getByTestId('register-submit-button'));
+
+    expect(await screen.findByTestId('register-username-error')).toHaveTextContent('Minimum username length: 4 characters');
+    expect(screen.getByTestId('register-lastname-error')).toHaveTextContent('lastName is required');
+    expect(screen.getByTestId('register-username-input')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.queryByTestId('register-submit-error')).not.toBeInTheDocument();
+    expect(screen.queryByText('Failed to register')).not.toBeInTheDocument();
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('shows a server error that names no field in the form-level alert', async () => {
+    const { auth } = await import('../../lib/api');
+    vi.mocked(auth.register).mockRejectedValue({
+      isAxiosError: true,
+      response: { status: 400, data: { roles: 'Roles cannot be chosen at sign-up' } },
+    });
+    render(<RegisterPage />);
+
+    await fillValidForm();
+    await user.click(screen.getByTestId('register-submit-button'));
+
+    const alert = await screen.findByTestId('register-submit-error');
+    expect(alert).toHaveTextContent('Roles cannot be chosen at sign-up');
+    expect(alert).toHaveAttribute('role', 'alert');
+  });
+
   it('navigates to login page when sign in link is clicked', async () => {
     // given
     render(<RegisterPage />);
