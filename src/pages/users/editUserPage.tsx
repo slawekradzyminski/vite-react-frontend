@@ -8,6 +8,7 @@ import { auth } from '../../lib/api';
 import { Role, type User } from '../../types/auth';
 import { Surface } from '../../components/ui/surface';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { useMe } from '../../hooks/useMe';
 
 export function EditUserPage() {
   useDocumentTitle('Edit User');
@@ -16,10 +17,7 @@ export function EditUserPage() {
   const queryClient = useQueryClient();
   const [error, setError] = useState('');
 
-  const { data: currentUser } = useQuery({
-    queryKey: ['me'],
-    queryFn: () => auth.me(),
-  });
+  const { data: currentUser } = useMe();
 
   const { data: user, isLoading } = useQuery<User>({
     queryKey: ['user', username],

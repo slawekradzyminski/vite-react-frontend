@@ -1,8 +1,7 @@
 import { Navigate, useLocation } from 'react-router';
-import { useQuery } from '@tanstack/react-query';
-import { auth } from '../lib/api';
 import { authStorage } from '../lib/authStorage';
 import { hasAnyRole } from '../lib/roles';
+import { useMe } from '../hooks/useMe';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -15,12 +14,7 @@ export function ProtectedRoute({ children, requiredRole, 'data-testid': dataTest
   const location = useLocation();
   const token = authStorage.getAccessToken();
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['me'],
-    queryFn: () => auth.me(),
-    retry: false,
-    enabled: !!token,
-  });
+  const { data, isLoading, isError } = useMe({ enabled: !!token });
 
   if (!token || isError) {
     return <Navigate to={loginRedirectTarget(location.pathname, location.search)} replace data-testid="protected-route-redirect" />;

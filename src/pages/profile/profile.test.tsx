@@ -205,7 +205,7 @@ describe('Profile', () => {
     await waitFor(() => expect(auth.me).toHaveBeenCalled());
 
     // when
-    const emailInput = screen.getByLabelText('Email');
+    const emailInput = await screen.findByLabelText('Email');
     const firstNameInput = screen.getByLabelText('First Name');
     
     fireEvent.change(emailInput, { target: { value: 'updated@example.com' } });

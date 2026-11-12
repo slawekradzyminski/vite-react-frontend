@@ -10,6 +10,7 @@ import { isWarehouseEnabled } from '../../lib/runtimeConfig';
 import { brandMarkSrc } from '../../lib/brandingAssets';
 import { CommerceTransportSelector } from './CommerceTransportSelector';
 import { CurrencySelector } from './CurrencySelector';
+import { useMe } from '../../hooks/useMe';
 
 const PRODUCT_NAME = 'Awesome Testing';
 const MOBILE_MENU_ID = 'mobile-main-menu';
@@ -28,12 +29,7 @@ export function Navigation() {
   
   const hasToken = !!authStorage.getAccessToken();
 
-  const { data: user } = useQuery({
-    queryKey: ['me'],
-    queryFn: () => auth.me(),
-    retry: false,
-    enabled: hasToken,
-  });
+  const { data: user } = useMe({ enabled: hasToken });
 
   const { data: cartData } = useQuery({
     queryKey: ['cart'],

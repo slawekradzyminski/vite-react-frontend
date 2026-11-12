@@ -350,7 +350,7 @@ describe('Navigation', () => {
 
     renderWithProviders(<Navigation />);
 
-    const menuButton = screen.getByRole('button', { name: /open main menu/i });
+    const menuButton = await screen.findByRole('button', { name: /open main menu/i });
     await user.click(menuButton);
     
     const mobileProductsLink = screen.getByTestId('mobile-menu-products');
@@ -381,7 +381,7 @@ describe('Navigation', () => {
     renderWithProviders(<Navigation />);
 
     // when
-    const menuButton = screen.getByRole('button', { name: /open main menu/i });
+    const menuButton = await screen.findByRole('button', { name: /open main menu/i });
     await user.click(menuButton);
     
     const mobileUsernameLink = screen.getByTestId('mobile-menu-username');

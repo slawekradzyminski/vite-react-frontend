@@ -16,6 +16,7 @@ import { Surface } from '../../components/ui/surface';
 import { MfaSecurityPanel } from '../../components/user/MfaSecurityPanel';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { fieldErrorId } from '../../lib/fieldError';
+import { useMe } from '../../hooks/useMe';
 
 export function Profile() {
   useDocumentTitle('Profile');
@@ -23,10 +24,7 @@ export function Profile() {
   const { toast } = useToast();
 
   // Fetch current user
-  const { data: currentUser, isLoading: isLoadingUser } = useQuery({
-    queryKey: ['me'],
-    queryFn: () => auth.me(),
-  });
+  const { data: currentUser, isLoading: isLoadingUser } = useMe();
 
   const username = currentUser?.data?.username;
 

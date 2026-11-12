@@ -1,9 +1,8 @@
 import { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router';
-import { useQuery } from '@tanstack/react-query';
-import { auth } from '../lib/api';
 import { authStorage } from '../lib/authStorage';
 import { readLoginReturnTo } from '../lib/loginNavigation';
+import { useMe } from '../hooks/useMe';
 
 interface RedirectIfAuthenticatedProps {
   children: React.ReactNode;
@@ -15,12 +14,7 @@ export function RedirectIfAuthenticated({ children }: RedirectIfAuthenticatedPro
   const location = useLocation();
   const token = authStorage.getAccessToken();
 
-  const { isSuccess, isError } = useQuery({
-    queryKey: ['me'],
-    queryFn: () => auth.me(),
-    retry: false,
-    enabled: !!token,
-  });
+  const { isSuccess, isError } = useMe({ enabled: !!token });
 
   useEffect(() => {
     if (token && isError) {

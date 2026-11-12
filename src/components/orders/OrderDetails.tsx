@@ -4,7 +4,7 @@ import { OrderVat } from './OrderVat';
 import { isWarehouseEnabled } from '../../lib/runtimeConfig';
 import { commerceTransport } from '../../lib/commerceTransport';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { orders, auth } from '../../lib/api';
+import { orders } from '../../lib/api';
 import type { OrderStatus } from '../../types/order';
 import { Role } from '../../types/auth';
 import { useState } from 'react';
@@ -15,6 +15,7 @@ import { OrderPaymentSection } from '../payments/OrderPaymentPanel';
 import { useMoney } from '../../hooks/useMoney';
 import { parseRouteId } from '../../lib/routeIds';
 import { retryServerErrors } from '../../lib/requestErrors';
+import { useMe } from '../../hooks/useMe';
 
 export const OrderDetails = () => {
   const { formatMoney } = useMoney();
@@ -33,10 +34,7 @@ export const OrderDetails = () => {
   });
 
   // Fetch user data to check if admin
-  const { data: userData } = useQuery({
-    queryKey: ['me'],
-    queryFn: () => auth.me(),
-  });
+  const { data: userData } = useMe();
 
   const isAdmin = userData?.data?.roles?.includes(Role.ADMIN);
   const order = orderData?.data;

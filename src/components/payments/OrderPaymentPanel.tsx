@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
-import { auth, payments } from '../../lib/api';
+import { payments } from '../../lib/api';
 import { describeCard, describePaymentFailure, formatMoney, orderAmountDue } from '../../lib/payment';
 import { isPaymentEnabled } from '../../lib/runtimeConfig';
 import { useMoney } from '../../hooks/useMoney';
@@ -8,6 +8,7 @@ import { Surface } from '../ui/surface';
 import { PaymentStatusBadge } from './PaymentStatusBadge';
 import type { Order } from '../../types/order';
 import type { Payment } from '../../types/payment';
+import { useMe } from '../../hooks/useMe';
 
 function PaymentFacts({ payment }: { payment: Payment }) {
   const failed = payment.status === 'FAILED' || payment.status === 'VOIDED';
@@ -43,7 +44,7 @@ export function OrderPaymentPanel({ order }: { order: Order }) {
     retry: false,
   });
   // The signed-in user is already cached by the route guard; no need to refetch it here.
-  const { data: me } = useQuery({ queryKey: ['me'], queryFn: () => auth.me(), staleTime: 60_000 });
+  const { data: me } = useMe();
   const list = paymentsQuery.data?.data ?? [];
   const latest = list[0];
   const ownsOrder = me?.data?.username === order.username;
