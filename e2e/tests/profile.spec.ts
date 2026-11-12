@@ -25,7 +25,8 @@ test.describe('Profile Page', () => {
     
     // when
     await expect(profilePage.personalInfoHeading).toBeVisible();
-    await expect(profilePage.emailInput).toHaveValue(user.email);
+    // Backend 3.18.0 stores emails in lower case; the generated address is mixed case.
+    await expect(profilePage.emailInput).toHaveValue(user.email.toLowerCase());
     
     const updatedName = `Updated${Date.now()}`;
     await profilePage.updateFirstName(updatedName);
