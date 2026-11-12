@@ -142,7 +142,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
             data-testid="product-image"
           />
         ) : (
-          <div className="flex h-52 w-full items-center justify-center bg-stone-100 text-sm font-medium text-slate-400" data-testid="product-no-image">
+          <div className="flex h-52 w-full items-center justify-center bg-stone-100 text-sm font-medium text-slate-600" data-testid="product-no-image">
             No image available
           </div>
         )}

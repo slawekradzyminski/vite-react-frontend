@@ -182,7 +182,7 @@ export function ProductDetails() {
               data-testid="product-image"
             />
           ) : (
-            <div className="flex min-h-[320px] w-full items-center justify-center bg-stone-100 text-sm font-medium text-slate-400" data-testid="product-no-image">
+            <div className="flex min-h-[320px] w-full items-center justify-center bg-stone-100 text-sm font-medium text-slate-600" data-testid="product-no-image">
               No image available
             </div>
           )}
