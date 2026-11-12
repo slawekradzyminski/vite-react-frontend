@@ -147,4 +147,25 @@ test.describe('Axe accessibility scans (mocked backend)', () => {
     await expect(page.getByTestId('coupon-valid-from')).not.toHaveValue('');
     await expectNoAxeViolations(page);
   });
+
+  test('cart page as stacked rows on phones and as a table on desktop (T-061)', async ({ mockedClient }) => {
+    // given
+    const { page } = mockedClient;
+    await cartMocks.mockCartWithItems(page);
+    await page.setViewportSize({ width: 393, height: 852 });
+
+    // when
+    await page.goto('/cart');
+
+    // then
+    await expect(page.getByTestId('cart-item-remove-1')).toBeVisible();
+    await expectNoAxeViolations(page);
+
+    // when
+    await page.setViewportSize({ width: 1280, height: 900 });
+
+    // then
+    await expect(page.getByTestId('cart-item-remove-1')).toBeVisible();
+    await expectNoAxeViolations(page);
+  });
 });

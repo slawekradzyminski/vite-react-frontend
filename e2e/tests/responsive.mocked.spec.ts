@@ -1,7 +1,8 @@
 import { test, expect } from '../fixtures/mocked-session.fixture';
 import { fulfillWithSchema, type BackendSchema } from '../mocks/backendContract';
+import { cartMocks } from '../mocks/cartMocks';
 import { productSearchMocks } from '../mocks/productSearchMocks';
-import { expectContainedIn, expectReachable } from '../utils/layout.utils';
+import { expectContainedIn, expectNoHorizontalPageOverflow, expectReachable } from '../utils/layout.utils';
 
 const PHONE = { width: 360, height: 800 };
 
@@ -97,4 +98,24 @@ test.describe('Responsive layouts (mocked backend)', () => {
     expect(await textStart('mobile-menu-logout')).toBe(await textStart('mobile-menu-cart'));
     await expectReachable(page.getByTestId('mobile-menu-logout'));
   });
+
+  for (const viewport of [{ width: 393, height: 852 }, { width: 768, height: 1024 }]) {
+    test(`cart rows keep quantity and Remove on screen at ${viewport.width}px (T-061)`, async ({ mockedClient }) => {
+      // given
+      const { page } = mockedClient;
+      await page.setViewportSize(viewport);
+      await cartMocks.mockCartWithItems(page);
+
+      // when
+      await page.goto('/cart');
+
+      // then
+      await expect(page.getByTestId('cart-item-price-1')).toHaveText('$19.99');
+      await expect(page.getByTestId('cart-item-total-1')).toHaveText('$39.98');
+      await expectReachable(page.getByTestId('cart-item-increase-1'));
+      await expectReachable(page.getByTestId('cart-item-remove-1'));
+      await expectReachable(page.getByTestId('cart-item-remove-2'));
+      await expectNoHorizontalPageOverflow(page.getByTestId('cart-items-table'));
+    });
+  }
 });
