@@ -20,6 +20,7 @@ import { ShopToolPanel } from '../../features/webmcp/ShopToolPanel';
 import type { CategoryFacet } from '../../types/commerce';
 import { ProductCard } from './ProductCard';
 import { ProductsHero } from './ProductsHero';
+import { CatalogFilters } from './CatalogFilters';
 import { Surface } from '../ui/surface';
 
 export const SEARCH_DEBOUNCE_MS = 300;
@@ -247,7 +248,7 @@ export function ProductSearch() {
       <ProductsHero summary={result ? `${totalElements} ${totalElements === 1 ? 'product matches' : 'products match'}` : 'Searching the catalogue'} />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[280px_minmax(0,1fr)]" data-testid="products-layout">
-        <aside className="xl:sticky xl:top-24 xl:self-start" data-testid="products-sidebar">
+        <CatalogFilters activeCount={filters.categories.length + (filters.minPrice || filters.maxPrice ? 1 : 0) + (filters.minRating ? 1 : 0) + (filters.inStock ? 1 : 0)}>
           <Surface variant="muted" padding="md" className="space-y-6" data-testid="products-categories-container">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Filter</p>
@@ -273,16 +274,17 @@ export function ProductSearch() {
                     return (
                       <li key={value} data-testid={`products-category-item-${slug}`}>
                         <label className="flex cursor-pointer items-center justify-between gap-2 rounded-2xl px-3 py-2 text-sm text-slate-700 hover:bg-stone-100">
-                          <span className="flex items-center gap-2">
+                          <span className="flex min-w-0 items-center gap-2">
                             <input
                               type="checkbox"
+                              className="shrink-0"
                               checked={isSelected(value)}
                               onChange={(event) => toggleCategory(value, event.target.checked)}
                               data-testid={`products-category-${slug}`}
                             />
-                            {value}
+                            <span className="min-w-0 [overflow-wrap:anywhere]">{value}</span>
                           </span>
-                          <span className="text-xs text-slate-500" data-testid={`products-category-count-${slug}`}>{facet.count ?? 0}</span>
+                          <span className="shrink-0 text-xs text-slate-500" data-testid={`products-category-count-${slug}`}>{facet.count ?? 0}</span>
                         </label>
                       </li>
                     );
@@ -334,7 +336,7 @@ export function ProductSearch() {
               </button>
             )}
           </Surface>
-        </aside>
+        </CatalogFilters>
 
         <div className="min-w-0" data-testid="products-content">
           <ShopToolPanel {...webmcp} initialOpen={pageOptions.get('inspect') === '1'} />

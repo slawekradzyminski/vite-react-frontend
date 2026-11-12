@@ -12,13 +12,15 @@ export interface ButtonProps
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, 'data-testid': dataTestId, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, type, 'data-testid': dataTestId, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button';
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         data-testid={dataTestId || 'button'}
+        // A button inside a form submits it unless told otherwise; only an explicit type="submit" may.
+        type={asChild ? type : (type ?? 'button')}
         {...props}
       />
     );

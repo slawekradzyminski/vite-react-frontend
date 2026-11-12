@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { formatUtcDate, formatUtcDateTime, localInputToUtcIso, parseUtcDateTime } from './commerceFormat';
+import { formatUtcDate, formatUtcDateTime, localInputToUtcIso, parseUtcDateTime, utcToLocalInput } from './commerceFormat';
 
 describe('UTC date-time helpers in a browser east of UTC', () => {
   const originalZone = process.env.TZ;
@@ -23,6 +23,14 @@ describe('UTC date-time helpers in a browser east of UTC', () => {
     expect(parseUtcDateTime('2026-11-12T10:58:00Z').toISOString()).toBe('2026-11-12T10:58:00.000Z');
     expect(parseUtcDateTime('2026-11-12T23:58:00+13:00').toISOString()).toBe('2026-11-12T10:58:00.000Z');
     expect(parseUtcDateTime('2026-11-12T23:58:00+1300').toISOString()).toBe('2026-11-12T10:58:00.000Z');
+  });
+
+  it('shows a backend UTC value as the local datetime-local value it was picked as', () => {
+    expect(utcToLocalInput('2026-11-12T10:58:00')).toBe('2026-11-12T23:58');
+    expect(utcToLocalInput('2026-12-31T11:30:00.123456')).toBe('2027-01-01T00:30');
+    expect(utcToLocalInput(localInputToUtcIso('2026-07-01T08:05'))).toBe('2026-07-01T08:05');
+    expect(utcToLocalInput(null)).toBe('');
+    expect(utcToLocalInput('')).toBe('');
   });
 
   it('displays the value in the browser zone', () => {

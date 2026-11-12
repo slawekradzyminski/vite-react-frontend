@@ -7,7 +7,7 @@ export const buttonVariants = cva(
       variant: {
         // A dark ring keeps the focus indicator distinct from the blue fill (WCAG 2.4.7, 1.4.11).
         default:
-          'bg-primary text-primary-foreground focus-visible:ring-slate-950 shadow-[0_16px_30px_-20px_hsl(var(--primary)/0.85)] hover:-translate-y-0.5 hover:bg-primary/90',
+          'bg-primary text-primary-foreground focus-visible:ring-slate-950 shadow-[0_16px_30px_-20px_hsl(var(--primary)/0.85)] hover:-translate-y-0.5 hover:bg-[hsl(212_72%_38%)]',
         destructive:
           'bg-destructive text-destructive-foreground shadow-sm hover:-translate-y-0.5 hover:bg-destructive/90',
         outline:

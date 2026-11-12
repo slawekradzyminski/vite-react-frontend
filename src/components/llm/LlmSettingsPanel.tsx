@@ -70,6 +70,8 @@ export function LlmSettingsPanel({
         )}
         style={{ maxHeight: isOpen ? maxHeight : 0 }}
         aria-hidden={!isOpen}
+        // Collapsed settings stay in the DOM for the animation; inert keeps their controls out of the tab order.
+        inert={!isOpen}
         data-testid={sidebarTestId}
       >
         <Surface variant="muted" padding="md" className="space-y-4" data-testid={settingsPanelTestId}>

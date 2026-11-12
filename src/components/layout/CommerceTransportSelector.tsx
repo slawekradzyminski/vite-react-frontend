@@ -1,16 +1,18 @@
 import { useIsMutating, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { changeCommerceTransport, commerceTransport, type CommerceTransport } from '../../lib/commerceTransport';
+import { pendingWriteCount, usePendingWrites } from '../../lib/pendingWrites';
 
 export function CommerceTransportSelector() {
-  const pendingMutations = useIsMutating();
+  // React Query mutations plus cart writes made outside useMutation.
+  const pendingMutations = useIsMutating() + usePendingWrites();
   const queryClient = useQueryClient();
   const [error, setError] = useState('');
 
   function change(transport: CommerceTransport) {
     try {
       // Recheck the cache at click time, even if React has not rendered the pending state yet.
-      changeCommerceTransport(transport, queryClient.isMutating());
+      changeCommerceTransport(transport, queryClient.isMutating() + pendingWriteCount());
     } catch {
       setError('Cannot save the API selection in this browser.');
     }

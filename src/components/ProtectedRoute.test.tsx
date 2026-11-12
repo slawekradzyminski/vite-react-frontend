@@ -91,6 +91,7 @@ const fulfillAuth = (
 
     // then
     expect(screen.getByText('Login Page')).toBeInTheDocument();
+    expect(auth.me).not.toHaveBeenCalled();
   });
 
   it('keeps the requested deep link as returnTo when redirecting to login', () => {

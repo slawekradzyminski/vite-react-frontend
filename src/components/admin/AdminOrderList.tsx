@@ -45,7 +45,7 @@ export function AdminOrderList() {
   if (error) {
     return (
       <Surface variant="danger" padding="message" className="text-center" data-testid="admin-order-list-error">
-        <p className="mb-4 text-red-500">Error loading orders</p>
+        <p className="mb-4 text-red-700">Error loading orders</p>
       </Surface>
     );
   }
@@ -93,6 +93,8 @@ export function AdminOrderList() {
         </Surface>
       ) : (
         <Surface variant="default" className="overflow-hidden" data-testid="admin-order-list-table-container">
+          {/* Narrow screens scroll the table sideways; the sticky Actions column stays in reach. */}
+          <div className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-600" role="region" aria-label="Orders" tabIndex={0} data-testid="admin-order-list-scroll-region">
           <table className="min-w-full divide-y divide-stone-200" data-testid="admin-order-list-table">
             <thead className="bg-stone-50/80">
               <tr>
@@ -111,7 +113,7 @@ export function AdminOrderList() {
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                   Status
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-500">
+                <th className="sticky right-0 bg-stone-50 px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-500 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.2)]">
                   Actions
                 </th>
               </tr>
@@ -140,7 +142,7 @@ export function AdminOrderList() {
                       {order.status}
                     </Badge>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="sticky right-0 bg-white px-6 py-4 whitespace-nowrap text-right text-sm font-medium shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.2)]">
                     <Link
                       to={`/orders/${order.id}`}
                       className="text-sky-700 hover:text-sky-900"
@@ -153,6 +155,7 @@ export function AdminOrderList() {
               ))}
             </tbody>
           </table>
+          </div>
           
           <div className="flex items-center justify-between border-t border-stone-200 px-6 py-4" data-testid="admin-order-list-pagination">
             <Button

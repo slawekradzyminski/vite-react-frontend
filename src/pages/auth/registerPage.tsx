@@ -190,6 +190,7 @@ export function RegisterPage() {
               <Button
                 variant="link"
                 className="px-0 font-medium text-sky-700 hover:text-sky-600"
+                type="button"
                 onClick={() => navigate('/login')}
                 data-testid="register-login-link"
               >

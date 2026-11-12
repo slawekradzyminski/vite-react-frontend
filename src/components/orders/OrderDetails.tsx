@@ -4,7 +4,7 @@ import { OrderVat } from './OrderVat';
 import { isWarehouseEnabled } from '../../lib/runtimeConfig';
 import { commerceTransport } from '../../lib/commerceTransport';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { orders, auth } from '../../lib/api';
+import { orders } from '../../lib/api';
 import type { OrderStatus } from '../../types/order';
 import { Role } from '../../types/auth';
 import { useState } from 'react';
@@ -13,11 +13,15 @@ import { Surface } from '../ui/surface';
 import { Badge } from '../ui/badge';
 import { OrderPaymentSection } from '../payments/OrderPaymentPanel';
 import { useMoney } from '../../hooks/useMoney';
+import { parseRouteId } from '../../lib/routeIds';
+import { retryServerErrors } from '../../lib/requestErrors';
+import { useMe } from '../../hooks/useMe';
 
 export const OrderDetails = () => {
   const { formatMoney } = useMoney();
   const { id } = useParams<{ id: string }>();
-  const orderId = parseInt(id || '0', 10);
+  // An id that is not a positive safe integer cannot name an order: it is "not found" without a request.
+  const orderId = parseRouteId(id) ?? 0;
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -25,14 +29,12 @@ export const OrderDetails = () => {
   const { data: orderData, isLoading: isLoadingOrder } = useQuery({
     queryKey: ['order', orderId],
     queryFn: () => orders.getOrderById(orderId),
-    enabled: !!orderId,
+    enabled: orderId > 0,
+    retry: retryServerErrors,
   });
 
   // Fetch user data to check if admin
-  const { data: userData } = useQuery({
-    queryKey: ['me'],
-    queryFn: () => auth.me(),
-  });
+  const { data: userData } = useMe();
 
   const isAdmin = userData?.data?.roles?.includes(Role.ADMIN);
   const order = orderData?.data;
@@ -131,7 +133,11 @@ export const OrderDetails = () => {
   }
 
   if (!order) {
-    return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="order-details-not-found">Order not found</Surface>;
+    return (
+      <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="order-details-not-found">
+        <h1 className="text-lg font-semibold text-slate-700">Order not found</h1>
+      </Surface>
+    );
   }
 
   return (
@@ -206,7 +212,9 @@ export const OrderDetails = () => {
 
         {isAdmin && (
           <div className="flex w-full flex-col gap-2 sm:ml-auto sm:w-auto sm:flex-row sm:items-center" data-testid="order-details-admin-controls">
+            <label htmlFor="order-details-status-select" className="text-sm font-medium text-slate-700">Order status</label>
             <select
+              id="order-details-status-select"
               value={effectiveSelectedStatus ?? ''}
               onChange={handleStatusChange}
               className="h-11 w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white sm:w-auto"

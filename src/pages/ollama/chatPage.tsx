@@ -81,7 +81,7 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
           onThinkChange={setThink}
         />
 
-        <Surface as="section" variant="default" padding="md" className="space-y-4">
+        <Surface as="section" variant="default" padding="md" className="space-y-4 p-3 sm:p-5">
           <SystemPromptDetails
             content={systemMessage?.content ?? DEFAULT_SYSTEM_PROMPT}
             testId="chat-system-prompt"
@@ -89,9 +89,9 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
 
           <ChatTranscript messages={messages} hideSystemMessage />
 
-          <div className="flex items-end gap-2" data-testid="chat-input-container">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end" data-testid="chat-input-container">
             <Textarea
-              className="min-h-[88px] flex-1 resize-none"
+              className="min-h-[88px] w-full flex-1 resize-none"
               rows={2}
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
@@ -103,7 +103,7 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
             <Button
               onClick={handleSend}
               disabled={isChatting || !userInput.trim()}
-              className="h-11 px-4"
+              className="h-11 w-full px-4 sm:w-auto"
               data-testid="chat-send-button"
             >
               {isChatting ? <Spinner size="sm" /> : (

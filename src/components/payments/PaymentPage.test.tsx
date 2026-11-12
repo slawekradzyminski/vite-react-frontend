@@ -174,4 +174,12 @@ describe('PaymentPage', () => {
     await waitFor(() => expect(orders.getOrderById).not.toHaveBeenCalled());
     expect(payments.forOrder).not.toHaveBeenCalled();
   });
+
+  it('does not round an id beyond the safe integer range into another order', async () => {
+    // given / when
+    renderPage('/orders/9223372036854775807/pay');
+    // then
+    expect(await screen.findByTestId('payment-order-not-found')).toBeInTheDocument();
+    expect(orders.getOrderById).not.toHaveBeenCalled();
+  });
 });

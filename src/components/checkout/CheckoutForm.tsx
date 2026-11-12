@@ -117,7 +117,7 @@ export function CheckoutForm({ cartTotal, payableTotal, onOrderPlaced }: Checkou
             data-testid="checkout-street-input"
           />
           {errors.street && (
-            <p className="mt-1 text-sm text-red-500" id={fieldErrorId('street')} data-testid="checkout-street-error">{errors.street.message}</p>
+            <p className="mt-1 text-sm text-red-700" id={fieldErrorId('street')} data-testid="checkout-street-error">{errors.street.message}</p>
           )}
         </Surface>
         
@@ -135,7 +135,7 @@ export function CheckoutForm({ cartTotal, payableTotal, onOrderPlaced }: Checkou
               data-testid="checkout-city-input"
             />
             {errors.city && (
-              <p className="mt-1 text-sm text-red-500" id={fieldErrorId('city')} data-testid="checkout-city-error">{errors.city.message}</p>
+              <p className="mt-1 text-sm text-red-700" id={fieldErrorId('city')} data-testid="checkout-city-error">{errors.city.message}</p>
             )}
           </Surface>
           
@@ -152,7 +152,7 @@ export function CheckoutForm({ cartTotal, payableTotal, onOrderPlaced }: Checkou
               data-testid="checkout-state-input"
             />
             {errors.state && (
-              <p className="mt-1 text-sm text-red-500" id={fieldErrorId('state')} data-testid="checkout-state-error">{errors.state.message}</p>
+              <p className="mt-1 text-sm text-red-700" id={fieldErrorId('state')} data-testid="checkout-state-error">{errors.state.message}</p>
             )}
           </Surface>
         </div>
@@ -171,7 +171,7 @@ export function CheckoutForm({ cartTotal, payableTotal, onOrderPlaced }: Checkou
               data-testid="checkout-zip-input"
             />
             {errors.zipCode && (
-              <p className="mt-1 text-sm text-red-500" id={fieldErrorId('zipCode')} data-testid="checkout-zip-error">{errors.zipCode.message}</p>
+              <p className="mt-1 text-sm text-red-700" id={fieldErrorId('zipCode')} data-testid="checkout-zip-error">{errors.zipCode.message}</p>
             )}
           </Surface>
           
@@ -188,7 +188,7 @@ export function CheckoutForm({ cartTotal, payableTotal, onOrderPlaced }: Checkou
               data-testid="checkout-country-input"
             />
             {errors.country && (
-              <p className="mt-1 text-sm text-red-500" id={fieldErrorId('country')} data-testid="checkout-country-error">{errors.country.message}</p>
+              <p className="mt-1 text-sm text-red-700" id={fieldErrorId('country')} data-testid="checkout-country-error">{errors.country.message}</p>
             )}
           </Surface>
         </div>

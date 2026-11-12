@@ -117,9 +117,10 @@ export function CartPage() {
               <h2 className="text-lg font-semibold text-slate-950" data-testid="cart-items-heading">Cart Items</h2>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-stone-200" data-testid="cart-items-table">
-                <thead className="bg-stone-50/80">
+            {/* Below lg (phones and tablets) every item is a stacked card with labelled values; from lg up it is a table. */}
+            <div className="lg:overflow-x-auto">
+              <table className="block w-full lg:table lg:min-w-full lg:divide-y lg:divide-stone-200" data-testid="cart-items-table">
+                <thead className="hidden bg-stone-50/80 lg:table-header-group">
                   <tr>
                     <th className="w-2/5 px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                       Product
@@ -138,7 +139,7 @@ export function CartPage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-stone-200 bg-white/60 space-y-0" data-testid="cart-items-list">
+                <tbody className="block divide-y divide-stone-200 bg-white/60 lg:table-row-group" data-testid="cart-items-list">
                   {safeCartData.items.map((item) => (
                     <CartItem
                       key={item.productId}

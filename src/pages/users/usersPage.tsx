@@ -7,6 +7,7 @@ import type { User } from '../../types/auth';
 import { Role } from '../../types/auth';
 import { Surface } from '../../components/ui/surface';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { useMe } from '../../hooks/useMe';
 
 export function UsersPage() {
   useDocumentTitle('Users');
@@ -14,10 +15,7 @@ export function UsersPage() {
   const queryClient = useQueryClient();
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const { data: currentUser } = useQuery({
-    queryKey: ['me'],
-    queryFn: () => auth.me(),
-  });
+  const { data: currentUser } = useMe();
 
   const { data: users, isLoading, error } = useQuery<User[]>({
     queryKey: ['users'],

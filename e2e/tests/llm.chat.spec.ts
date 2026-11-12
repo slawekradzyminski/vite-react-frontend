@@ -64,12 +64,14 @@ test.describe('Ollama Chat', () => {
     await chatPage.sendChatMessage(STATUS_PROMPT);
     await chatPage.waitForChatComplete();
 
+    // The icon pill is decorative; the visible role label next to it names the speaker (T-043).
     const userBadge = chatPage.chatContent.getByTestId('chat-role-pill-user').last();
-    await expect(userBadge).toHaveAttribute('aria-label', 'User');
-    await expect(userBadge).toHaveText('');
+    await expect(userBadge).toHaveAttribute('aria-hidden', 'true');
+    await expect(userBadge).not.toHaveAttribute('aria-label');
+    await expect(chatPage.chatContent.getByTestId('chat-message-role-user').last()).toHaveText('User');
 
     const assistantBadge = chatPage.chatContent.getByTestId('chat-role-pill-assistant').last();
-    await expect(assistantBadge).toHaveAttribute('aria-label', 'Assistant');
-    await expect(assistantBadge).toHaveText('');
+    await expect(assistantBadge).toHaveAttribute('aria-hidden', 'true');
+    await expect(chatPage.chatContent.getByTestId('chat-message-role-assistant').last()).toHaveText('Assistant');
   });
 });

@@ -26,3 +26,11 @@ export function formatUtcDate(value?: string | null) {
 export function localInputToUtcIso(value: string): string {
   return new Date(value).toISOString();
 }
+
+/** The inverse of `localInputToUtcIso`: a backend UTC value as a `datetime-local` value in the browser's zone. */
+export function utcToLocalInput(value?: string | null): string {
+  if (!value) return '';
+  const date = parseUtcDateTime(value);
+  const pad = (part: number) => String(part).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}

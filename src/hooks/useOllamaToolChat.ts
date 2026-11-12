@@ -149,13 +149,12 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
 
         const response = await ollama.chatWithTools(body);
 
+        // The input stays locked until the stream ends: backends up to 3.17 send done=true after
+        // every tool iteration, not only on the final answer, so `done` cannot end the turn.
         await processSSEResponse<ChatResponseDto>(response, {
           onMessage: (data) => {
             const incoming = data.message;
             if (!incoming) {
-              if (data.done) {
-                stop();
-              }
               return;
             }
 
@@ -216,16 +215,12 @@ export function useOllamaToolChat(options?: UseOllamaToolChatOptions) {
                 return [...prev, updatedAssistant];
               });
             }
-
-            if (data.done) {
-              stop();
-            }
           },
           onError: (error) => {
+            // An unreadable event does not end the stream; a broken stream throws and is handled below.
             console.error('Tool chat SSE error', error);
             options?.onError?.(error);
             toast({ variant: 'error', description: 'Failed to process tool response' });
-            stop();
           },
           onComplete: () => {
             stop();

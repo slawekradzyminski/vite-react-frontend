@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { AxiosError, AxiosHeaders } from 'axios';
-import { describeCartError, retryServerErrors, serverMessage } from './requestErrors';
+import { describeCartError, retryServerErrors, serverFieldErrors, serverMessage } from './requestErrors';
 
 const httpError = (status: number) =>
   new AxiosError('failed', 'ERR', undefined, undefined, {
@@ -51,5 +51,29 @@ describe('serverMessage', () => {
     expect(serverMessage(new Error('boom'), 'fallback')).toBe('fallback');
     expect(serverMessage(axiosError(null), 'fallback')).toBe('fallback');
     expect(serverMessage(axiosError({ message: '  ' }), 'fallback')).toBe('fallback');
+  });
+});
+
+describe('serverFieldErrors', () => {
+  const badRequest = (data: unknown, status = 400) => Object.assign(new Error('Request failed'), { isAxiosError: true, response: { status, data } });
+
+  it('returns the field messages of a 400 field map', () => {
+    expect(serverFieldErrors(badRequest({ description: 'Product description is required', name: 'Too short' })))
+      .toEqual({ description: 'Product description is required', name: 'Too short' });
+  });
+
+  it('ignores the ErrorDto message, blank and non-text values', () => {
+    expect(serverFieldErrors(badRequest({ message: 'Validation failed', name: ' ', price: 3 }))).toEqual({});
+  });
+
+  it('returns nothing for other statuses, arrays and non-HTTP errors', () => {
+    expect(serverFieldErrors(badRequest({ name: 'Taken' }, 409))).toEqual({});
+    expect(serverFieldErrors(badRequest(['name']))).toEqual({});
+    expect(serverFieldErrors(badRequest('text'))).toEqual({});
+    expect(serverFieldErrors(new Error('network'))).toEqual({});
+  });
+
+  it('returns nothing for a network error without a response', () => {
+    expect(serverFieldErrors(Object.assign(new Error('Network Error'), { isAxiosError: true }))).toEqual({});
   });
 });

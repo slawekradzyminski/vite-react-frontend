@@ -1,18 +1,14 @@
 import { useNavigate } from 'react-router';
-import { useQuery } from '@tanstack/react-query';
 import { Activity, ArrowRight, Boxes, Mail, QrCode, Sparkles, UserRound, Users } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
-import { auth } from '../../lib/api';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { useMe } from '../../hooks/useMe';
 
 export function HomePage() {
   useDocumentTitle('Home');
   const navigate = useNavigate();
-  const { data: user } = useQuery({
-    queryKey: ['me'],
-    queryFn: () => auth.me(),
-  });
+  const { data: user } = useMe();
 
   return (
     <div className="space-y-6 pb-10" data-testid="home-page">

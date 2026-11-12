@@ -5,6 +5,7 @@ import {
   adminReturns,
   adminWebhooks,
   auth,
+  cart,
   cartCoupon,
   cartTenders,
   catalogCsv,
@@ -30,6 +31,7 @@ import {
 } from './api';
 import { getApiBaseUrl, getPaymentApiBaseUrl, getWarehouseApiBaseUrl } from './runtimeConfig';
 import { Role } from '../types/auth';
+import { pendingWriteCount } from './pendingWrites';
 
 // api.ts creates the backend instance first, the warehouse-service instance second and the
 // payment-service instance third.
@@ -1514,5 +1516,31 @@ describe('backend commerce extensions API', () => {
 
     expect(mockWarehouseAxios.get).not.toHaveBeenCalled();
     expect(mockPaymentAxios.get).not.toHaveBeenCalled();
+  });
+});
+
+describe('cart API pending writes', () => {
+  it('counts cart writes as pending until they settle, but not reads', async () => {
+    // given
+    let finish!: (value: unknown) => void;
+    mockAxios.post.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
+    mockAxios.get.mockResolvedValueOnce({ data: { items: [] } });
+
+    // when
+    const read = cart.getCart();
+    const countDuringRead = pendingWriteCount();
+    const write = cart.addToCart({ productId: 1, quantity: 2 });
+
+    // then
+    expect(countDuringRead).toBe(0);
+    expect(pendingWriteCount()).toBe(1);
+    expect(mockAxios.post).toHaveBeenCalledWith('/api/v1/cart/items', { productId: 1, quantity: 2 });
+
+    // when
+    finish({ data: { items: [] } });
+    await Promise.all([read, write]);
+
+    // then
+    expect(pendingWriteCount()).toBe(0);
   });
 });
