@@ -13,11 +13,14 @@ import { Surface } from '../ui/surface';
 import { Badge } from '../ui/badge';
 import { OrderPaymentSection } from '../payments/OrderPaymentPanel';
 import { useMoney } from '../../hooks/useMoney';
+import { parseRouteId } from '../../lib/routeIds';
+import { retryServerErrors } from '../../lib/requestErrors';
 
 export const OrderDetails = () => {
   const { formatMoney } = useMoney();
   const { id } = useParams<{ id: string }>();
-  const orderId = parseInt(id || '0', 10);
+  // An id that is not a positive safe integer cannot name an order: it is "not found" without a request.
+  const orderId = parseRouteId(id) ?? 0;
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -25,7 +28,8 @@ export const OrderDetails = () => {
   const { data: orderData, isLoading: isLoadingOrder } = useQuery({
     queryKey: ['order', orderId],
     queryFn: () => orders.getOrderById(orderId),
-    enabled: !!orderId,
+    enabled: orderId > 0,
+    retry: retryServerErrors,
   });
 
   // Fetch user data to check if admin

@@ -11,6 +11,7 @@ import { CardPaymentForm } from './CardPaymentForm';
 import { OrderAmountSummary } from './OrderAmountSummary';
 import { ThreeDsDialog } from './ThreeDsDialog';
 import type { Order } from '../../types/order';
+import { parseRouteId } from '../../lib/routeIds';
 
 const LINK_CLASS = 'inline-flex w-fit rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-stone-50 transition hover:bg-slate-800';
 
@@ -26,8 +27,9 @@ interface PaymentPageProps {
 /** Card payment for a PENDING order: `/orders/:id/pay`. */
 export function PaymentPage({ flowOptions, now }: PaymentPageProps = {}) {
   const { id } = useParams<{ id: string }>();
-  const orderId = Number.parseInt(id ?? '', 10);
-  const validId = Number.isFinite(orderId) && orderId > 0;
+  const parsedId = parseRouteId(id);
+  const orderId = parsedId ?? 0;
+  const validId = parsedId !== null;
   const orderQuery = useQuery({ queryKey: ['order', orderId], queryFn: () => orders.getOrderById(orderId), enabled: validId });
   const paymentsQuery = useQuery({ queryKey: ['payments', orderId], queryFn: () => payments.forOrder(orderId), enabled: validId, retry: false });
   const flow = usePaymentFlow(orderId, flowOptions);
