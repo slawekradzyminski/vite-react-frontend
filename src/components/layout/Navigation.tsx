@@ -233,7 +233,9 @@ export function Navigation() {
         </div>
       </div>
       {isOpen && user?.data && (
-        <div className="border-t border-stone-200/80 bg-stone-50/95 px-4 pb-4 pt-3 xl:hidden" id={MOBILE_MENU_ID} data-testid="mobile-menu">
+        // The nav is sticky, so a menu taller than the screen scrolls inside itself; the border and
+        // shadow separate it from the page content underneath.
+        <div className="max-h-[calc(100dvh-4.5rem)] overflow-y-auto overscroll-contain border-t border-b-2 border-stone-200/80 border-b-stone-300 bg-stone-50 px-4 pb-4 pt-3 shadow-[0_24px_40px_-24px_rgba(15,23,42,0.45)] xl:hidden" id={MOBILE_MENU_ID} data-testid="mobile-menu">
           <div className="space-y-2">
             {authMenuItems.map((item) => {
               const className = `block rounded-2xl px-4 py-3 text-base font-medium transition ${
@@ -294,7 +296,7 @@ export function Navigation() {
                   handleLogout();
                   setIsOpen(false);
                 }}
-                className="block h-auto w-full justify-start rounded-2xl px-4 py-3 text-base font-medium text-slate-700 hover:bg-stone-50 hover:text-slate-900"
+                className="flex h-auto w-full items-center justify-start rounded-2xl px-4 py-3 text-left text-base font-medium text-slate-700 hover:bg-stone-50 hover:text-slate-900"
                 data-testid="mobile-menu-logout"
               >
                 Logout

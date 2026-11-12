@@ -77,4 +77,24 @@ test.describe('Responsive layouts (mocked backend)', () => {
     await expectReachable(page.getByTestId('product-item').filter({ hasText: 'Book item' }).getByTestId('product-name-link'));
     await expectReachable(card.getByTestId('product-name-link'));
   });
+
+  test('mobile menu aligns Logout with the other items and scrolls on short screens (T-060)', async ({ mockedAdmin }) => {
+    // given
+    const { page } = mockedAdmin;
+    await page.setViewportSize({ width: 390, height: 560 });
+    await page.goto('/');
+
+    // when
+    await page.getByTestId('mobile-menu-toggle').click();
+
+    // then
+    const textStart = (testId: string) => page.getByTestId(testId).evaluate((element) => {
+      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, { acceptNode: (node) => (node.textContent?.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP) });
+      const range = document.createRange();
+      range.selectNodeContents(walker.nextNode() as Node);
+      return Math.round(range.getBoundingClientRect().left);
+    });
+    expect(await textStart('mobile-menu-logout')).toBe(await textStart('mobile-menu-cart'));
+    await expectReachable(page.getByTestId('mobile-menu-logout'));
+  });
 });
