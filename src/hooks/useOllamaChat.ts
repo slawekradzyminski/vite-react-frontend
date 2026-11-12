@@ -10,6 +10,14 @@ interface UseOllamaChatOptions {
   onError?: (error: Error) => void;
 }
 
+// The backend rejects an assistant message without content, thinking or tool calls (400), so a
+// placeholder left by a failed turn must never be sent back.
+const isEmptyAssistant = (message: ChatMessageDto) =>
+  message.role === 'assistant'
+  && !message.content?.trim()
+  && !message.thinking?.trim()
+  && !(message.tool_calls && message.tool_calls.length > 0);
+
 export const DEFAULT_SYSTEM_PROMPT =
   'You are a helpful AI assistant. You must use the conversation history to answer questions.';
 
@@ -77,7 +85,7 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
       }
 
       const newMessages = [
-        ...messages,
+        ...messages.filter((message) => !isEmptyAssistant(message)),
         { role: 'user', content: userMessage }
       ];
 
@@ -140,6 +148,8 @@ export function useOllamaChat(options?: UseOllamaChatOptions) {
           }
         });
       } catch (error) {
+        // A failed turn keeps the user's message but not the empty answer bubble.
+        setMessages((prev) => prev.filter((message, index) => index !== assistantIndex || !isEmptyAssistant(message)));
         console.error('Chat error:', error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to chat';
         toast({ variant: 'error', description: errorMessage });

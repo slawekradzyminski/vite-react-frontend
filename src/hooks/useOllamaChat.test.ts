@@ -359,4 +359,33 @@ describe('useOllamaChat', () => {
     });
     sseSpy.mockRestore();
   });
-}); 
+
+  it('retries after a failed request without sending an empty assistant message (T-042)', async () => {
+    // given
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(ollama.chat)
+      .mockRejectedValueOnce(new Error('Request failed with status code 503'))
+      .mockResolvedValueOnce(new Response('data: {"model":"qwen3.5:2b","message":{"role":"assistant","content":"Hi!"},"done":true}\n\n', {
+        headers: { 'Content-Type': 'text/event-stream' },
+      }));
+    const { result } = await renderChatHook();
+    await act(async () => {
+      await result.current.chat('Hello');
+    });
+
+    // then
+    expect(result.current.messages.map((message) => message.role)).toEqual(['system', 'user']);
+
+    // when
+    await act(async () => {
+      await result.current.chat('Hello');
+    });
+
+    // then
+    const retried = vi.mocked(ollama.chat).mock.calls[1][0].messages;
+    expect(retried.map((message) => message.role)).toEqual(['system', 'user', 'user']);
+    expect(retried.some((message) => message.role === 'assistant' && !message.content)).toBe(false);
+    expect(result.current.messages.at(-1)).toMatchObject({ role: 'assistant', content: 'Hi!' });
+    consoleErrorSpy.mockRestore();
+  });
+});
