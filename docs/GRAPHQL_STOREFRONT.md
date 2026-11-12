@@ -19,7 +19,7 @@ Logging out clears all cached data, including private orders and admin inventory
 - Admin order listing and status changes.
 - Admin inventory listing, filters, details, movements, and adjustments.
 
-Login, refresh, user profile, MFA, SSO, and non-commerce features retain their
+Login, refresh, user profile, MFA, and non-commerce features retain their
 existing REST interfaces. The GraphQL adapter uses the existing authenticated
 Axios instance and its coordinated token refresh. HTTP 401 can trigger the
 existing refresh/retry flow before the operation executes. GraphQL execution

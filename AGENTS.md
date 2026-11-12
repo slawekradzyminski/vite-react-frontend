@@ -8,7 +8,7 @@ This section points other automation or human teammates to the right document fo
 
 ## Full dockerised stack
 
-- [`docker-compose.yml`](./docker-compose.yml) – CI and Playwright stack for this frontend. It builds the production frontend nginx image, starts backend, warehouse-service, payment-service, Keycloak, and the Ollama mock, then exposes everything through an nginx gateway on `http://localhost:8081`.
+- [`docker-compose.yml`](./docker-compose.yml) – CI and Playwright stack for this frontend. It builds the production frontend nginx image, starts backend, warehouse-service, payment-service, and the Ollama mock, then exposes everything through an nginx gateway on `http://localhost:8081`.
 - [`awesome-localstack/README.md`](../awesome-localstack/README.md) – main reference describing every docker-compose flavour (full stack, CI slice, lightweight variant) plus helper scripts. It includes the monitoring/LLM notes that are reused during trainings.
 
 ## Deployment asset rule
@@ -41,8 +41,8 @@ This section points other automation or human teammates to the right document fo
 
 ## Mutation-testing feedback
 
-- Run `npm test` first, then `npm run test:mutation` after changing SSO, runtime URLs and flags (API, warehouse and payment base URLs, warehouse and payment flags), SSE behavior, the API client and token refresh on any axios instance, auth storage, role checks, route protection, or their tests.
+- Run `npm test` first, then `npm run test:mutation` after changing runtime URLs and flags (API, warehouse and payment base URLs, warehouse and payment flags), SSE behavior, the API client and token refresh on any axios instance, auth storage, role checks, route protection, or their tests.
 - Stryker runs incrementally and keeps its state in `reports/stryker-incremental.json`, so repeat runs only re-test changed code and tests. Run `npx stryker run --force` for a full baseline.
 - Treat `NoCoverage` as a reachability gap and `Survived` as an assertion gap. For each meaningful survivor, add a test that passes on the original code and fails on that mutant.
-- Prioritize authentication/PKCE invariants, callback failure paths, redirect safety, and lossless stream parsing. Do not add brittle implementation-detail assertions solely to increase the score.
+- Prioritize authentication and token-refresh invariants, redirect safety, and lossless stream parsing. Do not add brittle implementation-detail assertions solely to increase the score.
 - The initial score is advisory. On pull requests, reject new meaningful survivors in changed high-risk code; keep broader mutation-score trend checks outside the fast test loop.

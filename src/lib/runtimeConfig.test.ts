@@ -3,7 +3,6 @@ import {
   getAbsoluteApiUrl,
   getApiBaseUrl,
   getPaymentApiBaseUrl,
-  getSsoConfig,
   getWarehouseApiBaseUrl,
   isPaymentEnabled,
   isWarehouseEnabled,
@@ -45,69 +44,6 @@ describe('runtimeConfig', () => {
         { origin: 'https://awesome.byst.re' } as Location,
       ),
     ).toBe('https://awesome.byst.re/api/v1/ws-traffic');
-  });
-
-  it('returns null when SSO is explicitly disabled', () => {
-    expect(
-      getSsoConfig(
-        { VITE_SSO_ENABLED: 'false' },
-        { origin: 'https://awesome.byst.re' } as Location,
-      ),
-    ).toBeNull();
-  });
-
-  it('uses local training SSO defaults on the gateway origin', () => {
-    expect(
-      getSsoConfig(
-        {},
-        { origin: 'http://localhost:8081' } as Location,
-      ),
-    ).toEqual({
-      enabled: true,
-      authority: 'http://localhost:8082/realms/awesome-testing',
-      clientId: 'awesome-testing-frontend',
-      redirectUri: 'http://localhost:8081/auth/sso/callback',
-      postLogoutRedirectUri: 'http://localhost:8081/login',
-    });
-  });
-
-  it('uses local training SSO defaults on the loopback gateway origin', () => {
-    expect(
-      getSsoConfig(
-        {},
-        { origin: 'http://127.0.0.1:8081' } as Location,
-      ),
-    ).toEqual({
-      enabled: true,
-      authority: 'http://localhost:8082/realms/awesome-testing',
-      clientId: 'awesome-testing-frontend',
-      redirectUri: 'http://127.0.0.1:8081/auth/sso/callback',
-      postLogoutRedirectUri: 'http://127.0.0.1:8081/login',
-    });
-  });
-
-  it('does not implicitly enable training SSO on unrelated origins', () => {
-    expect(
-      getSsoConfig(
-        {},
-        { origin: 'https://awesome.byst.re' } as Location,
-      ),
-    ).toBeNull();
-  });
-
-  it('does not implicitly enable training SSO on unrelated loopback ports', () => {
-    expect(
-      getSsoConfig(
-        {},
-        { origin: 'http://localhost:5173' } as Location,
-      ),
-    ).toBeNull();
-    expect(
-      getSsoConfig(
-        {},
-        { origin: 'http://127.0.0.1:4001' } as Location,
-      ),
-    ).toBeNull();
   });
 
   it('trims configured API values and repeated trailing slashes', () => {
@@ -235,27 +171,6 @@ describe('runtimeConfig', () => {
     it('follows the backend during local vite development and same-origin builds', () => {
       expect(getPaymentApiBaseUrl({ DEV: true }, production)).toBe('http://localhost:4001');
       expect(getPaymentApiBaseUrl({ DEV: false }, production)).toBe('https://awesome.byst.re');
-    });
-  });
-
-  it('normalizes SSO urls against the current origin', () => {
-    expect(
-      getSsoConfig(
-        {
-          VITE_SSO_ENABLED: 'true',
-          VITE_SSO_AUTHORITY: '  https://sso.example.com///  ',
-          VITE_SSO_CLIENT_ID: '  awesome-ui  ',
-          VITE_SSO_REDIRECT_URI: '  /auth/sso/callback  ',
-          VITE_SSO_POST_LOGOUT_REDIRECT_URI: '  /login  ',
-        },
-        { origin: 'https://awesome.byst.re' } as Location,
-      ),
-    ).toEqual({
-      enabled: true,
-      authority: 'https://sso.example.com',
-      clientId: 'awesome-ui',
-      redirectUri: 'https://awesome.byst.re/auth/sso/callback',
-      postLogoutRedirectUri: 'https://awesome.byst.re/login',
     });
   });
 });

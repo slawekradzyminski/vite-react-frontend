@@ -6,7 +6,6 @@ export default {
     'src/lib/commerceTransport.ts',
     'src/lib/runtimeConfig.ts',
     'src/lib/sse.ts',
-    'src/lib/sso.ts',
     'src/lib/trafficPresentation.ts',
     // Authentication and authorization: token refresh, storage, roles, route guard.
     'src/lib/api.ts',

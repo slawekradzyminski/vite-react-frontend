@@ -25,22 +25,6 @@ vi.mock('../../hooks/useToast', () => ({
   useToast: () => ({ toast: mockToast }),
 }));
 
-const mockSso = vi.hoisted(() => ({
-  beginLogin: vi.fn(),
-  beginSocialLogin: vi.fn(),
-  rememberLoginReturnTo: vi.fn(),
-  enabled: false,
-}));
-
-vi.mock('../../lib/sso', () => ({
-  sso: {
-    isEnabled: () => mockSso.enabled,
-    beginLogin: mockSso.beginLogin,
-    beginSocialLogin: mockSso.beginSocialLogin,
-    rememberLoginReturnTo: mockSso.rememberLoginReturnTo,
-  },
-}));
-
 // Variable declarations after all mocks
 const mockNavigate = vi.fn();
 const mockLocation = { state: null, search: '' };
@@ -55,7 +39,6 @@ describe('LoginPage', () => {
     user = userEvent.setup();
     mockLocation.state = null;
     mockLocation.search = '';
-    mockSso.enabled = false;
     
     // Mock localStorage
     Object.defineProperty(window, 'localStorage', {
@@ -81,7 +64,22 @@ describe('LoginPage', () => {
     expect(screen.getByTestId('login-submit-button')).toBeInTheDocument();
     expect(screen.getByTestId('login-register-link')).toBeInTheDocument();
     expect(screen.getByTestId('login-playground-notice')).toHaveTextContent('Public training playground only');
-    expect(screen.queryByTestId('login-sso-button')).not.toBeInTheDocument();
+  });
+
+  it('offers only username and password sign-in, without SSO or social login', () => {
+    // when
+    render(<LoginPage />);
+
+    // then
+    for (const testId of ['login-sso-button', 'login-sso-divider', 'login-google-button', 'login-github-button']) {
+      expect(screen.queryByTestId(testId)).not.toBeInTheDocument();
+    }
+    expect(screen.queryByRole('button', { name: /sso|google|github/i })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual([
+      'Forgot password?',
+      'Sign in',
+      'Register',
+    ]);
   });
 
   it('exposes the page title as the only h1 and sets the document title', () => {
@@ -109,14 +107,6 @@ describe('LoginPage', () => {
     expect(password).toHaveAttribute('aria-invalid', 'true');
     expect(password).toHaveAttribute('aria-describedby', screen.getByTestId('login-password-error').id);
     expect(password).toHaveAccessibleDescription(screen.getByTestId('login-password-error').textContent!);
-  });
-
-  it('renders the SSO button when enabled', () => {
-    mockSso.enabled = true;
-
-    render(<LoginPage />);
-
-    expect(screen.getByTestId('login-sso-button')).toBeInTheDocument();
   });
 
   it('displays validation errors for empty fields', async () => {
@@ -314,18 +304,6 @@ describe('LoginPage', () => {
     
     // then
     expect(mockNavigate).toHaveBeenCalledWith('/register');
-  });
-
-  it('starts SSO login when the SSO button is clicked', async () => {
-    mockSso.enabled = true;
-    mockLocation.search = '?returnTo=%2Fproducts%3Fview%3Dfeatured';
-
-    render(<LoginPage />);
-
-    await user.click(screen.getByTestId('login-sso-button'));
-
-    expect(mockSso.rememberLoginReturnTo).toHaveBeenCalledWith('/products?view=featured');
-    expect(mockSso.beginLogin).toHaveBeenCalled();
   });
 
   it('displays toast from location state if present', async () => {

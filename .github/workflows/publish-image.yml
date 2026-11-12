@@ -160,12 +160,11 @@ jobs:
       - run: npx playwright install chromium --with-deps
 
       - name: Make readiness scripts executable
-        run: chmod +x scripts/wait-for-backend.sh scripts/wait-for-frontend.sh scripts/wait-for-keycloak.sh
+        run: chmod +x scripts/wait-for-backend.sh scripts/wait-for-frontend.sh
 
       - name: Wait for the browser-test stack
         run: |
           ./scripts/wait-for-backend.sh
-          ./scripts/wait-for-keycloak.sh
           ./scripts/wait-for-frontend.sh
 
       - name: Run Playwright tests (shard ${{ matrix.shard }}/3)

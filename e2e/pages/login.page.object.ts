@@ -5,7 +5,6 @@ export class LoginPage {
   readonly usernameInput: Locator;
   readonly passwordInput: Locator;
   readonly signInButton: Locator;
-  readonly ssoButton: Locator;
   readonly toast: Locator;
   readonly registerLink: Locator;
   readonly mfaCodeInput: Locator;
@@ -15,7 +14,6 @@ export class LoginPage {
     this.usernameInput = page.getByLabel('Username');
     this.passwordInput = page.getByLabel('Password');
     this.signInButton = page.getByTestId('login-submit-button');
-    this.ssoButton = page.getByTestId('login-sso-button');
     this.toast = page.locator('[data-state="open"]');
     this.registerLink = page.getByRole('button', { name: 'Register' });
     this.mfaCodeInput = page.getByTestId('login-mfa-code-input');

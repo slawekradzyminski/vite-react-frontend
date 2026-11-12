@@ -12,7 +12,6 @@ export default defineConfig({
       'src/lib/commerceTransport.test.ts',
       'src/lib/runtimeConfig.test.ts',
       'src/lib/sse.test.ts',
-      'src/lib/sso.test.ts',
       'src/lib/api.test.ts',
       'src/lib/authStorage.test.ts',
       'src/lib/roles.test.ts',

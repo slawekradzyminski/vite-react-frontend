@@ -14,7 +14,6 @@ vi.mock('./pages/auth/loginPage', () => ({ LoginPage: () => 'page:Login' }));
 vi.mock('./pages/auth/registerPage', () => ({ RegisterPage: () => 'page:Register' }));
 vi.mock('./pages/auth/forgotPasswordPage', () => ({ ForgotPasswordPage: () => 'page:ForgotPassword' }));
 vi.mock('./pages/auth/resetPasswordPage', () => ({ ResetPasswordPage: () => 'page:ResetPassword' }));
-vi.mock('./pages/auth/ssoCallbackPage', () => ({ SsoCallbackPage: () => 'page:SsoCallback' }));
 vi.mock('./pages/home/homePage', () => ({ HomePage: () => 'page:Home' }));
 vi.mock('./pages/users/usersPage', () => ({ UsersPage: () => 'page:Users' }));
 vi.mock('./pages/users/editUserPage', () => ({ EditUserPage: () => 'page:EditUser' }));
@@ -57,7 +56,6 @@ const publicRoutes: Array<[string, string]> = [
   ['/register', 'page:Register'],
   ['/forgot-password', 'page:ForgotPassword'],
   ['/reset', 'page:ResetPassword'],
-  ['/auth/sso/callback', 'page:SsoCallback'],
 ];
 
 const signedInRoutes: Array<[string, string]> = [
@@ -177,6 +175,12 @@ describe('AppRoutes access contract', () => {
     expect(await screen.findByText('page:Login')).toBeInTheDocument();
   });
 
+  it('no longer serves the removed SSO callback route', () => {
+    const { container } = renderAt('/auth/sso/callback');
+
+    expect(container).toBeEmptyDOMElement();
+    expect(auth.me).not.toHaveBeenCalled();
+  });
 });
 
 describe('warehouse-service routes', () => {

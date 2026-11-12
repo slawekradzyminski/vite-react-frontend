@@ -231,14 +231,6 @@ describe('auth API', () => {
       expect(mockAxios.post).toHaveBeenCalledWith('/api/v1/users/logout', { refreshToken: 'refresh-123' });
     });
   });
-
-  describe('ssoExchange', () => {
-    it('calls the SSO exchange endpoint with the id token', async () => {
-      await auth.ssoExchange({ idToken: 'id-token-123' });
-
-      expect(mockAxios.post).toHaveBeenCalledWith('/api/v1/users/sso/exchange', { idToken: 'id-token-123' });
-    });
-  });
 });
 
 describe('API Client', () => {
@@ -485,7 +477,7 @@ describe('API Client', () => {
       });
 
       const error = {
-        config: { url: '/api/v1/users/sso/exchange', headers: {}, _retry: false },
+        config: { url: '/api/v1/users/signin', headers: {}, _retry: false },
         response: { status: 401 },
       };
 

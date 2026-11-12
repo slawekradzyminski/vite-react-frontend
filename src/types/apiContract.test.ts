@@ -21,7 +21,6 @@ import type {
   RegisterRequest,
   ResetPasswordRequest,
   Role,
-  SsoExchangeRequest,
   TokenPair,
   User,
   UserEditDTO,
@@ -147,7 +146,6 @@ describe('backend API contract', () => {
     expectTypeOf<RequestViolations<RefreshTokenRequest, Schemas['RefreshTokenRequestDto']>>().toEqualTypeOf<never>();
     expectTypeOf<RequestViolations<ForgotPasswordRequest, Schemas['ForgotPasswordRequestDto']>>().toEqualTypeOf<never>();
     expectTypeOf<RequestViolations<ResetPasswordRequest, Schemas['ResetPasswordRequestDto']>>().toEqualTypeOf<never>();
-    expectTypeOf<RequestViolations<SsoExchangeRequest, Schemas['SsoExchangeRequestDto']>>().toEqualTypeOf<never>();
     expectTypeOf<RequestViolations<MfaChallengeRequest, Schemas['MfaChallengeRequestDto']>>().toEqualTypeOf<never>();
     expectTypeOf<RequestViolations<MfaCodeRequest, Schemas['MfaCodeRequestDto']>>().toEqualTypeOf<never>();
     expectTypeOf<RequestViolations<MfaProtectedActionRequest, Schemas['MfaProtectedActionRequestDto']>>().toEqualTypeOf<never>();
