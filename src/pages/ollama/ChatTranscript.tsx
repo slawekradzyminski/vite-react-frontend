@@ -81,7 +81,7 @@ const ToolMessage = ({ message }: { message: ChatMessageDto }) => {
           Function output · {message.tool_name ?? 'tool'}
         </div>
         <pre
-          className="overflow-x-auto whitespace-pre-wrap rounded-[1rem] border border-stone-200 bg-white p-3 text-xs text-slate-800"
+          className="overflow-x-auto whitespace-pre-wrap rounded-[1rem] border border-stone-200 bg-white p-3 text-xs text-slate-800 [overflow-wrap:anywhere]"
           data-testid="tool-message-content"
         >
           {formattedContent}
@@ -107,9 +107,10 @@ const ToolCallNotice = ({ message }: { message: ChatMessageDto }) => {
       </div>
       <ul className="mt-2 space-y-1">
         {message.tool_calls.map((toolCall, index) => (
-          <li key={`${toolCall.function.name}-${index}`} className="flex flex-wrap gap-1">
-            <span className="font-semibold">{toolCall.function.name}</span>
-            <code className="rounded bg-white/90 px-1">{JSON.stringify(toolCall.function.arguments ?? {})}</code>
+          <li key={`${toolCall.function.name}-${index}`} className="flex min-w-0 flex-wrap gap-1">
+            <span className="font-semibold [overflow-wrap:anywhere]">{toolCall.function.name}</span>
+            {/* Arguments are one long JSON token: let it wrap inside the bubble on narrow screens. */}
+            <code className="min-w-0 max-w-full whitespace-pre-wrap rounded bg-white/90 px-1 [overflow-wrap:anywhere]" data-testid="tool-call-arguments">{JSON.stringify(toolCall.function.arguments ?? {})}</code>
           </li>
         ))}
       </ul>

@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures/mocked-session.fixture';
-import { fulfillWithSchema, type BackendSchema } from '../mocks/backendContract';
+import { eventStream, fulfillWithSchema, type BackendSchema } from '../mocks/backendContract';
 import { cartMocks } from '../mocks/cartMocks';
 import { productSearchMocks } from '../mocks/productSearchMocks';
 import { expectContainedIn, expectNoHorizontalPageOverflow, expectReachable } from '../utils/layout.utils';
@@ -186,4 +186,31 @@ test.describe('Responsive layouts (mocked backend)', () => {
       await expectNoHorizontalPageOverflow(image);
     });
   }
+
+  test('tool-call arguments wrap inside the message bubble on phones (T-045)', async ({ mockedClient }) => {
+    // given
+    const { page } = mockedClient;
+    await page.setViewportSize(PHONE);
+    await page.route('**/api/v1/ollama/chat/tools', (route) => route.fulfill({
+      status: 200,
+      headers: { 'content-type': 'text/event-stream' },
+      body: eventStream('ChatResponseDto', [
+        { message: { role: 'assistant', content: '', tool_calls: [{ function: { name: 'list_products', arguments: { category: 'beauty', inStockOnly: true, offset: 0, limit: 25 } } }] }, done: false },
+        { message: { role: 'tool', tool_name: 'list_products', content: '{"products":[{"id":31,"name":"Hydrating-Facial-Serum-With-Hyaluronic-Acid-And-Vitamin-C"}],"total":1}' }, done: false },
+        { message: { role: 'assistant', content: 'We have one Beauty product.' }, done: true },
+      ]),
+    }));
+    await page.goto('/llm/tools');
+
+    // when
+    await page.getByTestId('chat-input').fill('What Beauty products do we have available?');
+    await page.getByTestId('chat-send-button').click();
+
+    // then
+    const notice = page.getByTestId('tool-call-notice');
+    await expect(notice).toBeVisible();
+    await expectContainedIn(page.getByTestId('tool-call-arguments'), notice);
+    await expectContainedIn(page.getByTestId('tool-message-content'), page.getByTestId('tool-message'));
+    await expectNoHorizontalPageOverflow(notice);
+  });
 });
