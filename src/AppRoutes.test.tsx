@@ -63,8 +63,6 @@ const signedInRoutes: Array<[string, string]> = [
   ['/webmcp', 'page:WebMcp'],
   ['/products', 'page:Products'],
   ['/products/7', 'page:ProductDetails'],
-  ['/users', 'page:Users'],
-  ['/users/alice/edit', 'page:EditUser'],
   ['/email', 'page:Email'],
   ['/qr', 'page:QrCode'],
   ['/llm', 'page:Llm'],
@@ -83,6 +81,9 @@ const signedInRoutes: Array<[string, string]> = [
 ];
 
 const adminRoutes: Array<[string, string]> = [
+  // The user directory shows every account's contact data (X-12).
+  ['/users', 'page:Users'],
+  ['/users/alice/edit', 'page:EditUser'],
   ['/admin', 'page:AdminDashboard'],
   ['/admin/products', 'page:AdminProducts'],
   ['/admin/products/new', 'page:AdminProductForm'],

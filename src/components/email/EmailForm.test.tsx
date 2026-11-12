@@ -9,8 +9,13 @@ import { Role } from '../../types/auth';
 vi.mock('../../lib/api', () => ({
   auth: {
     getUsers: vi.fn(),
+    me: vi.fn(),
   },
 }));
+
+const meWithRoles = (roles: string[]) => ({
+  data: { id: 9, username: 'sender', email: 'sender@example.com', firstName: 'Send', lastName: 'Er', roles },
+}) as any;
 
 describe('EmailForm', () => {
   const user = userEvent.setup();
@@ -40,10 +45,36 @@ describe('EmailForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(auth.getUsers).mockResolvedValue(mockUsers as any);
+    vi.mocked(auth.me).mockResolvedValue(meWithRoles([Role.CLIENT]));
+  });
+
+  it('does not load the user directory for a client, who types the recipient', async () => {
+    // when
+    renderWithProviders(<EmailForm onSubmit={onSubmit} />);
+
+    // then
+    await waitFor(() => expect(auth.me).toHaveBeenCalled());
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(auth.getUsers).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('users-datalist')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('To')).not.toHaveAttribute('list');
+  });
+
+  it('sends a client email without a template or template properties', async () => {
+    // Only GENERIC emails may come from clients; the form leaves the template to the backend default.
+    renderWithProviders(<EmailForm onSubmit={onSubmit} />);
+    await user.type(screen.getByLabelText('To'), 'friend@example.com');
+    await user.type(screen.getByLabelText('Subject'), 'Hello there');
+    await user.type(screen.getByLabelText('Message'), 'A message long enough to send.');
+    await user.click(screen.getByRole('button', { name: 'Send Email' }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect(Object.keys(onSubmit.mock.calls[0][0]).sort()).toEqual(['message', 'subject', 'to']);
   });
 
   // given
-  it('renders form fields correctly', async () => {
+  it('offers every user as a recipient to an admin', async () => {
+    vi.mocked(auth.me).mockResolvedValue(meWithRoles([Role.ADMIN]));
     // when
     renderWithProviders(<EmailForm onSubmit={onSubmit} />);
 

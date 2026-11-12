@@ -10,6 +10,8 @@ import { emailSchema } from '../../validators/email';
 import type { EmailFormData } from '../../types/email';
 import { Surface } from '../ui/surface';
 import { fieldErrorId } from '../../lib/fieldError';
+import { useMe } from '../../hooks/useMe';
+import { hasRole } from '../../lib/roles';
 
 interface EmailFormProps {
   onSubmit: (data: EmailFormData) => void;
@@ -26,9 +28,14 @@ export function EmailForm({ onSubmit, isLoading = false }: EmailFormProps) {
     mode: 'onSubmit',
   });
 
+  // The recipient picker lists every account's address, so only admins load it; clients type
+  // the address (X-12). A 3.19+ backend masks other users' emails for clients anyway.
+  const { data: me } = useMe();
+  const isAdmin = hasRole(me?.data?.roles, 'ADMIN');
   const { data: users } = useQuery({
     queryKey: ['users'],
     queryFn: () => auth.getUsers(),
+    enabled: isAdmin,
   });
 
   const handleFormSubmit = handleSubmit((data) => {
@@ -45,18 +52,20 @@ export function EmailForm({ onSubmit, isLoading = false }: EmailFormProps) {
           className="mt-2"
           placeholder="Recipient email"
           error={errors.to?.message}
-          list="users"
+          list={isAdmin ? 'users' : undefined}
           {...register('to')}
           data-testid="email-to-input"
         />
         {errors.to?.message && (
           <p className="mt-1 text-sm text-red-600" role="alert" id={fieldErrorId('to')} data-testid="email-to-error">{errors.to.message}</p>
         )}
-        <datalist id="users" data-testid="users-datalist">
-          {users?.data && users?.data.map((user) => (
-            <option key={user.email} value={user.email} />
-          ))}
-        </datalist>
+        {isAdmin && (
+          <datalist id="users" data-testid="users-datalist">
+            {users?.data && users?.data.map((user) => (
+              <option key={user.email} value={user.email} />
+            ))}
+          </datalist>
+        )}
       </Surface>
 
       <Surface variant="inset" padding="md" data-testid="email-subject-field">

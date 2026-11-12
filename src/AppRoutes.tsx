@@ -77,10 +77,11 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      {/* The user directory holds every account's contact data: admins only (X-12). */}
       <Route
         path="/users"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute requiredRole="ADMIN">
             <UsersPage />
           </ProtectedRoute>
         }
@@ -88,7 +89,7 @@ export function AppRoutes() {
       <Route
         path="/users/:username/edit"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute requiredRole="ADMIN">
             <EditUserPage />
           </ProtectedRoute>
         }
