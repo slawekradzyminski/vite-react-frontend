@@ -118,4 +118,47 @@ test.describe('Responsive layouts (mocked backend)', () => {
       await expectNoHorizontalPageOverflow(page.getByTestId('cart-items-table'));
     });
   }
+
+  test('phones see the search and first products before the folded filters (T-062)', async ({ mockedClient }) => {
+    // given
+    const { page } = mockedClient;
+    await page.setViewportSize(PHONE);
+    const catalogue = Array.from({ length: 12 }, (_, index) => product(index + 1, { category: `Category ${index + 1}` }));
+    await page.route('**/api/v1/products', (route) => fulfillWithSchema(route, 'ProductDto', catalogue));
+    await productSearchMocks.mockSearch(page, catalogue.map((item) => ({ ...item, averageRating: null, reviewCount: 0 })));
+
+    // when
+    await page.goto('/products');
+
+    // then
+    await expect(page.getByTestId('product-list')).toBeVisible();
+    await expect(page.getByTestId('products-filters-toggle')).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByTestId('products-category-category-1')).toBeHidden();
+    await expect(page.getByTestId('product-search')).toBeInViewport();
+
+    // when
+    await page.getByTestId('products-filters-toggle').click();
+    await page.getByTestId('products-category-category-3').click();
+
+    // then
+    await expect(page).toHaveURL(/category=Category(\+|%20)3/);
+    await expect(page.getByTestId('products-category-category-3')).toBeChecked();
+    await expect(page.getByTestId('products-filters-toggle')).toHaveText(/Filters \(1\)/);
+  });
+
+  test('desktop keeps the filters open next to the results (T-062)', async ({ mockedClient }) => {
+    // given
+    const { page } = mockedClient;
+    await page.setViewportSize({ width: 1280, height: 900 });
+    const catalogue = [product(1, { category: 'Books' })];
+    await page.route('**/api/v1/products', (route) => fulfillWithSchema(route, 'ProductDto', catalogue));
+    await productSearchMocks.mockSearch(page, catalogue.map((item) => ({ ...item, averageRating: null, reviewCount: 0 })));
+
+    // when
+    await page.goto('/products');
+
+    // then
+    await expect(page.getByTestId('products-category-books')).toBeVisible();
+    await expect(page.getByTestId('products-filters-toggle')).toBeHidden();
+  });
 });

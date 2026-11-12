@@ -168,4 +168,27 @@ test.describe('Axe accessibility scans (mocked backend)', () => {
     await expect(page.getByTestId('cart-item-remove-1')).toBeVisible();
     await expectNoAxeViolations(page);
   });
+
+  test('catalog filters folded on phones and open on desktop (T-062)', async ({ mockedClient }) => {
+    // given
+    const { page } = mockedClient;
+    const product = { id: 7, name: 'Desk Lamp', price: 25, category: 'Home', description: 'A lamp', imageUrl: '', stockQuantity: 4 };
+    await page.route('**/api/v1/products', (route) => fulfillWithSchema(route, 'ProductDto', [product]));
+    await productSearchMocks.mockSearch(page, [{ ...product, averageRating: null, reviewCount: 0 }]);
+    await page.setViewportSize({ width: 360, height: 800 });
+
+    // when
+    await page.goto('/products');
+
+    // then
+    await expect(page.getByTestId('products-filters-toggle')).toHaveAttribute('aria-expanded', 'false');
+    await expectNoAxeViolations(page);
+
+    // when
+    await page.getByTestId('products-filters-toggle').click();
+
+    // then
+    await expect(page.getByTestId('products-category-home')).toBeVisible();
+    await expectNoAxeViolations(page);
+  });
 });

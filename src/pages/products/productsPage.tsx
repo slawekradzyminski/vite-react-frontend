@@ -9,6 +9,7 @@ import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { commerceTransport } from '../../lib/commerceTransport';
 import { ProductSearch } from '../../components/products/ProductSearch';
 import { ProductsHero } from '../../components/products/ProductsHero';
+import { CatalogFilters } from '../../components/products/CatalogFilters';
 
 export function ProductsPage() {
   useDocumentTitle('Products');
@@ -47,7 +48,7 @@ function CatalogProductsPage() {
       <ProductsHero summary={`${allProducts.length} products across ${categories.length || 1} categories`} />
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[280px_minmax(0,1fr)]" data-testid="products-layout">
-        <aside className="min-w-0 xl:sticky xl:top-24 xl:self-start" data-testid="products-sidebar">
+        <CatalogFilters activeCount={selectedCategory ? 1 : 0}>
           <Surface variant="muted" padding="md" data-testid="products-categories-container">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Filter</p>
             <h2 className="mt-2 text-xl font-semibold text-slate-950" data-testid="products-categories-title">Categories</h2>
@@ -95,7 +96,7 @@ function CatalogProductsPage() {
               </div>
             )}
           </Surface>
-        </aside>
+        </CatalogFilters>
         
         <div className="min-w-0" data-testid="products-content">
           <ProductList category={selectedCategory} />
