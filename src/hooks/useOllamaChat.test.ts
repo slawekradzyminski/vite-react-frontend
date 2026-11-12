@@ -385,7 +385,7 @@ describe('useOllamaChat', () => {
     const retried = vi.mocked(ollama.chat).mock.calls[1][0].messages;
     expect(retried.map((message) => message.role)).toEqual(['system', 'user', 'user']);
     expect(retried.some((message) => message.role === 'assistant' && !message.content)).toBe(false);
-    expect(result.current.messages.at(-1)).toMatchObject({ role: 'assistant', content: 'Hi!' });
+    expect(result.current.messages[result.current.messages.length - 1]).toMatchObject({ role: 'assistant', content: 'Hi!' });
     consoleErrorSpy.mockRestore();
   });
 });
