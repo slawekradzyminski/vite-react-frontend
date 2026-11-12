@@ -71,7 +71,7 @@ export function OllamaGeneratePage({ hideTitle = false }: OllamaGeneratePageProp
           onThinkChange={setThink}
         />
 
-        <Surface as="section" variant="default" padding="md" className="space-y-4">
+        <Surface as="section" variant="default" padding="md" className="space-y-4 p-3 sm:p-5">
           <div className="space-y-1.5" data-testid="prompt-container">
             <Label htmlFor="prompt" className="block text-xs uppercase tracking-[0.18em] text-slate-600" data-testid="prompt-label">
               Prompt

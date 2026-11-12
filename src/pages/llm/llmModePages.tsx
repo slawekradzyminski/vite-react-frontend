@@ -19,9 +19,11 @@ interface LlmModeLayoutProps {
 function LlmModeLayout({ badge, title, children, testId }: LlmModeLayoutProps) {
   useDocumentTitle(title);
   return (
-    <div className="min-h-screen py-12" data-testid={testId}>
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <Surface as="section" variant="hero" padding="lg" className="flex flex-col gap-6">
+    <div className="min-h-screen py-4 sm:py-12" data-testid={testId}>
+      {/* The page already has side gutters; on phones the nested cards keep their padding small
+          so the conversation and the input get most of the width. */}
+      <div className="mx-auto max-w-6xl sm:px-6 lg:px-8">
+        <Surface as="section" variant="hero" padding="lg" className="flex flex-col gap-6 p-3 sm:p-6 md:p-7">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <Badge tone="tracking" className="text-[11px] tracking-[0.24em]">
@@ -36,7 +38,7 @@ function LlmModeLayout({ badge, title, children, testId }: LlmModeLayoutProps) {
               </Link>
             </Button>
           </div>
-          <Surface variant="muted" padding="sm" data-testid="llm-mode-workspace">
+          <Surface variant="muted" padding="sm" className="p-2 sm:p-4" data-testid="llm-mode-workspace">
             {children}
           </Surface>
         </Surface>

@@ -213,4 +213,24 @@ test.describe('Responsive layouts (mocked backend)', () => {
     await expectContainedIn(page.getByTestId('tool-message-content'), page.getByTestId('tool-message'));
     await expectNoHorizontalPageOverflow(notice);
   });
+
+  for (const path of ['/llm/chat', '/llm/tools']) {
+    test(`${path} gives the message input most of a phone's width (T-046)`, async ({ mockedClient }) => {
+      // given
+      const { page } = mockedClient;
+      await page.setViewportSize(PHONE);
+
+      // when
+      await page.goto(path);
+
+      // then
+      const input = page.getByTestId('chat-input');
+      const send = page.getByTestId('chat-send-button');
+      await expect(input).toBeVisible();
+      const [inputBox, sendBox] = [await input.boundingBox(), await send.boundingBox()];
+      expect(inputBox!.width, 'input width at 360 px').toBeGreaterThanOrEqual(240);
+      expect(sendBox!.y, 'Send sits below the input').toBeGreaterThanOrEqual(inputBox!.y + inputBox!.height);
+      await expectNoHorizontalPageOverflow(input);
+    });
+  }
 });
