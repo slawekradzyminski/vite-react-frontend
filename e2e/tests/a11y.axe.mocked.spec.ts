@@ -100,4 +100,30 @@ test.describe('Axe accessibility scans (mocked backend)', () => {
     await expect(page.getByTestId('product-form-error')).toHaveText('Internal server error');
     await expectNoAxeViolations(page);
   });
+
+  test('a failed cart read is announced on product pages (T-065)', async ({ mockedClient }) => {
+    // given
+    const { page } = mockedClient;
+    const product = { id: 7, name: 'Desk Lamp', price: 25, category: 'Home', description: 'A lamp', imageUrl: '', stockQuantity: 4 };
+    await page.route('**/api/v1/cart', (route) => fulfillWithSchema(route, 'ErrorDto', { message: 'Internal server error' }, 500));
+    await page.route('**/api/v1/products', (route) => fulfillWithSchema(route, 'ProductDto', [product]));
+    await productSearchMocks.mockSearch(page, [{ ...product, averageRating: null, reviewCount: 0 }]);
+    await page.route('**/api/v1/products/7', (route) => fulfillWithSchema(route, 'ProductDto', product));
+
+    // when
+    await page.goto('/products/7');
+
+    // then
+    await expect(page.getByTestId('product-cart-unavailable')).toBeVisible();
+    await expect(page.getByTestId('add-to-cart')).toBeDisabled();
+    await expectNoAxeViolations(page);
+
+    // when
+    await page.goto('/products');
+
+    // then
+    await expect(page.getByTestId('product-cart-unavailable')).toBeVisible();
+    await expect(page.getByTestId('product-add-button')).toBeDisabled();
+    await expectNoAxeViolations(page);
+  });
 });

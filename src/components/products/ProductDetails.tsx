@@ -38,12 +38,15 @@ export function ProductDetails() {
   // Only a failed request other than 404 is a loading problem; everything else means the product does not exist.
   const productMissing = productId === null || responseStatus(error) === 404 || (!error && !isLoading && !product?.data);
 
-  const { data: cartData } = useQuery({
+  const signedIn = !!authStorage.getAccessToken();
+  const { data: cartData, isLoading: isLoadingCart, isError: cartFailed, isFetching: isFetchingCart, refetch: refetchCart } = useQuery({
     queryKey: ['cart'],
     queryFn: cart.getCart,
-    enabled: !!authStorage.getAccessToken(),
+    enabled: signedIn,
     retry: false
   });
+  // Without a known cart the page cannot tell "Add" from "Update", so cart actions wait for it.
+  const cartUnknown = signedIn && (isLoadingCart || cartFailed);
 
   const loadFailed = !isLoading && (!!error || !product?.data);
   useDocumentTitle(isLoading ? 'Product details' : loadFailed ? (productMissing ? 'Product not found' : 'Product unavailable') : product?.data?.name);
@@ -257,12 +260,27 @@ export function ProductDetails() {
             </div>
           )}
           
+          {cartFailed && (
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="alert" data-testid="product-cart-unavailable">
+              <span>Your cart could not be loaded, so we cannot tell whether this product is already in it.</span>
+              <button
+                type="button"
+                className="rounded-full border border-amber-300 bg-white px-4 py-1.5 text-sm font-medium text-amber-900 transition hover:bg-amber-100 disabled:opacity-60"
+                onClick={() => refetchCart()}
+                disabled={isFetchingCart}
+                data-testid="product-cart-retry"
+              >
+                {isFetchingCart ? 'Retrying...' : 'Retry'}
+              </button>
+            </div>
+          )}
+
           <div className="mt-8 flex flex-wrap gap-3" data-testid="product-actions">
             {cartQuantity > 0 && (
               <button
                 className="rounded-full border border-red-200 bg-red-50 px-5 py-3 text-sm font-medium text-red-700 transition hover:bg-red-100 disabled:border-stone-200 disabled:bg-stone-100 disabled:text-slate-400"
                 onClick={handleRemoveFromCart}
-                disabled={isRemovingFromCart || isAddingToCart}
+                disabled={isRemovingFromCart || isAddingToCart || cartUnknown}
                 data-testid="remove-from-cart"
               >
                 {isRemovingFromCart ? 'Removing...' : 'Remove from Cart'}
@@ -272,7 +290,7 @@ export function ProductDetails() {
             <button
               className={`${cartQuantity > 0 ? 'flex-1' : 'w-full'} rounded-full bg-slate-900 px-6 py-3 text-sm font-medium text-stone-50 transition hover:bg-slate-800 disabled:bg-stone-300`}
               onClick={handleAddToCart}
-              disabled={isAddingToCart || isRemovingFromCart || productData.stockQuantity < 1}
+              disabled={isAddingToCart || isRemovingFromCart || productData.stockQuantity < 1 || cartUnknown}
               data-testid="add-to-cart"
             >
               {isAddingToCart 

@@ -27,12 +27,15 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
   const nameId = useId();
   const outOfStock = product.stockQuantity < 1;
 
-  const { data: cartData } = useQuery({
+  const signedIn = !!authStorage.getAccessToken();
+  const { data: cartData, isLoading: isLoadingCart, isError: cartFailed, isFetching: isFetchingCart, refetch: refetchCart } = useQuery({
     queryKey: ['cart'],
     queryFn: cart.getCart,
     retry: false,
-    enabled: !!authStorage.getAccessToken(),
+    enabled: signedIn,
   });
+  // Without a known cart the card cannot tell "Add" from "Update", so cart actions wait for it.
+  const cartUnknown = signedIn && (isLoadingCart || cartFailed);
 
   const cartItem = cartData?.data?.items?.find(item => item.productId === product.id);
   const cartQuantity = cartItem?.quantity || 0;
@@ -211,13 +214,28 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
               </span>
             )}
           </div>
+          {cartFailed && (
+            <div className="mb-3 flex items-center justify-between gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900" data-testid="product-cart-unavailable">
+              <span>Cart unavailable</span>
+              <button
+                type="button"
+                className="font-medium underline underline-offset-2 disabled:opacity-60"
+                onClick={(e) => { e.stopPropagation(); refetchCart(); }}
+                disabled={isFetchingCart}
+                aria-label={`Retry loading your cart for ${product.name}`}
+                data-testid="product-cart-retry"
+              >
+                Retry
+              </button>
+            </div>
+          )}
           <div className="flex justify-between items-center" data-testid="product-actions">
             <div className="flex gap-2 w-full justify-end" data-testid="product-buttons">
               {cartQuantity > 0 && (
                 <button
                   className="flex min-w-[96px] items-center justify-center rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition hover:bg-red-100 disabled:border-stone-200 disabled:bg-stone-100 disabled:text-slate-400"
                   onClick={handleRemoveFromCart}
-                  disabled={isLoading}
+                  disabled={isLoading || cartUnknown}
                   aria-label={`Remove ${product.name} from cart`}
                   data-testid="product-remove-button"
                 >
@@ -227,7 +245,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
               <button
                 className="flex min-w-[128px] items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-stone-50 transition hover:bg-slate-800 disabled:bg-stone-300"
                 onClick={handleAddToCart}
-                disabled={isLoading || outOfStock}
+                disabled={isLoading || outOfStock || cartUnknown}
                 aria-describedby={nameId}
                 data-testid="product-add-button"
               >
