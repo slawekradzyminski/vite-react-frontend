@@ -92,6 +92,7 @@ import { authStorage } from './authStorage';
 import { commerceTransport } from './commerceTransport';
 import { createCommerceGraphql } from './commerceGraphql';
 import { getAbsoluteApiUrl, getApiBaseUrl, getPaymentApiBaseUrl, getWarehouseApiBaseUrl } from './runtimeConfig';
+import { withTrackedWrites } from './pendingWrites';
 
 const api = axios.create({
   baseURL: getApiBaseUrl(),
@@ -701,7 +702,10 @@ export const adminWebhooks = {
 
 const graphqlCommerce = createCommerceGraphql(api);
 export const products = commerceTransport === 'graphql' ? graphqlCommerce.products : restProducts;
-export const cart = commerceTransport === 'graphql' ? graphqlCommerce.cart : restCart;
+export const cart = withTrackedWrites(
+  commerceTransport === 'graphql' ? graphqlCommerce.cart : restCart,
+  ['addToCart', 'updateCartItem', 'removeFromCart', 'clearCart'],
+);
 export const orders = commerceTransport === 'graphql' ? graphqlCommerce.orders : restOrders;
 export const inventory = commerceTransport === 'graphql' ? graphqlCommerce.inventory : restInventory;
 
