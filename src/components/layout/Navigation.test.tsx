@@ -289,6 +289,44 @@ describe('Navigation', () => {
     expect(window.location.pathname).toBe('/login');
   });
 
+  it('starts a new traffic session on logout so the next user never sees this one', async () => {
+    // given
+    localStorage.setItem('token', 'fake-token');
+    localStorage.setItem('refreshToken', 'fake-refresh');
+    localStorage.setItem('clientSessionId', 'signed-in-user-session-01');
+    vi.mocked(auth.me).mockResolvedValue({ data: {
+      username: 'alice', firstName: 'Alice', lastName: 'Tester', roles: [Role.CLIENT],
+    } } as never);
+    renderWithProviders(<Navigation />);
+    // when
+    await user.click(await screen.findByTestId('logout-button'));
+    // then
+    await waitFor(() => expect(localStorage.getItem('token')).toBeNull());
+    expect(auth.logout).toHaveBeenCalledWith({ refreshToken: 'fake-refresh' });
+    expect(localStorage.getItem('clientSessionId')).not.toBe('signed-in-user-session-01');
+    expect(localStorage.getItem('clientSessionId')).toMatch(/^[A-Za-z0-9_-]{16,128}$/);
+  });
+
+  it('still signs out and rotates the traffic session when the logout call is rejected', async () => {
+    // given: the backend already revoked the session (logout elsewhere, password reset)
+    localStorage.setItem('token', 'revoked-token');
+    localStorage.setItem('refreshToken', 'revoked-refresh');
+    localStorage.setItem('clientSessionId', 'signed-in-user-session-02');
+    vi.mocked(auth.me).mockResolvedValue({ data: {
+      username: 'alice', firstName: 'Alice', lastName: 'Tester', roles: [Role.CLIENT],
+    } } as never);
+    vi.mocked(auth.logout).mockRejectedValueOnce({ response: { status: 401 } });
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    renderWithProviders(<Navigation />);
+    // when
+    await user.click(await screen.findByTestId('logout-button'));
+    // then
+    await waitFor(() => expect(window.location.pathname).toBe('/login'));
+    expect(localStorage.getItem('token')).toBeNull();
+    expect(localStorage.getItem('refreshToken')).toBeNull();
+    expect(localStorage.getItem('clientSessionId')).not.toBe('signed-in-user-session-02');
+  });
+
   it('toggles mobile menu correctly', async () => {
     // given
     localStorage.setItem('token', 'fake-token');

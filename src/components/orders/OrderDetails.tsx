@@ -16,6 +16,8 @@ import { useMoney } from '../../hooks/useMoney';
 import { parseRouteId } from '../../lib/routeIds';
 import { retryServerErrors } from '../../lib/requestErrors';
 import { useMe } from '../../hooks/useMe';
+import { ModalDialog } from '../ui/dialog';
+import { Button } from '../ui/button';
 
 export const OrderDetails = () => {
   const { formatMoney } = useMoney();
@@ -41,6 +43,8 @@ export const OrderDetails = () => {
 
   // State to track the selected status in the dropdown
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | null>(null);
+  // In-app confirmation instead of window.confirm (X-30): styled, testable, and announced as a dialog.
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
 
   // Cancel order mutation
   const cancelOrderMutation = useMutation({
@@ -95,9 +99,12 @@ export const OrderDetails = () => {
     updateStatusMutation.isPending || !order || !effectiveSelectedStatus || effectiveSelectedStatus === order.status;
 
   const handleCancelOrder = () => {
-    if (window.confirm('Are you sure you want to cancel this order?')) {
-      cancelOrderMutation.mutate(orderId);
-    }
+    setConfirmingCancel(true);
+  };
+
+  const confirmCancelOrder = () => {
+    setConfirmingCancel(false);
+    cancelOrderMutation.mutate(orderId);
   };
 
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -209,6 +216,23 @@ export const OrderDetails = () => {
             {cancelOrderMutation.isPending ? 'Cancelling...' : 'Cancel Order'}
           </button>
         )}
+        <ModalDialog
+          open={confirmingCancel}
+          title={`Cancel order #${order.id}?`}
+          description="Are you sure you want to cancel this order? Reserved items go back into stock."
+          onClose={() => setConfirmingCancel(false)}
+          data-testid="order-cancel-dialog"
+        >
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={() => setConfirmingCancel(false)} data-testid="order-cancel-dialog-keep">
+              Keep order
+            </Button>
+            {/* red-700 on white text: the shared destructive colour misses the 4.5:1 contrast minimum. */}
+            <Button type="button" variant="destructive" className="bg-red-700 text-white hover:bg-red-800" onClick={confirmCancelOrder} data-testid="order-cancel-dialog-confirm">
+              Cancel order
+            </Button>
+          </div>
+        </ModalDialog>
 
         {isAdmin && (
           <div className="flex w-full flex-col gap-2 sm:ml-auto sm:w-auto sm:flex-row sm:items-center" data-testid="order-details-admin-controls">

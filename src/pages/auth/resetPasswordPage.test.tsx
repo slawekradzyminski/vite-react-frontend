@@ -65,6 +65,43 @@ describe('ResetPasswordPage', () => {
     });
   });
 
+  it('ends a session stored in this browser after a successful reset, since the reset revokes it', async () => {
+    const { auth } = await import('../../lib/api');
+    vi.mocked(auth.resetPassword).mockResolvedValue({} as any);
+    localStorage.setItem('token', 'revoked-access');
+    localStorage.setItem('refreshToken', 'revoked-refresh');
+    localStorage.setItem('clientSessionId', 'session-before-reset-01');
+
+    render(<ResetPasswordPage />);
+    await user.type(screen.getByTestId('reset-token-input'), 'token');
+    await user.type(screen.getByTestId('reset-password-input'), 'Password123');
+    await user.type(screen.getByTestId('reset-confirm-password-input'), 'Password123');
+    await user.click(screen.getByTestId('reset-submit-button'));
+
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/login', expect.any(Object)));
+    expect(localStorage.getItem('token')).toBeNull();
+    expect(localStorage.getItem('refreshToken')).toBeNull();
+    expect(localStorage.getItem('clientSessionId')).not.toBe('session-before-reset-01');
+  });
+
+  it('keeps a stored session when the reset is rejected', async () => {
+    const { auth } = await import('../../lib/api');
+    vi.mocked(auth.resetPassword).mockRejectedValue({ response: { data: { message: 'Token expired' } } });
+    localStorage.setItem('token', 'still-valid');
+    localStorage.setItem('clientSessionId', 'session-before-reset-02');
+
+    render(<ResetPasswordPage />);
+    await user.type(screen.getByTestId('reset-token-input'), 'token');
+    await user.type(screen.getByTestId('reset-password-input'), 'Password123');
+    await user.type(screen.getByTestId('reset-confirm-password-input'), 'Password123');
+    await user.click(screen.getByTestId('reset-submit-button'));
+
+    await waitFor(() => expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'error' })));
+    expect(localStorage.getItem('token')).toBe('still-valid');
+    expect(localStorage.getItem('clientSessionId')).toBe('session-before-reset-02');
+    localStorage.clear();
+  });
+
   it('shows validation error when passwords do not match', async () => {
     render(<ResetPasswordPage />);
 

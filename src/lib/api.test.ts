@@ -429,6 +429,30 @@ describe('API Client', () => {
       });
     });
 
+    it('starts a new client session when a rejected session signs the user out', async () => {
+      const errorInterceptor = getErrorInterceptor();
+      localStorage.setItem('token', 'revoked-token');
+      localStorage.setItem('clientSessionId', 'previous-user-session-0001');
+      const originalLocation = window.location;
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: { href: 'http://localhost/' } as Location,
+      });
+
+      const error = { config: { url: '/api/v1/users/me', headers: {} }, response: { status: 401 } };
+      await expect(errorInterceptor(error as any)).rejects.toBe(error as any);
+
+      expect(window.location.href).toBe('/login');
+      expect(localStorage.getItem('token')).toBeNull();
+      expect(localStorage.getItem('clientSessionId')).not.toBe('previous-user-session-0001');
+      expect(localStorage.getItem('clientSessionId')).toMatch(/^[A-Za-z0-9_-]{16,128}$/);
+
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    });
+
     it('clears tokens when the refresh endpoint returns 401', async () => {
       const errorInterceptor = getErrorInterceptor();
       localStorage.setItem('token', 'expired-token');

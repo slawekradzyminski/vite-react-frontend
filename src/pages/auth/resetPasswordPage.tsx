@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { auth } from '../../lib/api';
+import { authStorage } from '../../lib/authStorage';
 import { useToast } from '../../hooks/useToast';
 import { ResetPasswordFormData, resetPasswordSchema } from '../../validators/auth';
 import { Surface } from '../../components/ui/surface';
@@ -40,6 +41,8 @@ export function ResetPasswordPage() {
   const onSubmit = async (data: ResetPasswordFormData) => {
     try {
       await auth.resetPassword(data);
+      // A reset revokes the account's tokens; a session still stored in this browser is over.
+      authStorage.signOut();
       toast({
         variant: 'success',
         title: 'Password updated',

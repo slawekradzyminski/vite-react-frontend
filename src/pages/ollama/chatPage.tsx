@@ -98,6 +98,7 @@ export function OllamaChatPage({ hideTitle = false }: OllamaChatPageProps) {
               onKeyDown={handleKeyPress}
               placeholder="Type your message..."
               disabled={isChatting}
+              aria-label="Message"
               data-testid="chat-input"
             />
             <Button

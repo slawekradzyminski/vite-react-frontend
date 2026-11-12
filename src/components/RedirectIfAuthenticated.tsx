@@ -18,7 +18,7 @@ export function RedirectIfAuthenticated({ children }: RedirectIfAuthenticatedPro
 
   useEffect(() => {
     if (token && isError) {
-      authStorage.clearTokens();
+      authStorage.signOut();
     }
   }, [token, isError]);
 

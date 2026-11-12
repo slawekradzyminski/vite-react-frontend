@@ -4,11 +4,13 @@ import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { useMe } from '../../hooks/useMe';
+import { hasRole } from '../../lib/roles';
 
 export function HomePage() {
   useDocumentTitle('Home');
   const navigate = useNavigate();
   const { data: user } = useMe();
+  const isAdmin = hasRole(user?.data?.roles, 'ADMIN');
 
   return (
     <div className="space-y-6 pb-10" data-testid="home-page">
@@ -54,23 +56,26 @@ export function HomePage() {
               <ArrowRight className="h-4 w-4 text-slate-400" />
             </button>
 
-            <button
-              type="button"
-              onClick={() => navigate('/users')}
-              className="flex items-center justify-between rounded-2xl border border-transparent bg-stone-50 px-4 py-4 text-left transition hover:border-stone-200 hover:bg-white"
-              data-testid="home-users-button"
-            >
-              <span className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-700 ring-1 ring-stone-200">
-                  <Users className="h-5 w-5" />
+            {/* The user directory is admin-only (X-12). */}
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => navigate('/users')}
+                className="flex items-center justify-between rounded-2xl border border-transparent bg-stone-50 px-4 py-4 text-left transition hover:border-stone-200 hover:bg-white"
+                data-testid="home-users-button"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-700 ring-1 ring-stone-200">
+                    <Users className="h-5 w-5" />
+                  </span>
+                  <span>
+                    <span className="block text-sm font-semibold text-slate-900">Users</span>
+                    <span className="block text-sm text-slate-600">Accounts, roles, and access checks.</span>
+                  </span>
                 </span>
-                <span>
-                  <span className="block text-sm font-semibold text-slate-900">Users</span>
-                  <span className="block text-sm text-slate-600">Accounts, roles, and access checks.</span>
-                </span>
-              </span>
-              <ArrowRight className="h-4 w-4 text-slate-400" />
-            </button>
+                <ArrowRight className="h-4 w-4 text-slate-400" />
+              </button>
+            )}
 
             <button
               type="button"
@@ -105,12 +110,12 @@ export function HomePage() {
                 Daily control areas
               </h2>
             </div>
-            <Badge className="font-medium">
-              3 primary routes
+            <Badge className="font-medium" data-testid="home-features-count">
+              {isAdmin ? 3 : 2} primary routes
             </Badge>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className={`grid gap-4 ${isAdmin ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
             <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-5" data-testid="home-feature-products">
               <h3 className="text-lg font-semibold text-slate-900">Product management</h3>
               <p className="mt-2 text-sm leading-6 text-slate-600">
@@ -118,12 +123,14 @@ export function HomePage() {
               </p>
             </div>
 
-            <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-5" data-testid="home-feature-users">
-              <h3 className="text-lg font-semibold text-slate-900">User management</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                Manage user accounts and permissions within the system.
-              </p>
-            </div>
+            {isAdmin && (
+              <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-5" data-testid="home-feature-users">
+                <h3 className="text-lg font-semibold text-slate-900">User management</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Manage user accounts and permissions within the system.
+                </p>
+              </div>
+            )}
 
             <div className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-5" data-testid="home-feature-profile">
               <h3 className="text-lg font-semibold text-slate-900">Orders and profile</h3>

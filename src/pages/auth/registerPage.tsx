@@ -12,6 +12,9 @@ import { Surface } from '../../components/ui/surface';
 import { Badge } from '../../components/ui/badge';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { fieldErrorId } from '../../lib/fieldError';
+import { serverFieldErrors, serverMessage } from '../../lib/requestErrors';
+
+const REGISTER_FIELDS = ['username', 'email', 'password', 'firstName', 'lastName'] as const satisfies readonly (keyof RegisterFormData)[];
 
 export function RegisterPage() {
   useDocumentTitle('Create account');
@@ -23,6 +26,7 @@ export function RegisterPage() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -54,7 +58,15 @@ export function RegisterPage() {
           description: 'Email already exists',
         });
       } else {
-        setSubmitError(errorMessage || 'Failed to register');
+        // A 400 maps field names to the backend's messages: show each under its field (X-14).
+        const fieldErrors = serverFieldErrors(err);
+        const formFields = REGISTER_FIELDS.filter((field) => fieldErrors[field]);
+        formFields.forEach((field, index) => {
+          setError(field, { type: 'server', message: fieldErrors[field] }, { shouldFocus: index === 0 });
+        });
+        if (formFields.length === 0) {
+          setSubmitError(errorMessage || serverMessage(err, 'Failed to register'));
+        }
       }
     } finally {
       setLoading(false);
@@ -170,7 +182,7 @@ export function RegisterPage() {
             </div>
 
             {submitError && (
-              <div className="rounded-[1.2rem] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" data-testid="register-submit-error">
+              <div className="rounded-[1.2rem] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert" data-testid="register-submit-error">
                 {submitError}
               </div>
             )}

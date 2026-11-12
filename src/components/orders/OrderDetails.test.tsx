@@ -239,21 +239,27 @@ describe('OrderDetails', () => {
     });
   });
 
-  it('cancels order when cancel button is clicked', async () => {
+  it('cancels order after the in-app confirmation, without a native confirm()', async () => {
     // given
-    global.confirm = vi.fn().mockReturnValue(true);
+    const nativeConfirm = vi.fn().mockReturnValue(true);
+    global.confirm = nativeConfirm;
     queryClient.invalidateQueries = vi.fn();
     renderWithProviders();
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /cancel order/i })).toBeInTheDocument();
+      expect(screen.getByTestId('order-details-cancel-button')).toBeInTheDocument();
     });
 
     // when
-    fireEvent.click(screen.getByRole('button', { name: /cancel order/i }));
+    fireEvent.click(screen.getByTestId('order-details-cancel-button'));
+    const dialog = await screen.findByRole('dialog', { name: 'Cancel order #1?' });
+    expect(dialog).toHaveAccessibleDescription(/Are you sure you want to cancel this order\?/);
+    expect(orders.cancelOrder).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByTestId('order-cancel-dialog-confirm'));
 
     // then
     await waitFor(() => {
-      expect(global.confirm).toHaveBeenCalled();
+      expect(nativeConfirm).not.toHaveBeenCalled();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       expect(orders.cancelOrder).toHaveBeenCalledWith(1);
       expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['products'] });
       expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['inventory'] });
@@ -442,32 +448,35 @@ describe('OrderDetails', () => {
     });
   });
 
-  it('does not cancel order when confirmation is rejected', async () => {
-    global.confirm = vi.fn().mockReturnValue(false);
+  it.each([
+    ['Keep order', () => fireEvent.click(screen.getByTestId('order-cancel-dialog-keep'))],
+    ['Escape', () => fireEvent.keyDown(document, { key: 'Escape' })],
+  ])('does not cancel the order when the confirmation is dismissed with %s', async (_label, dismiss) => {
     renderWithProviders();
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /cancel order/i })).toBeInTheDocument();
+      expect(screen.getByTestId('order-details-cancel-button')).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /cancel order/i }));
+    fireEvent.click(screen.getByTestId('order-details-cancel-button'));
+    await screen.findByTestId('order-cancel-dialog');
+    dismiss();
 
-    await waitFor(() => {
-      expect(orders.cancelOrder).not.toHaveBeenCalled();
-      expect(mockToast).not.toHaveBeenCalled();
-    });
+    await waitFor(() => expect(screen.queryByTestId('order-cancel-dialog')).not.toBeInTheDocument());
+    expect(orders.cancelOrder).not.toHaveBeenCalled();
+    expect(mockToast).not.toHaveBeenCalled();
   });
 
   it('shows toast error when cancel request fails', async () => {
-    global.confirm = vi.fn().mockReturnValue(true);
     vi.mocked(orders.cancelOrder).mockRejectedValueOnce(new Error('fail'));
     renderWithProviders();
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /cancel order/i })).toBeInTheDocument();
+      expect(screen.getByTestId('order-details-cancel-button')).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /cancel order/i }));
+    fireEvent.click(screen.getByTestId('order-details-cancel-button'));
+    fireEvent.click(await screen.findByTestId('order-cancel-dialog-confirm'));
 
     await waitFor(() => {
       expect(orders.cancelOrder).toHaveBeenCalledWith(1);

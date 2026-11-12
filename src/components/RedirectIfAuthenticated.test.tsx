@@ -72,6 +72,7 @@ describe('RedirectIfAuthenticated', () => {
     // given
     localStorage.setItem('token', 'expired-token');
     localStorage.setItem('refreshToken', 'expired-refresh');
+    localStorage.setItem('clientSessionId', 'expired-user-session-01');
     vi.mocked(auth.me).mockRejectedValue(new Error('401'));
 
     // when
@@ -81,6 +82,7 @@ describe('RedirectIfAuthenticated', () => {
     expect(await screen.findByText('Login form')).toBeInTheDocument();
     await waitFor(() => expect(localStorage.getItem('token')).toBeNull());
     expect(localStorage.getItem('refreshToken')).toBeNull();
+    expect(localStorage.getItem('clientSessionId')).not.toBe('expired-user-session-01');
   });
 
   it('shows a loading state instead of the form while the session is checked', () => {

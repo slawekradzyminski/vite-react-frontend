@@ -49,7 +49,7 @@ export function Navigation() {
     } catch (error) {
       console.error('Failed to logout:', error);
     } finally {
-      authStorage.clearTokens();
+      authStorage.signOut();
       queryClient.clear();
       navigate('/login');
     }

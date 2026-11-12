@@ -50,6 +50,7 @@ vi.mock('./pages/admin/vatRatesPage', () => ({ AdminVatRatesPage: () => 'page:Ad
 vi.mock('./pages/admin/currenciesPage', () => ({ AdminCurrenciesPage: () => 'page:AdminCurrencies' }));
 vi.mock('./pages/admin/paymentsPage', () => ({ AdminPaymentsPage: () => 'page:AdminPayments' }));
 vi.mock('./pages/admin/webhooksPage', () => ({ AdminWebhooksPage: () => 'page:AdminWebhooks' }));
+vi.mock('./pages/notFound/notFoundPage', () => ({ NotFoundPage: () => 'page:NotFound' }));
 
 const publicRoutes: Array<[string, string]> = [
   ['/login', 'page:Login'],
@@ -63,8 +64,6 @@ const signedInRoutes: Array<[string, string]> = [
   ['/webmcp', 'page:WebMcp'],
   ['/products', 'page:Products'],
   ['/products/7', 'page:ProductDetails'],
-  ['/users', 'page:Users'],
-  ['/users/alice/edit', 'page:EditUser'],
   ['/email', 'page:Email'],
   ['/qr', 'page:QrCode'],
   ['/llm', 'page:Llm'],
@@ -83,6 +82,9 @@ const signedInRoutes: Array<[string, string]> = [
 ];
 
 const adminRoutes: Array<[string, string]> = [
+  // The user directory shows every account's contact data (X-12).
+  ['/users', 'page:Users'],
+  ['/users/alice/edit', 'page:EditUser'],
   ['/admin', 'page:AdminDashboard'],
   ['/admin/products', 'page:AdminProducts'],
   ['/admin/products/new', 'page:AdminProductForm'],
@@ -175,11 +177,29 @@ describe('AppRoutes access contract', () => {
     expect(await screen.findByText('page:Login')).toBeInTheDocument();
   });
 
-  it('no longer serves the removed SSO callback route', () => {
-    const { container } = renderAt('/auth/sso/callback');
+  it('no longer serves the removed SSO callback route', async () => {
+    renderAt('/auth/sso/callback');
 
-    expect(container).toBeEmptyDOMElement();
+    expect(await screen.findByText('page:NotFound')).toBeInTheDocument();
     expect(auth.me).not.toHaveBeenCalled();
+  });
+
+  it.each(['/this-page-does-not-exist', '/swagger.json', '/h2-console', '/admin/unknown', '/products/7/extra'])(
+    'renders the not-found page for the unknown path %s without asking for a session',
+    async (path) => {
+      renderAt(path);
+
+      expect(await screen.findByText('page:NotFound')).toBeInTheDocument();
+      expect(auth.me).not.toHaveBeenCalled();
+    }
+  );
+
+  it('renders the not-found page for a signed-in user too', async () => {
+    signInWithRoles(['ROLE_CLIENT']);
+
+    renderAt('/no-such-page');
+
+    expect(await screen.findByText('page:NotFound')).toBeInTheDocument();
   });
 });
 
@@ -204,11 +224,10 @@ describe('warehouse-service routes', () => {
     vi.stubEnv('VITE_WAREHOUSE_ENABLED', 'false');
     signInWithRoles(roles);
 
-    const { container } = renderAt(path);
+    renderAt(path);
 
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(await screen.findByText('page:NotFound')).toBeInTheDocument();
     expect(screen.queryByText(page)).not.toBeInTheDocument();
-    expect(container).toBeEmptyDOMElement();
   });
 
   it.each(warehouseRoutes)('renders %s for %s by default', async (path, page, roles) => {
@@ -243,12 +262,11 @@ describe('payment-service routes', () => {
     signInWithRoles(['ROLE_CLIENT']);
 
     // when
-    const { container } = renderAt('/orders/3/pay');
+    renderAt('/orders/3/pay');
 
     // then
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(await screen.findByText('page:NotFound')).toBeInTheDocument();
     expect(screen.queryByText('page:OrderPayment')).not.toBeInTheDocument();
-    expect(container).toBeEmptyDOMElement();
   });
 
   it('does not render /admin/payments when a build disables payment-service', async () => {
@@ -257,11 +275,10 @@ describe('payment-service routes', () => {
     signInWithRoles(['ROLE_ADMIN']);
 
     // when
-    const { container } = renderAt('/admin/payments');
+    renderAt('/admin/payments');
 
     // then
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(await screen.findByText('page:NotFound')).toBeInTheDocument();
     expect(screen.queryByText('page:AdminPayments')).not.toBeInTheDocument();
-    expect(container).toBeEmptyDOMElement();
   });
 });

@@ -9,7 +9,8 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Surface } from '../ui/surface';
 import axios from 'axios';
-import { serverMessage } from '../../lib/requestErrors';
+import { serverFieldErrors, serverMessage } from '../../lib/requestErrors';
+import { addressText, zipCode } from '../../lib/commerceValidation';
 import { CommerceGraphQlError } from '../../lib/commerceGraphql';
 import { fieldErrorId } from '../../lib/fieldError';
 import { isPaymentEnabled } from '../../lib/runtimeConfig';
@@ -17,6 +18,16 @@ import { useMoney } from '../../hooks/useMoney';
 import { commerceTransport } from '../../lib/commerceTransport';
 import { ChargedInUsdNote } from '../commerce/ChargedInUsdNote';
 import { CheckoutTaxPreview } from './CheckoutTaxPreview';
+
+const ADDRESS_FIELDS = ['street', 'city', 'state', 'zipCode', 'country'] as const satisfies readonly (keyof AddressDto)[];
+
+const trimAddress = (address: AddressDto): AddressDto => ({
+  street: address.street.trim(),
+  city: address.city.trim(),
+  state: address.state.trim(),
+  zipCode: address.zipCode.trim(),
+  country: address.country.trim(),
+});
 
 interface CheckoutFormProps {
   cartTotal: number;
@@ -39,8 +50,9 @@ export function CheckoutForm({ cartTotal, payableTotal, onOrderPlaced }: Checkou
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   
-  const { register, handleSubmit, control, formState: { errors } } = useForm<AddressDto>({
+  const { register, handleSubmit, control, setError, formState: { errors } } = useForm<AddressDto>({
     defaultValues: {
       street: '',
       city: '',
@@ -71,27 +83,35 @@ export function CheckoutForm({ cartTotal, payableTotal, onOrderPlaced }: Checkou
   });
   
   const onSubmit = async (data: AddressDto) => {
+    setAvailabilityError(null);
+    setSubmitError(null);
     if (cartTotal <= 0) {
-      alert('Your cart is empty. Please add items to your cart before checking out.');
+      setSubmitError('Your cart is empty. Please add items to your cart before checking out.');
       return;
     }
     
     setIsSubmitting(true);
     try {
-      setAvailabilityError(null);
-      await createOrderMutation.mutateAsync(data);
+      // The backend does not trim; send what the client-side rules checked.
+      await createOrderMutation.mutateAsync(trimAddress(data));
     } catch (error) {
-      console.error('Failed to create order:', error);
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
       const couponMessage = serverMessage(error, '');
+      const fieldErrors = serverFieldErrors(error);
+      const addressErrors = ADDRESS_FIELDS.filter((field) => fieldErrors[field]);
       if (axios.isAxiosError(error) && error.response?.status === 409 && couponMessage.startsWith('Applied coupon')) {
         setAvailabilityError(`${couponMessage}. Your cart was preserved; remove or replace the coupon in your cart.`);
       } else if (((axios.isAxiosError(error) && error.response?.status === 409)
         || (error instanceof CommerceGraphQlError && error.code === 'CONFLICT'))) {
         setAvailabilityError('Some items are no longer available in the requested quantity. Your cart was preserved; review it before trying again.');
+      } else if (addressErrors.length > 0) {
+        // The server's field messages go under their fields, like the client-side ones (X-30).
+        addressErrors.forEach((field, index) => {
+          setError(field, { type: 'server', message: fieldErrors[field] }, { shouldFocus: index === 0 });
+        });
       } else {
-        alert('Failed to create order. Please try again.');
+        setSubmitError(serverMessage(error, 'Failed to create order. Please try again.'));
       }
     } finally {
       setIsSubmitting(false);
@@ -104,6 +124,7 @@ export function CheckoutForm({ cartTotal, payableTotal, onOrderPlaced }: Checkou
       
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" data-testid="checkout-form">
         {availabilityError && <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="alert" data-testid="checkout-availability-error">{availabilityError}</p>}
+        {submitError && <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert" data-testid="checkout-submit-error">{submitError}</p>}
         <Surface variant="inset" padding="md" data-testid="checkout-street-field">
           <Label htmlFor="street" data-testid="checkout-street-label">
             Street Address
@@ -112,7 +133,7 @@ export function CheckoutForm({ cartTotal, payableTotal, onOrderPlaced }: Checkou
             id="street"
             type="text"
             className="mt-2"
-            {...register('street', { required: 'Street address is required' })}
+            {...register('street', { validate: addressText('Street address is required', 'Street address') })}
             error={errors.street?.message}
             data-testid="checkout-street-input"
           />
@@ -130,7 +151,7 @@ export function CheckoutForm({ cartTotal, payableTotal, onOrderPlaced }: Checkou
               id="city"
               type="text"
               className="mt-2"
-              {...register('city', { required: 'City is required' })}
+              {...register('city', { validate: addressText('City is required', 'City') })}
               error={errors.city?.message}
               data-testid="checkout-city-input"
             />
@@ -147,7 +168,7 @@ export function CheckoutForm({ cartTotal, payableTotal, onOrderPlaced }: Checkou
               id="state"
               type="text"
               className="mt-2"
-              {...register('state', { required: 'State is required' })}
+              {...register('state', { validate: addressText('State is required', 'State') })}
               error={errors.state?.message}
               data-testid="checkout-state-input"
             />
@@ -166,7 +187,7 @@ export function CheckoutForm({ cartTotal, payableTotal, onOrderPlaced }: Checkou
               id="zipCode"
               type="text"
               className="mt-2"
-              {...register('zipCode', { required: 'ZIP code is required' })}
+              {...register('zipCode', { validate: zipCode('ZIP code is required') })}
               error={errors.zipCode?.message}
               data-testid="checkout-zip-input"
             />
@@ -183,7 +204,7 @@ export function CheckoutForm({ cartTotal, payableTotal, onOrderPlaced }: Checkou
               id="country"
               type="text"
               className="mt-2"
-              {...register('country', { required: 'Country is required' })}
+              {...register('country', { validate: addressText('Country is required', 'Country') })}
               error={errors.country?.message}
               data-testid="checkout-country-input"
             />

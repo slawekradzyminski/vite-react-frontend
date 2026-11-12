@@ -9,6 +9,7 @@ import { Role } from '../../types/auth';
 vi.mock('../../lib/api', () => ({
   auth: {
     getUsers: vi.fn(),
+    me: vi.fn(),
   },
   email: {
     send: vi.fn(),
@@ -38,6 +39,62 @@ describe('EmailPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(auth.getUsers).mockResolvedValue(mockUsers);
+    vi.mocked(auth.me).mockResolvedValue({ data: { ...mockUsers.data[0], roles: [Role.CLIENT] } } as never);
+  });
+
+  it('clears the form after the email is queued, ready for the next one', async () => {
+    // given
+    vi.mocked(email.send).mockResolvedValue({ data: { success: true, message: 'Email sent' } } as never);
+    renderWithProviders(<EmailPage />);
+    await user.type(screen.getByLabelText('To'), 'test@example.com');
+    await user.type(screen.getByLabelText('Subject'), 'Test Subject');
+    await user.type(screen.getByLabelText('Message'), 'This is a test message that is long enough.');
+
+    // when
+    await user.click(screen.getByRole('button', { name: 'Send Email' }));
+
+    // then
+    expect(await screen.findByText('Email queued for delivery')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByLabelText('To')).toHaveValue(''));
+    expect(screen.getByLabelText('Subject')).toHaveValue('');
+    expect(screen.getByLabelText('Message')).toHaveValue('');
+    expect(screen.getByRole('button', { name: 'Send Email' })).toBeEnabled();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('keeps what was typed when the email could not be sent', async () => {
+    // given
+    vi.mocked(email.send).mockRejectedValue({ response: { data: { message: 'Mail server down' } } });
+    renderWithProviders(<EmailPage />);
+    await user.type(screen.getByLabelText('To'), 'test@example.com');
+    await user.type(screen.getByLabelText('Subject'), 'Test Subject');
+    await user.type(screen.getByLabelText('Message'), 'This is a test message that is long enough.');
+
+    // when
+    await user.click(screen.getByRole('button', { name: 'Send Email' }));
+
+    // then
+    expect(await screen.findByText('Mail server down')).toBeInTheDocument();
+    expect(screen.getByLabelText('To')).toHaveValue('test@example.com');
+    expect(screen.getByLabelText('Subject')).toHaveValue('Test Subject');
+  });
+
+  it('shows the field message of a 400 without a top-level message', async () => {
+    // given: e.g. a 3.19+ backend rejecting a template, or a malformed recipient
+    vi.mocked(email.send).mockRejectedValue({
+      isAxiosError: true,
+      response: { status: 400, data: { template: 'Only GENERIC emails can be sent' } },
+    });
+    renderWithProviders(<EmailPage />);
+    await user.type(screen.getByLabelText('To'), 'test@example.com');
+    await user.type(screen.getByLabelText('Subject'), 'Test Subject');
+    await user.type(screen.getByLabelText('Message'), 'This is a test message that is long enough.');
+
+    // when
+    await user.click(screen.getByRole('button', { name: 'Send Email' }));
+
+    // then
+    expect(await screen.findByText('Only GENERIC emails can be sent')).toBeInTheDocument();
   });
 
   // given

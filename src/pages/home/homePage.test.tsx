@@ -5,6 +5,7 @@ import { HomePage } from './homePage';
 
 // Create mock for navigation
 const mockNavigate = vi.fn();
+const mockRoles = vi.hoisted(() => ({ current: ['ROLE_CLIENT'] as string[] }));
 
 // Mock dependencies
 vi.mock('react-router', () => ({
@@ -20,7 +21,7 @@ vi.mock('@tanstack/react-query', () => ({
             firstName: 'John',
             lastName: 'Doe',
             email: 'john.doe@example.com',
-            roles: ['USER']
+            roles: mockRoles.current
           }
         },
         isLoading: false,
@@ -44,7 +45,31 @@ describe('HomePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockNavigate.mockClear();
+    mockRoles.current = ['ROLE_CLIENT'];
     user = userEvent.setup();
+  });
+
+  it('does not offer the user directory to a client', () => {
+    // when
+    render(<HomePage />);
+
+    // then
+    expect(screen.queryByTestId('home-users-button')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('home-feature-users')).not.toBeInTheDocument();
+    expect(screen.getByTestId('home-features-count')).toHaveTextContent('2 primary routes');
+  });
+
+  it('offers the user directory to an admin', () => {
+    // given
+    mockRoles.current = ['ROLE_ADMIN'];
+
+    // when
+    render(<HomePage />);
+
+    // then
+    expect(screen.getByTestId('home-users-button')).toBeInTheDocument();
+    expect(screen.getByTestId('home-feature-users')).toBeInTheDocument();
+    expect(screen.getByTestId('home-features-count')).toHaveTextContent('3 primary routes');
   });
 
   it('renders the welcome section with user data', () => {
@@ -74,7 +99,6 @@ describe('HomePage', () => {
     
     // then
     expect(screen.getByTestId('home-products-button')).toBeInTheDocument();
-    expect(screen.getByTestId('home-users-button')).toBeInTheDocument();
     expect(screen.getByTestId('home-profile-button')).toBeInTheDocument();
     expect(screen.getByTestId('home-traffic-button')).toBeInTheDocument();
     expect(screen.getByTestId('home-llm-button')).toBeInTheDocument();
@@ -112,8 +136,9 @@ describe('HomePage', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/products');
   });
 
-  it('should navigate to users page when Manage Users button is clicked', async () => {
+  it('should navigate to users page when an admin clicks Manage Users', async () => {
     // given
+    mockRoles.current = ['ROLE_ADMIN'];
     render(<HomePage />);
     
     // when

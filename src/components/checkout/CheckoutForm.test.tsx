@@ -35,6 +35,8 @@ describe('CheckoutForm', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // clearAllMocks keeps queued once-implementations; a test that fails early must not leak them.
+    vi.mocked(orders.createOrder).mockReset().mockResolvedValue({ data: { id: 1 } } as never);
     paymentEnabled.value = true;
     queryClient = new QueryClient({
       defaultOptions: {
@@ -111,6 +113,126 @@ describe('CheckoutForm', () => {
     });
     
     expect(orders.createOrder).not.toHaveBeenCalled();
+  });
+
+  const fillAddress = (overrides: Partial<Record<'street' | 'city' | 'state' | 'zipCode' | 'country', string>> = {}) => {
+    const value = { street: '123 Test St', city: 'Test City', state: 'Test State', zipCode: '12345', country: 'Test Country', ...overrides };
+    fireEvent.change(screen.getByLabelText(/street address/i), { target: { value: value.street } });
+    fireEvent.change(screen.getByLabelText(/city/i), { target: { value: value.city } });
+    fireEvent.change(screen.getByLabelText(/state\/province/i), { target: { value: value.state } });
+    fireEvent.change(screen.getByLabelText(/zip\/postal code/i), { target: { value: value.zipCode } });
+    fireEvent.change(screen.getByLabelText(/country/i), { target: { value: value.country } });
+  };
+
+  it('rejects whitespace-only fields and a malformed ZIP code before calling the backend', async () => {
+    renderWithProviders();
+
+    fillAddress({ street: '   ', city: ' ', state: '  ', zipCode: '12abc', country: '   ' });
+    fireEvent.click(screen.getByRole('button', { name: /place order/i }));
+
+    expect(await screen.findByTestId('checkout-street-error')).toHaveTextContent('Street address is required');
+    expect(screen.getByTestId('checkout-city-error')).toHaveTextContent('City is required');
+    expect(screen.getByTestId('checkout-state-error')).toHaveTextContent('State is required');
+    expect(screen.getByTestId('checkout-zip-error')).toHaveTextContent('Invalid postal/zip code format');
+    expect(screen.getByTestId('checkout-country-error')).toHaveTextContent('Country is required');
+    expect(screen.getByLabelText(/zip\/postal code/i)).toHaveAttribute('aria-invalid', 'true');
+    expect(orders.createOrder).not.toHaveBeenCalled();
+  });
+
+  it.each(['12', '12-345', '12345', '12345-6789', ' 35-119 '])('accepts the backend ZIP format %s and sends it trimmed', async (zip) => {
+    renderWithProviders();
+
+    fillAddress({ zipCode: zip, street: '  123 Test St ' });
+    fireEvent.click(screen.getByRole('button', { name: /place order/i }));
+
+    await waitFor(() => expect(orders.createOrder).toHaveBeenCalledWith(
+      expect.objectContaining({ zipCode: zip.trim(), street: '123 Test St' }),
+      expect.any(String),
+    ));
+  });
+
+  it.each(['1', '123', '1234', '123456', '12-34', '12345-678', '12abc', 'ab-cde', '12-345-6789'])('rejects the ZIP code %s like the backend', async (zip) => {
+    renderWithProviders();
+
+    fillAddress({ zipCode: zip });
+    fireEvent.click(screen.getByRole('button', { name: /place order/i }));
+
+    expect(await screen.findByTestId('checkout-zip-error')).toHaveTextContent('Invalid postal/zip code format');
+    expect(orders.createOrder).not.toHaveBeenCalled();
+  });
+
+  it('rejects an address field longer than the backend allows', async () => {
+    renderWithProviders();
+
+    fillAddress({ city: 'x'.repeat(256) });
+    fireEvent.click(screen.getByRole('button', { name: /place order/i }));
+
+    expect(await screen.findByTestId('checkout-city-error')).toHaveTextContent('City must be at most 255 characters');
+    expect(orders.createOrder).not.toHaveBeenCalled();
+  });
+
+  it('shows the server field errors under their fields instead of a native alert', async () => {
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    vi.mocked(orders.createOrder).mockRejectedValueOnce(Object.assign(new Error('Bad Request'), {
+      isAxiosError: true,
+      response: { status: 400, data: { street: 'Street is required', zipCode: 'Invalid postal/zip code format' } },
+    }));
+    renderWithProviders();
+
+    fillAddress();
+    fireEvent.click(screen.getByRole('button', { name: /place order/i }));
+
+    expect(await screen.findByTestId('checkout-street-error')).toHaveTextContent('Street is required');
+    expect(screen.getByTestId('checkout-zip-error')).toHaveTextContent('Invalid postal/zip code format');
+    expect(screen.getByLabelText(/street address/i)).toHaveAccessibleDescription('Street is required');
+    expect(screen.queryByTestId('checkout-submit-error')).not.toBeInTheDocument();
+    expect(alertSpy).not.toHaveBeenCalled();
+    alertSpy.mockRestore();
+  });
+
+  it('shows an unexpected failure inline instead of a native alert', async () => {
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    vi.mocked(orders.createOrder).mockRejectedValueOnce(Object.assign(new Error('Server Error'), {
+      isAxiosError: true,
+      response: { status: 500, data: {} },
+    }));
+    renderWithProviders();
+
+    fillAddress();
+    fireEvent.click(screen.getByRole('button', { name: /place order/i }));
+
+    expect(await screen.findByTestId('checkout-submit-error')).toHaveTextContent('Failed to create order. Please try again.');
+    expect(screen.getByRole('alert')).toHaveTextContent('Failed to create order');
+    expect(alertSpy).not.toHaveBeenCalled();
+    alertSpy.mockRestore();
+  });
+
+  it('shows a server message that names no address field inline', async () => {
+    vi.mocked(orders.createOrder).mockRejectedValueOnce(Object.assign(new Error('Bad Request'), {
+      isAxiosError: true,
+      response: { status: 400, data: { message: 'Cart is empty' } },
+    }));
+    renderWithProviders();
+
+    fillAddress();
+    fireEvent.click(screen.getByRole('button', { name: /place order/i }));
+
+    expect(await screen.findByTestId('checkout-submit-error')).toHaveTextContent('Cart is empty');
+  });
+
+  it('clears an earlier failure message when the order is submitted again', async () => {
+    vi.mocked(orders.createOrder)
+      .mockRejectedValueOnce(Object.assign(new Error('Server Error'), { isAxiosError: true, response: { status: 500, data: {} } }))
+      .mockImplementationOnce(() => new Promise(() => {}));
+    renderWithProviders();
+
+    fillAddress();
+    fireEvent.click(screen.getByRole('button', { name: /place order/i }));
+    await screen.findByTestId('checkout-submit-error');
+    await waitFor(() => expect(screen.getByRole('button', { name: /place order/i })).not.toBeDisabled());
+    fireEvent.click(screen.getByRole('button', { name: /place order/i }));
+
+    await waitFor(() => expect(screen.queryByTestId('checkout-submit-error')).not.toBeInTheDocument());
   });
 
   it('disables the submit button when cart total is 0', () => {

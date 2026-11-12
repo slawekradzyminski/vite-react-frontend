@@ -166,4 +166,11 @@ describe('OllamaToolChatPage', () => {
     openSidebar();
     expect(screen.getByTestId('tool-sidebar')).toHaveAttribute('aria-hidden', 'false');
   });
+
+  it('names the message field for assistive technology (X-34)', () => {
+    render(<OllamaToolChatPage />);
+
+    const field = screen.getByRole('textbox', { name: 'Message' });
+    expect(field).toBe(screen.getByTestId('chat-input'));
+  });
 });

@@ -184,8 +184,8 @@ describe('LoginPage', () => {
         username: 'validuser',
         password: 'validpassword',
       });
-      expect(window.localStorage.setItem).toHaveBeenNthCalledWith(1, 'token', 'test-token');
-      expect(window.localStorage.setItem).toHaveBeenNthCalledWith(2, 'refreshToken', 'test-refresh');
+      expect(window.localStorage.setItem).toHaveBeenCalledWith('token', 'test-token');
+      expect(window.localStorage.setItem).toHaveBeenCalledWith('refreshToken', 'test-refresh');
       expect(mockNavigate).toHaveBeenCalledWith('/');
     });
   });
@@ -196,6 +196,30 @@ describe('LoginPage', () => {
     'javascript:alert(1)',
   ])('rejects an external login return target: %s', (returnTo) => {
     expect(readLoginReturnTo(`?returnTo=${encodeURIComponent(returnTo)}`)).toBe('/');
+  });
+
+  it('starts a new traffic session before signing in, so no earlier session is reused', async () => {
+    // given
+    const { auth } = await import('../../lib/api');
+    const order: string[] = [];
+    vi.mocked(window.localStorage.setItem).mockImplementation((key: string) => { order.push(`set:${key}`); });
+    vi.mocked(window.localStorage.getItem).mockImplementation((key: string) => (key === 'clientSessionId' ? 'previous-user-session-01' : null));
+    vi.mocked(auth.login).mockImplementation(async () => {
+      order.push('signin');
+      return { data: { token: 't', refreshToken: 'r', username: 'validuser', email: 'v@example.com', firstName: 'Valid', lastName: 'User', roles: [Role.CLIENT] } } as AxiosResponse;
+    });
+    render(<LoginPage />);
+    // when
+    await user.type(screen.getByTestId('login-username-input'), 'validuser');
+    await user.type(screen.getByTestId('login-password-input'), 'validpassword');
+    await user.click(screen.getByTestId('login-submit-button'));
+    // then
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/'));
+    expect(order.indexOf('set:clientSessionId')).toBeGreaterThanOrEqual(0);
+    expect(order.indexOf('set:clientSessionId')).toBeLessThan(order.indexOf('signin'));
+    const written = vi.mocked(window.localStorage.setItem).mock.calls.find(([key]) => key === 'clientSessionId')?.[1];
+    expect(written).toMatch(/^[A-Za-z0-9_-]{16,128}$/);
+    expect(written).not.toBe('previous-user-session-01');
   });
 
   it('shows error toast on invalid credentials', async () => {
@@ -257,16 +281,20 @@ describe('LoginPage', () => {
     await user.click(screen.getByTestId('login-submit-button'));
 
     expect(await screen.findByTestId('login-mfa-step')).toBeInTheDocument();
-    expect(window.localStorage.setItem).not.toHaveBeenCalled();
+    expect(window.localStorage.setItem).not.toHaveBeenCalledWith('token', expect.anything());
+    expect(window.localStorage.setItem).not.toHaveBeenCalledWith('refreshToken', expect.anything());
+    const sessionWrites = vi.mocked(window.localStorage.setItem).mock.calls.filter(([key]) => key === 'clientSessionId');
     await user.type(screen.getByTestId('login-mfa-code-input'), '123456');
     await user.click(screen.getByTestId('login-mfa-submit-button'));
 
     await waitFor(() => {
       expect(auth.completeMfaLogin).toHaveBeenCalledWith({ challengeToken: 'challenge-token', code: '123456' });
-      expect(window.localStorage.setItem).toHaveBeenNthCalledWith(1, 'token', 'mfa-token');
-      expect(window.localStorage.setItem).toHaveBeenNthCalledWith(2, 'refreshToken', 'mfa-refresh');
+      expect(window.localStorage.setItem).toHaveBeenCalledWith('token', 'mfa-token');
+      expect(window.localStorage.setItem).toHaveBeenCalledWith('refreshToken', 'mfa-refresh');
       expect(mockNavigate).toHaveBeenCalledWith('/');
     });
+    // The second factor continues the traffic session the password step started.
+    expect(vi.mocked(window.localStorage.setItem).mock.calls.filter(([key]) => key === 'clientSessionId')).toEqual(sessionWrites);
   });
 
   it('shows error toast on server error', async () => {

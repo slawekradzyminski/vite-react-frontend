@@ -1,11 +1,16 @@
 import { z } from 'zod';
 
+// Names are trimmed like the sign-in username, so whitespace-only input fails here with the
+// backend's own wording instead of a server round trip (X-14).
 export const registerSchema = z.object({
   username: z.string()
+    .trim()
     .min(1, 'Username is required')
     .min(4, 'Username must be at least 4 characters')
-    .max(255, 'Username must be at most 255 characters'),
+    .max(255, 'Username must be at most 255 characters')
+    .regex(/^[A-Za-z0-9._-]*$/, 'Username may only contain letters, digits, dots, underscores and hyphens'),
   email: z.string()
+    .trim()
     .min(1, 'Email is required')
     .email('Invalid email format'),
   password: z.string()
@@ -13,10 +18,12 @@ export const registerSchema = z.object({
     .min(8, 'Password must be at least 8 characters')
     .max(255, 'Password must be at most 255 characters'),
   firstName: z.string()
+    .trim()
     .min(1, 'First name is required')
     .min(4, 'First name must be at least 4 characters')
     .max(255, 'First name must be at most 255 characters'),
   lastName: z.string()
+    .trim()
     .min(1, 'Last name is required')
     .min(4, 'Last name must be at least 4 characters')
     .max(255, 'Last name must be at most 255 characters'),

@@ -70,8 +70,8 @@ for (const transport of ['rest', 'graphql'] as const) {
     await page.goto('/profile');
     await expect(page.getByText('Total: $19.99', { exact: true }).first()).toBeVisible();
     await page.goto(orderUrl);
-    page.on('dialog', dialog => dialog.accept());
     await page.getByTestId('order-details-cancel-button').click();
+    await page.getByTestId('order-cancel-dialog-confirm').click();
     // then
     await expect(page.getByTestId('order-details-status')).toHaveText('CANCELLED');
     expect(commerceRequests.length).toBeGreaterThan(0);
