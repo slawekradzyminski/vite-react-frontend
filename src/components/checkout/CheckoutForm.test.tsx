@@ -258,6 +258,64 @@ describe('CheckoutForm', () => {
     fireEvent.click(screen.getByRole('button', { name: /place order/i }));
 
     // then
-    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith(target));
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith(target, { replace: true }));
+  });
+
+  it.each([
+    [{ data: { id: 7 } }, '/orders/7/pay'],
+    [{ data: {} }, '/orders'],
+  ])('tells the page the order was placed, then navigates, before the emptied cart is refetched (%j)', async (response, target) => {
+    // given
+    const calls: string[] = [];
+    const onOrderPlaced = vi.fn(() => { calls.push('placed'); });
+    mockNavigate.mockImplementation((to: string) => { calls.push(`navigate ${to}`); });
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries').mockImplementation(async (filters) => {
+      calls.push(`invalidate ${JSON.stringify(filters?.queryKey)}`);
+    });
+    vi.mocked(orders.createOrder).mockResolvedValueOnce(response as never);
+    render(
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <CheckoutForm cartTotal={40} onOrderPlaced={onOrderPlaced} />
+        </BrowserRouter>
+      </QueryClientProvider>
+    );
+
+    // when
+    for (const [label, value] of [[/street address/i, 'Main 1'], [/city/i, 'Warsaw'], [/state\/province/i, 'Mazovia'], [/zip\/postal code/i, '00-001'], [/country/i, 'Poland']] as const) {
+      fireEvent.change(screen.getByLabelText(label), { target: { value } });
+    }
+    fireEvent.click(screen.getByRole('button', { name: /place order/i }));
+
+    // then
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith(target, { replace: true }));
+    expect(onOrderPlaced).toHaveBeenCalledTimes(1);
+    expect(calls).toEqual(['placed', `navigate ${target}`, 'invalidate ["cart"]', 'invalidate ["orders"]', 'invalidate ["products"]', 'invalidate ["inventory"]']);
+    invalidate.mockRestore();
+  });
+
+  it('does not report a placed order when the order fails', async () => {
+    // given
+    const onOrderPlaced = vi.fn();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(orders.createOrder).mockRejectedValueOnce(new CommerceGraphQlError([{ message: 'Not enough stock', extensions: { code: 'CONFLICT' } }]));
+    render(
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <CheckoutForm cartTotal={40} onOrderPlaced={onOrderPlaced} />
+        </BrowserRouter>
+      </QueryClientProvider>
+    );
+
+    // when
+    for (const [label, value] of [[/street address/i, 'Main 1'], [/city/i, 'Warsaw'], [/state\/province/i, 'Mazovia'], [/zip\/postal code/i, '00-001'], [/country/i, 'Poland']] as const) {
+      fireEvent.change(screen.getByLabelText(label), { target: { value } });
+    }
+    fireEvent.click(screen.getByRole('button', { name: /place order/i }));
+
+    // then
+    expect(await screen.findByTestId('checkout-availability-error')).toBeInTheDocument();
+    expect(onOrderPlaced).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 });

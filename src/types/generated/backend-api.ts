@@ -4015,7 +4015,10 @@ export interface components {
     responses: never;
     parameters: never;
     requestBodies: never;
-    headers: never;
+    headers: {
+        /** @description Correlation id of the request: the caller's valid X-Request-Id (1-128 characters of A-Z a-z 0-9 . _ -) or a generated UUID. Send it again with a W3C traceparent header to continue a trace; logs, domain events and webhook deliveries caused by the request carry the same id. */
+        "X-Request-Id": string;
+    };
     pathItems: never;
 }
 export type $defs = Record<string, never>;
@@ -4037,6 +4040,7 @@ export interface operations {
             /** @description Coupons returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4046,6 +4050,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4055,6 +4060,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4079,6 +4085,7 @@ export interface operations {
             /** @description Coupon created */
             201: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4088,6 +4095,7 @@ export interface operations {
             /** @description Invalid coupon definition */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4097,6 +4105,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4106,6 +4115,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4115,6 +4125,7 @@ export interface operations {
             /** @description Coupon code already exists */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4137,6 +4148,7 @@ export interface operations {
             /** @description Coupon returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4146,6 +4158,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4155,6 +4168,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4164,6 +4178,7 @@ export interface operations {
             /** @description Coupon not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4190,6 +4205,7 @@ export interface operations {
             /** @description Coupon updated */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4199,6 +4215,7 @@ export interface operations {
             /** @description Invalid coupon definition */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4208,6 +4225,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4217,6 +4235,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4226,6 +4245,7 @@ export interface operations {
             /** @description Coupon not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4235,6 +4255,7 @@ export interface operations {
             /** @description Coupon code already exists */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4257,6 +4278,7 @@ export interface operations {
             /** @description Coupon deleted */
             204: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -4264,6 +4286,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4273,6 +4296,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4282,6 +4306,7 @@ export interface operations {
             /** @description Coupon not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4291,6 +4316,7 @@ export interface operations {
             /** @description Coupon has redemptions */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4321,6 +4347,7 @@ export interface operations {
             /** @description Currency updated */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4330,6 +4357,7 @@ export interface operations {
             /** @description Currency created */
             201: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4339,6 +4367,7 @@ export interface operations {
             /** @description Invalid currency code or definition */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4348,6 +4377,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4357,6 +4387,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4384,6 +4415,7 @@ export interface operations {
             /** @description Gift cards returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4393,6 +4425,7 @@ export interface operations {
             /** @description Unknown status */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4402,6 +4435,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4411,6 +4445,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4435,6 +4470,7 @@ export interface operations {
             /** @description Gift card issued */
             201: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4444,6 +4480,7 @@ export interface operations {
             /** @description Amount out of range, expiresAt not in the future, or field too long */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4453,6 +4490,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4462,6 +4500,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4471,6 +4510,7 @@ export interface operations {
             /** @description Recipient user not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4497,6 +4537,7 @@ export interface operations {
             /** @description Gift card returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4506,6 +4547,7 @@ export interface operations {
             /** @description Malformed code */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4515,6 +4557,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4524,6 +4567,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4533,6 +4577,7 @@ export interface operations {
             /** @description Gift card not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4559,6 +4604,7 @@ export interface operations {
             /** @description Gift card disabled */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4568,6 +4614,7 @@ export interface operations {
             /** @description Malformed code */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4577,6 +4624,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4586,6 +4634,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4595,6 +4644,7 @@ export interface operations {
             /** @description Gift card not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4604,6 +4654,7 @@ export interface operations {
             /** @description Gift card is already disabled */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4632,6 +4683,7 @@ export interface operations {
             /** @description Inventory returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4641,6 +4693,7 @@ export interface operations {
             /** @description Invalid parameter */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4650,6 +4703,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4659,6 +4713,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4684,6 +4739,7 @@ export interface operations {
             /** @description Inventory item returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4693,6 +4749,7 @@ export interface operations {
             /** @description Invalid parameter */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4702,6 +4759,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4711,6 +4769,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4720,6 +4779,7 @@ export interface operations {
             /** @description Product not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4746,6 +4806,7 @@ export interface operations {
             /** @description Adjustment recorded */
             201: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4755,6 +4816,7 @@ export interface operations {
             /** @description Invalid adjustment or product identifier */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4764,6 +4826,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4773,6 +4836,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4782,6 +4846,7 @@ export interface operations {
             /** @description Product not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4791,6 +4856,7 @@ export interface operations {
             /** @description Insufficient stock, quantity overflow, or requestId reused with different delta/reason */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4816,6 +4882,7 @@ export interface operations {
             /** @description Movement history returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4825,6 +4892,7 @@ export interface operations {
             /** @description Invalid parameter */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4834,6 +4902,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4843,6 +4912,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4852,6 +4922,7 @@ export interface operations {
             /** @description Product not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4872,6 +4943,7 @@ export interface operations {
             /** @description CSV file */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4881,6 +4953,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4890,6 +4963,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4923,6 +4997,7 @@ export interface operations {
             /** @description Import applied, or dry run succeeded */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4932,6 +5007,7 @@ export interface operations {
             /** @description Invalid file or rows; the report lists every error when the file could be parsed */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4941,6 +5017,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4950,6 +5027,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4959,6 +5037,7 @@ export interface operations {
             /** @description File larger than 1 MB */
             413: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4985,6 +5064,7 @@ export interface operations {
             /** @description Reviews returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4994,6 +5074,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5003,6 +5084,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5029,6 +5111,7 @@ export interface operations {
             /** @description Review moderated */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5038,6 +5121,7 @@ export interface operations {
             /** @description Invalid decision or missing rejection note */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5047,6 +5131,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5056,6 +5141,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5065,6 +5151,7 @@ export interface operations {
             /** @description Review not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5095,6 +5182,7 @@ export interface operations {
             /** @description VAT rate updated */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5104,6 +5192,7 @@ export interface operations {
             /** @description VAT rate created */
             201: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5113,6 +5202,7 @@ export interface operations {
             /** @description Invalid country code or rate definition */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5122,6 +5212,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5131,6 +5222,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5156,6 +5248,7 @@ export interface operations {
             /** @description Subscriptions returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5165,6 +5258,7 @@ export interface operations {
             /** @description Invalid parameter */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5174,6 +5268,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5183,6 +5278,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5203,6 +5299,7 @@ export interface operations {
             /** @description Successfully retrieved cart */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5212,6 +5309,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5232,6 +5330,7 @@ export interface operations {
             /** @description Cart cleared successfully */
             204: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -5239,6 +5338,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5263,6 +5363,7 @@ export interface operations {
             /** @description Coupon applied; the cart shows the discount */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5272,6 +5373,7 @@ export interface operations {
             /** @description Empty cart, inactive, not yet valid or expired coupon, or subtotal below the minimum */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5281,6 +5383,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5290,6 +5393,7 @@ export interface operations {
             /** @description Coupon not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5299,6 +5403,7 @@ export interface operations {
             /** @description Global or per-user redemption limit reached */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5319,6 +5424,7 @@ export interface operations {
             /** @description Coupon removed; the updated cart is returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5328,6 +5434,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5352,6 +5459,7 @@ export interface operations {
             /** @description Gift card applied; the cart shows the gift card amount */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5361,6 +5469,7 @@ export interface operations {
             /** @description Empty cart, malformed code, disabled or expired gift card */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5370,6 +5479,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5379,6 +5489,7 @@ export interface operations {
             /** @description Gift card not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5388,6 +5499,7 @@ export interface operations {
             /** @description Gift card has no remaining balance */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5408,6 +5520,7 @@ export interface operations {
             /** @description Gift card removed; the updated cart is returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5417,6 +5530,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5441,6 +5555,7 @@ export interface operations {
             /** @description Item added successfully */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5450,6 +5565,7 @@ export interface operations {
             /** @description Invalid input */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5459,6 +5575,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5468,6 +5585,7 @@ export interface operations {
             /** @description Product not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5477,6 +5595,7 @@ export interface operations {
             /** @description Requested quantity exceeds available stock */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5503,6 +5622,7 @@ export interface operations {
             /** @description Item quantity updated successfully */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5512,6 +5632,7 @@ export interface operations {
             /** @description Invalid input */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5521,6 +5642,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5530,6 +5652,7 @@ export interface operations {
             /** @description Cart item not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5539,6 +5662,7 @@ export interface operations {
             /** @description Requested quantity exceeds available stock */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5561,6 +5685,7 @@ export interface operations {
             /** @description Item removed successfully */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5570,6 +5695,7 @@ export interface operations {
             /** @description Bad request */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5579,6 +5705,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5588,6 +5715,7 @@ export interface operations {
             /** @description Cart item not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5612,6 +5740,7 @@ export interface operations {
             /** @description Points applied; the cart shows the points amount */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5621,6 +5750,7 @@ export interface operations {
             /** @description Empty cart, or points below 100 or not a multiple of 100 */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5630,6 +5760,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5639,6 +5770,7 @@ export interface operations {
             /** @description Insufficient loyalty points */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5659,6 +5791,7 @@ export interface operations {
             /** @description Points removed; the updated cart is returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5668,6 +5801,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5694,6 +5828,7 @@ export interface operations {
             /** @description VAT preview returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5703,6 +5838,7 @@ export interface operations {
             /** @description Country missing */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5712,6 +5848,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5721,6 +5858,7 @@ export interface operations {
             /** @description Country not recognised or no rate configured */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5741,6 +5879,7 @@ export interface operations {
             /** @description Currencies returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5750,6 +5889,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5786,6 +5926,7 @@ export interface operations {
             /** @description Amount converted */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5795,6 +5936,7 @@ export interface operations {
             /** @description Missing or invalid amount or currency code */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5804,6 +5946,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5813,6 +5956,7 @@ export interface operations {
             /** @description Currency not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5837,6 +5981,7 @@ export interface operations {
             /** @description Email queued; delivery is asynchronous */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -5844,6 +5989,7 @@ export interface operations {
             /** @description Invalid email data */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5853,6 +5999,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5879,6 +6026,7 @@ export interface operations {
             /** @description Gift card balance returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5888,6 +6036,7 @@ export interface operations {
             /** @description Malformed code */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5897,6 +6046,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5906,6 +6056,7 @@ export interface operations {
             /** @description Gift card not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5928,6 +6079,7 @@ export interface operations {
             /** @description Queued local emails returned successfully */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5937,6 +6089,7 @@ export interface operations {
             /** @description Unauthorized or invalid Bearer token */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5946,6 +6099,7 @@ export interface operations {
             /** @description Administrator role required, or configured X-Local-Outbox-Key is missing or invalid */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5968,6 +6122,7 @@ export interface operations {
             /** @description Outbox buffer cleared successfully */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -5975,6 +6130,7 @@ export interface operations {
             /** @description Unauthorized or invalid Bearer token */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5984,6 +6140,7 @@ export interface operations {
             /** @description Administrator role required, or configured X-Local-Outbox-Key is missing or invalid */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5993,6 +6150,7 @@ export interface operations {
             /** @description Unexpected error while clearing outbox */
             500: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6013,6 +6171,7 @@ export interface operations {
             /** @description Loyalty account returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6022,6 +6181,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6047,6 +6207,7 @@ export interface operations {
             /** @description Loyalty transactions returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6056,6 +6217,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6080,6 +6242,7 @@ export interface operations {
             /** @description One JSON ChatResponseDto per SSE data event */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6089,6 +6252,7 @@ export interface operations {
             /** @description Invalid request */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6098,6 +6262,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6107,6 +6272,7 @@ export interface operations {
             /** @description Model not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6116,6 +6282,7 @@ export interface operations {
             /** @description Upstream server failure; JSON body is passed through before streaming starts */
             500: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6125,6 +6292,7 @@ export interface operations {
             /** @description Other upstream HTTP failures before streaming starts retain their status and JSON body */
             default: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6149,6 +6317,7 @@ export interface operations {
             /** @description One JSON ChatResponseDto per SSE data event */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6158,6 +6327,7 @@ export interface operations {
             /** @description Invalid request */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6167,6 +6337,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6176,6 +6347,7 @@ export interface operations {
             /** @description Upstream model not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6185,6 +6357,7 @@ export interface operations {
             /** @description Upstream server failure; JSON body is passed through before streaming starts */
             500: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6194,6 +6367,7 @@ export interface operations {
             /** @description Other upstream HTTP failures before streaming starts retain their status and JSON body */
             default: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6214,6 +6388,7 @@ export interface operations {
             /** @description Available tool definitions returned successfully */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6223,6 +6398,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6247,6 +6423,7 @@ export interface operations {
             /** @description One JSON GenerateResponseDto per SSE data event */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6256,6 +6433,7 @@ export interface operations {
             /** @description Invalid request */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6265,6 +6443,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6274,6 +6453,7 @@ export interface operations {
             /** @description Model not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6283,6 +6463,7 @@ export interface operations {
             /** @description Upstream server failure; JSON body is passed through before streaming starts */
             500: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6292,6 +6473,7 @@ export interface operations {
             /** @description Other upstream HTTP failures before streaming starts retain their status and JSON body */
             default: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6318,6 +6500,7 @@ export interface operations {
             /** @description Orders retrieved successfully */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6327,6 +6510,7 @@ export interface operations {
             /** @description Bad request */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6336,6 +6520,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6365,6 +6550,7 @@ export interface operations {
                 headers: {
                     /** @description true when the response replays an earlier order */
                     "Idempotent-Replayed"?: string;
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6374,6 +6560,7 @@ export interface operations {
             /** @description Invalid input or empty cart */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6383,6 +6570,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6392,6 +6580,7 @@ export interface operations {
             /** @description A cart product no longer exists */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6401,6 +6590,7 @@ export interface operations {
             /** @description Insufficient stock, coupon no longer valid, or Idempotency-Key reused with a different address */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6427,6 +6617,7 @@ export interface operations {
             /** @description Orders retrieved successfully */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6436,6 +6627,7 @@ export interface operations {
             /** @description Bad request */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6445,6 +6637,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6454,6 +6647,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6476,6 +6670,7 @@ export interface operations {
             /** @description Order retrieved successfully */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6485,6 +6680,7 @@ export interface operations {
             /** @description Bad request */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6494,6 +6690,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6503,6 +6700,7 @@ export interface operations {
             /** @description Order not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6525,6 +6723,7 @@ export interface operations {
             /** @description Order cancelled successfully */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6534,6 +6733,7 @@ export interface operations {
             /** @description Order cannot be cancelled */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6543,6 +6743,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6552,6 +6753,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6561,6 +6763,7 @@ export interface operations {
             /** @description Order not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6587,6 +6790,7 @@ export interface operations {
             /** @description Order status updated successfully */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6596,6 +6800,7 @@ export interface operations {
             /** @description Invalid status transition */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6605,6 +6810,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6614,6 +6820,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6623,6 +6830,7 @@ export interface operations {
             /** @description Order not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6643,6 +6851,7 @@ export interface operations {
             /** @description Successfully retrieved products */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6652,6 +6861,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6676,6 +6886,7 @@ export interface operations {
             /** @description Product created successfully */
             201: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6685,6 +6896,7 @@ export interface operations {
             /** @description Invalid input */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6694,6 +6906,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6703,6 +6916,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6754,6 +6968,7 @@ export interface operations {
             /** @description Search page with facets */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6763,6 +6978,7 @@ export interface operations {
             /** @description Invalid search parameters */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6772,6 +6988,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6799,6 +7016,7 @@ export interface operations {
                 headers: {
                     /** @description Quoted product version */
                     ETag?: string;
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6808,6 +7026,7 @@ export interface operations {
             /** @description If-None-Match matches the current version; empty response body */
             304: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -6815,6 +7034,7 @@ export interface operations {
             /** @description Bad request */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6824,6 +7044,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6833,6 +7054,7 @@ export interface operations {
             /** @description Product not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6864,6 +7086,7 @@ export interface operations {
                 headers: {
                     /** @description Quoted product version */
                     ETag?: string;
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6873,6 +7096,7 @@ export interface operations {
             /** @description Invalid input */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6882,6 +7106,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6891,6 +7116,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6900,6 +7126,7 @@ export interface operations {
             /** @description Product not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6909,6 +7136,7 @@ export interface operations {
             /** @description If-Match does not match the current product version */
             412: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6931,6 +7159,7 @@ export interface operations {
             /** @description Product deleted successfully */
             204: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -6938,6 +7167,7 @@ export interface operations {
             /** @description Bad request */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6947,6 +7177,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6956,6 +7187,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6965,6 +7197,7 @@ export interface operations {
             /** @description Product not found; empty response body */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -6972,6 +7205,7 @@ export interface operations {
             /** @description Product is referenced by existing data */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6999,6 +7233,7 @@ export interface operations {
             /** @description Reviews returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7008,6 +7243,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7017,6 +7253,7 @@ export interface operations {
             /** @description Product or review not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7043,6 +7280,7 @@ export interface operations {
             /** @description Review created and awaiting moderation */
             201: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7052,6 +7290,7 @@ export interface operations {
             /** @description Invalid review */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7061,6 +7300,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7070,6 +7310,7 @@ export interface operations {
             /** @description The caller has not received this product */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7079,6 +7320,7 @@ export interface operations {
             /** @description Product or review not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7088,6 +7330,7 @@ export interface operations {
             /** @description The caller already reviewed this product */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7110,6 +7353,7 @@ export interface operations {
             /** @description Eligibility returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7119,6 +7363,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7128,6 +7373,7 @@ export interface operations {
             /** @description Product or review not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7154,6 +7400,7 @@ export interface operations {
             /** @description Review updated and awaiting moderation */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7163,6 +7410,7 @@ export interface operations {
             /** @description Invalid review */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7172,6 +7420,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7181,6 +7430,7 @@ export interface operations {
             /** @description Product or review not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7203,6 +7453,7 @@ export interface operations {
             /** @description Review deleted */
             204: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -7210,6 +7461,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7219,6 +7471,7 @@ export interface operations {
             /** @description Product or review not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7241,6 +7494,7 @@ export interface operations {
             /** @description Summary returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7250,6 +7504,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7259,6 +7514,7 @@ export interface operations {
             /** @description Product or review not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7283,6 +7539,7 @@ export interface operations {
             /** @description Successfully generated QR code */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7292,6 +7549,7 @@ export interface operations {
             /** @description Invalid input */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7301,6 +7559,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7324,6 +7583,7 @@ export interface operations {
             /** @description Successfully returned info */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7333,6 +7593,7 @@ export interface operations {
             /** @description Invalid session header, pagination or time filter */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7342,6 +7603,7 @@ export interface operations {
             /** @description Unauthorized or invalid Bearer token; authentication is required unless legacy public access is enabled */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7378,6 +7640,7 @@ export interface operations {
             /** @description Successfully returned traffic logs */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7387,6 +7650,7 @@ export interface operations {
             /** @description Invalid session header, pagination or time filter */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7396,6 +7660,7 @@ export interface operations {
             /** @description Unauthorized or invalid Bearer token; authentication is required unless legacy public access is enabled */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7421,6 +7686,7 @@ export interface operations {
             /** @description Successfully returned traffic log */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7430,6 +7696,7 @@ export interface operations {
             /** @description Invalid session header, pagination or time filter */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7439,6 +7706,7 @@ export interface operations {
             /** @description Unauthorized or invalid Bearer token; authentication is required unless legacy public access is enabled */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7448,6 +7716,7 @@ export interface operations {
             /** @description Traffic log not found; empty response body */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -7466,6 +7735,7 @@ export interface operations {
             /** @description List of users */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7475,6 +7745,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7499,6 +7770,7 @@ export interface operations {
             /** @description MFA enabled and recovery codes created */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7508,6 +7780,7 @@ export interface operations {
             /** @description Field validation failed */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7517,6 +7790,7 @@ export interface operations {
             /** @description Authenticator code is invalid */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7526,6 +7800,7 @@ export interface operations {
             /** @description Account no longer exists */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7535,6 +7810,7 @@ export interface operations {
             /** @description Setup is missing, MFA is already enabled, or it is provider-managed */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7544,6 +7820,7 @@ export interface operations {
             /** @description Pending setup expired */
             410: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7568,6 +7845,7 @@ export interface operations {
             /** @description MFA disabled */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -7575,6 +7853,7 @@ export interface operations {
             /** @description Field validation failed */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7584,6 +7863,7 @@ export interface operations {
             /** @description Second factor or Bearer token is invalid */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7593,6 +7873,7 @@ export interface operations {
             /** @description Account no longer exists */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7602,6 +7883,7 @@ export interface operations {
             /** @description MFA is not enabled or is provider-managed */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7611,6 +7893,7 @@ export interface operations {
             /** @description Current password is invalid */
             422: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7635,6 +7918,7 @@ export interface operations {
             /** @description Replacement recovery codes created */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7644,6 +7928,7 @@ export interface operations {
             /** @description Field validation failed */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7653,6 +7938,7 @@ export interface operations {
             /** @description Authenticator code or Bearer token is invalid */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7662,6 +7948,7 @@ export interface operations {
             /** @description Account no longer exists */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7671,6 +7958,7 @@ export interface operations {
             /** @description MFA is not enabled or is provider-managed */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7680,6 +7968,7 @@ export interface operations {
             /** @description Current password is invalid */
             422: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7700,6 +7989,7 @@ export interface operations {
             /** @description Pending setup created */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7709,6 +7999,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7718,6 +8009,7 @@ export interface operations {
             /** @description Account no longer exists */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7727,6 +8019,7 @@ export interface operations {
             /** @description MFA is already enabled or provider-managed */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7747,6 +8040,7 @@ export interface operations {
             /** @description Status returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7756,6 +8050,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7776,6 +8071,7 @@ export interface operations {
             /** @description Chat system prompt retrieved successfully */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7785,6 +8081,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7809,6 +8106,7 @@ export interface operations {
             /** @description Chat system prompt was updated */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7818,6 +8116,7 @@ export interface operations {
             /** @description Bad request */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7827,6 +8126,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7847,6 +8147,7 @@ export interface operations {
             /** @description Successfully logged out */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -7854,6 +8155,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7874,6 +8176,7 @@ export interface operations {
             /** @description Current user details */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7883,6 +8186,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7903,6 +8207,7 @@ export interface operations {
             /** @description Recent email events returned successfully */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7912,6 +8217,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7936,6 +8242,7 @@ export interface operations {
             /** @description Request accepted whether or not a matching account exists */
             202: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7945,6 +8252,7 @@ export interface operations {
             /** @description Invalid payload */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7954,6 +8262,7 @@ export interface operations {
             /** @description Invalid or expired Bearer token; omit stale Authorization headers on these public endpoints */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7978,6 +8287,7 @@ export interface operations {
             /** @description Password reset successful */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -7985,6 +8295,7 @@ export interface operations {
             /** @description Invalid token or payload */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7994,6 +8305,7 @@ export interface operations {
             /** @description Invalid or expired Bearer token; omit stale Authorization headers on these public endpoints */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8018,6 +8330,7 @@ export interface operations {
             /** @description New JWT and refresh tokens */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8027,6 +8340,7 @@ export interface operations {
             /** @description Bad request */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8036,6 +8350,7 @@ export interface operations {
             /** @description Invalid refresh token */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8060,6 +8375,7 @@ export interface operations {
             /** @description Successfully authenticated */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8069,6 +8385,7 @@ export interface operations {
             /** @description Field validation failed */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8078,6 +8395,7 @@ export interface operations {
             /** @description Invalid or expired Bearer token; omit stale Authorization headers on this public endpoint */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8087,6 +8405,7 @@ export interface operations {
             /** @description Invalid username/password supplied */
             422: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8111,6 +8430,7 @@ export interface operations {
             /** @description Sign-in completed */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8120,6 +8440,7 @@ export interface operations {
             /** @description Field validation failed */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8129,6 +8450,7 @@ export interface operations {
             /** @description Challenge or second factor is invalid */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8153,6 +8475,7 @@ export interface operations {
             /** @description User was successfully created */
             201: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -8160,6 +8483,7 @@ export interface operations {
             /** @description Field validation failed, or username/email is already in use */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8169,6 +8493,7 @@ export interface operations {
             /** @description Invalid or expired Bearer token; omit stale Authorization headers on this public endpoint */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8193,6 +8518,7 @@ export interface operations {
             /** @description Successfully authenticated with SSO */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8202,6 +8528,7 @@ export interface operations {
             /** @description Field validation failed */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8211,6 +8538,7 @@ export interface operations {
             /** @description Invalid SSO token */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8220,6 +8548,7 @@ export interface operations {
             /** @description SSO login is disabled */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8229,6 +8558,7 @@ export interface operations {
             /** @description SSO identity conflicts with an existing local account */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8249,6 +8579,7 @@ export interface operations {
             /** @description Tool system prompt retrieved successfully */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8258,6 +8589,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8282,6 +8614,7 @@ export interface operations {
             /** @description Tool system prompt was updated */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8291,6 +8624,7 @@ export interface operations {
             /** @description Bad request */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8300,6 +8634,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8323,6 +8658,7 @@ export interface operations {
             /** @description User details */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8332,6 +8668,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8341,6 +8678,7 @@ export interface operations {
             /** @description The user doesn't exist */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8368,6 +8706,7 @@ export interface operations {
             /** @description User was updated */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8377,6 +8716,7 @@ export interface operations {
             /** @description Bad request */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8386,6 +8726,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8395,6 +8736,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8404,6 +8746,7 @@ export interface operations {
             /** @description The user doesn't exist */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8427,6 +8770,7 @@ export interface operations {
             /** @description User was deleted */
             204: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -8434,6 +8778,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8443,6 +8788,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8452,6 +8798,7 @@ export interface operations {
             /** @description The user doesn't exist */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8475,6 +8822,7 @@ export interface operations {
             /** @description User account and user-owned data were deleted */
             204: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -8482,6 +8830,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8491,6 +8840,7 @@ export interface operations {
             /** @description Forbidden */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8500,6 +8850,7 @@ export interface operations {
             /** @description The user doesn't exist */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8520,6 +8871,7 @@ export interface operations {
             /** @description VAT rates returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8529,6 +8881,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8555,6 +8908,7 @@ export interface operations {
             /** @description VAT rate returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8564,6 +8918,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8573,6 +8928,7 @@ export interface operations {
             /** @description Country not recognised or no rate configured */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8593,6 +8949,7 @@ export interface operations {
             /** @description Inboxes returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8602,6 +8959,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8622,6 +8980,7 @@ export interface operations {
             /** @description Inbox created */
             201: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8631,6 +8990,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8640,6 +9000,7 @@ export interface operations {
             /** @description Inbox limit reached */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8662,6 +9023,7 @@ export interface operations {
             /** @description Inbox deleted */
             204: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -8669,6 +9031,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8678,6 +9041,7 @@ export interface operations {
             /** @description Inbox not found (or it belongs to another user) */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8700,6 +9064,7 @@ export interface operations {
             /** @description Requests returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8709,6 +9074,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8718,6 +9084,7 @@ export interface operations {
             /** @description Inbox not found (or it belongs to another user) */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8738,6 +9105,7 @@ export interface operations {
             /** @description Subscriptions returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8747,6 +9115,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8771,6 +9140,7 @@ export interface operations {
             /** @description Subscription created; secret included once */
             201: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8780,6 +9150,7 @@ export interface operations {
             /** @description Invalid body, unknown event type or rejected URL */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8789,6 +9160,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8798,6 +9170,7 @@ export interface operations {
             /** @description Subscription limit reached */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8818,6 +9191,7 @@ export interface operations {
             /** @description Event types returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8827,6 +9201,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8849,6 +9224,7 @@ export interface operations {
             /** @description Subscription returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8858,6 +9234,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8867,6 +9244,7 @@ export interface operations {
             /** @description The subscription belongs to another user */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8876,6 +9254,7 @@ export interface operations {
             /** @description Subscription not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8902,6 +9281,7 @@ export interface operations {
             /** @description Subscription updated */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8911,6 +9291,7 @@ export interface operations {
             /** @description Invalid body, unknown event type or rejected URL */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8920,6 +9301,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8929,6 +9311,7 @@ export interface operations {
             /** @description The subscription belongs to another user */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8938,6 +9321,7 @@ export interface operations {
             /** @description Subscription not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8960,6 +9344,7 @@ export interface operations {
             /** @description Subscription deleted */
             204: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -8967,6 +9352,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8976,6 +9362,7 @@ export interface operations {
             /** @description The subscription belongs to another user */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8985,6 +9372,7 @@ export interface operations {
             /** @description Subscription not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9011,6 +9399,7 @@ export interface operations {
             /** @description Deliveries returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9020,6 +9409,7 @@ export interface operations {
             /** @description Invalid parameter */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9029,6 +9419,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9038,6 +9429,7 @@ export interface operations {
             /** @description The subscription belongs to another user */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9047,6 +9439,7 @@ export interface operations {
             /** @description Subscription not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9070,6 +9463,7 @@ export interface operations {
             /** @description Delivery returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9079,6 +9473,7 @@ export interface operations {
             /** @description Invalid delivery id */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9088,6 +9483,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9097,6 +9493,7 @@ export interface operations {
             /** @description The subscription belongs to another user */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9106,6 +9503,7 @@ export interface operations {
             /** @description Subscription or delivery not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9129,6 +9527,7 @@ export interface operations {
             /** @description Redelivery sent; the new delivery shows the outcome */
             201: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9138,6 +9537,7 @@ export interface operations {
             /** @description Invalid delivery id */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9147,6 +9547,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9156,6 +9557,7 @@ export interface operations {
             /** @description The subscription belongs to another user */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9165,6 +9567,7 @@ export interface operations {
             /** @description Subscription or delivery not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9174,6 +9577,7 @@ export interface operations {
             /** @description Subscription is disabled */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9196,6 +9600,7 @@ export interface operations {
             /** @description Secret rotated; new secret included once */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9205,6 +9610,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9214,6 +9620,7 @@ export interface operations {
             /** @description The subscription belongs to another user */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9223,6 +9630,7 @@ export interface operations {
             /** @description Subscription not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9245,6 +9653,7 @@ export interface operations {
             /** @description Ping sent; the delivery shows the outcome */
             201: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9254,6 +9663,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9263,6 +9673,7 @@ export interface operations {
             /** @description The subscription belongs to another user */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9272,6 +9683,7 @@ export interface operations {
             /** @description Subscription not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9281,6 +9693,7 @@ export interface operations {
             /** @description Subscription is disabled */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9301,6 +9714,7 @@ export interface operations {
             /** @description Wishlist returned */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9310,6 +9724,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9336,6 +9751,7 @@ export interface operations {
             /** @description Wishlist entry updated */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9345,6 +9761,7 @@ export interface operations {
             /** @description Wishlist entry created */
             201: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9354,6 +9771,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9363,6 +9781,7 @@ export interface operations {
             /** @description Product not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9372,6 +9791,7 @@ export interface operations {
             /** @description Wishlist is full */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9394,6 +9814,7 @@ export interface operations {
             /** @description Wishlist entry removed */
             204: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -9401,6 +9822,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9410,6 +9832,7 @@ export interface operations {
             /** @description Product is not on the wishlist */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {

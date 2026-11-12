@@ -22,9 +22,15 @@ interface CheckoutFormProps {
   cartTotal: number;
   /** Amount after a valid coupon; defaults to the cart total. */
   payableTotal?: number;
+  /**
+   * Called once the order exists, before navigating away. React Router commits the navigation in a
+   * transition, so the page that owns this form may still be rendered when the emptied cart is
+   * refetched; it must not treat that empty cart as a reason to send the customer back to /cart.
+   */
+  onOrderPlaced?: () => void;
 }
 
-export function CheckoutForm({ cartTotal, payableTotal }: CheckoutFormProps) {
+export function CheckoutForm({ cartTotal, payableTotal, onOrderPlaced }: CheckoutFormProps) {
   const { formatMoney } = useMoney();
   const navigate = useNavigate();
   // One key per checkout attempt: a retried submit after a timeout replays the
@@ -48,17 +54,19 @@ export function CheckoutForm({ cartTotal, payableTotal }: CheckoutFormProps) {
   const createOrderMutation = useMutation({
     mutationFn: (shippingAddress: AddressDto) => orders.createOrder(shippingAddress, idempotencyKey),
     onSuccess: (response) => {
+      onOrderPlaced?.();
+      // Replace the checkout entry: going back to it after the order emptied the cart only bounces to /cart.
+      if (response?.data?.id) {
+        // New orders are PENDING until paid; with payment-service the next step is the card form.
+        navigate(isPaymentEnabled() ? `/orders/${response.data.id}/pay` : `/orders/${response.data.id}`, { replace: true });
+      } else {
+        navigate('/orders', { replace: true });
+      }
+
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
-      
-      if (response?.data?.id) {
-        // New orders are PENDING until paid; with payment-service the next step is the card form.
-        navigate(isPaymentEnabled() ? `/orders/${response.data.id}/pay` : `/orders/${response.data.id}`);
-      } else {
-        navigate('/orders');
-      }
     },
   });
   

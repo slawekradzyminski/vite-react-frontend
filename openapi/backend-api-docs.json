@@ -1,5 +1,16 @@
 {
   "components": {
+    "headers": {
+      "X-Request-Id": {
+        "description": "Correlation id of the request: the caller's valid X-Request-Id (1-128 characters of A-Z a-z 0-9 . _ -) or a generated UUID. Send it again with a W3C traceparent header to continue a trace; logs, domain events and webhook deliveries caused by the request carry the same id.",
+        "schema": {
+          "example": "3f2c1a9e-7d4b-4c55-9a0e-2b6f8d1c4e77",
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9._-]{1,128}$",
+          "type": "string"
+        }
+      }
+    },
     "schemas": {
       "AddressDto": {
         "description": "Address data transfer object",
@@ -74,6 +85,7 @@
             "example": "gc-7kq2-m9xd-4hpa",
             "maxLength": 32,
             "minLength": 1,
+            "pattern": "\\S",
             "type": "string"
           }
         },
@@ -2747,7 +2759,7 @@
             "description": "Review text",
             "example": "Battery lasts two days and the camera is excellent.",
             "maxLength": 2000,
-            "minLength": 10,
+            "minLength": 1,
             "pattern": "\\S",
             "type": "string"
           },
@@ -2763,7 +2775,7 @@
             "description": "Review title",
             "example": "Great phone",
             "maxLength": 120,
-            "minLength": 3,
+            "minLength": 1,
             "pattern": "\\S",
             "type": "string"
           }
@@ -3897,7 +3909,12 @@
                 }
               }
             },
-            "description": "Coupons returned"
+            "description": "Coupons returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -3907,7 +3924,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -3917,7 +3939,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -3952,7 +3979,12 @@
                 }
               }
             },
-            "description": "Coupon created"
+            "description": "Coupon created",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -3969,7 +4001,12 @@
                 }
               }
             },
-            "description": "Invalid coupon definition"
+            "description": "Invalid coupon definition",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -3979,7 +4016,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -3989,7 +4031,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -3999,7 +4046,12 @@
                 }
               }
             },
-            "description": "Coupon code already exists"
+            "description": "Coupon code already exists",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -4030,7 +4082,12 @@
         ],
         "responses": {
           "204": {
-            "description": "Coupon deleted"
+            "description": "Coupon deleted",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -4040,7 +4097,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -4050,7 +4112,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -4060,7 +4127,12 @@
                 }
               }
             },
-            "description": "Coupon not found"
+            "description": "Coupon not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -4070,7 +4142,12 @@
                 }
               }
             },
-            "description": "Coupon has redemptions"
+            "description": "Coupon has redemptions",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -4106,7 +4183,12 @@
                 }
               }
             },
-            "description": "Coupon returned"
+            "description": "Coupon returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -4116,7 +4198,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -4126,7 +4213,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -4136,7 +4228,12 @@
                 }
               }
             },
-            "description": "Coupon not found"
+            "description": "Coupon not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -4182,7 +4279,12 @@
                 }
               }
             },
-            "description": "Coupon updated"
+            "description": "Coupon updated",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -4199,7 +4301,12 @@
                 }
               }
             },
-            "description": "Invalid coupon definition"
+            "description": "Invalid coupon definition",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -4209,7 +4316,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -4219,7 +4331,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -4229,7 +4346,12 @@
                 }
               }
             },
-            "description": "Coupon not found"
+            "description": "Coupon not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -4239,7 +4361,12 @@
                 }
               }
             },
-            "description": "Coupon code already exists"
+            "description": "Coupon code already exists",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -4288,7 +4415,12 @@
                 }
               }
             },
-            "description": "Currency updated"
+            "description": "Currency updated",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "201": {
             "content": {
@@ -4298,7 +4430,12 @@
                 }
               }
             },
-            "description": "Currency created"
+            "description": "Currency created",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -4315,7 +4452,12 @@
                 }
               }
             },
-            "description": "Invalid currency code or definition"
+            "description": "Invalid currency code or definition",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -4325,7 +4467,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -4335,7 +4482,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -4401,7 +4553,12 @@
                 }
               }
             },
-            "description": "Gift cards returned"
+            "description": "Gift cards returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -4411,7 +4568,12 @@
                 }
               }
             },
-            "description": "Unknown status"
+            "description": "Unknown status",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -4421,7 +4583,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -4431,7 +4598,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -4466,7 +4638,12 @@
                 }
               }
             },
-            "description": "Gift card issued"
+            "description": "Gift card issued",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -4483,7 +4660,12 @@
                 }
               }
             },
-            "description": "Amount out of range, expiresAt not in the future, or field too long"
+            "description": "Amount out of range, expiresAt not in the future, or field too long",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -4493,7 +4675,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -4503,7 +4690,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -4513,7 +4705,12 @@
                 }
               }
             },
-            "description": "Recipient user not found"
+            "description": "Recipient user not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -4552,7 +4749,12 @@
                 }
               }
             },
-            "description": "Gift card returned"
+            "description": "Gift card returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -4562,7 +4764,12 @@
                 }
               }
             },
-            "description": "Malformed code"
+            "description": "Malformed code",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -4572,7 +4779,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -4582,7 +4794,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -4592,7 +4809,12 @@
                 }
               }
             },
-            "description": "Gift card not found"
+            "description": "Gift card not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -4631,7 +4853,12 @@
                 }
               }
             },
-            "description": "Gift card disabled"
+            "description": "Gift card disabled",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -4641,7 +4868,12 @@
                 }
               }
             },
-            "description": "Malformed code"
+            "description": "Malformed code",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -4651,7 +4883,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -4661,7 +4898,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -4671,7 +4913,12 @@
                 }
               }
             },
-            "description": "Gift card not found"
+            "description": "Gift card not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -4681,7 +4928,12 @@
                 }
               }
             },
-            "description": "Gift card is already disabled"
+            "description": "Gift card is already disabled",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -4769,7 +5021,12 @@
                 }
               }
             },
-            "description": "Inventory returned"
+            "description": "Inventory returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -4779,7 +5036,12 @@
                 }
               }
             },
-            "description": "Invalid parameter"
+            "description": "Invalid parameter",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -4789,7 +5051,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -4799,7 +5066,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -4847,7 +5119,12 @@
                 }
               }
             },
-            "description": "Inventory item returned"
+            "description": "Inventory item returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -4857,7 +5134,12 @@
                 }
               }
             },
-            "description": "Invalid parameter"
+            "description": "Invalid parameter",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -4867,7 +5149,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -4877,7 +5164,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -4887,7 +5179,12 @@
                 }
               }
             },
-            "description": "Product not found"
+            "description": "Product not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -4935,7 +5232,12 @@
                 }
               }
             },
-            "description": "Adjustment recorded"
+            "description": "Adjustment recorded",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -4952,7 +5254,12 @@
                 }
               }
             },
-            "description": "Invalid adjustment or product identifier"
+            "description": "Invalid adjustment or product identifier",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -4962,7 +5269,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -4972,7 +5284,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -4982,7 +5299,12 @@
                 }
               }
             },
-            "description": "Product not found"
+            "description": "Product not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -4992,7 +5314,12 @@
                 }
               }
             },
-            "description": "Insufficient stock, quantity overflow, or requestId reused with different delta/reason"
+            "description": "Insufficient stock, quantity overflow, or requestId reused with different delta/reason",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -5050,7 +5377,12 @@
                 }
               }
             },
-            "description": "Movement history returned"
+            "description": "Movement history returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -5060,7 +5392,12 @@
                 }
               }
             },
-            "description": "Invalid parameter"
+            "description": "Invalid parameter",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -5070,7 +5407,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -5080,7 +5422,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -5090,7 +5437,12 @@
                 }
               }
             },
-            "description": "Product not found"
+            "description": "Product not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -5117,7 +5469,12 @@
                 }
               }
             },
-            "description": "CSV file"
+            "description": "CSV file",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -5127,7 +5484,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -5137,7 +5499,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -5195,7 +5562,12 @@
                 }
               }
             },
-            "description": "Import applied, or dry run succeeded"
+            "description": "Import applied, or dry run succeeded",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -5212,7 +5584,12 @@
                 }
               }
             },
-            "description": "Invalid file or rows; the report lists every error when the file could be parsed"
+            "description": "Invalid file or rows; the report lists every error when the file could be parsed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -5222,7 +5599,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -5232,7 +5614,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "413": {
             "content": {
@@ -5242,7 +5629,12 @@
                 }
               }
             },
-            "description": "File larger than 1 MB"
+            "description": "File larger than 1 MB",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -5306,7 +5698,12 @@
                 }
               }
             },
-            "description": "Reviews returned"
+            "description": "Reviews returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -5316,7 +5713,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -5326,7 +5728,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -5374,7 +5781,12 @@
                 }
               }
             },
-            "description": "Review moderated"
+            "description": "Review moderated",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -5391,7 +5803,12 @@
                 }
               }
             },
-            "description": "Invalid decision or missing rejection note"
+            "description": "Invalid decision or missing rejection note",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -5401,7 +5818,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -5411,7 +5833,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -5421,7 +5848,12 @@
                 }
               }
             },
-            "description": "Review not found"
+            "description": "Review not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -5470,7 +5902,12 @@
                 }
               }
             },
-            "description": "VAT rate updated"
+            "description": "VAT rate updated",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "201": {
             "content": {
@@ -5480,7 +5917,12 @@
                 }
               }
             },
-            "description": "VAT rate created"
+            "description": "VAT rate created",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -5497,7 +5939,12 @@
                 }
               }
             },
-            "description": "Invalid country code or rate definition"
+            "description": "Invalid country code or rate definition",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -5507,7 +5954,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -5517,7 +5969,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -5575,7 +6032,12 @@
                 }
               }
             },
-            "description": "Subscriptions returned"
+            "description": "Subscriptions returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -5585,7 +6047,12 @@
                 }
               }
             },
-            "description": "Invalid parameter"
+            "description": "Invalid parameter",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -5595,7 +6062,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -5605,7 +6077,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -5625,7 +6102,12 @@
         "operationId": "clearCart",
         "responses": {
           "204": {
-            "description": "Cart cleared successfully"
+            "description": "Cart cleared successfully",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -5635,7 +6117,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -5660,7 +6147,12 @@
                 }
               }
             },
-            "description": "Successfully retrieved cart"
+            "description": "Successfully retrieved cart",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -5670,7 +6162,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -5697,7 +6194,12 @@
                 }
               }
             },
-            "description": "Coupon removed; the updated cart is returned"
+            "description": "Coupon removed; the updated cart is returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -5707,7 +6209,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -5742,7 +6249,12 @@
                 }
               }
             },
-            "description": "Coupon applied; the cart shows the discount"
+            "description": "Coupon applied; the cart shows the discount",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -5759,7 +6271,12 @@
                 }
               }
             },
-            "description": "Empty cart, inactive, not yet valid or expired coupon, or subtotal below the minimum"
+            "description": "Empty cart, inactive, not yet valid or expired coupon, or subtotal below the minimum",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -5769,7 +6286,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -5779,7 +6301,12 @@
                 }
               }
             },
-            "description": "Coupon not found"
+            "description": "Coupon not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -5789,7 +6316,12 @@
                 }
               }
             },
-            "description": "Global or per-user redemption limit reached"
+            "description": "Global or per-user redemption limit reached",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -5816,7 +6348,12 @@
                 }
               }
             },
-            "description": "Gift card removed; the updated cart is returned"
+            "description": "Gift card removed; the updated cart is returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -5826,7 +6363,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -5861,7 +6403,12 @@
                 }
               }
             },
-            "description": "Gift card applied; the cart shows the gift card amount"
+            "description": "Gift card applied; the cart shows the gift card amount",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -5878,7 +6425,12 @@
                 }
               }
             },
-            "description": "Empty cart, malformed code, disabled or expired gift card"
+            "description": "Empty cart, malformed code, disabled or expired gift card",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -5888,7 +6440,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -5898,7 +6455,12 @@
                 }
               }
             },
-            "description": "Gift card not found"
+            "description": "Gift card not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -5908,7 +6470,12 @@
                 }
               }
             },
-            "description": "Gift card has no remaining balance"
+            "description": "Gift card has no remaining balance",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -5945,7 +6512,12 @@
                 }
               }
             },
-            "description": "Item added successfully"
+            "description": "Item added successfully",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -5955,7 +6527,12 @@
                 }
               }
             },
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -5965,7 +6542,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -5975,7 +6557,12 @@
                 }
               }
             },
-            "description": "Product not found"
+            "description": "Product not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -5985,7 +6572,12 @@
                 }
               }
             },
-            "description": "Requested quantity exceeds available stock"
+            "description": "Requested quantity exceeds available stock",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -6023,7 +6615,12 @@
                 }
               }
             },
-            "description": "Item removed successfully"
+            "description": "Item removed successfully",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -6033,7 +6630,12 @@
                 }
               }
             },
-            "description": "Bad request"
+            "description": "Bad request",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -6043,7 +6645,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -6053,7 +6660,12 @@
                 }
               }
             },
-            "description": "Cart item not found"
+            "description": "Cart item not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -6099,7 +6711,12 @@
                 }
               }
             },
-            "description": "Item quantity updated successfully"
+            "description": "Item quantity updated successfully",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -6109,7 +6726,12 @@
                 }
               }
             },
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -6119,7 +6741,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -6129,7 +6756,12 @@
                 }
               }
             },
-            "description": "Cart item not found"
+            "description": "Cart item not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -6139,7 +6771,12 @@
                 }
               }
             },
-            "description": "Requested quantity exceeds available stock"
+            "description": "Requested quantity exceeds available stock",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -6166,7 +6803,12 @@
                 }
               }
             },
-            "description": "Points removed; the updated cart is returned"
+            "description": "Points removed; the updated cart is returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -6176,7 +6818,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -6211,7 +6858,12 @@
                 }
               }
             },
-            "description": "Points applied; the cart shows the points amount"
+            "description": "Points applied; the cart shows the points amount",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -6228,7 +6880,12 @@
                 }
               }
             },
-            "description": "Empty cart, or points below 100 or not a multiple of 100"
+            "description": "Empty cart, or points below 100 or not a multiple of 100",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -6238,7 +6895,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -6248,7 +6910,12 @@
                 }
               }
             },
-            "description": "Insufficient loyalty points"
+            "description": "Insufficient loyalty points",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -6287,7 +6954,12 @@
                 }
               }
             },
-            "description": "VAT preview returned"
+            "description": "VAT preview returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -6297,7 +6969,12 @@
                 }
               }
             },
-            "description": "Country missing"
+            "description": "Country missing",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -6307,7 +6984,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -6317,7 +6999,12 @@
                 }
               }
             },
-            "description": "Country not recognised or no rate configured"
+            "description": "Country not recognised or no rate configured",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -6347,7 +7034,12 @@
                 }
               }
             },
-            "description": "Currencies returned"
+            "description": "Currencies returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -6357,7 +7049,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -6416,7 +7113,12 @@
                 }
               }
             },
-            "description": "Amount converted"
+            "description": "Amount converted",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -6426,7 +7128,12 @@
                 }
               }
             },
-            "description": "Missing or invalid amount or currency code"
+            "description": "Missing or invalid amount or currency code",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -6436,7 +7143,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -6446,7 +7158,12 @@
                 }
               }
             },
-            "description": "Currency not found"
+            "description": "Currency not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -6476,7 +7193,12 @@
         },
         "responses": {
           "200": {
-            "description": "Email queued; delivery is asynchronous"
+            "description": "Email queued; delivery is asynchronous",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -6486,7 +7208,12 @@
                 }
               }
             },
-            "description": "Invalid email data"
+            "description": "Invalid email data",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -6496,7 +7223,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -6535,7 +7267,12 @@
                 }
               }
             },
-            "description": "Gift card balance returned"
+            "description": "Gift card balance returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -6545,7 +7282,12 @@
                 }
               }
             },
-            "description": "Malformed code"
+            "description": "Malformed code",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -6555,7 +7297,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -6565,7 +7312,12 @@
                 }
               }
             },
-            "description": "Gift card not found"
+            "description": "Gift card not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -6595,7 +7347,12 @@
         ],
         "responses": {
           "200": {
-            "description": "Outbox buffer cleared successfully"
+            "description": "Outbox buffer cleared successfully",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -6605,7 +7362,12 @@
                 }
               }
             },
-            "description": "Unauthorized or invalid Bearer token"
+            "description": "Unauthorized or invalid Bearer token",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -6615,7 +7377,12 @@
                 }
               }
             },
-            "description": "Administrator role required, or configured X-Local-Outbox-Key is missing or invalid"
+            "description": "Administrator role required, or configured X-Local-Outbox-Key is missing or invalid",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "500": {
             "content": {
@@ -6625,7 +7392,12 @@
                 }
               }
             },
-            "description": "Unexpected error while clearing outbox"
+            "description": "Unexpected error while clearing outbox",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -6663,7 +7435,12 @@
                 }
               }
             },
-            "description": "Queued local emails returned successfully"
+            "description": "Queued local emails returned successfully",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -6673,7 +7450,12 @@
                 }
               }
             },
-            "description": "Unauthorized or invalid Bearer token"
+            "description": "Unauthorized or invalid Bearer token",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -6683,7 +7465,12 @@
                 }
               }
             },
-            "description": "Administrator role required, or configured X-Local-Outbox-Key is missing or invalid"
+            "description": "Administrator role required, or configured X-Local-Outbox-Key is missing or invalid",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -6710,7 +7497,12 @@
                 }
               }
             },
-            "description": "Loyalty account returned"
+            "description": "Loyalty account returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -6720,7 +7512,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -6771,7 +7568,12 @@
                 }
               }
             },
-            "description": "Loyalty transactions returned"
+            "description": "Loyalty transactions returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -6781,7 +7583,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -6818,7 +7625,12 @@
                 }
               }
             },
-            "description": "One JSON ChatResponseDto per SSE data event"
+            "description": "One JSON ChatResponseDto per SSE data event",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -6838,7 +7650,12 @@
                 }
               }
             },
-            "description": "Invalid request"
+            "description": "Invalid request",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -6848,7 +7665,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -6858,7 +7680,12 @@
                 }
               }
             },
-            "description": "Model not found"
+            "description": "Model not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "500": {
             "content": {
@@ -6875,7 +7702,12 @@
                 }
               }
             },
-            "description": "Upstream server failure; JSON body is passed through before streaming starts"
+            "description": "Upstream server failure; JSON body is passed through before streaming starts",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "default": {
             "content": {
@@ -6892,7 +7724,12 @@
                 }
               }
             },
-            "description": "Other upstream HTTP failures before streaming starts retain their status and JSON body"
+            "description": "Other upstream HTTP failures before streaming starts retain their status and JSON body",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -6929,7 +7766,12 @@
                 }
               }
             },
-            "description": "One JSON ChatResponseDto per SSE data event"
+            "description": "One JSON ChatResponseDto per SSE data event",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -6949,7 +7791,12 @@
                 }
               }
             },
-            "description": "Invalid request"
+            "description": "Invalid request",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -6959,7 +7806,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -6969,7 +7821,12 @@
                 }
               }
             },
-            "description": "Upstream model not found"
+            "description": "Upstream model not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "500": {
             "content": {
@@ -6986,7 +7843,12 @@
                 }
               }
             },
-            "description": "Upstream server failure; JSON body is passed through before streaming starts"
+            "description": "Upstream server failure; JSON body is passed through before streaming starts",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "default": {
             "content": {
@@ -7003,7 +7865,12 @@
                 }
               }
             },
-            "description": "Other upstream HTTP failures before streaming starts retain their status and JSON body"
+            "description": "Other upstream HTTP failures before streaming starts retain their status and JSON body",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -7033,7 +7900,12 @@
                 }
               }
             },
-            "description": "Available tool definitions returned successfully"
+            "description": "Available tool definitions returned successfully",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -7043,7 +7915,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -7080,7 +7957,12 @@
                 }
               }
             },
-            "description": "One JSON GenerateResponseDto per SSE data event"
+            "description": "One JSON GenerateResponseDto per SSE data event",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -7100,7 +7982,12 @@
                 }
               }
             },
-            "description": "Invalid request"
+            "description": "Invalid request",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -7110,7 +7997,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -7120,7 +8012,12 @@
                 }
               }
             },
-            "description": "Model not found"
+            "description": "Model not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "500": {
             "content": {
@@ -7137,7 +8034,12 @@
                 }
               }
             },
-            "description": "Upstream server failure; JSON body is passed through before streaming starts"
+            "description": "Upstream server failure; JSON body is passed through before streaming starts",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "default": {
             "content": {
@@ -7154,7 +8056,12 @@
                 }
               }
             },
-            "description": "Other upstream HTTP failures before streaming starts retain their status and JSON body"
+            "description": "Other upstream HTTP failures before streaming starts retain their status and JSON body",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -7218,7 +8125,12 @@
                 }
               }
             },
-            "description": "Orders retrieved successfully"
+            "description": "Orders retrieved successfully",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -7235,7 +8147,12 @@
                 }
               }
             },
-            "description": "Bad request"
+            "description": "Bad request",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -7245,7 +8162,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -7300,6 +8222,9 @@
                   "type": "string"
                 },
                 "style": "simple"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
               }
             }
           },
@@ -7318,7 +8243,12 @@
                 }
               }
             },
-            "description": "Invalid input or empty cart"
+            "description": "Invalid input or empty cart",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -7328,7 +8258,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -7338,7 +8273,12 @@
                 }
               }
             },
-            "description": "A cart product no longer exists"
+            "description": "A cart product no longer exists",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -7348,7 +8288,12 @@
                 }
               }
             },
-            "description": "Insufficient stock, coupon no longer valid, or Idempotency-Key reused with a different address"
+            "description": "Insufficient stock, coupon no longer valid, or Idempotency-Key reused with a different address",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -7412,7 +8357,12 @@
                 }
               }
             },
-            "description": "Orders retrieved successfully"
+            "description": "Orders retrieved successfully",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -7429,7 +8379,12 @@
                 }
               }
             },
-            "description": "Bad request"
+            "description": "Bad request",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -7439,7 +8394,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -7449,7 +8409,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -7487,7 +8452,12 @@
                 }
               }
             },
-            "description": "Order retrieved successfully"
+            "description": "Order retrieved successfully",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -7504,7 +8474,12 @@
                 }
               }
             },
-            "description": "Bad request"
+            "description": "Bad request",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -7514,7 +8489,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -7524,7 +8504,12 @@
                 }
               }
             },
-            "description": "Order not found"
+            "description": "Order not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -7562,7 +8547,12 @@
                 }
               }
             },
-            "description": "Order cancelled successfully"
+            "description": "Order cancelled successfully",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -7579,7 +8569,12 @@
                 }
               }
             },
-            "description": "Order cannot be cancelled"
+            "description": "Order cannot be cancelled",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -7589,7 +8584,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -7599,7 +8599,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -7609,7 +8614,12 @@
                 }
               }
             },
-            "description": "Order not found"
+            "description": "Order not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -7664,7 +8674,12 @@
                 }
               }
             },
-            "description": "Order status updated successfully"
+            "description": "Order status updated successfully",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -7681,7 +8696,12 @@
                 }
               }
             },
-            "description": "Invalid status transition"
+            "description": "Invalid status transition",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -7691,7 +8711,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -7701,7 +8726,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -7711,7 +8741,12 @@
                 }
               }
             },
-            "description": "Order not found"
+            "description": "Order not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -7741,7 +8776,12 @@
                 }
               }
             },
-            "description": "Successfully retrieved products"
+            "description": "Successfully retrieved products",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -7751,7 +8791,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -7786,7 +8831,12 @@
                 }
               }
             },
-            "description": "Product created successfully"
+            "description": "Product created successfully",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -7796,7 +8846,12 @@
                 }
               }
             },
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -7806,7 +8861,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -7816,7 +8876,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -7951,7 +9016,12 @@
                 }
               }
             },
-            "description": "Search page with facets"
+            "description": "Search page with facets",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -7961,7 +9031,12 @@
                 }
               }
             },
-            "description": "Invalid search parameters"
+            "description": "Invalid search parameters",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -7971,7 +9046,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -8002,7 +9082,12 @@
         ],
         "responses": {
           "204": {
-            "description": "Product deleted successfully"
+            "description": "Product deleted successfully",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -8012,7 +9097,12 @@
                 }
               }
             },
-            "description": "Bad request"
+            "description": "Bad request",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -8022,7 +9112,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -8032,10 +9127,20 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
-            "description": "Product not found; empty response body"
+            "description": "Product not found; empty response body",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -8045,7 +9150,12 @@
                 }
               }
             },
-            "description": "Product is referenced by existing data"
+            "description": "Product is referenced by existing data",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -8099,11 +9209,19 @@
                   "type": "string"
                 },
                 "style": "simple"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
               }
             }
           },
           "304": {
-            "description": "If-None-Match matches the current version; empty response body"
+            "description": "If-None-Match matches the current version; empty response body",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -8113,7 +9231,12 @@
                 }
               }
             },
-            "description": "Bad request"
+            "description": "Bad request",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -8123,7 +9246,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -8133,7 +9261,12 @@
                 }
               }
             },
-            "description": "Product not found"
+            "description": "Product not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -8197,6 +9330,9 @@
                   "type": "string"
                 },
                 "style": "simple"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
               }
             }
           },
@@ -8208,7 +9344,12 @@
                 }
               }
             },
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -8218,7 +9359,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -8228,7 +9374,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -8238,7 +9389,12 @@
                 }
               }
             },
-            "description": "Product not found"
+            "description": "Product not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "412": {
             "content": {
@@ -8248,7 +9404,12 @@
                 }
               }
             },
-            "description": "If-Match does not match the current product version"
+            "description": "If-Match does not match the current product version",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -8308,7 +9469,12 @@
                 }
               }
             },
-            "description": "Reviews returned"
+            "description": "Reviews returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -8318,7 +9484,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -8328,7 +9499,12 @@
                 }
               }
             },
-            "description": "Product or review not found"
+            "description": "Product or review not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -8374,7 +9550,12 @@
                 }
               }
             },
-            "description": "Review created and awaiting moderation"
+            "description": "Review created and awaiting moderation",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -8384,7 +9565,12 @@
                 }
               }
             },
-            "description": "Invalid review"
+            "description": "Invalid review",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -8394,7 +9580,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -8404,7 +9595,12 @@
                 }
               }
             },
-            "description": "The caller has not received this product"
+            "description": "The caller has not received this product",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -8414,7 +9610,12 @@
                 }
               }
             },
-            "description": "Product or review not found"
+            "description": "Product or review not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -8424,7 +9625,12 @@
                 }
               }
             },
-            "description": "The caller already reviewed this product"
+            "description": "The caller already reviewed this product",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -8455,7 +9661,12 @@
         ],
         "responses": {
           "204": {
-            "description": "Review deleted"
+            "description": "Review deleted",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -8465,7 +9676,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -8475,7 +9691,12 @@
                 }
               }
             },
-            "description": "Product or review not found"
+            "description": "Product or review not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -8511,7 +9732,12 @@
                 }
               }
             },
-            "description": "Eligibility returned"
+            "description": "Eligibility returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -8521,7 +9747,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -8531,7 +9762,12 @@
                 }
               }
             },
-            "description": "Product or review not found"
+            "description": "Product or review not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -8577,7 +9813,12 @@
                 }
               }
             },
-            "description": "Review updated and awaiting moderation"
+            "description": "Review updated and awaiting moderation",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -8587,7 +9828,12 @@
                 }
               }
             },
-            "description": "Invalid review"
+            "description": "Invalid review",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -8597,7 +9843,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -8607,7 +9858,12 @@
                 }
               }
             },
-            "description": "Product or review not found"
+            "description": "Product or review not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -8645,7 +9901,12 @@
                 }
               }
             },
-            "description": "Summary returned"
+            "description": "Summary returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -8655,7 +9916,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -8665,7 +9931,12 @@
                 }
               }
             },
-            "description": "Product or review not found"
+            "description": "Product or review not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -8703,7 +9974,12 @@
                 }
               }
             },
-            "description": "Successfully generated QR code"
+            "description": "Successfully generated QR code",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -8713,7 +9989,12 @@
                 }
               }
             },
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -8723,7 +10004,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -8761,7 +10047,12 @@
                 }
               }
             },
-            "description": "Successfully returned info"
+            "description": "Successfully returned info",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -8771,7 +10062,12 @@
                 }
               }
             },
-            "description": "Invalid session header, pagination or time filter"
+            "description": "Invalid session header, pagination or time filter",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -8781,7 +10077,12 @@
                 }
               }
             },
-            "description": "Unauthorized or invalid Bearer token; authentication is required unless legacy public access is enabled"
+            "description": "Unauthorized or invalid Bearer token; authentication is required unless legacy public access is enabled",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -8891,7 +10192,12 @@
                 }
               }
             },
-            "description": "Successfully returned traffic logs"
+            "description": "Successfully returned traffic logs",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -8901,7 +10207,12 @@
                 }
               }
             },
-            "description": "Invalid session header, pagination or time filter"
+            "description": "Invalid session header, pagination or time filter",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -8911,7 +10222,12 @@
                 }
               }
             },
-            "description": "Unauthorized or invalid Bearer token; authentication is required unless legacy public access is enabled"
+            "description": "Unauthorized or invalid Bearer token; authentication is required unless legacy public access is enabled",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -8957,7 +10273,12 @@
                 }
               }
             },
-            "description": "Successfully returned traffic log"
+            "description": "Successfully returned traffic log",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -8967,7 +10288,12 @@
                 }
               }
             },
-            "description": "Invalid session header, pagination or time filter"
+            "description": "Invalid session header, pagination or time filter",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -8977,10 +10303,20 @@
                 }
               }
             },
-            "description": "Unauthorized or invalid Bearer token; authentication is required unless legacy public access is enabled"
+            "description": "Unauthorized or invalid Bearer token; authentication is required unless legacy public access is enabled",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
-            "description": "Traffic log not found; empty response body"
+            "description": "Traffic log not found; empty response body",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -9010,7 +10346,12 @@
                 }
               }
             },
-            "description": "List of users"
+            "description": "List of users",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -9020,7 +10361,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -9057,7 +10403,12 @@
                 }
               }
             },
-            "description": "MFA enabled and recovery codes created"
+            "description": "MFA enabled and recovery codes created",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -9067,7 +10418,12 @@
                 }
               }
             },
-            "description": "Field validation failed"
+            "description": "Field validation failed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -9077,7 +10433,12 @@
                 }
               }
             },
-            "description": "Authenticator code is invalid"
+            "description": "Authenticator code is invalid",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -9087,7 +10448,12 @@
                 }
               }
             },
-            "description": "Account no longer exists"
+            "description": "Account no longer exists",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -9097,7 +10463,12 @@
                 }
               }
             },
-            "description": "Setup is missing, MFA is already enabled, or it is provider-managed"
+            "description": "Setup is missing, MFA is already enabled, or it is provider-managed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "410": {
             "content": {
@@ -9107,7 +10478,12 @@
                 }
               }
             },
-            "description": "Pending setup expired"
+            "description": "Pending setup expired",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -9137,7 +10513,12 @@
         },
         "responses": {
           "200": {
-            "description": "MFA disabled"
+            "description": "MFA disabled",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -9147,7 +10528,12 @@
                 }
               }
             },
-            "description": "Field validation failed"
+            "description": "Field validation failed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -9157,7 +10543,12 @@
                 }
               }
             },
-            "description": "Second factor or Bearer token is invalid"
+            "description": "Second factor or Bearer token is invalid",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -9167,7 +10558,12 @@
                 }
               }
             },
-            "description": "Account no longer exists"
+            "description": "Account no longer exists",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -9177,7 +10573,12 @@
                 }
               }
             },
-            "description": "MFA is not enabled or is provider-managed"
+            "description": "MFA is not enabled or is provider-managed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "422": {
             "content": {
@@ -9187,7 +10588,12 @@
                 }
               }
             },
-            "description": "Current password is invalid"
+            "description": "Current password is invalid",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -9224,7 +10630,12 @@
                 }
               }
             },
-            "description": "Replacement recovery codes created"
+            "description": "Replacement recovery codes created",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -9234,7 +10645,12 @@
                 }
               }
             },
-            "description": "Field validation failed"
+            "description": "Field validation failed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -9244,7 +10660,12 @@
                 }
               }
             },
-            "description": "Authenticator code or Bearer token is invalid"
+            "description": "Authenticator code or Bearer token is invalid",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -9254,7 +10675,12 @@
                 }
               }
             },
-            "description": "Account no longer exists"
+            "description": "Account no longer exists",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -9264,7 +10690,12 @@
                 }
               }
             },
-            "description": "MFA is not enabled or is provider-managed"
+            "description": "MFA is not enabled or is provider-managed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "422": {
             "content": {
@@ -9274,7 +10705,12 @@
                 }
               }
             },
-            "description": "Current password is invalid"
+            "description": "Current password is invalid",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -9301,7 +10737,12 @@
                 }
               }
             },
-            "description": "Pending setup created"
+            "description": "Pending setup created",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -9311,7 +10752,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -9321,7 +10767,12 @@
                 }
               }
             },
-            "description": "Account no longer exists"
+            "description": "Account no longer exists",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -9331,7 +10782,12 @@
                 }
               }
             },
-            "description": "MFA is already enabled or provider-managed"
+            "description": "MFA is already enabled or provider-managed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -9358,7 +10814,12 @@
                 }
               }
             },
-            "description": "Status returned"
+            "description": "Status returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -9368,7 +10829,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -9395,7 +10861,12 @@
                 }
               }
             },
-            "description": "Chat system prompt retrieved successfully"
+            "description": "Chat system prompt retrieved successfully",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -9405,7 +10876,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -9440,7 +10916,12 @@
                 }
               }
             },
-            "description": "Chat system prompt was updated"
+            "description": "Chat system prompt was updated",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -9450,7 +10931,12 @@
                 }
               }
             },
-            "description": "Bad request"
+            "description": "Bad request",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -9460,7 +10946,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -9480,7 +10971,12 @@
         "operationId": "logout",
         "responses": {
           "200": {
-            "description": "Successfully logged out"
+            "description": "Successfully logged out",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -9490,7 +10986,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -9517,7 +11018,12 @@
                 }
               }
             },
-            "description": "Current user details"
+            "description": "Current user details",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -9527,7 +11033,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -9557,7 +11068,12 @@
                 }
               }
             },
-            "description": "Recent email events returned successfully"
+            "description": "Recent email events returned successfully",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -9567,7 +11083,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -9604,7 +11125,12 @@
                 }
               }
             },
-            "description": "Request accepted whether or not a matching account exists"
+            "description": "Request accepted whether or not a matching account exists",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -9621,7 +11147,12 @@
                 }
               }
             },
-            "description": "Invalid payload"
+            "description": "Invalid payload",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -9631,7 +11162,12 @@
                 }
               }
             },
-            "description": "Invalid or expired Bearer token; omit stale Authorization headers on these public endpoints"
+            "description": "Invalid or expired Bearer token; omit stale Authorization headers on these public endpoints",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "summary": "Start password reset flow",
@@ -9656,7 +11192,12 @@
         },
         "responses": {
           "200": {
-            "description": "Password reset successful"
+            "description": "Password reset successful",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -9673,7 +11214,12 @@
                 }
               }
             },
-            "description": "Invalid token or payload"
+            "description": "Invalid token or payload",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -9683,7 +11229,12 @@
                 }
               }
             },
-            "description": "Invalid or expired Bearer token; omit stale Authorization headers on these public endpoints"
+            "description": "Invalid or expired Bearer token; omit stale Authorization headers on these public endpoints",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "summary": "Complete password reset with a valid token",
@@ -9715,7 +11266,12 @@
                 }
               }
             },
-            "description": "New JWT and refresh tokens"
+            "description": "New JWT and refresh tokens",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -9725,7 +11281,12 @@
                 }
               }
             },
-            "description": "Bad request"
+            "description": "Bad request",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -9735,7 +11296,12 @@
                 }
               }
             },
-            "description": "Invalid refresh token"
+            "description": "Invalid refresh token",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "summary": "Refresh JWT token using refresh token",
@@ -9767,7 +11333,12 @@
                 }
               }
             },
-            "description": "Successfully authenticated"
+            "description": "Successfully authenticated",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -9777,7 +11348,12 @@
                 }
               }
             },
-            "description": "Field validation failed"
+            "description": "Field validation failed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -9787,7 +11363,12 @@
                 }
               }
             },
-            "description": "Invalid or expired Bearer token; omit stale Authorization headers on this public endpoint"
+            "description": "Invalid or expired Bearer token; omit stale Authorization headers on this public endpoint",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "422": {
             "content": {
@@ -9797,7 +11378,12 @@
                 }
               }
             },
-            "description": "Invalid username/password supplied"
+            "description": "Invalid username/password supplied",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "summary": "Authenticate user and return JWT token",
@@ -9829,7 +11415,12 @@
                 }
               }
             },
-            "description": "Sign-in completed"
+            "description": "Sign-in completed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -9839,7 +11430,12 @@
                 }
               }
             },
-            "description": "Field validation failed"
+            "description": "Field validation failed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -9849,7 +11445,12 @@
                 }
               }
             },
-            "description": "Challenge or second factor is invalid"
+            "description": "Challenge or second factor is invalid",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "summary": "Complete sign-in with a second factor",
@@ -9874,7 +11475,12 @@
         },
         "responses": {
           "201": {
-            "description": "User was successfully created"
+            "description": "User was successfully created",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -9891,7 +11497,12 @@
                 }
               }
             },
-            "description": "Field validation failed, or username/email is already in use"
+            "description": "Field validation failed, or username/email is already in use",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -9901,7 +11512,12 @@
                 }
               }
             },
-            "description": "Invalid or expired Bearer token; omit stale Authorization headers on this public endpoint"
+            "description": "Invalid or expired Bearer token; omit stale Authorization headers on this public endpoint",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "summary": "Create a new user account",
@@ -9933,7 +11549,12 @@
                 }
               }
             },
-            "description": "Successfully authenticated with SSO"
+            "description": "Successfully authenticated with SSO",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -9943,7 +11564,12 @@
                 }
               }
             },
-            "description": "Field validation failed"
+            "description": "Field validation failed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -9953,7 +11579,12 @@
                 }
               }
             },
-            "description": "Invalid SSO token"
+            "description": "Invalid SSO token",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -9963,7 +11594,12 @@
                 }
               }
             },
-            "description": "SSO login is disabled"
+            "description": "SSO login is disabled",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -9973,7 +11609,12 @@
                 }
               }
             },
-            "description": "SSO identity conflicts with an existing local account"
+            "description": "SSO identity conflicts with an existing local account",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "summary": "Exchange a valid OIDC ID token for an app JWT token pair",
@@ -9995,7 +11636,12 @@
                 }
               }
             },
-            "description": "Tool system prompt retrieved successfully"
+            "description": "Tool system prompt retrieved successfully",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -10005,7 +11651,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -10040,7 +11691,12 @@
                 }
               }
             },
-            "description": "Tool system prompt was updated"
+            "description": "Tool system prompt was updated",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -10050,7 +11706,12 @@
                 }
               }
             },
-            "description": "Bad request"
+            "description": "Bad request",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -10060,7 +11721,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -10091,7 +11757,12 @@
         ],
         "responses": {
           "204": {
-            "description": "User was deleted"
+            "description": "User was deleted",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -10101,7 +11772,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -10111,7 +11787,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -10121,7 +11802,12 @@
                 }
               }
             },
-            "description": "The user doesn't exist"
+            "description": "The user doesn't exist",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -10157,7 +11843,12 @@
                 }
               }
             },
-            "description": "User details"
+            "description": "User details",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -10167,7 +11858,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -10177,7 +11873,12 @@
                 }
               }
             },
-            "description": "The user doesn't exist"
+            "description": "The user doesn't exist",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -10223,7 +11924,12 @@
                 }
               }
             },
-            "description": "User was updated"
+            "description": "User was updated",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -10233,7 +11939,12 @@
                 }
               }
             },
-            "description": "Bad request"
+            "description": "Bad request",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -10243,7 +11954,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -10253,7 +11969,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -10263,7 +11984,12 @@
                 }
               }
             },
-            "description": "The user doesn't exist"
+            "description": "The user doesn't exist",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -10294,7 +12020,12 @@
         ],
         "responses": {
           "204": {
-            "description": "User account and user-owned data were deleted"
+            "description": "User account and user-owned data were deleted",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -10304,7 +12035,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -10314,7 +12050,12 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -10324,7 +12065,12 @@
                 }
               }
             },
-            "description": "The user doesn't exist"
+            "description": "The user doesn't exist",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -10354,7 +12100,12 @@
                 }
               }
             },
-            "description": "VAT rates returned"
+            "description": "VAT rates returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -10364,7 +12115,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -10403,7 +12159,12 @@
                 }
               }
             },
-            "description": "VAT rate returned"
+            "description": "VAT rate returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -10413,7 +12174,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -10423,7 +12189,12 @@
                 }
               }
             },
-            "description": "Country not recognised or no rate configured"
+            "description": "Country not recognised or no rate configured",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -10453,7 +12224,12 @@
                 }
               }
             },
-            "description": "Inboxes returned"
+            "description": "Inboxes returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -10463,7 +12239,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -10488,7 +12269,12 @@
                 }
               }
             },
-            "description": "Inbox created"
+            "description": "Inbox created",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -10498,7 +12284,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -10508,7 +12299,12 @@
                 }
               }
             },
-            "description": "Inbox limit reached"
+            "description": "Inbox limit reached",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -10538,7 +12334,12 @@
         ],
         "responses": {
           "204": {
-            "description": "Inbox deleted"
+            "description": "Inbox deleted",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -10548,7 +12349,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -10558,7 +12364,12 @@
                 }
               }
             },
-            "description": "Inbox not found (or it belongs to another user)"
+            "description": "Inbox not found (or it belongs to another user)",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -10598,7 +12409,12 @@
                 }
               }
             },
-            "description": "Requests returned"
+            "description": "Requests returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -10608,7 +12424,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -10618,7 +12439,12 @@
                 }
               }
             },
-            "description": "Inbox not found (or it belongs to another user)"
+            "description": "Inbox not found (or it belongs to another user)",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -10648,7 +12474,12 @@
                 }
               }
             },
-            "description": "Subscriptions returned"
+            "description": "Subscriptions returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -10658,7 +12489,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -10693,7 +12529,12 @@
                 }
               }
             },
-            "description": "Subscription created; secret included once"
+            "description": "Subscription created; secret included once",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -10710,7 +12551,12 @@
                 }
               }
             },
-            "description": "Invalid body, unknown event type or rejected URL"
+            "description": "Invalid body, unknown event type or rejected URL",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -10720,7 +12566,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -10730,7 +12581,12 @@
                 }
               }
             },
-            "description": "Subscription limit reached"
+            "description": "Subscription limit reached",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -10760,7 +12616,12 @@
                 }
               }
             },
-            "description": "Event types returned"
+            "description": "Event types returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -10770,7 +12631,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -10801,7 +12667,12 @@
         ],
         "responses": {
           "204": {
-            "description": "Subscription deleted"
+            "description": "Subscription deleted",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -10811,7 +12682,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -10821,7 +12697,12 @@
                 }
               }
             },
-            "description": "The subscription belongs to another user"
+            "description": "The subscription belongs to another user",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -10831,7 +12712,12 @@
                 }
               }
             },
-            "description": "Subscription not found"
+            "description": "Subscription not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -10867,7 +12753,12 @@
                 }
               }
             },
-            "description": "Subscription returned"
+            "description": "Subscription returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -10877,7 +12768,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -10887,7 +12783,12 @@
                 }
               }
             },
-            "description": "The subscription belongs to another user"
+            "description": "The subscription belongs to another user",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -10897,7 +12798,12 @@
                 }
               }
             },
-            "description": "Subscription not found"
+            "description": "Subscription not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -10943,7 +12849,12 @@
                 }
               }
             },
-            "description": "Subscription updated"
+            "description": "Subscription updated",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -10960,7 +12871,12 @@
                 }
               }
             },
-            "description": "Invalid body, unknown event type or rejected URL"
+            "description": "Invalid body, unknown event type or rejected URL",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -10970,7 +12886,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -10980,7 +12901,12 @@
                 }
               }
             },
-            "description": "The subscription belongs to another user"
+            "description": "The subscription belongs to another user",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -10990,7 +12916,12 @@
                 }
               }
             },
-            "description": "Subscription not found"
+            "description": "Subscription not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -11061,7 +12992,12 @@
                 }
               }
             },
-            "description": "Deliveries returned"
+            "description": "Deliveries returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -11071,7 +13007,12 @@
                 }
               }
             },
-            "description": "Invalid parameter"
+            "description": "Invalid parameter",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -11081,7 +13022,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -11091,7 +13037,12 @@
                 }
               }
             },
-            "description": "The subscription belongs to another user"
+            "description": "The subscription belongs to another user",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -11101,7 +13052,12 @@
                 }
               }
             },
-            "description": "Subscription not found"
+            "description": "Subscription not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -11148,7 +13104,12 @@
                 }
               }
             },
-            "description": "Delivery returned"
+            "description": "Delivery returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -11158,7 +13119,12 @@
                 }
               }
             },
-            "description": "Invalid delivery id"
+            "description": "Invalid delivery id",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -11168,7 +13134,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -11178,7 +13149,12 @@
                 }
               }
             },
-            "description": "The subscription belongs to another user"
+            "description": "The subscription belongs to another user",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -11188,7 +13164,12 @@
                 }
               }
             },
-            "description": "Subscription or delivery not found"
+            "description": "Subscription or delivery not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -11235,7 +13216,12 @@
                 }
               }
             },
-            "description": "Redelivery sent; the new delivery shows the outcome"
+            "description": "Redelivery sent; the new delivery shows the outcome",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -11245,7 +13231,12 @@
                 }
               }
             },
-            "description": "Invalid delivery id"
+            "description": "Invalid delivery id",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -11255,7 +13246,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -11265,7 +13261,12 @@
                 }
               }
             },
-            "description": "The subscription belongs to another user"
+            "description": "The subscription belongs to another user",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -11275,7 +13276,12 @@
                 }
               }
             },
-            "description": "Subscription or delivery not found"
+            "description": "Subscription or delivery not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -11285,7 +13291,12 @@
                 }
               }
             },
-            "description": "Subscription is disabled"
+            "description": "Subscription is disabled",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -11323,7 +13334,12 @@
                 }
               }
             },
-            "description": "Secret rotated; new secret included once"
+            "description": "Secret rotated; new secret included once",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -11333,7 +13349,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -11343,7 +13364,12 @@
                 }
               }
             },
-            "description": "The subscription belongs to another user"
+            "description": "The subscription belongs to another user",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -11353,7 +13379,12 @@
                 }
               }
             },
-            "description": "Subscription not found"
+            "description": "Subscription not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -11391,7 +13422,12 @@
                 }
               }
             },
-            "description": "Ping sent; the delivery shows the outcome"
+            "description": "Ping sent; the delivery shows the outcome",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -11401,7 +13437,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -11411,7 +13452,12 @@
                 }
               }
             },
-            "description": "The subscription belongs to another user"
+            "description": "The subscription belongs to another user",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -11421,7 +13467,12 @@
                 }
               }
             },
-            "description": "Subscription not found"
+            "description": "Subscription not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -11431,7 +13482,12 @@
                 }
               }
             },
-            "description": "Subscription is disabled"
+            "description": "Subscription is disabled",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -11461,7 +13517,12 @@
                 }
               }
             },
-            "description": "Wishlist returned"
+            "description": "Wishlist returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -11471,7 +13532,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -11502,7 +13568,12 @@
         ],
         "responses": {
           "204": {
-            "description": "Wishlist entry removed"
+            "description": "Wishlist entry removed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -11512,7 +13583,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -11522,7 +13598,12 @@
                 }
               }
             },
-            "description": "Product is not on the wishlist"
+            "description": "Product is not on the wishlist",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -11567,7 +13648,12 @@
                 }
               }
             },
-            "description": "Wishlist entry updated"
+            "description": "Wishlist entry updated",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "201": {
             "content": {
@@ -11577,7 +13663,12 @@
                 }
               }
             },
-            "description": "Wishlist entry created"
+            "description": "Wishlist entry created",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -11587,7 +13678,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -11597,7 +13693,12 @@
                 }
               }
             },
-            "description": "Product not found"
+            "description": "Product not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -11607,7 +13708,12 @@
                 }
               }
             },
-            "description": "Wishlist is full"
+            "description": "Wishlist is full",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [

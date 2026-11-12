@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { commerceTransport } from '../../lib/commerceTransport';
 import { CART_COUPON_QUERY_KEY } from '../../lib/commerceQueryKeys';
@@ -8,6 +9,7 @@ import { Surface } from '../ui/surface';
 import { useEnrichedCart, type RawCartResponse } from '../../hooks/useEnrichedCart';
 import { CartTendersSummary } from '../commerce/CartTendersSummary';
 import { useMoney } from '../../hooks/useMoney';
+import { isPaymentEnabled } from '../../lib/runtimeConfig';
 
 export function CheckoutPage() {
   const { formatMoney } = useMoney();
@@ -22,6 +24,17 @@ export function CheckoutPage() {
   const couponCart = couponResponse?.data;
   const rawData = cartResponse?.data as RawCartResponse;
   const { cartData, isEnriching } = useEnrichedCart(rawData);
+  // Set when this checkout placed its order. The navigation to the next page runs in a transition, so
+  // this page can still render the refetched (now empty) cart; it must not redirect to /cart then.
+  const [orderPlaced, setOrderPlaced] = useState(false);
+
+  if (orderPlaced) {
+    return (
+      <Surface variant="muted" padding="message" className="text-center text-slate-500" role="status" aria-live="polite" data-testid="checkout-opening-payment">
+        {isPaymentEnabled() ? 'Order placed. Opening payment…' : 'Order placed. Opening your order…'}
+      </Surface>
+    );
+  }
 
   if (isLoading || isEnriching) {
     return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="checkout-loading">Loading checkout...</Surface>;
@@ -38,7 +51,7 @@ export function CheckoutPage() {
     );
   }
 
-  // Redirect to cart if cart is empty
+  // A fresh visit with an empty cart has nothing to check out
   if (!rawData?.items || rawData.items.length === 0) {
     return <Navigate to="/cart" />;
   }
@@ -73,6 +86,7 @@ export function CheckoutPage() {
             <CheckoutForm
               cartTotal={totalPrice}
               payableTotal={couponCart?.amountDue ?? (couponCart?.couponCode && couponCart.couponValid ? couponCart.totalAfterDiscount : undefined)}
+              onOrderPlaced={() => setOrderPlaced(true)}
             />
           </div>
         </Surface>

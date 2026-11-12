@@ -1,5 +1,14 @@
 {
   "components": {
+    "headers": {
+      "X-Request-Id": {
+        "description": "The request's correlation id: a valid incoming X-Request-Id (1-128 characters of [A-Za-z0-9._-]) or a generated one",
+        "schema": {
+          "maxLength": 128,
+          "type": "string"
+        }
+      }
+    },
     "schemas": {
       "CardDto": {
         "description": "Card details; only brand and last four digits are stored",
@@ -263,7 +272,7 @@
     }
   },
   "info": {
-    "description": "Simulated card payments for orders: test cards, 3-D Secure, payment history. Uses the access tokens issued by the backend.",
+    "description": "Simulated card payments for orders: test cards, 3-D Secure, payment history. Uses the access tokens issued by the backend. Requests may carry X-Request-Id and a W3C traceparent; every response answers X-Request-Id.",
     "title": "Payment Service API",
     "version": "1.0"
   },
@@ -324,7 +333,12 @@
                 }
               }
             },
-            "description": "Payments listed"
+            "description": "Payments listed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -334,7 +348,12 @@
                 }
               }
             },
-            "description": "Unknown status"
+            "description": "Unknown status",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -344,7 +363,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -354,7 +378,12 @@
                 }
               }
             },
-            "description": "Admin role required"
+            "description": "Admin role required",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -370,7 +399,7 @@
     },
     "/api/v1/orders/{orderId}/payments": {
       "get": {
-        "description": "Lists every payment attempt for the caller's order, newest first; admins see any order.",
+        "description": "Lists every payment attempt for the caller's order, newest first; admins see any order. Another user's order is answered 404 like a missing one.",
         "operationId": "forOrder",
         "parameters": [
           {
@@ -395,7 +424,12 @@
                 }
               }
             },
-            "description": "Payments listed"
+            "description": "Payments listed",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -405,7 +439,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -415,7 +454,12 @@
                 }
               }
             },
-            "description": "Not your order or payment, or role not allowed"
+            "description": "Role not allowed, or paying another user's order",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -425,7 +469,12 @@
                 }
               }
             },
-            "description": "Order not found"
+            "description": "Order not found (or another user's order)",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "503": {
             "content": {
@@ -435,7 +484,12 @@
                 }
               }
             },
-            "description": "Backend unavailable"
+            "description": "Backend unavailable",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -491,6 +545,9 @@
                   "type": "string"
                 },
                 "style": "simple"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
               }
             }
           },
@@ -502,7 +559,12 @@
                 }
               }
             },
-            "description": "Payment created (any status, including FAILED)"
+            "description": "Payment created (any status, including FAILED)",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -519,7 +581,12 @@
                 }
               }
             },
-            "description": "Invalid body, Idempotency-Key, card number (Luhn) or expired card"
+            "description": "Invalid body, Idempotency-Key, card number (Luhn) or expired card",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -529,7 +596,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -539,7 +611,12 @@
                 }
               }
             },
-            "description": "Not your order or payment, or role not allowed"
+            "description": "Role not allowed, or paying another user's order",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -549,7 +626,12 @@
                 }
               }
             },
-            "description": "Order not found"
+            "description": "Order not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -559,7 +641,12 @@
                 }
               }
             },
-            "description": "Order not payable (not PENDING, already paid, or another payment in progress), or Idempotency-Key reused with a different body"
+            "description": "Order not payable (not PENDING, already paid, or another payment in progress), or Idempotency-Key reused with a different body",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "503": {
             "content": {
@@ -569,7 +656,12 @@
                 }
               }
             },
-            "description": "Backend unavailable"
+            "description": "Backend unavailable",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -585,7 +677,7 @@
     },
     "/api/v1/payments/{id}": {
       "get": {
-        "description": "Returns one of the caller's payments; admins see any payment.",
+        "description": "Returns one of the caller's payments; admins see any payment. Another user's payment is answered 404 like a missing one.",
         "operationId": "get",
         "parameters": [
           {
@@ -607,7 +699,12 @@
                 }
               }
             },
-            "description": "Payment found"
+            "description": "Payment found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -617,7 +714,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -627,7 +729,12 @@
                 }
               }
             },
-            "description": "Not your order or payment, or role not allowed"
+            "description": "Role not allowed, or paying another user's order",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -637,7 +744,12 @@
                 }
               }
             },
-            "description": "Payment not found"
+            "description": "Payment not found (or another user's payment)",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -685,7 +797,12 @@
                 }
               }
             },
-            "description": "Challenge answered"
+            "description": "Challenge answered",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "400": {
             "content": {
@@ -695,7 +812,12 @@
                 }
               }
             },
-            "description": "Missing code"
+            "description": "Missing code",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "401": {
             "content": {
@@ -705,7 +827,12 @@
                 }
               }
             },
-            "description": "Unauthorized"
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "403": {
             "content": {
@@ -715,7 +842,12 @@
                 }
               }
             },
-            "description": "Not your order or payment, or role not allowed"
+            "description": "Role not allowed, or paying another user's order",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "404": {
             "content": {
@@ -725,7 +857,12 @@
                 }
               }
             },
-            "description": "Payment not found"
+            "description": "Payment not found (or another user's payment)",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           },
           "409": {
             "content": {
@@ -735,7 +872,12 @@
                 }
               }
             },
-            "description": "Payment is not REQUIRES_ACTION"
+            "description": "Payment is not REQUIRES_ACTION",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
