@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GiftCardBalanceChecker } from './GiftCardBalanceChecker';
@@ -9,11 +9,15 @@ import { axiosError, ok } from '../../test/paymentFixtures';
 vi.mock('../../lib/api', () => ({ giftCards: { balance: vi.fn() } }));
 
 describe('GiftCardBalanceChecker', () => {
+  // A shopper in Auckland (NZDT, UTC+13); the backend keeps gift card expiries in UTC.
+  const originalZone = process.env.TZ;
+  beforeAll(() => { process.env.TZ = 'Pacific/Auckland'; });
+  afterAll(() => { process.env.TZ = originalZone; });
   beforeEach(() => vi.resetAllMocks());
 
   it('shows the balance, status and expiry of a card', async () => {
     // given
-    vi.mocked(giftCards.balance).mockResolvedValue(ok({ code: 'GC-1', balance: 25, status: 'ACTIVE', expiresAt: '2027-12-31T23:59:59' }));
+    vi.mocked(giftCards.balance).mockResolvedValue(ok({ code: 'GC-1', balance: 25, status: 'ACTIVE', expiresAt: '2027-12-31T12:00:00' }));
     renderWithRoute(<GiftCardBalanceChecker />);
     expect(screen.getByTestId('gift-card-checker-submit')).toBeDisabled();
     // when
@@ -24,7 +28,7 @@ describe('GiftCardBalanceChecker', () => {
     expect(await screen.findByTestId('gift-card-checker-balance')).toHaveTextContent('$25.00');
     expect(screen.getByTestId('gift-card-checker-code')).toHaveTextContent('GC-1');
     expect(screen.getByTestId('gift-card-checker-status')).toHaveTextContent('ACTIVE');
-    expect(screen.getByTestId('gift-card-checker-expires')).toHaveTextContent('2027');
+    expect(screen.getByTestId('gift-card-checker-expires')).toHaveTextContent(new Date(2028, 0, 1).toLocaleDateString());
   });
 
   it('omits the expiry for a card without one', async () => {

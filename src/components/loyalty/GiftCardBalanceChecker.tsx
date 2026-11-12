@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { giftCards } from '../../lib/api';
 import { formatPrice } from '../../lib/format';
+import { formatUtcDate } from '../../lib/commerceFormat';
 import { responseStatus, serverMessage } from '../../lib/requestErrors';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -45,7 +46,7 @@ export function GiftCardBalanceChecker() {
           {result.expiresAt && (
             <>
               <dt className="text-slate-500">Valid until</dt>
-              <dd className="text-slate-700" data-testid="gift-card-checker-expires">{new Date(result.expiresAt).toLocaleDateString()}</dd>
+              <dd className="text-slate-700" data-testid="gift-card-checker-expires">{formatUtcDate(result.expiresAt)}</dd>
             </>
           )}
         </dl>

@@ -1,5 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { webhookInboxes, webhooks } from '../lib/api';
+import { refetchAfterWrite } from '../lib/queryRefresh';
 import { retryServerErrors } from '../lib/requestErrors';
 import type { WebhookCreateRequest, WebhookDeliveryStatus, WebhookUpdateRequest } from '../types/commerce';
 
@@ -64,7 +65,7 @@ export function useInboxRequests(token: string, enabled: boolean) {
 
 export function useWebhookMutations() {
   const queryClient = useQueryClient();
-  const refreshList = () => queryClient.invalidateQueries({ queryKey: webhookKeys.list() });
+  const refreshList = () => refetchAfterWrite(queryClient, webhookKeys.list());
   const refreshDeliveries = (id: number) => {
     queryClient.invalidateQueries({ queryKey: webhookKeys.deliveries(id) });
     // A delivery can change the failure counter shown on the subscription.
@@ -103,7 +104,7 @@ export function useWebhookMutations() {
 
 export function useInboxMutations() {
   const queryClient = useQueryClient();
-  const refresh = () => queryClient.invalidateQueries({ queryKey: webhookKeys.inboxes() });
+  const refresh = () => refetchAfterWrite(queryClient, webhookKeys.inboxes());
   return {
     create: useMutation({
       mutationFn: async () => (await webhookInboxes.create()).data,

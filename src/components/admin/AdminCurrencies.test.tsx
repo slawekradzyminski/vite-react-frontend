@@ -140,4 +140,27 @@ describe('AdminCurrencies', () => {
     // then
     expect(await screen.findByTestId('admin-currencies-error')).toBeInTheDocument();
   });
+
+  it('shows a currency saved before the first list response arrived', async () => {
+    // given: the first list request is still in flight and answers with the list from before the save
+    const user = userEvent.setup();
+    let answerFirstLoad!: () => void;
+    vi.mocked(currencies.list)
+      .mockImplementationOnce(() => new Promise((resolve) => { answerFirstLoad = () => resolve(ok(list) as never); }))
+      .mockResolvedValueOnce(ok([...list, { code: 'XUU', name: 'Raced Unit', symbol: 'R', rateToUsd: 0.5, updatedAt: '2026-11-12T10:00:00Z' }]) as never);
+    renderWithQuery(<AdminCurrencies />);
+
+    // when
+    await user.type(screen.getByTestId('admin-currency-new-code'), 'XUU');
+    await user.type(screen.getByTestId('admin-currency-new-name'), 'Raced Unit');
+    await user.type(screen.getByTestId('admin-currency-new-symbol'), 'R');
+    await user.type(screen.getByTestId('admin-currency-new-rate'), '0.5');
+    await user.click(screen.getByTestId('admin-currency-new-save'));
+    await waitFor(() => expect(currencies.upsert).toHaveBeenCalledWith('XUU', { name: 'Raced Unit', symbol: 'R', rateToUsd: 0.5 }));
+    answerFirstLoad();
+
+    // then
+    expect(await screen.findByTestId('admin-currency-rate-XUU')).toHaveTextContent('0.5');
+    expect(currencies.list).toHaveBeenCalledTimes(2);
+  });
 });

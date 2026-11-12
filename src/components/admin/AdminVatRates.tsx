@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { vatRates } from '../../lib/api';
+import { refetchAfterWrite } from '../../lib/queryRefresh';
 import { formatDateTime } from '../../lib/commerceFormat';
 import { fieldErrorId } from '../../lib/fieldError';
 import { serverMessage } from '../../lib/requestErrors';
@@ -37,7 +38,7 @@ function VatRateEditor({ countryCode, initial, onDone }: VatRateEditorProps) {
     setError(null);
     try {
       await vatRates.upsert(values.countryCode.trim().toUpperCase(), { countryName: values.countryName.trim(), rate: Number(values.rate) });
-      await queryClient.invalidateQueries({ queryKey: VAT_QUERY_KEY });
+      await refetchAfterWrite(queryClient, VAT_QUERY_KEY);
       onDone();
     } catch (failure) {
       setError(serverMessage(failure, 'Unable to save the VAT rate.'));
