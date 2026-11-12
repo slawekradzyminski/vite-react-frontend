@@ -1,8 +1,8 @@
 services:
   backend:
-    # 3.15.0 adds VAT, currencies, gift cards, loyalty, webhooks and product search, and calls
-    # payment-service. Not published yet: pin its digest once it is (BACKEND_IMAGE overrides it).
-    image: ${BACKEND_IMAGE:-slawekradzyminski/backend:3.15.0@sha256:c2f38b95515a7578d3cc1eff72a2d6c3112263cd223c2704c266e7cb7ff4d24b}
+    # Release train pin, same digest as awesome-localstack's lightweight-docker-compose.yml.
+    # openapi/backend-api-docs.json is this image's document (BACKEND_IMAGE overrides it).
+    image: ${BACKEND_IMAGE:-slawekradzyminski/backend:3.17.1@sha256:d954473d10971a32acc9d08b07179c6d35b80af2bbba46a0895a6a08f95b5383}
     expose:
       - "4001"
     hostname: backend
@@ -51,9 +51,9 @@ services:
       - my-private-ntwk
 
   warehouse-service:
-    # Shipments, simulated carrier tracking, returns and purchasing. 1.2.0 is not published yet:
-    # pin its digest once it is (WAREHOUSE_IMAGE overrides it).
-    image: ${WAREHOUSE_IMAGE:-slawekradzyminski/warehouse-service:1.2.0@sha256:b6849b65e8d17b36c031e7d67fb585a2f057c1d33ad5db80fec2fb03263c97d7}
+    # Shipments, simulated carrier tracking, returns and purchasing. Release train pin; its document
+    # is openapi/warehouse-api-docs.json (WAREHOUSE_IMAGE overrides it).
+    image: ${WAREHOUSE_IMAGE:-slawekradzyminski/warehouse-service:1.4.1@sha256:ffb3f679e922d7e4fcd1f513a9530816a6d8efd9aa40edfa36d215d2c5ea91c5}
     expose:
       - "4003"
     hostname: warehouse-service
@@ -75,9 +75,9 @@ services:
       - my-private-ntwk
 
   payment-service:
-    # Card payments with test cards and 3-D Secure. 1.0.0 is not published yet:
-    # pin its digest once it is (PAYMENT_IMAGE overrides it).
-    image: ${PAYMENT_IMAGE:-slawekradzyminski/payment-service:1.0.0@sha256:e8b7d82af4f64c94e23e6c1e87d118b645a306e2acc9bed979f8d71f6923aaed}
+    # Card payments with test cards and 3-D Secure. Release train pin; its document is
+    # openapi/payment-api-docs.json (PAYMENT_IMAGE overrides it).
+    image: ${PAYMENT_IMAGE:-slawekradzyminski/payment-service:1.2.1@sha256:1b6a265827b426b5a45aec901361672428a84841f45529a1b2b966d0c0f97e91}
     expose:
       - "4004"
     hostname: payment-service

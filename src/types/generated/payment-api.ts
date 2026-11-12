@@ -33,7 +33,7 @@ export interface paths {
         };
         /**
          * List an order's payments
-         * @description Lists every payment attempt for the caller's order, newest first; admins see any order.
+         * @description Lists every payment attempt for the caller's order, newest first; admins see any order. Another user's order is answered 404 like a missing one.
          */
         get: operations["forOrder"];
         put?: never;
@@ -73,7 +73,7 @@ export interface paths {
         };
         /**
          * Get a payment
-         * @description Returns one of the caller's payments; admins see any payment.
+         * @description Returns one of the caller's payments; admins see any payment. Another user's payment is answered 404 like a missing one.
          */
         get: operations["get"];
         put?: never;
@@ -230,7 +230,10 @@ export interface components {
     responses: never;
     parameters: never;
     requestBodies: never;
-    headers: never;
+    headers: {
+        /** @description The request's correlation id: a valid incoming X-Request-Id (1-128 characters of [A-Za-z0-9._-]) or a generated one */
+        "X-Request-Id": string;
+    };
     pathItems: never;
 }
 export type $defs = Record<string, never>;
@@ -254,6 +257,7 @@ export interface operations {
             /** @description Payments listed */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -263,6 +267,7 @@ export interface operations {
             /** @description Unknown status */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -272,6 +277,7 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -281,6 +287,7 @@ export interface operations {
             /** @description Admin role required */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -303,6 +310,7 @@ export interface operations {
             /** @description Payments listed */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -312,24 +320,27 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
-            /** @description Not your order or payment, or role not allowed */
+            /** @description Role not allowed, or paying another user's order */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
-            /** @description Order not found */
+            /** @description Order not found (or another user's order) */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -339,6 +350,7 @@ export interface operations {
             /** @description Backend unavailable */
             503: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -368,6 +380,7 @@ export interface operations {
                 headers: {
                     /** @description true */
                     "Idempotent-Replayed"?: string;
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -377,6 +390,7 @@ export interface operations {
             /** @description Payment created (any status, including FAILED) */
             201: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -386,6 +400,7 @@ export interface operations {
             /** @description Invalid body, Idempotency-Key, card number (Luhn) or expired card */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -395,15 +410,17 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
-            /** @description Not your order or payment, or role not allowed */
+            /** @description Role not allowed, or paying another user's order */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -413,6 +430,7 @@ export interface operations {
             /** @description Order not found */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -422,6 +440,7 @@ export interface operations {
             /** @description Order not payable (not PENDING, already paid, or another payment in progress), or Idempotency-Key reused with a different body */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -431,6 +450,7 @@ export interface operations {
             /** @description Backend unavailable */
             503: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -453,6 +473,7 @@ export interface operations {
             /** @description Payment found */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -462,24 +483,27 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
-            /** @description Not your order or payment, or role not allowed */
+            /** @description Role not allowed, or paying another user's order */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
-            /** @description Payment not found */
+            /** @description Payment not found (or another user's payment) */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -506,6 +530,7 @@ export interface operations {
             /** @description Challenge answered */
             200: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -515,6 +540,7 @@ export interface operations {
             /** @description Missing code */
             400: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -524,24 +550,27 @@ export interface operations {
             /** @description Unauthorized */
             401: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
-            /** @description Not your order or payment, or role not allowed */
+            /** @description Role not allowed, or paying another user's order */
             403: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
-            /** @description Payment not found */
+            /** @description Payment not found (or another user's payment) */
             404: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -551,6 +580,7 @@ export interface operations {
             /** @description Payment is not REQUIRES_ACTION */
             409: {
                 headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
                 };
                 content: {
