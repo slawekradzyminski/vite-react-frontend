@@ -273,6 +273,25 @@ describe('RegisterPage', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/login');
   });
 
+  it('only navigates to login when Sign in is clicked on a filled form', async () => {
+    // given
+    const { auth } = await import('../../lib/api');
+    render(<RegisterPage />);
+    await user.type(screen.getByTestId('register-username-input'), 'testuser');
+    await user.type(screen.getByTestId('register-email-input'), 'test@example.com');
+    await user.type(screen.getByTestId('register-password-input'), 'password123');
+    await user.type(screen.getByTestId('register-firstname-input'), 'Test');
+    await user.type(screen.getByTestId('register-lastname-input'), 'User');
+
+    // when
+    await user.click(screen.getByTestId('register-login-link'));
+
+    // then
+    expect(mockNavigate).toHaveBeenCalledWith('/login');
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(auth.register).not.toHaveBeenCalled();
+  });
+
   it('lets browsers and password managers fill every field', () => {
     // when
     render(<RegisterPage />);
