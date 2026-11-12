@@ -86,6 +86,8 @@ export function AdminProductList() {
         </Surface>
       ) : (
         <Surface variant="default" className="overflow-hidden" data-testid="admin-product-list-table-container">
+          {/* Narrow screens scroll the table sideways; the sticky Actions column stays in reach. */}
+          <div className="overflow-x-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-600" role="region" aria-label="Products" tabIndex={0} data-testid="admin-product-list-scroll-region">
           <table className="min-w-full divide-y divide-stone-200" data-testid="admin-product-list-table">
             <thead className="bg-stone-50/80">
               <tr>
@@ -104,7 +106,7 @@ export function AdminProductList() {
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                   Category
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-500">
+                <th className="sticky right-0 bg-stone-50 px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-slate-500 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.2)]">
                   Actions
                 </th>
               </tr>
@@ -143,7 +145,7 @@ export function AdminProductList() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500" data-testid={`admin-product-category-${product.id}`}>
                     {product.category}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="sticky right-0 bg-white px-6 py-4 whitespace-nowrap text-right text-sm font-medium shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.2)]">
                     <Link
                       to={`/admin/products/edit/${product.id}`}
                       className="mr-4 text-sky-700 hover:text-sky-900"
@@ -164,6 +166,7 @@ export function AdminProductList() {
               ))}
             </tbody>
           </table>
+          </div>
         </Surface>
       )}
     </div>

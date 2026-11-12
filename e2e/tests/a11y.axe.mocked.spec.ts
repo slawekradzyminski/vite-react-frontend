@@ -44,4 +44,34 @@ test.describe('Axe accessibility scans (mocked backend)', () => {
     await expect(page.getByTestId('product-no-image')).toBeVisible();
     await expectNoAxeViolations(page);
   });
+
+  test('admin product and order lists scroll sideways with the keyboard on phones (T-058)', async ({ mockedAdmin }) => {
+    // given
+    const { page } = mockedAdmin;
+    await page.setViewportSize({ width: 360, height: 800 });
+    await page.route('**/api/v1/products', (route) => fulfillWithSchema(route, 'ProductDto', [
+      { id: 1, name: 'Desk Lamp', price: 25, category: 'Home', description: 'A lamp', imageUrl: '/images/lamp.jpg', stockQuantity: 4 },
+    ]));
+    await page.route(/\/api\/v1\/orders\/admin(\?.*)?$/, (route) => fulfillWithSchema(route, 'PageDtoOrderDto', {
+      content: [{
+        id: 42, username: 'client', items: [], totalAmount: 25, status: 'PAID', createdAt: '2026-11-01T10:00:00Z', updatedAt: '2026-11-01T10:00:00Z',
+        shippingAddress: { street: 'Main 1', city: 'Warsaw', state: 'Mazowieckie', zipCode: '00-001', country: 'Poland' },
+      }],
+      pageNumber: 0, pageSize: 10, totalElements: 1, totalPages: 1,
+    }));
+
+    // when
+    await page.goto('/admin/products');
+
+    // then
+    await expect(page.getByTestId('admin-product-row-1')).toBeVisible();
+    await expectNoAxeViolations(page);
+
+    // when
+    await page.goto('/admin/orders');
+
+    // then
+    await expect(page.getByTestId('admin-order-row-42')).toBeVisible();
+    await expectNoAxeViolations(page);
+  });
 });
