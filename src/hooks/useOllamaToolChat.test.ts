@@ -465,4 +465,55 @@ describe('useOllamaToolChat', () => {
 
     sseSpy.mockRestore();
   });
+
+  it('keeps the input locked through intermediate done events until the stream ends (T-041)', async () => {
+    // given: the backend marks the end of each tool iteration with done=true
+    let handlersRef: Parameters<typeof sse.processSSEResponse<unknown>>[1] | undefined;
+    let endStream!: () => void;
+    const sseSpy = vi.spyOn(sse, 'processSSEResponse').mockImplementation(async (_resp, handlers) => {
+      handlersRef = handlers as never;
+      await new Promise<void>((resolve) => { endStream = resolve; });
+      handlers.onComplete?.();
+    });
+    vi.mocked(ollama.chatWithTools).mockResolvedValue(new Response('', { headers: { 'Content-Type': 'text/event-stream' } }));
+    const { result } = await renderToolChatHook();
+    let turn!: Promise<void>;
+
+    // when
+    await act(async () => {
+      turn = result.current.chat('What Beauty products do we have?');
+      await flushPromises();
+    });
+    await act(async () => {
+      handlersRef!.onMessage({
+        model: 'qwen3.5:2b',
+        message: { role: 'assistant', content: '', tool_calls: [{ function: { name: 'list_products', arguments: { category: 'beauty' } } }] },
+        done: true,
+        created_at: '',
+      });
+      handlersRef!.onMessage({ model: 'qwen3.5:2b', message: { role: 'tool', tool_name: 'list_products', content: '{"products":[]}' }, done: false, created_at: '' });
+      handlersRef!.onMessage({ model: 'qwen3.5:2b', message: undefined as never, done: true, created_at: '' });
+    });
+
+    // then
+    expect(result.current.isChatting).toBe(true);
+
+    // when
+    await act(async () => {
+      handlersRef!.onMessage({ model: 'qwen3.5:2b', message: { role: 'assistant', content: 'No Beauty products yet.' }, done: true, created_at: '' });
+    });
+
+    // then: the final answer arrived, but the stream is still open
+    expect(result.current.isChatting).toBe(true);
+
+    // when
+    await act(async () => {
+      endStream();
+      await turn;
+    });
+
+    // then
+    expect(result.current.isChatting).toBe(false);
+    sseSpy.mockRestore();
+  });
 });
