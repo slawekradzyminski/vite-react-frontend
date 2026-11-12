@@ -50,3 +50,29 @@ export function validateCouponForm(form: CouponForm) {
   if (!Number.isInteger(Number(form.perUserLimit)) || Number(form.perUserLimit) < 1) errors.perUserLimit = 'Use a whole number of at least 1.';
   return errors;
 }
+
+/**
+ * The backend's AddressDto pattern with its alternation grouped: Java matches the whole value,
+ * so it accepts 12, 12-345, 12345 and 12345-6789, and nothing else (X-30, X-24).
+ */
+export const ZIP_CODE_PATTERN = /^(?:[0-9]{2}(?:-[0-9]{3})?|[0-9]{5}(?:-[0-9]{4})?)$/;
+export const ZIP_CODE_MESSAGE = 'Invalid postal/zip code format';
+export const ADDRESS_FIELD_MAX_LENGTH = 255;
+
+/** Validator for a shipping-address text field: blank after trimming or over 255 characters fails. */
+export function addressText(requiredMessage: string, label: string) {
+  return (value: string | undefined) => {
+    const trimmed = (value ?? '').trim();
+    if (!trimmed) return requiredMessage;
+    if (trimmed.length > ADDRESS_FIELD_MAX_LENGTH) return `${label} must be at most ${ADDRESS_FIELD_MAX_LENGTH} characters`;
+    return true;
+  };
+}
+
+export function zipCode(requiredMessage: string) {
+  return (value: string | undefined) => {
+    const trimmed = (value ?? '').trim();
+    if (!trimmed) return requiredMessage;
+    return ZIP_CODE_PATTERN.test(trimmed) || ZIP_CODE_MESSAGE;
+  };
+}

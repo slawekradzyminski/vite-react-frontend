@@ -28,8 +28,8 @@ export class OrderDetailsPage {
   }
 
   async cancelOrder() {
-    this.page.on('dialog', dialog => dialog.accept());
     await this.cancelButton.click();
+    await this.page.getByTestId('order-cancel-dialog-confirm').click();
   }
 
   async updateOrderStatus(status: string) {
