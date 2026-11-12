@@ -100,8 +100,8 @@ export function CartItem({ item, onUpdate, onPendingChange }: CartItemProps) {
   };
 
   return (
-    <tr className="grid grid-cols-2 gap-x-4 gap-y-3 p-4 md:table-row md:p-0" data-testid={`cart-item-${safeItem.productId}`}>
-      <td className="col-span-2 block min-w-0 md:table-cell md:px-6 md:py-4 md:whitespace-nowrap" data-testid={`cart-item-product-${safeItem.productId}`}>
+    <tr className="grid grid-cols-2 gap-x-4 gap-y-3 p-4 lg:table-row lg:p-0" data-testid={`cart-item-${safeItem.productId}`}>
+      <td className="col-span-2 block min-w-0 lg:table-cell lg:px-6 lg:py-4 lg:whitespace-nowrap" data-testid={`cart-item-product-${safeItem.productId}`}>
         <div className="flex items-center">
           {safeItem.imageUrl && (
             <div className="shrink-0 h-12 w-12 mr-4">
@@ -124,11 +124,11 @@ export function CartItem({ item, onUpdate, onPendingChange }: CartItemProps) {
           </div>
         </div>
       </td>
-      <td className="block text-sm text-slate-600 before:mb-1 before:block before:text-xs before:font-medium before:uppercase before:tracking-wider before:text-slate-500 md:before:content-none before:content-['Price'] md:table-cell md:px-6 md:py-4 md:whitespace-nowrap" data-testid={`cart-item-price-${safeItem.productId}`}>
+      <td className="block text-sm text-slate-600 before:mb-1 before:block before:text-xs before:font-medium before:uppercase before:tracking-wider before:text-slate-500 lg:before:content-none before:content-['Price'] lg:table-cell lg:px-6 lg:py-4 lg:whitespace-nowrap" data-testid={`cart-item-price-${safeItem.productId}`}>
         {formatMoney(safeItem.unitPrice)}
       </td>
-      <td className="col-span-2 row-start-3 block before:mb-1 before:block before:text-xs before:font-medium before:uppercase before:tracking-wider before:text-slate-500 md:before:content-none before:content-['Quantity'] md:table-cell md:px-6 md:py-4 md:whitespace-nowrap" data-testid={`cart-item-quantity-cell-${safeItem.productId}`}>
-        <div className="flex flex-row flex-wrap items-center gap-2 md:gap-0">
+      <td className="col-span-2 row-start-3 block before:mb-1 before:block before:text-xs before:font-medium before:uppercase before:tracking-wider before:text-slate-500 lg:before:content-none before:content-['Quantity'] lg:table-cell lg:px-6 lg:py-4 lg:whitespace-nowrap" data-testid={`cart-item-quantity-cell-${safeItem.productId}`}>
+        <div className="flex flex-row flex-wrap items-center gap-2 lg:gap-0">
           <div className="flex items-center" role="group" aria-label={`Quantity of ${safeItem.productName}`} data-testid={`cart-item-quantity-controls-${safeItem.productId}`}>
             <button 
               className="h-9 rounded-l-2xl border border-stone-200 bg-stone-50 px-3 text-slate-700 transition hover:bg-white disabled:cursor-not-allowed disabled:text-slate-400 disabled:hover:bg-stone-50"
@@ -160,7 +160,7 @@ export function CartItem({ item, onUpdate, onPendingChange }: CartItemProps) {
           
           {quantity !== safeItem.quantity && (
             <button
-              className="ml-0 text-sm font-medium text-sky-700 transition hover:text-sky-800 md:ml-2"
+              className="ml-0 text-sm font-medium text-sky-700 transition hover:text-sky-800 lg:ml-2"
               onClick={handleQuantityChange}
               disabled={isUpdating}
               aria-label={`Update quantity of ${safeItem.productName}`}
@@ -171,10 +171,10 @@ export function CartItem({ item, onUpdate, onPendingChange }: CartItemProps) {
           )}
         </div>
       </td>
-      <td className="block text-right text-sm font-medium text-slate-900 before:mb-1 before:block before:text-xs before:font-medium before:uppercase before:tracking-wider before:text-slate-500 md:before:content-none before:content-['Total'] md:table-cell md:px-6 md:py-4 md:text-left md:whitespace-nowrap" data-testid={`cart-item-total-${safeItem.productId}`}>
+      <td className="block text-right text-sm font-medium text-slate-900 before:mb-1 before:block before:text-xs before:font-medium before:uppercase before:tracking-wider before:text-slate-500 lg:before:content-none before:content-['Total'] lg:table-cell lg:px-6 lg:py-4 lg:text-left lg:whitespace-nowrap" data-testid={`cart-item-total-${safeItem.productId}`}>
         {formatMoney(safeItem.totalPrice)}
       </td>
-      <td className="col-span-2 block text-right text-sm font-medium md:table-cell md:px-6 md:py-4 md:whitespace-nowrap">
+      <td className="col-span-2 block text-right text-sm font-medium lg:table-cell lg:px-6 lg:py-4 lg:whitespace-nowrap">
         <button
           className="text-red-700 transition hover:text-red-800"
           onClick={handleRemove}
