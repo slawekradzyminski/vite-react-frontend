@@ -27,4 +27,13 @@ describe('useMe', () => {
     expect(await screen.findAllByText('Hello Alice')).toHaveLength(2);
     expect(auth.me).toHaveBeenCalledTimes(1);
   });
+
+  it('loads the user by default', async () => {
+    // given / when
+    renderWithRoute(<Greeting />);
+
+    // then
+    expect(await screen.findByText('Hello Alice')).toBeInTheDocument();
+    expect(auth.me).toHaveBeenCalledTimes(1);
+  });
 });

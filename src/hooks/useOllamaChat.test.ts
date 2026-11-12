@@ -388,4 +388,60 @@ describe('useOllamaChat', () => {
     expect(result.current.messages[result.current.messages.length - 1]).toMatchObject({ role: 'assistant', content: 'Hi!' });
     consoleErrorSpy.mockRestore();
   });
+
+  it('keeps a partial answer when the stream breaks off (T-042)', async () => {
+    // given
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(ollama.chat).mockResolvedValueOnce(new Response('', { headers: { 'Content-Type': 'text/event-stream' } }));
+    const sseSpy = vi.spyOn(sse, 'processSSEResponse').mockImplementationOnce(async (_response, handlers) => {
+      handlers.onMessage({ model: 'qwen3.5:2b', message: { role: 'assistant', content: 'Partial answer' }, done: false } as never);
+      throw new Error('Stream interrupted');
+    });
+    const { result } = await renderChatHook();
+
+    // when
+    await act(async () => {
+      await result.current.chat('Hello');
+    });
+
+    // then
+    expect(result.current.messages.map((message) => [message.role, message.content])).toEqual([
+      ['system', expect.any(String)],
+      ['user', 'Hello'],
+      ['assistant', 'Partial answer'],
+    ]);
+    sseSpy.mockRestore();
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('sends only assistant messages that carry content, thinking or tool calls (T-042)', async () => {
+    // given
+    vi.mocked(ollama.chat).mockResolvedValueOnce(new Response('data: {"model":"qwen3.5:2b","message":{"role":"assistant","content":"ok"},"done":true}\n\n', {
+      headers: { 'Content-Type': 'text/event-stream' },
+    }));
+    const { result } = await renderChatHook();
+    act(() => {
+      result.current.setMessages([
+        { role: 'system', content: 'System' },
+        { role: 'user', content: 'First' },
+        { role: 'assistant', content: '  ', thinking: '' },
+        { role: 'assistant', content: '', thinking: '   ' },
+        { role: 'assistant', content: '', tool_calls: [] },
+        { role: 'assistant', content: '', thinking: 'Reasoning only' },
+        { role: 'assistant', tool_calls: [{ function: { name: 'list_products', arguments: {} } }] } as never,
+        { role: 'tool', content: '' },
+      ]);
+    });
+
+    // when
+    await act(async () => {
+      await result.current.chat('Second');
+    });
+
+    // then
+    const sent = vi.mocked(ollama.chat).mock.calls[0][0].messages;
+    expect(sent.map((message) => message.role)).toEqual(['system', 'user', 'assistant', 'assistant', 'tool', 'user']);
+    expect(sent[2]).toMatchObject({ thinking: 'Reasoning only' });
+    expect(sent[3].tool_calls).toHaveLength(1);
+  });
 });

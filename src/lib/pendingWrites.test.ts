@@ -53,4 +53,15 @@ describe('pendingWrites', () => {
     await expect(write).resolves.toBe('wrote 2x3');
     expect(pendingWriteCount()).toBe(0);
   });
+
+  it('leaves non-function properties alone', () => {
+    // given
+    const api = { baseUrl: '/api', write: () => Promise.resolve('done') };
+
+    // when
+    const tracked = withTrackedWrites(api, ['baseUrl', 'write']);
+
+    // then
+    expect(tracked.baseUrl).toBe('/api');
+  });
 });

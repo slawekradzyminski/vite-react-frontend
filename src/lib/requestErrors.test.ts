@@ -72,4 +72,8 @@ describe('serverFieldErrors', () => {
     expect(serverFieldErrors(badRequest('text'))).toEqual({});
     expect(serverFieldErrors(new Error('network'))).toEqual({});
   });
+
+  it('returns nothing for a network error without a response', () => {
+    expect(serverFieldErrors(Object.assign(new Error('Network Error'), { isAxiosError: true }))).toEqual({});
+  });
 });

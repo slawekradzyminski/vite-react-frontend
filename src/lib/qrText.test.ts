@@ -27,4 +27,8 @@ describe('qrText', () => {
     await expect(qrErrorMessage(badRequest({ text: '  ' }))).resolves.toBeNull();
     await expect(qrErrorMessage(new Error('network'))).resolves.toBeNull();
   });
+
+  it('returns null for a network error without a response', async () => {
+    await expect(qrErrorMessage(Object.assign(new Error('Network Error'), { isAxiosError: true }))).resolves.toBeNull();
+  });
 });
