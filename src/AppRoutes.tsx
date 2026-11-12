@@ -42,6 +42,7 @@ import { AdminVatRatesPage } from './pages/admin/vatRatesPage';
 import { AdminCurrenciesPage } from './pages/admin/currenciesPage';
 import { AdminPaymentsPage } from './pages/admin/paymentsPage';
 import { AdminWebhooksPage } from './pages/admin/webhooksPage';
+import { NotFoundPage } from './pages/notFound/notFoundPage';
 import { isPaymentEnabled, isWarehouseEnabled } from './lib/runtimeConfig';
 
 export function AppRoutes() {
@@ -280,6 +281,8 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      {/* Any other path, signed in or not (X-32). */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 } 
