@@ -108,7 +108,7 @@ export function CartItem({ item, onUpdate, onPendingChange }: CartItemProps) {
               <img
                 className="h-12 w-12 rounded-2xl object-cover"
                 src={safeItem.imageUrl}
-                alt={safeItem.productName}
+                alt=""
                 data-testid={`cart-item-image-${safeItem.productId}`}
               />
             </div>

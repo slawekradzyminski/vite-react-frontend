@@ -45,7 +45,7 @@ export function AdminOrderList() {
   if (error) {
     return (
       <Surface variant="danger" padding="message" className="text-center" data-testid="admin-order-list-error">
-        <p className="mb-4 text-red-500">Error loading orders</p>
+        <p className="mb-4 text-red-700">Error loading orders</p>
       </Surface>
     );
   }

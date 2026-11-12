@@ -45,7 +45,7 @@ export function AdminProductList() {
   if (error) {
     return (
       <Surface variant="danger" padding="message" className="text-center" data-testid="admin-product-list-error">
-        <p className="mb-4 text-red-500">Error loading products</p>
+        <p className="mb-4 text-red-700">Error loading products</p>
       </Surface>
     );
   }
@@ -122,7 +122,7 @@ export function AdminProductList() {
                           <img
                             className="h-10 w-10 rounded-full object-cover"
                             src={product.imageUrl}
-                            alt={product.name}
+                            alt=""
                             data-testid={`admin-product-image-${product.id}`}
                           />
                         </div>

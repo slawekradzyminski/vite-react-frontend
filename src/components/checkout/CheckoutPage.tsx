@@ -146,7 +146,7 @@ export function CheckoutPage() {
                             <img
                               className="h-12 w-12 rounded-full object-cover"
                               src={item.imageUrl}
-                              alt={item.productName}
+                              alt=""
                               data-testid={`checkout-item-image-${item.productId}`}
                             />
                           </div>
