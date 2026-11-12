@@ -14,18 +14,23 @@ import { useMe } from '../../hooks/useMe';
 import { hasRole } from '../../lib/roles';
 
 interface EmailFormProps {
-  onSubmit: (data: EmailFormData) => void;
+  /** Resolve to true once the email is queued: the form then clears for the next one (X-33). */
+  onSubmit: (data: EmailFormData) => void | Promise<boolean>;
   isLoading?: boolean;
 }
+
+const EMPTY_EMAIL: EmailFormData = { to: '', subject: '', message: '' };
 
 export function EmailForm({ onSubmit, isLoading = false }: EmailFormProps) {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<EmailFormData>({
     resolver: zodResolver(emailSchema),
     mode: 'onSubmit',
+    defaultValues: EMPTY_EMAIL,
   });
 
   // The recipient picker lists every account's address, so only admins load it; clients type
@@ -38,8 +43,11 @@ export function EmailForm({ onSubmit, isLoading = false }: EmailFormProps) {
     enabled: isAdmin,
   });
 
-  const handleFormSubmit = handleSubmit((data) => {
-    onSubmit(data);
+  const handleFormSubmit = handleSubmit(async (data) => {
+    // A failed send keeps what was typed so it can be corrected and sent again.
+    if ((await onSubmit(data)) === true) {
+      reset(EMPTY_EMAIL);
+    }
   });
 
   return (

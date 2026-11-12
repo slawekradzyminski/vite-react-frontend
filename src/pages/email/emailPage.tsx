@@ -6,6 +6,7 @@ import type { EmailFormData } from '../../types/email';
 import { useToast } from '../../hooks/useToast';
 import { Surface } from '../../components/ui/surface';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { serverMessage } from '../../lib/requestErrors';
 
 export function EmailPage() {
   useDocumentTitle('Send Email');
@@ -13,7 +14,7 @@ export function EmailPage() {
   // isPending only flips after a re-render; the ref also blocks a fast double click (BUG-012).
   const inFlight = useRef(false);
 
-  const { mutate, isPending } = useMutation({
+  const { mutateAsync, isPending } = useMutation({
     mutationFn: (data: EmailFormData) => email.send(data),
     onSuccess: () => {
       toast({
@@ -26,7 +27,8 @@ export function EmailPage() {
       toast({
         variant: 'error',
         title: 'Error',
-        description: error.response?.data?.message || 'Failed to send email',
+        // A 400 may carry a field map ({"to": "Invalid email format"}) instead of a message.
+        description: error.response?.data?.message || serverMessage(error, 'Failed to send email'),
       });
     },
     onSettled: () => {
@@ -34,10 +36,16 @@ export function EmailPage() {
     },
   });
 
-  const sendEmail = (data: EmailFormData) => {
-    if (inFlight.current) return;
+  const sendEmail = async (data: EmailFormData) => {
+    if (inFlight.current) return false;
     inFlight.current = true;
-    mutate(data);
+    try {
+      await mutateAsync(data);
+      return true;
+    } catch {
+      // onError already told the user why.
+      return false;
+    }
   };
 
   return (
