@@ -145,6 +145,19 @@ describe('AdminInventory', () => {
     await waitFor(() => expect(inventory.movements).toHaveBeenCalledTimes(2));
   });
 
+  it('opens a product with the keyboard through the product name link', async () => {
+    const user = userEvent.setup();
+    renderInventory();
+
+    const link = await screen.findByRole('link', { name: 'Mechanical Keyboard' });
+    link.focus();
+    await user.keyboard('{Enter}');
+
+    expect(screen.getByTestId('location-probe')).toHaveTextContent('/admin/inventory/2');
+    expect(await screen.findByRole('link', { name: 'Mechanical Keyboard' })).toHaveAttribute('aria-current', 'true');
+    expect(screen.getByRole('link', { name: 'USB-C Cable' })).not.toHaveAttribute('aria-current');
+  });
+
   it('rejects invalid route ids without calling product-specific APIs', async () => {
     renderInventory('/admin/inventory/not-a-number');
 
