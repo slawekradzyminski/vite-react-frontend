@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { catalogCsv } from '../../lib/api';
+import { refetchAfterWrite } from '../../lib/queryRefresh';
 import { serverMessage } from '../../lib/requestErrors';
 import type { ImportReport } from '../../types/commerce';
 import { Button } from '../ui/button';
@@ -40,8 +41,7 @@ export function AdminCatalogCsv() {
       setReport(response.data);
       setError(null);
       if (response.data.applied) {
-        queryClient.invalidateQueries({ queryKey: ['products'] });
-        queryClient.invalidateQueries({ queryKey: ['inventory'] });
+        void refetchAfterWrite(queryClient, ['products'], ['inventory']);
       }
     },
     onError: (mutationError) => {

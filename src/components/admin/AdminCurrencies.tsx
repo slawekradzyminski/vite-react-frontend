@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { currencies } from '../../lib/api';
+import { refetchAfterWrite } from '../../lib/queryRefresh';
 import { formatDateTime } from '../../lib/commerceFormat';
 import { fieldErrorId } from '../../lib/fieldError';
 import { serverMessage } from '../../lib/requestErrors';
@@ -39,7 +40,7 @@ function CurrencyEditor({ code, initial, onDone }: CurrencyEditorProps) {
     setError(null);
     try {
       await currencies.upsert(values.code.trim().toUpperCase(), { name: values.name.trim(), symbol: values.symbol.trim(), rateToUsd: Number(values.rateToUsd) });
-      await queryClient.invalidateQueries({ queryKey: CURRENCY_QUERY_KEY });
+      await refetchAfterWrite(queryClient, CURRENCY_QUERY_KEY);
       onDone();
     } catch (failure) {
       setError(serverMessage(failure, 'Unable to save the currency.'));

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { coupons } from '../../lib/api';
+import { refetchAfterWrite } from '../../lib/queryRefresh';
 import { formatPrice } from '../../lib/format';
 import { serverMessage } from '../../lib/requestErrors';
 import { type CouponForm, validateCouponForm } from '../../lib/commerceValidation';
@@ -43,7 +44,7 @@ export function AdminCoupons() {
   const [touched, setTouched] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const list = useQuery({ queryKey: ['admin-coupons'], queryFn: () => coupons.list() });
-  const refresh = () => queryClient.invalidateQueries({ queryKey: ['admin-coupons'] });
+  const refresh = () => refetchAfterWrite(queryClient, ['admin-coupons']);
   const reset = () => { setForm(EMPTY); setEditingId(null); setTouched(false); setError(null); };
   const save = useMutation({
     mutationFn: (request: CouponRequest) => (editingId ? coupons.update(editingId, request) : coupons.create(request)),

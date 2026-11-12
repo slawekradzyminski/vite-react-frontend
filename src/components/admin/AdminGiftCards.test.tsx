@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { adminGiftCards } from '../../lib/api';
@@ -29,6 +29,11 @@ const card = (overrides: Partial<GiftCard> = {}): GiftCard => ({
 });
 
 describe('AdminGiftCards', () => {
+  // An administrator in Auckland (NZDT, UTC+13 in summer); the backend keeps gift card expiries in UTC.
+  const originalZone = process.env.TZ;
+  beforeAll(() => { process.env.TZ = 'Pacific/Auckland'; });
+  afterAll(() => { process.env.TZ = originalZone; });
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(adminGiftCards.list).mockResolvedValue(ok(page([card()], 2)) as never);
@@ -86,11 +91,28 @@ describe('AdminGiftCards', () => {
     await user.click(screen.getByRole('button', { name: 'Issue gift card' }));
 
     // then
-    expect(adminGiftCards.create).toHaveBeenCalledWith({ amount: 25, recipientUsername: 'client', note: 'Thanks', expiresAt: '2999-01-01T10:00:00' });
+    expect(adminGiftCards.create).toHaveBeenCalledWith({ amount: 25, recipientUsername: 'client', note: 'Thanks', expiresAt: '2998-12-31T21:00:00.000Z' });
     expect(await screen.findByTestId('admin-gift-card-issued-code')).toHaveTextContent('GC-NEW1-CODE');
     expect(screen.getByTestId('admin-gift-card-issued')).toHaveTextContent('Issued a $25.00 gift card for client');
     expect(screen.getByLabelText('Amount (USD)')).toHaveValue('');
     await waitFor(() => expect(adminGiftCards.list).toHaveBeenCalledTimes(2));
+  });
+
+  it('shows a UTC expiry in the browser zone in the list and the details', async () => {
+    // given: 21:00 UTC on 31 December is 10:00 on 1 January in Auckland
+    const expiring = card({ expiresAt: '2026-12-31T21:00:00' });
+    vi.mocked(adminGiftCards.list).mockResolvedValue(ok(page([expiring], 1)) as never);
+    vi.mocked(adminGiftCards.get).mockResolvedValue(ok(expiring) as never);
+    const user = userEvent.setup();
+    const shown = new Date(2027, 0, 1, 10, 0).toLocaleString();
+    renderWithQuery(<AdminGiftCards />);
+
+    // when
+    expect(await screen.findByTestId('admin-gift-card-expires-GC-AAAA-BBBB')).toHaveTextContent(shown);
+    await user.click(screen.getByTestId('admin-gift-card-view-GC-AAAA-BBBB'));
+
+    // then
+    expect(await screen.findByTestId('admin-gift-card-details-expires')).toHaveTextContent(shown);
   });
 
   it('sends optional fields as null and validates the amount', async () => {

@@ -130,4 +130,27 @@ describe('AdminVatRates', () => {
     // then
     expect(await screen.findByTestId('admin-vat-rates-error')).toBeInTheDocument();
   });
+
+  it('shows a country saved before the first list response arrived', async () => {
+    // given: the first list request is still in flight and answers with the list from before the save
+    const user = userEvent.setup();
+    let answerFirstLoad!: () => void;
+    vi.mocked(vatRates.list)
+      .mockImplementationOnce(() => new Promise((resolve) => { answerFirstLoad = () => resolve(ok(rates) as never); }))
+      .mockResolvedValueOnce(ok([...rates, { countryCode: 'XU', countryName: 'Raced Land', rate: 9, updatedAt: '2026-11-12T10:00:00Z' }]) as never);
+    renderWithQuery(<AdminVatRates />);
+    expect(screen.getByTestId('admin-vat-rates-loading')).toBeInTheDocument();
+
+    // when
+    await user.type(screen.getByTestId('admin-vat-new-country-code'), 'XU');
+    await user.type(screen.getByTestId('admin-vat-new-country-name'), 'Raced Land');
+    await user.type(screen.getByTestId('admin-vat-new-rate'), '9');
+    await user.click(screen.getByTestId('admin-vat-new-save'));
+    await waitFor(() => expect(vatRates.upsert).toHaveBeenCalledWith('XU', { countryName: 'Raced Land', rate: 9 }));
+    answerFirstLoad();
+
+    // then
+    expect(await screen.findByTestId('admin-vat-rate-XU')).toHaveTextContent('9%');
+    expect(vatRates.list).toHaveBeenCalledTimes(2);
+  });
 });

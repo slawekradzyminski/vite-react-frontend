@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { products, purchasing } from '../../lib/api';
+import { refetchAfterWrite } from '../../lib/queryRefresh';
 import { formatPrice } from '../../lib/format';
 import { serverMessage } from '../../lib/requestErrors';
 import type { PurchaseOrder } from '../../types/commerce';
@@ -61,12 +62,12 @@ export function AdminPurchasing() {
   const parsedThreshold = Math.max(1, Number.parseInt(threshold, 10) || 1);
   const suggestions = useQuery({ queryKey: ['reorder-suggestions', parsedThreshold], queryFn: () => purchasing.reorderSuggestions(parsedThreshold) });
   const refresh = () => {
-    ['purchase-orders', 'reorder-suggestions', 'inventory', 'products'].forEach((key) => queryClient.invalidateQueries({ queryKey: [key] }));
+    void refetchAfterWrite(queryClient, ['purchase-orders'], ['reorder-suggestions'], ['inventory'], ['products']);
   };
 
   const createSupplier = useMutation({
     mutationFn: () => purchasing.createSupplier({ name: supplier.name.trim(), email: supplier.email.trim(), leadTimeDays: Number(supplier.leadTimeDays) }),
-    onSuccess: () => { setSupplier({ name: '', email: '', leadTimeDays: '7' }); setSupplierError(null); queryClient.invalidateQueries({ queryKey: ['suppliers'] }); },
+    onSuccess: () => { setSupplier({ name: '', email: '', leadTimeDays: '7' }); setSupplierError(null); void refetchAfterWrite(queryClient, ['suppliers']); },
     onError: (error) => setSupplierError(serverMessage(error, 'Unable to create the supplier.')),
   });
   const createDraft = useMutation({
