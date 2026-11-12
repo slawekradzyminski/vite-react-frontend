@@ -155,11 +155,12 @@ export function QrCodeGenerator() {
 
       {qrCode && (
         <div ref={resultRef} className="mt-8 flex flex-col items-center gap-3" data-testid="qr-code-result">
-          <Surface variant="inset" padding="sm" data-testid="qr-code-container">
+          <Surface variant="inset" padding="sm" className="w-full max-w-72" data-testid="qr-code-container">
+            {/* Square at any width: it shrinks with narrow screens instead of being squeezed. */}
             <img
               src={qrCode}
               alt={`QR code for ${encodedText}`}
-              className="w-64 h-64"
+              className="mx-auto block aspect-square h-auto w-full max-w-64 object-contain"
               data-testid="qr-code-image"
             />
           </Surface>

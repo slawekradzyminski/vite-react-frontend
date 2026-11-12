@@ -5,6 +5,8 @@ import { productSearchMocks } from '../mocks/productSearchMocks';
 import { expectContainedIn, expectNoHorizontalPageOverflow, expectReachable } from '../utils/layout.utils';
 
 const PHONE = { width: 360, height: 800 };
+// A 1x1 PNG: the page decides how large the QR code is drawn.
+const QR_PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
 
 const product = (id: number, overrides: Partial<BackendSchema<'ProductDto'>> = {}): BackendSchema<'ProductDto'> => ({
   id,
@@ -161,4 +163,27 @@ test.describe('Responsive layouts (mocked backend)', () => {
     await expect(page.getByTestId('products-category-books')).toBeVisible();
     await expect(page.getByTestId('products-filters-toggle')).toBeHidden();
   });
+
+  for (const width of [320, 1280]) {
+    test(`the QR code stays square at ${width}px (T-038)`, async ({ mockedClient }) => {
+      // given
+      const { page } = mockedClient;
+      await page.setViewportSize({ width, height: 800 });
+      await page.route('**/api/v1/qr/create', (route) => route.fulfill({ status: 200, contentType: 'image/png', body: QR_PNG }));
+      await page.goto('/qr');
+      await page.getByTestId('qr-text-input').fill('https://www.awesome-testing.com');
+
+      // when
+      await page.getByTestId('qr-generate-button').click();
+
+      // then
+      const image = page.getByTestId('qr-code-image');
+      await expect(image).toBeVisible();
+      const box = await image.boundingBox();
+      expect(Math.abs(box!.width - box!.height), `qr image ${box!.width}x${box!.height}`).toBeLessThanOrEqual(1);
+      expect(box!.width).toBeLessThanOrEqual(256);
+      await expectContainedIn(image, page.getByTestId('qr-code-result'));
+      await expectNoHorizontalPageOverflow(image);
+    });
+  }
 });
