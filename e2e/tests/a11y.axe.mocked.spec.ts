@@ -191,4 +191,19 @@ test.describe('Axe accessibility scans (mocked backend)', () => {
     await expect(page.getByTestId('products-category-home')).toBeVisible();
     await expectNoAxeViolations(page);
   });
+
+  test('QR page with its byte counter and a too-long text (T-037)', async ({ mockedClient }) => {
+    // given
+    const { page } = mockedClient;
+    await page.goto('/qr');
+    await page.getByTestId('qr-text-input').fill('a'.repeat(2954));
+
+    // when
+    await page.getByTestId('qr-generate-button').click();
+
+    // then
+    await expect(page.getByTestId('qr-text-error')).toContainText('Text is too long for a QR code');
+    await expect(page.getByTestId('qr-text-byte-count')).toHaveText('2,954 / 2,953 bytes');
+    await expectNoAxeViolations(page);
+  });
 });
