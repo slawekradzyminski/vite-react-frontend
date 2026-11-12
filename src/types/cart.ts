@@ -7,6 +7,10 @@ export interface CartItem {
   imageUrl?: string;
   // Current product stock, when the cart source provides it.
   stockQuantity?: number;
+  // Set when the product price changed after the line was added or updated: unitPrice is
+  // what checkout charges, currentPrice is what updating the line would take.
+  priceChanged?: boolean;
+  currentPrice?: number;
 }
 
 export interface Cart {

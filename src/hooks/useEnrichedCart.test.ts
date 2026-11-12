@@ -32,4 +32,33 @@ describe('nested GraphQL cart presentation', () => {
     expect(result.current.cartData.items[0]).toMatchObject({ productId: 7, stockQuantity: 4 });
     expect(products.getProductById).toHaveBeenCalledTimes(1);
   });
+
+  it('keeps the price change the backend reports for a REST cart line', async () => {
+    // given
+    vi.mocked(products.getProductById).mockResolvedValue({ data: { id: 9, name: 'Mug', price: 12.5, stockQuantity: 5, imageUrl: '' } } as never);
+    const source: RawCartResponse = { username: 'bob', items: [
+      { productId: 9, quantity: 2, unitPrice: 10, priceChanged: true, currentPrice: 12.5 },
+    ] };
+
+    // when
+    const { result } = renderHook(() => useEnrichedCart(source));
+    await waitFor(() => expect(result.current.isEnriching).toBe(false));
+
+    // then
+    expect(result.current.cartData.items[0]).toMatchObject({ unitPrice: 10, totalPrice: 20, priceChanged: true, currentPrice: 12.5 });
+  });
+
+  it('reports no price change for a line the backend did not flag', async () => {
+    // given
+    vi.mocked(products.getProductById).mockResolvedValue({ data: { id: 9, name: 'Mug', price: 12.5, stockQuantity: 5, imageUrl: '' } } as never);
+    const source: RawCartResponse = { username: 'bob', items: [{ productId: 9, quantity: 1 }] };
+
+    // when
+    const { result } = renderHook(() => useEnrichedCart(source));
+    await waitFor(() => expect(result.current.isEnriching).toBe(false));
+
+    // then
+    expect(result.current.cartData.items[0]).not.toHaveProperty('priceChanged');
+    expect(result.current.cartData.items[0]).not.toHaveProperty('currentPrice');
+  });
 });

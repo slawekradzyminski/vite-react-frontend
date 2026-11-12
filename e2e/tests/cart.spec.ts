@@ -49,6 +49,24 @@ test.describe("Cart Page", () => {
     expect(await cartPage.getCartTotalPrice()).toBe("$69.97");
   });
 
+  test("should tell the shopper a cart line price changed", async ({ authenticatedPage }) => {
+    // given
+    await cartMocks.mockCartWithState(authenticatedPage.page, {
+      username: "testuser",
+      items: [{ productId: 1, name: "Test Product 1", quantity: 2, unitPrice: 10, currentPrice: 12.5 }],
+    });
+    const cartPage = new CartPage(authenticatedPage.page);
+
+    // when
+    await cartPage.navigate();
+
+    // then
+    await expect(authenticatedPage.page.getByTestId("cart-item-price-changed-1")).toHaveText(
+      "Price changed: now $12.50. Your cart keeps $10.00 until you update this item.",
+    );
+    expect(await cartPage.getCartTotalPrice()).toBe("$20.00");
+  });
+
   test("should update cart item quantity", async ({ authenticatedPage }) => {
     // given
     const initialCartState: CartFixture = {

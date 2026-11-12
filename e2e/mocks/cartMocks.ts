@@ -9,6 +9,9 @@ export interface CartFixtureItem {
   quantity: number;
   unitPrice: number;
   imageUrl?: string;
+  // Set when the product price moved after the line was added: the cart keeps unitPrice
+  // and the product now costs currentPrice.
+  currentPrice?: number;
 }
 
 export interface CartFixture {
@@ -20,7 +23,10 @@ const PLACEHOLDER_IMAGE = "https://via.placeholder.com/150";
 
 export const toCartDto = (cart: CartFixture): BackendSchema<"CartDto"> => ({
   username: cart.username,
-  items: cart.items.map(({ productId, quantity }) => ({ productId, quantity })),
+  items: cart.items.map(({ productId, quantity, unitPrice, currentPrice }) =>
+    currentPrice === undefined
+      ? { productId, quantity }
+      : { productId, quantity, unitPrice, priceChanged: true, currentPrice }),
   totalPrice: Number(cart.items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0).toFixed(2)),
   totalItems: cart.items.reduce((sum, item) => sum + item.quantity, 0),
 });
@@ -28,7 +34,7 @@ export const toCartDto = (cart: CartFixture): BackendSchema<"CartDto"> => ({
 const toProductDto = (item: CartFixtureItem): BackendSchema<"ProductDto"> => ({
   id: item.productId,
   name: item.name,
-  price: item.unitPrice,
+  price: item.currentPrice ?? item.unitPrice,
   imageUrl: item.imageUrl ?? PLACEHOLDER_IMAGE,
   description: "Test description",
   stockQuantity: 10,

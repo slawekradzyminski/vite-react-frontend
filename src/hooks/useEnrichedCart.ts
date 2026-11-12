@@ -12,6 +12,8 @@ interface RawCartItem {
   totalPrice?: number;
   imageUrl?: string;
   stockQuantity?: number;
+  priceChanged?: boolean;
+  currentPrice?: number;
 }
 
 export interface RawCartResponse {
@@ -25,6 +27,12 @@ export interface RawCartResponse {
 
 const fallbackPrice = (item: RawCartItem, productPrice = 0) =>
   item.unitPrice ?? item.price ?? productPrice;
+
+// The backend sends priceChanged and currentPrice only for a line whose price moved.
+const priceChange = (item: RawCartItem): Pick<CartItem, 'priceChanged' | 'currentPrice'> =>
+  item.priceChanged && item.currentPrice != null
+    ? { priceChanged: true, currentPrice: item.currentPrice }
+    : {};
 
 const enrichCartItem = async (item: RawCartItem): Promise<CartItem> => {
   try {
@@ -40,6 +48,7 @@ const enrichCartItem = async (item: RawCartItem): Promise<CartItem> => {
       totalPrice: item.totalPrice ?? item.quantity * unitPrice,
       imageUrl: item.imageUrl ?? productData.imageUrl ?? '',
       stockQuantity: productData.stockQuantity,
+      ...priceChange(item),
     };
   } catch (error) {
     console.error(`Error fetching details for product ${item.productId}:`, error);
@@ -52,12 +61,13 @@ const enrichCartItem = async (item: RawCartItem): Promise<CartItem> => {
       unitPrice,
       totalPrice: item.totalPrice ?? item.quantity * unitPrice,
       imageUrl: item.imageUrl ?? '',
+      ...priceChange(item),
     };
   }
 };
 
 const getRawItemSignature = (item: RawCartItem) =>
-  `${item.productId}:${item.quantity}:${item.unitPrice ?? item.price ?? ''}:${item.totalPrice ?? ''}`;
+  `${item.productId}:${item.quantity}:${item.unitPrice ?? item.price ?? ''}:${item.totalPrice ?? ''}:${item.currentPrice ?? ''}`;
 
 export function useEnrichedCart(rawData?: RawCartResponse) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -90,6 +100,7 @@ export function useEnrichedCart(rawData?: RawCartResponse) {
           unitPrice: item.unitPrice ?? 0,
           totalPrice: item.totalPrice ?? 0,
           stockQuantity: item.stockQuantity,
+          ...priceChange(item),
         }))
         : await Promise.all(currentRawItems.map(enrichCartItem));
 
