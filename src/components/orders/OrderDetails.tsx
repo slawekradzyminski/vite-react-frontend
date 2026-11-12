@@ -227,7 +227,8 @@ export const OrderDetails = () => {
             <Button type="button" variant="outline" onClick={() => setConfirmingCancel(false)} data-testid="order-cancel-dialog-keep">
               Keep order
             </Button>
-            <Button type="button" variant="destructive" onClick={confirmCancelOrder} data-testid="order-cancel-dialog-confirm">
+            {/* red-700 on white text: the shared destructive colour misses the 4.5:1 contrast minimum. */}
+            <Button type="button" variant="destructive" className="bg-red-700 text-white hover:bg-red-800" onClick={confirmCancelOrder} data-testid="order-cancel-dialog-confirm">
               Cancel order
             </Button>
           </div>
