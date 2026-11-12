@@ -82,8 +82,8 @@ export function ForgotPasswordPage() {
               <p className="mt-2 text-sm leading-6 text-slate-600" data-testid="forgot-info-single-step-description">Request a reset with either username or e-mail.</p>
             </div>
             <div className="rounded-[1.4rem] border border-stone-200 bg-white/80 p-4" data-testid="forgot-info-safe-flow">
-              <p className="text-sm font-semibold text-slate-900" data-testid="forgot-info-safe-flow-title">Safe flow</p>
-              <p className="mt-2 text-sm leading-6 text-slate-600" data-testid="forgot-info-safe-flow-description">The response stays neutral even when an account does not exist.</p>
+              <p className="text-sm font-semibold text-slate-900" data-testid="forgot-info-safe-flow-title">Account privacy</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600" data-testid="forgot-info-safe-flow-description">Shared environments answer the same way whether or not the account exists. The local profile shows the reset token, which reveals it.</p>
             </div>
             <div className="rounded-[1.4rem] border border-stone-200 bg-white/80 p-4" data-testid="forgot-info-local-dev">
               <p className="text-sm font-semibold text-slate-900" data-testid="forgot-info-local-dev-title">Local dev</p>
