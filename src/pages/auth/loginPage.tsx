@@ -36,6 +36,9 @@ export function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
+    // A new sign-in starts a new traffic session, so its requests (the sign-in included) never
+    // share an X-Client-Session-Id with whoever used this browser before (X-03).
+    authStorage.rotateClientSessionId();
 
     try {
       const response = await auth.login(data);

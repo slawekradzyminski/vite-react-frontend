@@ -62,4 +62,19 @@ export const authStorage = {
   setClientSessionId: (clientSessionId: string) => {
     safeSetItem(CLIENT_SESSION_ID_KEY, clientSessionId);
   },
+  /**
+   * Starts a new traffic session (X-Client-Session-Id). The traffic monitor shows everything
+   * recorded under the id, so a sign-in and a sign-out each get a fresh one: the next person
+   * using this browser never sees the previous user's requests (X-03).
+   */
+  rotateClientSessionId: () => {
+    const generated = generateClientSessionId();
+    safeSetItem(CLIENT_SESSION_ID_KEY, generated);
+    return generated;
+  },
+  /** Ends the local session: drops both tokens and starts a new traffic session. */
+  signOut: () => {
+    authStorage.clearTokens();
+    authStorage.rotateClientSessionId();
+  },
 };

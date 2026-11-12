@@ -188,7 +188,7 @@ const enqueueRefresh = (refreshToken: string) => {
 };
 
 const redirectToLogin = () => {
-  authStorage.clearTokens();
+  authStorage.signOut();
   window.location.href = '/login';
 };
 

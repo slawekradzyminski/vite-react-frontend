@@ -25,4 +25,34 @@ describe('authStorage', () => {
     expect(authStorage.getAccessToken()).toBeNull();
     expect(authStorage.getRefreshToken()).toBeNull();
   });
+
+  it('starts a new client session id when rotated', () => {
+    const first = authStorage.getClientSessionId();
+
+    const rotated = authStorage.rotateClientSessionId();
+
+    expect(rotated).not.toBe(first);
+    expect(rotated).toMatch(/^[A-Za-z0-9_-]{16,128}$/);
+    expect(authStorage.getClientSessionId()).toBe(rotated);
+    expect(localStorage.getItem('clientSessionId')).toBe(rotated);
+  });
+
+  it('drops the tokens and starts a new client session on sign-out', () => {
+    authStorage.setTokens({ token: 'access', refreshToken: 'refresh' });
+    const previousSession = authStorage.getClientSessionId();
+
+    authStorage.signOut();
+
+    expect(authStorage.getTokens()).toEqual({ token: null, refreshToken: null });
+    expect(authStorage.getClientSessionId()).not.toBe(previousSession);
+  });
+
+  it('keeps the client session id when only the tokens are replaced', () => {
+    const session = authStorage.getClientSessionId();
+
+    authStorage.setTokens({ token: 'access', refreshToken: 'refresh' });
+    authStorage.clearTokens();
+
+    expect(authStorage.getClientSessionId()).toBe(session);
+  });
 });
