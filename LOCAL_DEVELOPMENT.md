@@ -12,7 +12,7 @@ This frontend expects the Spring backend from `/Users/admin/IdeaProjects/test-se
 | Warehouse service (optional) | `warehouse-service` | See its README | Listens on `http://localhost:4003`. Needed for shipments, tracking, returns and purchasing; start the dev server with `VITE_WAREHOUSE_API_BASE_URL=http://localhost:4003`. |
 | Payment service (optional) | `payment-service` | See its README | Listens on `http://localhost:4004`. Needed for card payments; start the dev server with `VITE_PAYMENT_API_BASE_URL=http://localhost:4004`. |
 
-The `docker-compose.yml` in this repo is the Playwright/CI stack. It builds this frontend into its production nginx image, starts backend, warehouse-service, payment-service, Keycloak, and the Ollama mock, then exposes the app and backend API through an nginx gateway at `http://localhost:8081`.
+The `docker-compose.yml` in this repo is the Playwright/CI stack. It builds this frontend into its production nginx image, starts backend, warehouse-service, payment-service, and the Ollama mock, then exposes the app and backend API through an nginx gateway at `http://localhost:8081`.
 
 ## Step-by-step
 
@@ -55,7 +55,6 @@ If you prefer to keep everything inside containers for a quick smoke test or Pla
 cd /Users/admin/IdeaProjects/vite-react-frontend
 docker compose up -d
 ./scripts/wait-for-backend.sh
-./scripts/wait-for-keycloak.sh
 ./scripts/wait-for-frontend.sh
 npx playwright test
 ```
@@ -88,5 +87,5 @@ transitive fixes and the typography selector-parser override remove the current
 npm advisories without downgrading the application. Both full and production-only
 audits report zero known vulnerabilities. Lint, typechecking, 533 coverage tests,
 production build and isolated nginx container route/asset checks passed.
-No auth, PKCE, SSE or commerce logic changed; mutation scopes are unchanged.
+No auth, SSE or commerce logic changed; mutation scopes are unchanged.
 The local source has not yet been published as a replacement application image.

@@ -231,14 +231,6 @@ describe('auth API', () => {
       expect(mockAxios.post).toHaveBeenCalledWith('/api/v1/users/logout', { refreshToken: 'refresh-123' });
     });
   });
-
-  describe('ssoExchange', () => {
-    it('calls the SSO exchange endpoint with the id token', async () => {
-      await auth.ssoExchange({ idToken: 'id-token-123' });
-
-      expect(mockAxios.post).toHaveBeenCalledWith('/api/v1/users/sso/exchange', { idToken: 'id-token-123' });
-    });
-  });
 });
 
 describe('API Client', () => {
@@ -476,7 +468,13 @@ describe('API Client', () => {
       expect(localStorage.getItem('token')).toBe('test-token');
     });
 
-    it('does not redirect on public endpoint 401 responses', async () => {
+    it.each([
+      '/api/v1/users/signin',
+      '/api/v1/users/signin/2fa',
+      '/api/v1/users/signup',
+      '/api/v1/users/password/forgot',
+      '/api/v1/users/password/reset',
+    ])('does not redirect on a 401 response of the public endpoint %s', async (url) => {
       const errorInterceptor = getErrorInterceptor();
       const originalLocation = window.location;
       Object.defineProperty(window, 'location', {
@@ -485,7 +483,7 @@ describe('API Client', () => {
       });
 
       const error = {
-        config: { url: '/api/v1/users/sso/exchange', headers: {}, _retry: false },
+        config: { url, headers: {}, _retry: false },
         response: { status: 401 },
       };
 

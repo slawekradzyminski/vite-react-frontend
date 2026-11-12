@@ -4,6 +4,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { AdminProductFormPage } from './productFormPage';
 import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ToastProvider } from '../../components/ui/ToastProvider';
 
 // Mock the AdminProductForm component to isolate tests
 vi.mock('../../components/products/AdminProductForm', () => ({
@@ -43,7 +44,9 @@ describe('AdminProductFormPage', () => {
     return render(
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <AdminProductFormPage />
+          <ToastProvider>
+            <AdminProductFormPage />
+          </ToastProvider>
         </BrowserRouter>
       </QueryClientProvider>
     );
@@ -87,6 +90,8 @@ describe('AdminProductFormPage', () => {
     fireEvent.click(screen.getByTestId('admin-product-form-mock-save'));
 
     // then
-    expect(mockNavigate).toHaveBeenCalledWith('/admin/products', { state: { toast: { variant: 'success', title, description } } });
+    expect(mockNavigate).toHaveBeenCalledWith('/admin/products');
+    expect(screen.getByTestId('toast-title')).toHaveTextContent(title);
+    expect(screen.getByTestId('toast-description')).toHaveTextContent(description);
   });
 });

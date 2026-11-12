@@ -54,7 +54,9 @@ function AppShell() {
     <div className="flex min-h-screen flex-col bg-transparent text-slate-900" data-testid="app-shell">
       <Navigation />
       <main className={`mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 lg:px-8 ${isAuthPage ? 'py-2' : 'py-6'}`} data-testid="app-main">
-        <AppRoutes />
+        {/* Each path gets a fresh page (also between /admin/products/new and /edit/5); the toasts
+            and the navigation live outside it and survive the change. */}
+        <AppRoutes key={location.pathname} />
       </main>
       <footer className="border-t border-stone-200/80 bg-stone-50/82" data-testid="app-footer">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8" data-testid="app-footer-content">

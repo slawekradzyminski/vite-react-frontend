@@ -3,7 +3,6 @@ import { LoginPage } from './pages/auth/loginPage';
 import { RegisterPage } from './pages/auth/registerPage';
 import { ForgotPasswordPage } from './pages/auth/forgotPasswordPage';
 import { ResetPasswordPage } from './pages/auth/resetPasswordPage';
-import { SsoCallbackPage } from './pages/auth/ssoCallbackPage';
 import { HomePage } from './pages/home/homePage';
 import { UsersPage } from './pages/users/usersPage';
 import { EditUserPage } from './pages/users/editUserPage';
@@ -49,7 +48,6 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<RedirectIfAuthenticated><LoginPage /></RedirectIfAuthenticated>} />
-      <Route path="/auth/sso/callback" element={<SsoCallbackPage />} />
       <Route path="/register" element={<RedirectIfAuthenticated><RegisterPage /></RedirectIfAuthenticated>} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset" element={<ResetPasswordPage />} />

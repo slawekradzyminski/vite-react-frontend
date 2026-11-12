@@ -164,15 +164,12 @@ describe('RegisterPage', () => {
         firstName: 'Test',
         lastName: 'User',
       });
-      expect(mockNavigate).toHaveBeenCalledWith('/login', { 
-        state: { 
-          toast: { 
-            variant: 'success', 
-            title: 'Success', 
-            description: 'Registration successful! You can now log in.' 
-          } 
-        } 
+      expect(mockToast).toHaveBeenCalledWith({
+        variant: 'success',
+        title: 'Success',
+        description: 'Registration successful! You can now log in.',
       });
+      expect(mockNavigate).toHaveBeenCalledWith('/login');
     });
   });
 

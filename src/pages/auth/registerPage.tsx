@@ -36,7 +36,8 @@ export function RegisterPage() {
     try {
       await auth.register(data);
       
-      navigate('/login', { state: { toast: { variant: 'success', title: 'Success', description: 'Registration successful! You can now log in.' } } });
+      toast({ variant: 'success', title: 'Success', description: 'Registration successful! You can now log in.' });
+      navigate('/login');
     } catch (err: any) {
       const errorMessage = err.response?.data?.message;
       const normalizedErrorMessage = errorMessage?.toLowerCase();

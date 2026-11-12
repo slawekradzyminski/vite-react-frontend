@@ -2,7 +2,6 @@ import axios, { type AxiosError, type AxiosInstance, type AxiosRequestConfig } f
 import type {
   LoginRequest,
   LoginResponse,
-  SsoExchangeRequest,
   RegisterRequest,
   User,
   UserEditDTO,
@@ -150,7 +149,6 @@ const PUBLIC_ENDPOINTS = [
   `${USERS_API}/refresh`,
   `${USERS_API}/password/forgot`,
   `${USERS_API}/password/reset`,
-  `${USERS_API}/sso/exchange`,
 ];
 
 interface RefreshableRequestConfig extends AxiosRequestConfig {
@@ -342,9 +340,6 @@ export const auth = {
 
   resetPassword: (data: ResetPasswordRequest) =>
     api.post<void>(`${USERS_API}/password/reset`, data),
-
-  ssoExchange: (data: SsoExchangeRequest) =>
-    api.post<LoginResponse>(`${USERS_API}/sso/exchange`, data),
 
   mfa: {
     status: () => api.get<MfaStatusResponse>(`${USERS_API}/2fa/status`),

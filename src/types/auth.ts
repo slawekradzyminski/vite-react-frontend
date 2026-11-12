@@ -52,10 +52,6 @@ export interface MfaRecoveryCodesResponse {
   recoveryCodes: string[];
 }
 
-export interface SsoExchangeRequest {
-  idToken: string;
-}
-
 export interface TokenPair {
   token: string;
   refreshToken: string;

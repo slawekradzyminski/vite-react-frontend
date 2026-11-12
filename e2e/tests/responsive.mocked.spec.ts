@@ -1,6 +1,7 @@
 import { test, expect } from '../fixtures/mocked-session.fixture';
 import { eventStream, fulfillWithSchema, type BackendSchema } from '../mocks/backendContract';
 import { cartMocks } from '../mocks/cartMocks';
+import { currencyMocks } from '../mocks/currencyMocks';
 import { productSearchMocks } from '../mocks/productSearchMocks';
 import { expectContainedIn, expectNoHorizontalPageOverflow, expectReachable } from '../utils/layout.utils';
 
@@ -163,6 +164,37 @@ test.describe('Responsive layouts (mocked backend)', () => {
     await expect(page.getByTestId('products-category-books')).toBeVisible();
     await expect(page.getByTestId('products-filters-toggle')).toBeHidden();
   });
+
+  for (const width of [320, 360]) {
+    test(`header actions stay on screen with the seeded currencies at ${width}px`, async ({ mockedClient }) => {
+      // given
+      const { page } = mockedClient;
+      await page.setViewportSize({ width, height: 700 });
+      // The real stack seeds currencies with symbols ("PLN (zł)"), which widen the currency select.
+      await currencyMocks.mockCurrencies(page);
+      await cartMocks.mockCartWithItems(page);
+
+      // when
+      await page.goto('/');
+      await expect(page.getByTestId('currency-selector').locator('option')).toHaveCount(4);
+      await expect(page.getByTestId('cart-item-count')).toBeVisible();
+
+      // then
+      const navigation = page.getByTestId('navigation');
+      for (const testId of ['brand-link', 'commerce-transport', 'currency-selector', 'desktop-cart-icon', 'mobile-menu-toggle']) {
+        await expectContainedIn(page.getByTestId(testId), navigation);
+        await expectReachable(page.getByTestId(testId));
+      }
+      await expectNoHorizontalPageOverflow(navigation);
+
+      // when
+      await page.setViewportSize({ width, height: 520 });
+      await page.getByTestId('mobile-menu-toggle').click();
+
+      // then
+      await expectReachable(page.getByTestId('mobile-menu-logout'));
+    });
+  }
 
   for (const width of [320, 1280]) {
     test(`the QR code stays square at ${width}px (T-038)`, async ({ mockedClient }) => {

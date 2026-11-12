@@ -14,10 +14,9 @@ services:
       PASSWORD_RESET_FRONTEND_BASE_URL: http://localhost:8081/reset
       SWAGGER_UI_OAUTH2_REDIRECT_URL: http://localhost:8081/swagger-ui/oauth2-redirect.html
       OLLAMA_BASE_URL: http://ollama-mock:11434
-      APP_SSO_ENABLED: "true"
-      APP_SSO_ISSUER_URI: http://localhost:8082/realms/awesome-testing
-      APP_SSO_JWK_SET_URI: http://keycloak:8080/realms/awesome-testing/protocol/openid-connect/certs
-      APP_SSO_AUDIENCE: awesome-testing-frontend
+      # The stack has no identity provider. Backend 3.17.x still turns its SSO exchange on by
+      # default, so switch it off like awesome-localstack does.
+      APP_SSO_ENABLED: "false"
       APP_CORS_ALLOWED_ORIGIN_PATTERNS: http://localhost:8081,http://127.0.0.1:8081
       # warehouse-service and payment-service verify access tokens with the backend JWKS
       # and call its internal API with these service tokens. The backend calls payment-service
@@ -29,8 +28,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      keycloak:
-        condition: service_started
       ollama-mock:
         condition: service_started
     healthcheck:
@@ -164,21 +161,6 @@ services:
     networks:
       - my-private-ntwk
 
-  keycloak:
-    image: quay.io/keycloak/keycloak:26.7.0@sha256:0f198be292568439d700cdbfb893e69a6009bb43a94a06a945b1d3d506c76b13
-    restart: always
-    command:
-      - start-dev
-      - --import-realm
-    environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-    ports:
-      - "8082:8080"
-    volumes:
-      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
-    networks:
-      - my-private-ntwk
   ollama-mock:
     image: slawekradzyminski/ollama-mock:1.0.11@sha256:2dc7b225ed7351e4dc60cbdd9cb7a817bcfb4d671ccb7551a0fe1969ff065a29
     restart: always

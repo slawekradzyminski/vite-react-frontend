@@ -3,6 +3,7 @@ import { AdminProductForm } from '../../components/products/AdminProductForm';
 import { Surface } from '../../components/ui/surface';
 import { AdminSectionNav } from '../../components/admin/AdminSectionNav';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { useToast } from '../../hooks/useToast';
 
 export function AdminProductFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -10,17 +11,15 @@ export function AdminProductFormPage() {
   const isEditing = !!productId;
   useDocumentTitle(isEditing ? 'Edit Product' : 'Add New Product');
   const navigate = useNavigate();
-  // The toast provider is keyed by path, so the list page shows the confirmation after navigating.
+  const { toast } = useToast();
+  // The toast outlives the navigation, so the list page shows the confirmation.
   const handleSaved = () => {
-    navigate('/admin/products', {
-      state: {
-        toast: {
-          variant: 'success',
-          title: isEditing ? 'Product updated' : 'Product created',
-          description: isEditing ? 'Your changes are saved.' : 'The product is now in the catalogue.',
-        },
-      },
+    toast({
+      variant: 'success',
+      title: isEditing ? 'Product updated' : 'Product created',
+      description: isEditing ? 'Your changes are saved.' : 'The product is now in the catalogue.',
     });
+    navigate('/admin/products');
   };
 
 
