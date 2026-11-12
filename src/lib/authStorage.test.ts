@@ -55,4 +55,19 @@ describe('authStorage', () => {
 
     expect(authStorage.getClientSessionId()).toBe(session);
   });
+
+  it('rotates to a backend-valid id without crypto.randomUUID (insecure contexts)', () => {
+    const randomUUID = crypto.randomUUID;
+    Object.defineProperty(crypto, 'randomUUID', { configurable: true, value: undefined });
+    try {
+      const first = authStorage.rotateClientSessionId();
+      const second = authStorage.rotateClientSessionId();
+
+      expect(first).toMatch(/^client-session-\d+-[a-z0-9]+$/);
+      expect(first).toMatch(/^[A-Za-z0-9_-]{16,128}$/);
+      expect(second).not.toBe(first);
+    } finally {
+      Object.defineProperty(crypto, 'randomUUID', { configurable: true, value: randomUUID });
+    }
+  });
 });
