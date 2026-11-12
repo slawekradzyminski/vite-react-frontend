@@ -186,4 +186,73 @@ describe('AdminProductForm', () => {
     
     expect(products.createProduct).not.toHaveBeenCalled();
   });
+
+  const fillValidProduct = (description: string) => {
+    fireEvent.change(screen.getByLabelText(/name/i), { target: { value: 'New Product' } });
+    fireEvent.change(screen.getByLabelText(/description/i), { target: { value: description } });
+    fireEvent.change(screen.getByLabelText(/price/i), { target: { value: '29.99' } });
+    fireEvent.change(screen.getByLabelText(/stock quantity/i), { target: { value: '15' } });
+    fireEvent.change(screen.getByLabelText(/category/i), { target: { value: 'New Category' } });
+  };
+
+  it('requires a description, as the API does', async () => {
+    // given
+    renderWithProviders(<AdminProductForm />);
+    fillValidProduct('   ');
+
+    // when
+    fireEvent.submit(screen.getByRole('button', { name: /create product/i }));
+
+    // then
+    expect(await screen.findByTestId('product-description-error')).toHaveTextContent('Product description is required');
+    expect(screen.getByLabelText(/description/i)).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByTestId('product-description-label')).toHaveTextContent('Description*');
+    expect(products.createProduct).not.toHaveBeenCalled();
+  });
+
+  it('shows the field messages the API returns next to their inputs', async () => {
+    // given
+    vi.mocked(products.createProduct).mockRejectedValueOnce(Object.assign(new Error('Bad Request'), {
+      isAxiosError: true, response: { status: 400, data: { category: 'Category must not exceed 255 characters', unknownField: 'ignored' } },
+    }));
+    const onSuccess = vi.fn();
+    renderWithProviders(<AdminProductForm onSuccess={onSuccess} />);
+    fillValidProduct('A description');
+
+    // when
+    fireEvent.submit(screen.getByRole('button', { name: /create product/i }));
+
+    // then
+    expect(await screen.findByTestId('product-category-error')).toHaveTextContent('Category must not exceed 255 characters');
+    expect(screen.queryByTestId('product-form-error')).not.toBeInTheDocument();
+    expect(onSuccess).not.toHaveBeenCalled();
+  });
+
+  it('shows a request failure without field messages above the actions', async () => {
+    // given
+    vi.mocked(products.createProduct).mockRejectedValueOnce(Object.assign(new Error('Server Error'), {
+      isAxiosError: true, response: { status: 500, data: { message: 'Internal server error' } },
+    }));
+    renderWithProviders(<AdminProductForm />);
+    fillValidProduct('A description');
+
+    // when
+    fireEvent.submit(screen.getByRole('button', { name: /create product/i }));
+
+    // then
+    expect(await screen.findByTestId('product-form-error')).toHaveTextContent('Internal server error');
+  });
+
+  it('reports a successful save to the page', async () => {
+    // given
+    const onSuccess = vi.fn();
+    renderWithProviders(<AdminProductForm onSuccess={onSuccess} />);
+    fillValidProduct('A description');
+
+    // when
+    fireEvent.submit(screen.getByRole('button', { name: /create product/i }));
+
+    // then
+    await waitFor(() => expect(onSuccess).toHaveBeenCalledTimes(1));
+  });
 });

@@ -74,4 +74,30 @@ test.describe('Axe accessibility scans (mocked backend)', () => {
     await expect(page.getByTestId('admin-order-row-42')).toBeVisible();
     await expectNoAxeViolations(page);
   });
+
+  test('admin product form shows required-field and API errors accessibly (T-063)', async ({ mockedAdmin }) => {
+    // given
+    const { page } = mockedAdmin;
+    await page.route('**/api/v1/products', (route) => fulfillWithSchema(route, 'ErrorDto', { message: 'Internal server error' }, 500));
+    await page.goto('/admin/products/new');
+    await page.getByTestId('product-name-input').fill('Desk Lamp');
+    await page.getByTestId('product-price-input').fill('25');
+    await page.getByTestId('product-stock-input').fill('4');
+    await page.getByTestId('product-category-input').fill('Home');
+
+    // when
+    await page.getByTestId('product-submit-button').click();
+
+    // then
+    await expect(page.getByTestId('product-description-error')).toHaveText('Product description is required');
+    await expectNoAxeViolations(page);
+
+    // when
+    await page.getByTestId('product-description-input').fill('A lamp');
+    await page.getByTestId('product-submit-button').click();
+
+    // then
+    await expect(page.getByTestId('product-form-error')).toHaveText('Internal server error');
+    await expectNoAxeViolations(page);
+  });
 });

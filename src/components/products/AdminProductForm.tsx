@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { responseStatus } from '../../lib/requestErrors';
+import { responseStatus, serverFieldErrors, serverMessage } from '../../lib/requestErrors';
 import { useForm } from 'react-hook-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { products } from '../../lib/api';
@@ -16,14 +16,19 @@ interface AdminProductFormProps {
   onSuccess?: () => void;
 }
 
+type ProductFormField = keyof ProductCreateDto;
+const FORM_FIELDS: readonly ProductFormField[] = ['name', 'description', 'price', 'stockQuantity', 'category', 'imageUrl'];
+const isFormField = (field: string): field is ProductFormField => (FORM_FIELDS as readonly string[]).includes(field);
+
 export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
   const isEditMode = !!productId;
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<ProductCreateDto | ProductUpdateDto>();
+  const { register, handleSubmit, reset, setError, formState: { errors } } = useForm<ProductCreateDto | ProductUpdateDto>();
 
   const [conflict, setConflict] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const { data: productData, isLoading: isLoadingProduct, refetch: reloadProduct } = useQuery({
     queryKey: ['product', productId],
     queryFn: () => products.getProductById(Number(productId)),
@@ -70,6 +75,7 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
 
   const onSubmit = async (data: ProductCreateDto | ProductUpdateDto) => {
     setIsSubmitting(true);
+    setFormError(null);
     try {
       if (isEditMode && productId) {
         await updateMutation.mutateAsync({ id: productId, data });
@@ -77,8 +83,16 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
         await createMutation.mutateAsync(data as ProductCreateDto);
       }
     } catch (error) {
-      console.error('Failed to save product:', error);
-      setConflict(responseStatus(error) === 412);
+      const isConflict = responseStatus(error) === 412;
+      setConflict(isConflict);
+      if (!isConflict) {
+        // Field messages from the API go next to their inputs; anything else is shown above the actions.
+        const fieldErrors = Object.entries(serverFieldErrors(error)).filter(([field]) => isFormField(field));
+        fieldErrors.forEach(([field, message]) => setError(field as ProductFormField, { type: 'server', message }));
+        if (fieldErrors.length === 0) {
+          setFormError(serverMessage(error, 'Unable to save the product. Check the values and try again.'));
+        }
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -109,17 +123,21 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
 
       <Surface variant="inset" padding="md" data-testid="product-description-field">
         <Label htmlFor="description" data-testid="product-description-label">
-          Description
+          Description*
         </Label>
         <Textarea
           id="description"
           className="mt-2 min-h-[140px]"
-          error={errors.description ? 'Description must be less than 1000 characters' : undefined}
-          {...register('description', { maxLength: 1000 })}
+          error={errors.description?.message as string | undefined}
+          {...register('description', {
+            required: 'Product description is required',
+            validate: (value) => (value ?? '').trim() !== '' || 'Product description is required',
+            maxLength: { value: 1000, message: 'Description must be less than 1000 characters' },
+          })}
           data-testid="product-description-input"
         />
         {errors.description && (
-          <p className="mt-1 text-sm text-red-600" id={fieldErrorId('description')} data-testid="product-description-error">Description must be less than 1000 characters</p>
+          <p className="mt-1 text-sm text-red-600" id={fieldErrorId('description')} data-testid="product-description-error">{errors.description.message}</p>
         )}
       </Surface>
 
@@ -214,6 +232,10 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
           <span>Someone else changed this product after you opened it. Reload to see their changes, then apply yours again.</span>
           <Button type="button" variant="outline" size="sm" onClick={() => { setConflict(false); reloadProduct(); }} data-testid="product-edit-conflict-reload">Reload latest</Button>
         </div>
+      )}
+
+      {formError && (
+        <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert" data-testid="product-form-error">{formError}</p>
       )}
 
       <div className="flex justify-end" data-testid="product-form-actions">

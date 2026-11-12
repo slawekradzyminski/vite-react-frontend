@@ -36,3 +36,15 @@ export function serverMessage(error: unknown, fallback: string) {
   const firstText = Object.values(record).find((value): value is string => typeof value === 'string' && value.trim() !== '');
   return firstText ?? fallback;
 }
+
+// A 400 body that maps field names to messages ({"description": "Product description is required"}),
+// as the backend's validation handler sends it; anything else yields no field errors.
+export function serverFieldErrors(error: unknown): Record<string, string> {
+  if (!axios.isAxiosError(error) || error.response?.status !== 400) return {};
+  const data: unknown = error.response.data;
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return {};
+  return Object.fromEntries(
+    Object.entries(data as Record<string, unknown>)
+      .filter((entry): entry is [string, string] => entry[0] !== 'message' && typeof entry[1] === 'string' && entry[1].trim() !== ''),
+  );
+}
