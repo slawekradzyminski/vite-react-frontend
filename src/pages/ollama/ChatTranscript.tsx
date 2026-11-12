@@ -148,7 +148,8 @@ const renderChatMessage = (message: ChatMessageDto) => {
         <div
           className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${roleConfig.badgeClass}`}
           data-testid={`chat-role-pill-${roleKey}`}
-          aria-label={roleConfig.pillLabel}
+          aria-hidden="true"
+          title={roleConfig.pillLabel}
         >
           <Icon className="h-4 w-4" />
         </div>
