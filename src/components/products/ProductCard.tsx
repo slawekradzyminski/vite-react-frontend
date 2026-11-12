@@ -159,7 +159,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
           </Badge>
         </div>
         {product.category && (
-          <Badge tone="tracking" variant="outline" className="mt-2 w-fit text-[11px] tracking-[0.18em]" data-testid="product-category">{product.category}</Badge>
+          <Badge tone="tracking" variant="outline" className="mt-2 w-fit min-w-0 max-w-full text-[11px] tracking-[0.18em]" title={product.category} data-testid="product-category"><span className="truncate">{product.category}</span></Badge>
         )}
         {product.reviewCount !== undefined && (
           <p className="mt-2 text-sm text-slate-600" data-testid="product-rating">
