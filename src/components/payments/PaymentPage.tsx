@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { orders, payments } from '../../lib/api';
@@ -12,6 +12,8 @@ import { OrderAmountSummary } from './OrderAmountSummary';
 import { ThreeDsDialog } from './ThreeDsDialog';
 import type { Order } from '../../types/order';
 import { parseRouteId } from '../../lib/routeIds';
+import { ReservationCountdown } from '../orders/ReservationCountdown';
+import { reservationExpired } from '../../lib/reservation';
 
 const LINK_CLASS = 'inline-flex w-fit rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-stone-50 transition hover:bg-slate-800';
 
@@ -36,6 +38,12 @@ export function PaymentPage({ flowOptions, now }: PaymentPageProps = {}) {
   const [challengeDismissed, setChallengeDismissed] = useState(false);
   const order = orderQuery.data?.data;
   const { state } = flow;
+  const { refetch: refetchOrder } = orderQuery;
+
+  // payment-service refuses an order whose reservation ran out (409); reload it so the page shows why.
+  useEffect(() => {
+    if (state.step === 'notPayable') void refetchOrder();
+  }, [state.step, refetchOrder]);
 
   if (orderQuery.isLoading) {
     return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="payment-loading">Loading order…</Surface>;
@@ -147,6 +155,10 @@ export function PaymentPage({ flowOptions, now }: PaymentPageProps = {}) {
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Payment</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950" data-testid="payment-title">Pay for order #{order.id}</h1>
       </Surface>
+      {/* A payment under way keeps its own outcome; the countdown only matters while the card form is open. */}
+      {(state.step === 'form' || reservationExpired(order)) && (
+        <ReservationCountdown order={order} onDeadline={() => { void refetchOrder(); }} />
+      )}
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
         <Surface as="section" variant="default" padding="lg" aria-labelledby="payment-card-heading" data-testid="payment-card-section">
           <h2 id="payment-card-heading" className="mb-4 text-lg font-semibold text-slate-950">Card details</h2>

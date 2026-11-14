@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   getAbsoluteApiUrl,
   getApiBaseUrl,
+  getNotificationApiBaseUrl,
   getPaymentApiBaseUrl,
   getWarehouseApiBaseUrl,
   isPaymentEnabled,
@@ -171,6 +172,48 @@ describe('runtimeConfig', () => {
     it('follows the backend during local vite development and same-origin builds', () => {
       expect(getPaymentApiBaseUrl({ DEV: true }, production)).toBe('http://localhost:4001');
       expect(getPaymentApiBaseUrl({ DEV: false }, production)).toBe('https://awesome.byst.re');
+    });
+  });
+  describe('notification API base URL', () => {
+    const production = { origin: 'https://awesome.byst.re' } as Location;
+
+    it('prefers VITE_NOTIFICATION_API_BASE_URL, trimmed and without trailing slashes', () => {
+      expect(
+        getNotificationApiBaseUrl(
+          {
+            VITE_API_BASE_URL: 'https://api.example.com',
+            VITE_PAYMENT_API_BASE_URL: 'http://localhost:4004',
+            VITE_NOTIFICATION_API_BASE_URL: '  http://localhost:4005//  ',
+          },
+          production,
+        ),
+      ).toBe('http://localhost:4005');
+    });
+
+    it('reads VITE_NOTIFICATION_API_BASE_URL from the Vite environment by default', () => {
+      vi.stubEnv('VITE_NOTIFICATION_API_BASE_URL', 'https://notification.example.com/');
+
+      expect(getNotificationApiBaseUrl()).toBe('https://notification.example.com');
+    });
+
+    it('falls back to the configured API base URL, not the warehouse or payment one', () => {
+      expect(
+        getNotificationApiBaseUrl(
+          { VITE_API_BASE_URL: 'https://api.example.com/', VITE_WAREHOUSE_API_BASE_URL: 'http://localhost:4003', VITE_PAYMENT_API_BASE_URL: 'http://localhost:4004' },
+          production,
+        ),
+      ).toBe('https://api.example.com');
+    });
+
+    it('treats a blank notification URL as unset', () => {
+      expect(
+        getNotificationApiBaseUrl({ VITE_API_BASE_URL: 'https://api.example.com', VITE_NOTIFICATION_API_BASE_URL: '   ' }, production),
+      ).toBe('https://api.example.com');
+    });
+
+    it('follows the backend during local vite development and same-origin builds', () => {
+      expect(getNotificationApiBaseUrl({ DEV: true }, production)).toBe('http://localhost:4001');
+      expect(getNotificationApiBaseUrl({ DEV: false }, production)).toBe('https://awesome.byst.re');
     });
   });
 });

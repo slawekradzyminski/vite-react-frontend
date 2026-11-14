@@ -189,7 +189,10 @@ export function Profile() {
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Signed in as</p>
             <p className="mt-1 text-sm font-medium text-slate-900">{currentUser.data.firstName} {currentUser.data.lastName}</p>
             <p className="text-sm text-slate-600">{currentUser.data.email}</p>
-            <Link to="/account/webhooks" className="mt-2 inline-block text-sm text-sky-700 hover:underline" data-testid="profile-webhooks-link">Manage webhooks →</Link>
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+              <Link to="/account/notifications" className="inline-block text-sm text-sky-700 hover:underline" data-testid="profile-notifications-link">My notifications →</Link>
+              <Link to="/account/webhooks" className="inline-block text-sm text-sky-700 hover:underline" data-testid="profile-webhooks-link">Manage webhooks →</Link>
+            </div>
           </div>
         </div>
       </Surface>

@@ -2,14 +2,17 @@
 // currency, gift card, loyalty and webhook APIs.
 // They alias the generated OpenAPI schemas directly, so they cannot drift from the service
 // that owns them: coupons, reviews, wishlist, CSV import, product search, VAT, currencies, gift
-// cards, loyalty and webhooks come from the backend; shipments, tracking, returns, suppliers,
-// purchase orders and reorder suggestions come from warehouse-service. Payments live in
-// ./payment (payment-service).
+// cards and loyalty come from the backend; shipments, parcels, warehouse locations, tracking,
+// returns, suppliers, purchase orders and reorder suggestions come from warehouse-service;
+// webhooks come from notification-service. Payments live in ./payment (payment-service) and
+// commerce emails in ./notification.
 import type { components, operations } from './generated/backend-api';
 import type { components as warehouseComponents } from './generated/warehouse-api';
+import type { components as notificationComponents } from './generated/notification-api';
 
 type Schemas = components['schemas'];
 type WarehouseSchemas = warehouseComponents['schemas'];
+type NotificationSchemas = notificationComponents['schemas'];
 
 export type Coupon = Schemas['CouponDto'];
 export type CouponRequest = Schemas['CouponRequestDto'];
@@ -33,6 +36,11 @@ export type Shipment = WarehouseSchemas['ShipmentDto'];
 export type ShipmentStatus = NonNullable<Shipment['status']>;
 export type Carrier = NonNullable<WarehouseSchemas['ShipShipmentDto']['carrier']>;
 export type PickList = WarehouseSchemas['PickListDto'];
+export type ShipmentLine = WarehouseSchemas['ShipmentLineDto'];
+export type WarehouseLocation = WarehouseSchemas['WarehouseLocationDto'];
+export type Reallocation = WarehouseSchemas['ReallocateShipmentDto'];
+export type ShortPickRequest = WarehouseSchemas['ShortPickDto'];
+export type ReconciliationEntry = WarehouseSchemas['ReconciliationDto'];
 
 export type Tracking = WarehouseSchemas['TrackingDto'];
 export type PublicTracking = WarehouseSchemas['PublicTrackingDto'];
@@ -79,14 +87,14 @@ export type LoyaltyAccount = Schemas['LoyaltyAccountDto'];
 export type LoyaltyTier = NonNullable<LoyaltyAccount['tier']>;
 export type LoyaltyTransaction = Schemas['LoyaltyTransactionDto'];
 
-export type WebhookSubscription = Schemas['WebhookSubscriptionDto'];
-export type WebhookCreateRequest = Schemas['WebhookCreateDto'];
-export type WebhookUpdateRequest = Schemas['WebhookUpdateDto'];
-export type WebhookDelivery = Schemas['WebhookDeliveryDto'];
+export type WebhookSubscription = NotificationSchemas['WebhookSubscriptionDto'];
+export type WebhookCreateRequest = NotificationSchemas['WebhookCreateDto'];
+export type WebhookUpdateRequest = NotificationSchemas['WebhookUpdateDto'];
+export type WebhookDelivery = NotificationSchemas['WebhookDeliveryDto'];
 export type WebhookDeliveryStatus = NonNullable<WebhookDelivery['status']>;
-export type WebhookEventType = Schemas['WebhookEventTypeDto'];
-export type WebhookInbox = Schemas['WebhookInboxDto'];
-export type WebhookInboxRequest = Schemas['WebhookInboxRequestDto'];
+export type WebhookEventType = NotificationSchemas['WebhookEventTypeDto'];
+export type WebhookInbox = NotificationSchemas['WebhookInboxDto'];
+export type WebhookInboxRequest = NotificationSchemas['WebhookInboxRequestDto'];
 
 export interface Page<T> {
   content?: T[];

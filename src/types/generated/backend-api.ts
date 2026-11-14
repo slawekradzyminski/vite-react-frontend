@@ -220,6 +220,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/orders/{id}/expire-reservation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Expire an order's stock reservation now (Admin only)
+         * @description Time control for tests and the distributed-systems lab: sets the reservation end of a PENDING order to now and expires it at once, exactly as the reservation expiry job would. The order is cancelled, its stock is restored (ORDER_RESTORED, actor system), its coupon, gift card and points are released, and order.cancelled (reason RESERVATION_EXPIRED) and order.reservation-expired are published. Works for orders created without a reservation too.
+         */
+        post: operations["expireReservation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/products/export": {
         parameters: {
             query?: never;
@@ -571,7 +591,7 @@ export interface paths {
         put?: never;
         /**
          * Send email
-         * @description Queues an email message for asynchronous delivery through the configured JMS destination.
+         * @description Queues an email message for asynchronous delivery through the configured JMS destination. Only administrators may choose a template other than GENERIC; system templates such as PASSWORD_RESET_REQUESTED are sent by the backend itself.
          */
         post: operations["sendEmail"];
         delete?: never;
@@ -1045,7 +1065,7 @@ export interface paths {
         };
         /**
          * Get paginated HTTP traffic logs
-         * @description Returns captured HTTP traffic logs with optional filters for session, method, status, path, text, and time range.
+         * @description Returns the caller's captured HTTP traffic with optional filters for session, method, status, path, text, and time range. Only records the caller made while signed in are returned, plus the anonymous records (such as a sign-in attempt) of a session that belongs to the caller; with X-Client-Session-Id the result is limited to that session. Passwords, tokens, 2FA and gift card codes and credential headers are always masked. With legacy public access an anonymous caller reads the records of the session in X-Client-Session-Id, or every record without the header.
          */
         get: operations["getTrafficLogs"];
         put?: never;
@@ -1065,7 +1085,7 @@ export interface paths {
         };
         /**
          * Get traffic log by correlation identifier
-         * @description Returns one captured HTTP traffic log entry using its correlation identifier.
+         * @description Returns one captured HTTP traffic log entry using its correlation identifier, under the same visibility rules as the list; a record the caller may not read returns 404.
          */
         get: operations["getTrafficLog"];
         put?: never;
@@ -1085,7 +1105,7 @@ export interface paths {
         };
         /**
          * Get all users
-         * @description Returns all user accounts visible to the authenticated caller.
+         * @description Returns all user accounts. Administrators see every email address; other callers see only their own in full and the others masked (j***@example.com).
          */
         get: operations["getAll"];
         put?: never;
@@ -1433,7 +1453,7 @@ export interface paths {
         };
         /**
          * Get user by username
-         * @description Returns public account details for the requested username.
+         * @description Returns public account details for the requested username. The email address is masked (j***@example.com) unless the caller is an administrator or the account itself.
          */
         get: operations["getByUsername"];
         /**
@@ -1464,7 +1484,7 @@ export interface paths {
         post?: never;
         /**
          * Delete user account and all user-owned data
-         * @description Deletes the user account together with refresh tokens, reset tokens, email events, cart items, and orders.
+         * @description Deletes the user account together with refresh tokens, reset tokens, email events, cart items, and orders. Open (PENDING or PAID) orders are cancelled first: their stock is restored and card payments are refunded through the event feed. Shipped and delivered orders are deleted as they are.
          */
         delete: operations["forget"];
         options?: never;
@@ -2270,7 +2290,7 @@ export interface components {
              * @description Email recipient
              * @example user@example.com
              */
-            to?: string;
+            to: string;
         };
         EmailEventDto: {
             /**
@@ -2587,12 +2607,12 @@ export interface components {
         LoginDto: {
             /**
              * @description Password
-             * @example admin
+             * @example client
              */
             password: string;
             /**
              * @description Username
-             * @example admin
+             * @example client
              */
             username: string;
         };
@@ -2909,6 +2929,12 @@ export interface components {
              * @example 49.99
              */
             refundedAmount?: number | null;
+            /**
+             * Format: date-time
+             * @description When the stock reservation of a PENDING order ends (ISO-8601 UTC, milliseconds); the order is cancelled if it is not paid by then. Omitted for orders created without a reservation
+             * @example 2026-11-14T10:30:00.000Z
+             */
+            reservationExpiresAt?: string | null;
             /** @description Shipping address */
             shippingAddress: components["schemas"]["AddressDto"];
             /**
@@ -3639,7 +3665,7 @@ export interface components {
         };
         UserResponseDto: {
             /**
-             * @description Email address
+             * @description Email address. Shown in full to administrators and for the caller's own account; other accounts' addresses are masked for other callers, keeping the first character and the domain (j***@example.com).
              * @example john.doe@example.com
              */
             email?: string;
@@ -4949,6 +4975,70 @@ export interface operations {
             };
         };
     };
+    expireReservation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Order id */
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reservation expired; the cancelled order is returned */
+            200: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Order not found */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description The order is not PENDING, for example "Only PENDING orders hold a reservation; order is PAID" */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
     export: {
         parameters: {
             query?: never;
@@ -6045,7 +6135,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Invalid email data */
+            /** @description Invalid email data, or a non-GENERIC template from a non-administrator */
             400: {
                 headers: {
                     "X-Request-Id": components["headers"]["X-Request-Id"];
@@ -7617,6 +7707,16 @@ export interface operations {
             };
             /** @description Unauthorized */
             401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description The Accept header excludes image/png (validation errors are still reported as 400 JSON first) */
+            406: {
                 headers: {
                     "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
@@ -9578,7 +9678,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
-            /** @description Subscription is disabled */
+            /** @description Subscription is disabled, or webhook delivery is disabled on this backend */
             409: {
                 headers: {
                     "X-Request-Id": components["headers"]["X-Request-Id"];
@@ -9694,7 +9794,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
-            /** @description Subscription is disabled */
+            /** @description Subscription is disabled, or webhook delivery is disabled on this backend */
             409: {
                 headers: {
                     "X-Request-Id": components["headers"]["X-Request-Id"];

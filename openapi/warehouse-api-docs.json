@@ -362,6 +362,36 @@
         },
         "type": "object"
       },
+      "Parcel": {
+        "description": "Parcel status in a reconciliation entry",
+        "properties": {
+          "locationCode": {
+            "description": "Location code",
+            "example": "KRK",
+            "type": "string"
+          },
+          "shipmentId": {
+            "description": "Shipment ID",
+            "example": 7,
+            "format": "int64",
+            "type": "integer"
+          },
+          "status": {
+            "description": "Parcel status",
+            "enum": [
+              "AWAITING_PICK",
+              "PICKED",
+              "PACKED",
+              "SHIPPED",
+              "DELIVERED",
+              "CANCELLED"
+            ],
+            "example": "PICKED",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "PickListDto": {
         "description": "Pick list grouped by product and sorted by category, then name",
         "properties": {
@@ -713,6 +743,21 @@
         ],
         "type": "object"
       },
+      "ReallocateShipmentDto": {
+        "description": "Parcel reallocation. Omit targetLocation (or the whole body) to move the parcel to the best other active location that stocks all of its categories",
+        "properties": {
+          "targetLocation": {
+            "description": "Target location code",
+            "example": "GDN",
+            "pattern": "\\s*[A-Za-z0-9]{1,8}\\s*",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
       "ReceiptLineDto": {
         "description": "Units received for one product",
         "properties": {
@@ -800,6 +845,73 @@
         "required": [
           "items"
         ],
+        "type": "object"
+      },
+      "ReconciliationDto": {
+        "description": "An order whose parcels' aggregate fulfilment state disagrees with the backend",
+        "properties": {
+          "aggregateState": {
+            "description": "State the backend should have: max(last mirrored, aggregate of the parcels)",
+            "enum": [
+              "NONE",
+              "AWAITING_PICK",
+              "PICKED",
+              "PACKED",
+              "SHIPPED",
+              "DELIVERED",
+              "CANCELLED"
+            ],
+            "example": "PICKED",
+            "type": "string"
+          },
+          "backendState": {
+            "description": "fulfilmentState on the backend; null when the backend does not know the order",
+            "enum": [
+              "NONE",
+              "AWAITING_PICK",
+              "PICKED",
+              "PACKED",
+              "SHIPPED",
+              "DELIVERED",
+              "CANCELLED"
+            ],
+            "example": "AWAITING_PICK",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastMirroredState": {
+            "description": "State last mirrored to the backend",
+            "enum": [
+              "NONE",
+              "AWAITING_PICK",
+              "PICKED",
+              "PACKED",
+              "SHIPPED",
+              "DELIVERED",
+              "CANCELLED"
+            ],
+            "example": "AWAITING_PICK",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "orderId": {
+            "description": "Order ID",
+            "example": 42,
+            "format": "int64",
+            "type": "integer"
+          },
+          "parcels": {
+            "description": "The order's parcels",
+            "items": {
+              "$ref": "#/components/schemas/Parcel"
+            },
+            "type": "array"
+          }
+        },
         "type": "object"
       },
       "RejectReturnDto": {
@@ -1075,7 +1187,7 @@
         "type": "object"
       },
       "ShipmentDto": {
-        "description": "Warehouse shipment for one order",
+        "description": "Warehouse shipment: one parcel of an order, shipped from one location",
         "properties": {
           "cancelledAt": {
             "description": "When the shipment was cancelled",
@@ -1128,6 +1240,23 @@
             "example": "warehouse",
             "type": "string"
           },
+          "lines": {
+            "description": "Products in this parcel",
+            "items": {
+              "$ref": "#/components/schemas/ShipmentLineDto"
+            },
+            "type": "array"
+          },
+          "locationCode": {
+            "description": "Location the parcel ships from",
+            "example": "KRK",
+            "type": "string"
+          },
+          "locationName": {
+            "description": "Name of that location",
+            "example": "Krakow Central",
+            "type": "string"
+          },
           "orderId": {
             "description": "Order ID",
             "example": 42,
@@ -1141,6 +1270,18 @@
               "string",
               "null"
             ]
+          },
+          "parcelCount": {
+            "description": "Number of parcels of the order",
+            "example": 2,
+            "format": "int32",
+            "type": "integer"
+          },
+          "parcelIndex": {
+            "description": "1-based position of the parcel among the order's parcels (oldest first)",
+            "example": 1,
+            "format": "int32",
+            "type": "integer"
           },
           "pickedAt": {
             "description": "When picking finished",
@@ -1172,7 +1313,7 @@
             "type": "string"
           },
           "totalUnits": {
-            "description": "Units to pick",
+            "description": "Units to pick for this parcel",
             "example": 3,
             "format": "int32",
             "type": "integer"
@@ -1204,6 +1345,60 @@
             ]
           }
         },
+        "type": "object"
+      },
+      "ShipmentLineDto": {
+        "description": "Units of one product in a parcel",
+        "properties": {
+          "category": {
+            "description": "Product category at release",
+            "example": "Electronics",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "productId": {
+            "description": "Product ID",
+            "example": 3,
+            "format": "int64",
+            "type": "integer"
+          },
+          "productName": {
+            "description": "Product name at release",
+            "example": "iPhone 13 Pro",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Units in this parcel",
+            "example": 2,
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ShortPickDto": {
+        "description": "Units of a product that could not be found while picking",
+        "properties": {
+          "missingQuantity": {
+            "description": "Units to move to a parcel at another location",
+            "example": 1,
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "productId": {
+            "description": "Product ID of a line in the parcel",
+            "example": 3,
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "missingQuantity",
+          "productId"
+        ],
         "type": "object"
       },
       "SupplierDto": {
@@ -1382,6 +1577,20 @@
         },
         "type": "object"
       },
+      "UpdateLocationDto": {
+        "description": "Location activation",
+        "properties": {
+          "active": {
+            "description": "false stops new allocations to the location; parcels already there stay",
+            "example": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "active"
+        ],
+        "type": "object"
+      },
       "ValidationErrorsDto": {
         "additionalProperties": {
           "description": "Validation messages keyed by field name; invalid arguments use the error key",
@@ -1397,6 +1606,58 @@
         "properties": {
           "empty": {
             "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "WarehouseLocationDto": {
+        "description": "Warehouse location with the categories it stocks",
+        "properties": {
+          "active": {
+            "description": "Whether new parcels are allocated to this location",
+            "example": true,
+            "type": "boolean"
+          },
+          "backupCategories": {
+            "description": "Categories shipped from here when no primary location can; \"*\" as above",
+            "example": [
+              "Books"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "city": {
+            "description": "City",
+            "example": "Krakow",
+            "type": "string"
+          },
+          "code": {
+            "description": "Location code",
+            "example": "KRK",
+            "type": "string"
+          },
+          "name": {
+            "description": "Location name",
+            "example": "Krakow Central",
+            "type": "string"
+          },
+          "primaryCategories": {
+            "description": "Categories shipped from here first; \"*\" stands for every category without its own entry",
+            "example": [
+              "*"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "priority": {
+            "description": "Allocation priority; lower numbers are preferred",
+            "example": 1,
+            "format": "int32",
+            "type": "integer"
           }
         },
         "type": "object"
@@ -1771,7 +2032,7 @@
       },
       "put": {
         "description": "Replaces the supplier, note and lines of a DRAFT purchase order.",
-        "operationId": "update",
+        "operationId": "update_1",
         "parameters": [
           {
             "in": "path",
@@ -2904,7 +3165,7 @@
     },
     "/api/v1/orders/{id}/shipment": {
       "get": {
-        "description": "Returns the shipment for one of the caller's orders. Administrators may track any order.",
+        "description": "Returns the first parcel of one of the caller's orders, with locationCode and parcelCount; GET /api/v1/orders/{id}/shipments lists every parcel. Administrators may track any order.",
         "operationId": "track_1",
         "parameters": [
           {
@@ -2972,7 +3233,7 @@
     },
     "/api/v1/orders/{id}/shipment/tracking": {
       "get": {
-        "description": "Returns the carrier tracking (scans, current status, estimated delivery) for one of the caller's orders. Administrators may track any order. Before the hand-over to the carrier the events are empty.",
+        "description": "Returns the carrier tracking of the order's first parcel (scans, current status, estimated delivery) for one of the caller's orders. Administrators may track any order. Before the hand-over to the carrier the events are empty.",
         "operationId": "tracking",
         "parameters": [
           {
@@ -3033,6 +3294,77 @@
           }
         ],
         "summary": "Track order parcel",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/v1/orders/{id}/shipments": {
+      "get": {
+        "description": "Returns every parcel of one of the caller's orders, oldest first, each with its location, lines and tracking number. Empty while the order is not released to the warehouse. Administrators may list any order.",
+        "operationId": "parcels",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ShipmentDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Parcels returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Order not found"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List order parcels",
         "tags": [
           "Orders"
         ]
@@ -3326,6 +3658,143 @@
         ]
       }
     },
+    "/api/v1/warehouse/locations": {
+      "get": {
+        "description": "Lists every location by priority with its active flag and the categories it stocks as PRIMARY or BACKUP (\"*\" stands for every category without its own entry).",
+        "operationId": "locations",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WarehouseLocationDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Locations returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List warehouse locations",
+        "tags": [
+          "Warehouse locations"
+        ]
+      }
+    },
+    "/api/v1/warehouse/locations/{code}": {
+      "put": {
+        "description": "An inactive location receives no new allocations; parcels already allocated there stay until they are reallocated.",
+        "operationId": "update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLocationDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WarehouseLocationDto"
+                }
+              }
+            },
+            "description": "Location updated"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Missing active flag"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Warehouse location not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Activate or deactivate location",
+        "tags": [
+          "Warehouse locations"
+        ]
+      }
+    },
     "/api/v1/warehouse/queue": {
       "get": {
         "description": "Lists PAID orders that have not been released to the warehouse yet, oldest first. Negative page is clamped to zero; size is clamped to 1-100.",
@@ -3404,6 +3873,66 @@
         "summary": "Get fulfilment queue",
         "tags": [
           "Warehouse"
+        ]
+      }
+    },
+    "/api/v1/warehouse/reconciliation": {
+      "get": {
+        "description": "Orders (at most 100, lowest id first) with an open parcel whose expected backend state, max(last mirrored, aggregate of the parcels), differs from the backend's fulfilmentState, for example a customer cancellation the event feed has not applied yet.",
+        "operationId": "reconciliation",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReconciliationDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Disagreeing orders returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Fulfilment reconciliation",
+        "tags": [
+          "Warehouse locations"
         ]
       }
     },
@@ -3504,7 +4033,7 @@
         ]
       },
       "post": {
-        "description": "Releases a PAID order to the warehouse as an AWAITING_PICK shipment.",
+        "description": "Releases a PAID order to the warehouse. Each order line is allocated to the highest-priority active location that stocks its category (one location for the whole order when one location can take every line), and one AWAITING_PICK parcel is created per location. Returns the first parcel; parcelCount tells how many were created.",
         "operationId": "create",
         "requestBody": {
           "content": {
@@ -3525,7 +4054,7 @@
                 }
               }
             },
-            "description": "Shipment created"
+            "description": "Parcels created; the first one is returned"
           },
           "400": {
             "content": {
@@ -3575,7 +4104,7 @@
                 }
               }
             },
-            "description": "Order is not PAID or already has a shipment"
+            "description": "Order is not PAID, already has a shipment, or no active location stocks one of its categories"
           },
           "503": {
             "content": {
@@ -3601,7 +4130,7 @@
     },
     "/api/v1/warehouse/shipments/{id}": {
       "get": {
-        "description": "Returns one shipment with its timestamps.",
+        "description": "Returns one parcel with its location, lines and timestamps.",
         "operationId": "get_1",
         "parameters": [
           {
@@ -3679,7 +4208,7 @@
     },
     "/api/v1/warehouse/shipments/{id}/cancel": {
       "post": {
-        "description": "Cancels an AWAITING_PICK or PICKED shipment. The order is cancelled, stock is restored and any coupon redemption is released.",
+        "description": "Cancels an AWAITING_PICK or PICKED parcel together with its order: every AWAITING_PICK or PICKED parcel of the order is cancelled, stock is restored and any coupon redemption is released. Refused while another parcel of the order is already PACKED or later.",
         "operationId": "cancel",
         "parameters": [
           {
@@ -4139,7 +4668,7 @@
     },
     "/api/v1/warehouse/shipments/{id}/pick-list": {
       "get": {
-        "description": "Returns the products to pick grouped by product and sorted by category, then name.",
+        "description": "Returns the parcel's products to pick grouped by product and sorted by category, then name.",
         "operationId": "pickList",
         "parameters": [
           {
@@ -4210,6 +4739,113 @@
           }
         ],
         "summary": "Get pick list",
+        "tags": [
+          "Warehouse"
+        ]
+      }
+    },
+    "/api/v1/warehouse/shipments/{id}/reallocate": {
+      "post": {
+        "description": "Moves an AWAITING_PICK parcel to another active location: the given targetLocation, or without it the best other active location that stocks all of the parcel's categories. The lines merge into the order's parcel at that location when there is one (the moved parcel is then removed). Returns the parcel now holding the lines.",
+        "operationId": "reallocate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReallocateShipmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentDto"
+                }
+              }
+            },
+            "description": "Parcel reallocated"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid target location code"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Shipment or target location not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Parcel is not AWAITING_PICK, or the target is the current, an inactive or a non-stocking location, or the order's parcel there is past AWAITING_PICK, or no other location can take it"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Reallocate parcel",
         "tags": [
           "Warehouse"
         ]
@@ -4329,6 +4965,114 @@
           "Warehouse"
         ]
       }
+    },
+    "/api/v1/warehouse/shipments/{id}/short-pick": {
+      "post": {
+        "description": "Records units of a product that could not be picked for an AWAITING_PICK parcel and moves them to the order's AWAITING_PICK parcel at another active location that stocks the category (a new parcel when there is none). A parcel left without lines is removed. Returns the receiving parcel.",
+        "operationId": "shortPick",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShortPickDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentDto"
+                }
+              }
+            },
+            "description": "Units moved"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Missing product or quantity below 1"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Shipment not found, or the product is not in it"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Parcel is not AWAITING_PICK, the quantity exceeds the line, or no other active location stocks the category"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Backend unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Report short pick",
+        "tags": [
+          "Warehouse"
+        ]
+      }
     }
   },
   "tags": [
@@ -4351,6 +5095,10 @@
     {
       "description": "Suppliers, purchase orders, goods receipts and reorder suggestions",
       "name": "Purchasing"
+    },
+    {
+      "description": "Warehouse locations, their activation and the fulfilment reconciliation report",
+      "name": "Warehouse locations"
     }
   ]
 }

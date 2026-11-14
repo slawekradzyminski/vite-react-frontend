@@ -2,7 +2,6 @@ import type { Page } from '@playwright/test';
 import { fulfillWithWarehouseSchema, type WarehouseSchema } from './warehouseContract';
 
 export type PublicTracking = WarehouseSchema<'PublicTrackingDto'>;
-export type OrderTracking = WarehouseSchema<'TrackingDto'>;
 export type Shipment = WarehouseSchema<'ShipmentDto'>;
 
 export const trackingMocks = {
@@ -18,16 +17,23 @@ export const trackingMocks = {
     });
   },
 
-  /** The shipment and its carrier timeline for an order; returns how often the timeline was read. */
-  async mockOrderShipment(page: Page, shipment: Shipment & { orderId: number }, tracking: OrderTracking) {
-    const reads = { count: 0 };
-    await page.route(`**/api/v1/orders/${shipment.orderId}/shipment`, async (route) => {
-      await fulfillWithWarehouseSchema(route, 'ShipmentDto', shipment);
+  /**
+   * The parcels of an order and the carrier timeline of each shipped one (by tracking number);
+   * returns how often each timeline was read.
+   */
+  async mockOrderParcels(page: Page, orderId: number, parcels: Shipment[], trackings: PublicTracking[] = []) {
+    const reads: Record<string, number> = {};
+    await page.route(`**/api/v1/orders/${orderId}/shipments`, async (route) => {
+      await fulfillWithWarehouseSchema(route, 'ShipmentDto', parcels);
     });
-    await page.route(`**/api/v1/orders/${shipment.orderId}/shipment/tracking`, async (route) => {
-      reads.count += 1;
-      await fulfillWithWarehouseSchema(route, 'TrackingDto', tracking);
-    });
+    for (const tracking of trackings) {
+      const number = tracking.trackingNumber as string;
+      reads[number] = 0;
+      await page.route(`**/api/v1/tracking/${number}`, async (route) => {
+        reads[number] += 1;
+        await fulfillWithWarehouseSchema(route, 'PublicTrackingDto', tracking);
+      });
+    }
     return reads;
   },
 };

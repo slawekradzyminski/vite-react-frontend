@@ -20,7 +20,11 @@ export function commerceApiMocks() {
       remove: vi.fn(),
     },
     catalogCsv: { export: vi.fn(), import: vi.fn() },
-    warehouse: { trackOrder: vi.fn().mockRejectedValue({ isAxiosError: true, response: { status: 404 } }) },
+    warehouse: {
+      trackOrder: vi.fn().mockRejectedValue({ isAxiosError: true, response: { status: 404 } }),
+      parcels: vi.fn().mockResolvedValue({ data: [] }),
+    },
+    adminOrders: { expireReservation: vi.fn() },
     returns: { create: vi.fn(), mine: vi.fn().mockResolvedValue(emptyPage) },
     payments: { create: vi.fn(), get: vi.fn(), confirmThreeDs: vi.fn(), forOrder: vi.fn().mockResolvedValue({ data: [] }) },
     loyalty: {

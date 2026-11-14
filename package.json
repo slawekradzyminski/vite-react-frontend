@@ -1,7 +1,7 @@
 {
   "name": "vite",
   "private": true,
-  "version": "3.14.0",
+  "version": "3.15.0",
   "type": "module",
   "engines": {
     "node": ">=24.22.1 <25"
@@ -27,13 +27,16 @@
     "api:snapshot": "node scripts/api-contract.mjs snapshot backend && npm run api:generate:backend",
     "api:snapshot:warehouse": "node scripts/api-contract.mjs snapshot warehouse && npm run api:generate:warehouse",
     "api:snapshot:payment": "node scripts/api-contract.mjs snapshot payment && npm run api:generate:payment",
-    "api:generate": "npm run api:generate:backend && npm run api:generate:warehouse && npm run api:generate:payment",
+    "api:snapshot:notification": "node scripts/api-contract.mjs snapshot notification && npm run api:generate:notification",
+    "api:generate": "npm run api:generate:backend && npm run api:generate:warehouse && npm run api:generate:payment && npm run api:generate:notification",
     "api:generate:backend": "openapi-typescript openapi/backend-api-docs.json --output src/types/generated/backend-api.ts",
     "api:generate:warehouse": "openapi-typescript openapi/warehouse-api-docs.json --output src/types/generated/warehouse-api.ts",
     "api:generate:payment": "openapi-typescript openapi/payment-api-docs.json --output src/types/generated/payment-api.ts",
+    "api:generate:notification": "openapi-typescript openapi/notification-api-docs.json --output src/types/generated/notification-api.ts",
     "api:check": "node scripts/api-contract.mjs check backend",
     "api:check:warehouse": "node scripts/api-contract.mjs check warehouse",
     "api:check:payment": "node scripts/api-contract.mjs check payment",
+    "api:check:notification": "node scripts/api-contract.mjs check notification",
     "demo:webmcp": "vite --config vite.webmcp.config.ts",
     "test:e2e:webmcp": "playwright test --config playwright.webmcp.config.ts"
   },

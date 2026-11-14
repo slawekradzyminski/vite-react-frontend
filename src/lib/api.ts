@@ -68,8 +68,10 @@ import type {
   ReviewRequest,
   ReviewStatus,
   ReviewSummary,
+  ReconciliationEntry,
   Shipment,
   ShipmentStatus,
+  ShortPickRequest,
   Supplier,
   SupplierRequest,
   TaxPreview,
@@ -84,13 +86,21 @@ import type {
   WebhookInboxRequest,
   WebhookSubscription,
   WebhookUpdateRequest,
+  WarehouseLocation,
   WishlistItem,
 } from '../types/commerce';
 import type { CreatePaymentRequest, Payment, PaymentPage, PaymentStatus } from '../types/payment';
+import type { NotificationEmailPage } from '../types/notification';
 import { authStorage } from './authStorage';
 import { commerceTransport } from './commerceTransport';
 import { createCommerceGraphql } from './commerceGraphql';
-import { getAbsoluteApiUrl, getApiBaseUrl, getPaymentApiBaseUrl, getWarehouseApiBaseUrl } from './runtimeConfig';
+import {
+  getAbsoluteApiUrl,
+  getApiBaseUrl,
+  getNotificationApiBaseUrl,
+  getPaymentApiBaseUrl,
+  getWarehouseApiBaseUrl,
+} from './runtimeConfig';
 import { withTrackedWrites } from './pendingWrites';
 
 const api = axios.create({
@@ -112,6 +122,15 @@ const warehouseApi = axios.create({
 // Card payments live in payment-service, which also accepts the backend's tokens.
 const paymentApi = axios.create({
   baseURL: getPaymentApiBaseUrl(),
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Webhooks, webhook inboxes and the commerce email log live in notification-service, which
+// also accepts the backend's tokens.
+const notificationApi = axios.create({
+  baseURL: getNotificationApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
@@ -140,6 +159,7 @@ const GIFT_CARDS_API = `${API_V1_PREFIX}/gift-cards`;
 const LOYALTY_API = `${API_V1_PREFIX}/loyalty`;
 const WEBHOOKS_API = `${API_V1_PREFIX}/webhooks`;
 const WEBHOOK_INBOXES_API = `${API_V1_PREFIX}/webhook-inboxes`;
+const NOTIFICATIONS_API = `${API_V1_PREFIX}/notifications`;
 const CLIENT_SESSION_ID_HEADER = 'X-Client-Session-Id';
 
 const PUBLIC_ENDPOINTS = [
@@ -194,7 +214,7 @@ const redirectToLogin = () => {
 
 // Applied to every instance so each one sends the session and bearer headers and retries
 // its own requests after a shared token refresh. Only the backend owns the session: a 401 or
-// 403 from it signs the user out. warehouse-service and payment-service only accept the
+// 403 from it signs the user out. warehouse-, payment- and notification-service only accept the
 // backend's tokens, so a 403 from them (someone else's order, a missing role) or a 401 that
 // survives a successful refresh is their own answer and must not end the session.
 const installAuthInterceptors = (instance: AxiosInstance, ownsSession: boolean) => {
@@ -262,6 +282,7 @@ const installAuthInterceptors = (instance: AxiosInstance, ownsSession: boolean) 
 installAuthInterceptors(api, true);
 installAuthInterceptors(warehouseApi, false);
 installAuthInterceptors(paymentApi, false);
+installAuthInterceptors(notificationApi, false);
 
 const buildStreamingHeaders = (token: string | null) => ({
   'Content-Type': 'application/json',
@@ -436,6 +457,12 @@ const restOrders = {
     api.post<Order>(`${ORDERS_API}/${id}/cancel`),
 };
 
+// Time control for the reservation lab: ends a PENDING order's stock reservation now. REST in
+// both commerce transports, like the other admin-only actions.
+export const adminOrders = {
+  expireReservation: (id: number) => api.post<Order>(`${ADMIN_API}/orders/${id}/expire-reservation`),
+};
+
 const restProducts = {
   getAllProducts: () => 
     api.get<Product[]>(PRODUCTS_API),
@@ -563,6 +590,17 @@ export const warehouse = {
   deliver: (id: number) => warehouseApi.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/deliver`),
   cancel: (id: number) => warehouseApi.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/cancel`),
   trackOrder: (orderId: number) => warehouseApi.get<Shipment>(`${ORDERS_API}/${orderId}/shipment`),
+  // Every parcel of the order, oldest first; empty until the order is released to the warehouse.
+  parcels: (orderId: number) => warehouseApi.get<Shipment[]>(`${ORDERS_API}/${orderId}/shipments`),
+  // Without a target warehouse-service picks the best other active location.
+  reallocate: (id: number, targetLocation?: string) =>
+    warehouseApi.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/reallocate`, targetLocation ? { targetLocation } : {}),
+  shortPick: (id: number, data: ShortPickRequest) =>
+    warehouseApi.post<Shipment>(`${WAREHOUSE_API}/shipments/${id}/short-pick`, data),
+  locations: () => warehouseApi.get<WarehouseLocation[]>(`${WAREHOUSE_API}/locations`),
+  setLocationActive: (code: string, active: boolean) =>
+    warehouseApi.put<WarehouseLocation>(`${WAREHOUSE_API}/locations/${encodeURIComponent(code)}`, { active }),
+  reconciliation: () => warehouseApi.get<ReconciliationEntry[]>(`${WAREHOUSE_API}/reconciliation`),
 };
 
 export const returns = {
@@ -664,35 +702,41 @@ export const cartTenders = {
   removePoints: () => api.delete<CartWithCoupon>(`${CART_API}/loyalty-points`),
 };
 
+// Webhooks are served by notification-service (backend 3.21.0 keeps them only for older stacks).
 export const webhooks = {
-  list: () => api.get<WebhookSubscription[]>(WEBHOOKS_API),
-  get: (id: number) => api.get<WebhookSubscription>(`${WEBHOOKS_API}/${id}`),
-  create: (data: WebhookCreateRequest) => api.post<WebhookSubscription>(WEBHOOKS_API, data),
-  update: (id: number, data: WebhookUpdateRequest) => api.put<WebhookSubscription>(`${WEBHOOKS_API}/${id}`, data),
-  remove: (id: number) => api.delete(`${WEBHOOKS_API}/${id}`),
-  eventTypes: () => api.get<WebhookEventType[]>(`${WEBHOOKS_API}/event-types`),
-  rotateSecret: (id: number) => api.post<WebhookSubscription>(`${WEBHOOKS_API}/${id}/rotate-secret`),
-  test: (id: number) => api.post<WebhookDelivery>(`${WEBHOOKS_API}/${id}/test`),
+  list: () => notificationApi.get<WebhookSubscription[]>(WEBHOOKS_API),
+  get: (id: number) => notificationApi.get<WebhookSubscription>(`${WEBHOOKS_API}/${id}`),
+  create: (data: WebhookCreateRequest) => notificationApi.post<WebhookSubscription>(WEBHOOKS_API, data),
+  update: (id: number, data: WebhookUpdateRequest) => notificationApi.put<WebhookSubscription>(`${WEBHOOKS_API}/${id}`, data),
+  remove: (id: number) => notificationApi.delete(`${WEBHOOKS_API}/${id}`),
+  eventTypes: () => notificationApi.get<WebhookEventType[]>(`${WEBHOOKS_API}/event-types`),
+  rotateSecret: (id: number) => notificationApi.post<WebhookSubscription>(`${WEBHOOKS_API}/${id}/rotate-secret`),
+  test: (id: number) => notificationApi.post<WebhookDelivery>(`${WEBHOOKS_API}/${id}/test`),
   deliveries: (id: number, status?: WebhookDeliveryStatus, page = 0, size = 20) =>
-    api.get<Page<WebhookDelivery>>(`${WEBHOOKS_API}/${id}/deliveries`, pageParams(page, size, { status })),
+    notificationApi.get<Page<WebhookDelivery>>(`${WEBHOOKS_API}/${id}/deliveries`, pageParams(page, size, { status })),
   delivery: (id: number, deliveryId: string) =>
-    api.get<WebhookDelivery>(`${WEBHOOKS_API}/${id}/deliveries/${deliveryId}`),
+    notificationApi.get<WebhookDelivery>(`${WEBHOOKS_API}/${id}/deliveries/${deliveryId}`),
   redeliver: (id: number, deliveryId: string) =>
-    api.post<WebhookDelivery>(`${WEBHOOKS_API}/${id}/deliveries/${deliveryId}/redeliver`),
+    notificationApi.post<WebhookDelivery>(`${WEBHOOKS_API}/${id}/deliveries/${deliveryId}/redeliver`),
 };
 
 // Disposable receivers for webhook deliveries, so a training user needs no public server.
 export const webhookInboxes = {
-  list: () => api.get<WebhookInbox[]>(WEBHOOK_INBOXES_API),
-  create: () => api.post<WebhookInbox>(WEBHOOK_INBOXES_API),
-  remove: (token: string) => api.delete(`${WEBHOOK_INBOXES_API}/${encodeURIComponent(token)}`),
+  list: () => notificationApi.get<WebhookInbox[]>(WEBHOOK_INBOXES_API),
+  create: () => notificationApi.post<WebhookInbox>(WEBHOOK_INBOXES_API),
+  remove: (token: string) => notificationApi.delete(`${WEBHOOK_INBOXES_API}/${encodeURIComponent(token)}`),
   requests: (token: string) =>
-    api.get<WebhookInboxRequest[]>(`${WEBHOOK_INBOXES_API}/${encodeURIComponent(token)}/requests`),
+    notificationApi.get<WebhookInboxRequest[]>(`${WEBHOOK_INBOXES_API}/${encodeURIComponent(token)}/requests`),
 };
 
 export const adminWebhooks = {
   list: (username?: string, page = 0, size = 20) =>
-    api.get<Page<WebhookSubscription>>(`${ADMIN_API}/webhooks`, pageParams(page, size, { username })),
+    notificationApi.get<Page<WebhookSubscription>>(`${ADMIN_API}/webhooks`, pageParams(page, size, { username })),
+};
+
+// Commerce emails (payments, shipments, returns, loyalty, gift cards) sent by notification-service.
+export const notifications = {
+  emails: (page = 0, size = 20) => notificationApi.get<NotificationEmailPage>(`${NOTIFICATIONS_API}/emails`, pageParams(page, size)),
 };
 
 const graphqlCommerce = createCommerceGraphql(api);
@@ -704,7 +748,13 @@ export const cart = withTrackedWrites(
 export const orders = commerceTransport === 'graphql' ? graphqlCommerce.orders : restOrders;
 export const inventory = commerceTransport === 'graphql' ? graphqlCommerce.inventory : restInventory;
 
-export { getAbsoluteApiUrl, getApiBaseUrl, getPaymentApiBaseUrl, getWarehouseApiBaseUrl } from './runtimeConfig';
-export { paymentApi, warehouseApi };
+export {
+  getAbsoluteApiUrl,
+  getApiBaseUrl,
+  getNotificationApiBaseUrl,
+  getPaymentApiBaseUrl,
+  getWarehouseApiBaseUrl,
+} from './runtimeConfig';
+export { notificationApi, paymentApi, warehouseApi };
 
 export default api; 

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { tracking as trackingApi, warehouse } from '../../lib/api';
 import { formatPrice } from '../../lib/format';
@@ -124,6 +125,78 @@ function ShipmentActions({ shipment, onDone, onAdvanced }: { shipment: Shipment;
   );
 }
 
+/** A parcel's location label: `Krakow Central (KRK)`, or just the code from an older service. */
+const locationLabel = (shipment: Shipment) =>
+  shipment.locationName ? `${shipment.locationName} (${shipment.locationCode})` : shipment.locationCode;
+
+/** Moves an AWAITING_PICK parcel to another location, or the units that could not be picked. */
+function ParcelAdminActions({ shipment, onDone }: { shipment: Shipment; onDone: (message: string) => void }) {
+  const id = shipment.id as number;
+  const lines = shipment.lines ?? [];
+  const [target, setTarget] = useState('');
+  const [productId, setProductId] = useState(String(lines[0]?.productId ?? ''));
+  const [missing, setMissing] = useState('1');
+  const [error, setError] = useState<string | null>(null);
+  const locations = useQuery({
+    queryKey: ['warehouse-locations'],
+    queryFn: async () => (await warehouse.locations()).data,
+  });
+  const targets = (locations.data ?? []).filter((location) => location.active && location.code !== shipment.locationCode);
+  const run = useMutation({
+    mutationFn: (action: () => Promise<{ data: Shipment }>) => action(),
+    onSuccess: (response) => {
+      setError(null);
+      onDone(`Parcel lines now ship from ${locationLabel(response.data)} in shipment #${response.data.id}`);
+    },
+    onError: (mutationError) => setError(serverMessage(mutationError, 'Unable to move this parcel.')),
+  });
+  const line = lines.find((entry) => String(entry.productId) === productId);
+  const missingUnits = Number(missing);
+  const missingValid = Number.isInteger(missingUnits) && missingUnits >= 1 && (!line || missingUnits <= (line.quantity ?? 0));
+
+  return (
+    <div className="space-y-4 border-t border-stone-200 pt-4" data-testid={`warehouse-parcel-admin-${id}`}>
+      <form
+        className="flex flex-wrap items-end gap-2"
+        onSubmit={(event) => { event.preventDefault(); run.mutate(() => warehouse.reallocate(id, target || undefined)); }}
+        data-testid={`warehouse-reallocate-form-${id}`}
+      >
+        <div>
+          <Label htmlFor={`warehouse-reallocate-target-${id}`}>Move parcel to</Label>
+          <select id={`warehouse-reallocate-target-${id}`} value={target} onChange={(event) => setTarget(event.target.value)} className={`mt-1 w-56 ${selectClassName}`} data-testid={`warehouse-reallocate-target-${id}`}>
+            <option value="">Best other location</option>
+            {targets.map((location) => <option key={location.code} value={location.code}>{location.name} ({location.code})</option>)}
+          </select>
+        </div>
+        <Button type="submit" variant="outline" disabled={run.isPending} data-testid={`warehouse-reallocate-${id}`}>Reallocate</Button>
+      </form>
+      {lines.length > 0 && (
+        <form
+          className="flex flex-wrap items-end gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (missingValid) run.mutate(() => warehouse.shortPick(id, { productId: Number(productId), missingQuantity: missingUnits }));
+          }}
+          data-testid={`warehouse-short-pick-form-${id}`}
+        >
+          <div>
+            <Label htmlFor={`warehouse-short-pick-product-${id}`}>Could not pick</Label>
+            <select id={`warehouse-short-pick-product-${id}`} value={productId} onChange={(event) => setProductId(event.target.value)} className={`mt-1 w-56 ${selectClassName}`} data-testid={`warehouse-short-pick-product-${id}`}>
+              {lines.map((entry) => <option key={entry.productId} value={entry.productId}>{entry.productName} (× {entry.quantity})</option>)}
+            </select>
+          </div>
+          <div>
+            <Label htmlFor={`warehouse-short-pick-quantity-${id}`}>Units</Label>
+            <Input id={`warehouse-short-pick-quantity-${id}`} type="number" min={1} max={line?.quantity} value={missing} onChange={(event) => setMissing(event.target.value)} className="mt-1 w-20" data-testid={`warehouse-short-pick-quantity-${id}`} />
+          </div>
+          <Button type="submit" variant="outline" disabled={run.isPending || !missingValid} data-testid={`warehouse-short-pick-${id}`}>Report short pick</Button>
+        </form>
+      )}
+      {error && <p className="text-sm text-red-700" role="alert" data-testid={`warehouse-parcel-error-${id}`}>{error}</p>}
+    </div>
+  );
+}
+
 function PickList({ shipmentId }: { shipmentId: number }) {
   const { data, isLoading } = useQuery({ queryKey: ['pick-list', shipmentId], queryFn: () => warehouse.pickList(shipmentId) });
   if (isLoading) return <p className="text-sm text-slate-500" data-testid="warehouse-pick-list-loading">Loading pick list…</p>;
@@ -160,13 +233,17 @@ export function WarehouseBoard() {
     setNotice(message);
     queryClient.invalidateQueries({ queryKey: ['warehouse-queue'] });
     queryClient.invalidateQueries({ queryKey: ['warehouse-shipments'] });
+    queryClient.invalidateQueries({ queryKey: ['pick-list'] });
     queryClient.invalidateQueries({ queryKey: ['orders'] });
   };
   const release = useMutation({
     mutationFn: (orderId: number) => warehouse.create(orderId),
     onSuccess: (response) => {
       setReleaseError(null);
-      refresh(`Order #${response.data.orderId} released as shipment #${response.data.id}`);
+      const parcels = response.data.parcelCount ?? 1;
+      refresh(parcels > 1
+        ? `Order #${response.data.orderId} released in ${parcels} parcels, first shipment #${response.data.id}`
+        : `Order #${response.data.orderId} released as shipment #${response.data.id}`);
     },
     onError: (error) => setReleaseError(serverMessage(error, 'Unable to release this order.')),
   });
@@ -176,7 +253,12 @@ export function WarehouseBoard() {
 
   return (
     <div className="space-y-6 pb-10" data-testid="warehouse-board">
-      <PageHeader eyebrow="Fulfilment" title="Warehouse" description="Release paid orders, then pick, pack and hand parcels to the carrier." />
+      <PageHeader
+        eyebrow="Fulfilment"
+        title="Warehouse"
+        description="Release paid orders, then pick, pack and hand parcels to the carrier."
+        aside={<Link to="/warehouse/locations" className="text-sm text-sky-700 hover:underline" data-testid="warehouse-locations-link">Locations and reconciliation →</Link>}
+      />
       {notice && <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800" role="status" data-testid="warehouse-notice">{notice}</p>}
 
       <Surface variant="default" padding="md" data-testid="warehouse-queue">
@@ -222,7 +304,15 @@ export function WarehouseBoard() {
                   onClick={() => setSelected(row.id as number)}
                   data-testid={`warehouse-shipment-${row.id}`}
                 >
-                  <span><span className="font-medium text-slate-950">#{row.id}</span> <span className="text-slate-500">order #{row.orderId} · {row.totalUnits} units · {row.username}</span></span>
+                  <span>
+                    <span className="font-medium text-slate-950">#{row.id}</span>{' '}
+                    <span className="text-slate-500">order #{row.orderId} · {row.totalUnits} units · {row.username}</span>
+                    {row.locationCode && (
+                      <span className="ml-2 rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-slate-700" data-testid={`warehouse-shipment-location-${row.id}`}>
+                        {row.locationCode}{(row.parcelCount ?? 1) > 1 ? ` · parcel ${row.parcelIndex}/${row.parcelCount}` : ''}
+                      </span>
+                    )}
+                  </span>
                   <StatusBadge status={row.status} testId={`warehouse-shipment-status-${row.id}`} />
                 </button>
               </li>
@@ -239,6 +329,12 @@ export function WarehouseBoard() {
                 <h2 className="text-xl font-semibold text-slate-950" data-testid="warehouse-selected-title">Shipment #{selectedShipment.id}</h2>
                 <StatusBadge status={selectedShipment.status} testId="warehouse-selected-status" />
               </div>
+              {selectedShipment.locationCode && (
+                <p className="text-sm text-slate-700" data-testid="warehouse-selected-location">
+                  Ships from {locationLabel(selectedShipment)}
+                  {(selectedShipment.parcelCount ?? 1) > 1 && ` · parcel ${selectedShipment.parcelIndex} of ${selectedShipment.parcelCount}`}
+                </p>
+              )}
               <PickList shipmentId={selectedShipment.id as number} />
               {selectedShipment.trackingNumber && <p className="text-sm text-slate-700" data-testid="warehouse-selected-tracking">{selectedShipment.carrier} · {selectedShipment.trackingNumber}</p>}
               {selectedShipment.weightKg != null && <p className="text-sm text-slate-700" data-testid="warehouse-selected-weight">{selectedShipment.weightKg} kg</p>}
@@ -251,6 +347,16 @@ export function WarehouseBoard() {
                 }}
                 onAdvanced={refresh}
               />
+              {selectedShipment.status === 'AWAITING_PICK' && (
+                <ParcelAdminActions
+                  key={`parcel-admin-${selectedShipment.id}`}
+                  shipment={selectedShipment}
+                  onDone={(message) => {
+                    setSelected(null);
+                    refresh(message);
+                  }}
+                />
+              )}
               <p className="text-xs text-slate-500">Last change by {selectedShipment.lastActor} · {formatDateTime(selectedShipment.updatedAt)}</p>
             </div>
           )}

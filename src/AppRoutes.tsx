@@ -29,6 +29,7 @@ import { WebMcpPage } from './features/webmcp/WebMcpPage';
 import { WishlistPage } from './pages/wishlist/wishlistPage';
 import { MyReturnsPage } from './pages/returns/myReturnsPage';
 import { WarehousePage } from './pages/warehouse/warehousePage';
+import { WarehouseLocationsPage } from './pages/warehouse/warehouseLocationsPage';
 import { TrackingPage } from './pages/tracking/trackingPage';
 import { AdminCouponsPage } from './pages/admin/couponsPage';
 import { AdminReviewsPage } from './pages/admin/reviewsPage';
@@ -36,6 +37,7 @@ import { AdminReturnsPage } from './pages/admin/returnsPage';
 import { AdminPurchasingPage } from './pages/admin/purchasingPage';
 import { OrderPaymentPage } from './pages/orders/orderPaymentPage';
 import { LoyaltyPage } from './pages/account/loyaltyPage';
+import { NotificationsPage } from './pages/account/notificationsPage';
 import { WebhooksPage } from './pages/webhooks/webhooksPage';
 import { AdminGiftCardsPage } from './pages/admin/giftCardsPage';
 import { AdminVatRatesPage } from './pages/admin/vatRatesPage';
@@ -259,12 +261,15 @@ export function AppRoutes() {
           <Route path="/track/:number" element={<TrackingPage />} />
           <Route path="/returns" element={<ProtectedRoute><MyReturnsPage /></ProtectedRoute>} />
           <Route path="/warehouse" element={<ProtectedRoute requiredRole={['WAREHOUSE', 'ADMIN']}><WarehousePage /></ProtectedRoute>} />
+          <Route path="/warehouse/locations" element={<ProtectedRoute requiredRole={['WAREHOUSE', 'ADMIN']}><WarehouseLocationsPage /></ProtectedRoute>} />
           <Route path="/admin/returns" element={<ProtectedRoute requiredRole="ADMIN"><AdminReturnsPage /></ProtectedRoute>} />
           <Route path="/admin/purchasing" element={<ProtectedRoute requiredRole="ADMIN"><AdminPurchasingPage /></ProtectedRoute>} />
         </>
       )}
       {/* Webhooks and commerce settings */}
       <Route path="/account/webhooks" element={<ProtectedRoute><WebhooksPage /></ProtectedRoute>} />
+      {/* Commerce emails, served by notification-service. */}
+      <Route path="/account/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
       <Route path="/admin/gift-cards" element={<ProtectedRoute requiredRole="ADMIN"><AdminGiftCardsPage /></ProtectedRoute>} />
       <Route path="/admin/vat-rates" element={<ProtectedRoute requiredRole="ADMIN"><AdminVatRatesPage /></ProtectedRoute>} />
       <Route path="/admin/currencies" element={<ProtectedRoute requiredRole="ADMIN"><AdminCurrenciesPage /></ProtectedRoute>} />

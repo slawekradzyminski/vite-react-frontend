@@ -123,6 +123,32 @@ describe('PaymentPage', () => {
     expect(screen.getByTestId('payment-not-payable-order-link')).toHaveAttribute('href', '/orders/42');
   });
 
+  it('shows the reservation countdown next to the card form', async () => {
+    // given
+    vi.mocked(orders.getOrderById).mockResolvedValue(ok(orderFixture({ reservationExpiresAt: new Date(Date.now() + 5 * 60_000).toISOString() })));
+    // when
+    renderPage();
+    // then
+    expect(await screen.findByTestId('reservation-countdown')).toHaveTextContent(/Reserved until \d\d:\d\d/);
+    expect(screen.getByTestId('payment-submit')).toBeInTheDocument();
+  });
+
+  it('reloads the order when payment-service refuses an expired reservation and says why', async () => {
+    // given
+    const expiresAt = '2027-01-15T10:00:00.000Z';
+    vi.mocked(orders.getOrderById)
+      .mockResolvedValueOnce(ok(orderFixture({ reservationExpiresAt: new Date(Date.now() + 60_000).toISOString() })))
+      .mockResolvedValue(ok(orderFixture({ status: 'CANCELLED', reservationExpiresAt: expiresAt, updatedAt: '2027-01-15T10:00:03.000Z' })));
+    vi.mocked(payments.create).mockRejectedValue(axiosError(409, { message: 'Order reservation expired' }));
+    renderPage();
+    // when
+    await payWith('4242424242424242');
+    // then
+    expect(await screen.findByTestId('payment-not-payable-message')).toHaveTextContent('This order cannot be paid: Order reservation expired');
+    expect(await screen.findByTestId('reservation-expired')).toBeInTheDocument();
+    expect(vi.mocked(orders.getOrderById).mock.calls.length).toBeGreaterThanOrEqual(2);
+  });
+
   it('skips the card form when gift card and points cover the order', async () => {
     // given
     vi.mocked(orders.getOrderById).mockResolvedValue(ok(orderFixture({ amountDue: 0, giftCardCode: 'GC-1', giftCardAmount: 59.97 })));
