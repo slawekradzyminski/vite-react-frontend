@@ -7,6 +7,8 @@ export default {
     'src/lib/runtimeConfig.ts',
     'src/lib/sse.ts',
     'src/lib/trafficPresentation.ts',
+    // Reservation deadline and expiry detection drive the order and payment pages.
+    'src/lib/reservation.ts',
     // Authentication and authorization: token refresh, storage, roles, route guard.
     'src/lib/api.ts',
     'src/lib/authStorage.ts',

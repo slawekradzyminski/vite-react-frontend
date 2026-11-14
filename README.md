@@ -102,12 +102,14 @@ The frontend runtime behavior is controlled by these environment variables. Vite
   Optional, default `true`. Card payment screens need payment-service. Set it to `false` for a build that runs without payment-service; the frontend then hides those screens and sends no requests to their endpoints. The Dockerfile accepts it as a build argument.
 - `VITE_PAYMENT_API_BASE_URL`
   Optional. Origin of payment-service for payments and the admin payment list. Defaults to the resolved API origin, which is correct behind the gateway. Set it to `http://localhost:4004` only when the Vite dev server talks to the services directly. The Dockerfile accepts it as a build argument.
+- `VITE_NOTIFICATION_API_BASE_URL`
+  Optional. Origin of notification-service for webhooks, webhook inboxes, the admin webhook list and My notifications (commerce emails). Defaults to the resolved API origin, which is correct behind the gateway. Set it to `http://localhost:4005` only when the Vite dev server talks to the services directly. The Dockerfile accepts it as a build argument.
 - `VITE_DOCKER`
   Dev-only flag. When `true`, Vite development mode targets `http://host.docker.internal:4001` instead of `http://localhost:4001`.
 
 Default behavior by profile:
 
-- local Vite dev: API `http://localhost:4001` (warehouse and payment calls too, unless `VITE_WAREHOUSE_API_BASE_URL` or `VITE_PAYMENT_API_BASE_URL` is set), reset base `${window.location.origin}/reset`
+- local Vite dev: API `http://localhost:4001` (warehouse, payment and notification calls too, unless `VITE_WAREHOUSE_API_BASE_URL`, `VITE_PAYMENT_API_BASE_URL` or `VITE_NOTIFICATION_API_BASE_URL` is set), reset base `${window.location.origin}/reset`
 - Dockerized Vite dev: API `http://host.docker.internal:4001` when `VITE_DOCKER=true`
 - built Docker/server runtime: API same-origin via `window.location.origin`, reset base `${window.location.origin}/reset` unless overridden
 
@@ -209,13 +211,13 @@ npx playwright test    # E2E tests (requires the docker compose gateway on :8081
 ```
 
 Before launching Playwright:
-1. Run `docker compose up -d` from this repository. The compose stack builds the frontend nginx image and starts backend, warehouse-service, payment-service, Ollama mock, and the `8081` gateway.
+1. Run `docker compose up -d` from this repository. The compose stack builds the frontend nginx image and starts backend, warehouse-service, payment-service, notification-service, Ollama mock, and the `8081` gateway (`GATEWAY_PORT` and `OLLAMA_MOCK_PORT` move the host ports for an isolated stack).
 2. Wait for the stack with `./scripts/wait-for-backend.sh` and `./scripts/wait-for-frontend.sh`.
 3. Run `npx playwright test`.
 
 Playwright exercises the full stack (e.g., the Tools tab triggers real streaming tool calls), so deterministic results come from the containerized mock service. Backend API calls go through the same gateway origin as the browser: `http://localhost:8081/api/...`.
 
-CI uses this repository's `docker-compose.yml`. After backend changes, publish a new backend image from `../test-secure-backend` with `./build-multiarch.sh <version>`, then run frontend CI with `BACKEND_IMAGE=slawekradzyminski/backend:<version>` or update the compose default tag. `WAREHOUSE_IMAGE` and `PAYMENT_IMAGE` override warehouse-service and payment-service the same way.
+CI uses this repository's `docker-compose.yml`. After backend changes, publish a new backend image from `../test-secure-backend` with `./build-multiarch.sh <version>`, then run frontend CI with `BACKEND_IMAGE=slawekradzyminski/backend:<version>` or update the compose default tag. `WAREHOUSE_IMAGE`, `PAYMENT_IMAGE` and `NOTIFICATION_IMAGE` override warehouse-service, payment-service and notification-service the same way.
 
 ## Release pipeline
 

@@ -6,3 +6,5 @@ test-results
 .playwright-cli
 .playwright-mcp
 .DS_Store
+.stryker-tmp
+reports

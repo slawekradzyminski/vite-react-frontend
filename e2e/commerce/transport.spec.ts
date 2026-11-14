@@ -40,7 +40,7 @@ for (const transport of ['rest', 'graphql'] as const) {
       const path = new URL(req.url()).pathname;
       // Payments and shipments of an order belong to payment-service and warehouse-service,
       // which are REST-only, so they are not commerce transport traffic.
-      const serviceCall = /^\/api\/v1\/orders\/\d+\/(payments|shipment|returns)(\/|$)/.test(path);
+      const serviceCall = /^\/api\/v1\/orders\/\d+\/(payments|shipments?|returns)(\/|$)/.test(path);
       if (!serviceCall && /^\/api\/v1\/(graphql|products|cart|orders|admin\/inventory)(\/|$)/.test(path)) {
         commerceRequests.push({ path, query: req.postDataJSON()?.query ?? '' });
       }

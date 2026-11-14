@@ -11,8 +11,9 @@ This frontend expects the Spring backend from `/Users/admin/IdeaProjects/test-se
 | Ollama mock | `ollama-mock` | `./mvnw spring-boot:run` | Streams deterministic responses on `http://localhost:11434`. |
 | Warehouse service (optional) | `warehouse-service` | See its README | Listens on `http://localhost:4003`. Needed for shipments, tracking, returns and purchasing; start the dev server with `VITE_WAREHOUSE_API_BASE_URL=http://localhost:4003`. |
 | Payment service (optional) | `payment-service` | See its README | Listens on `http://localhost:4004`. Needed for card payments; start the dev server with `VITE_PAYMENT_API_BASE_URL=http://localhost:4004`. |
+| Notification service (optional) | `notification-service` | See its README | Listens on `http://localhost:4005`. Needed for webhooks and My notifications with backend 3.21.0 in feed mode; start the dev server with `VITE_NOTIFICATION_API_BASE_URL=http://localhost:4005`. |
 
-The `docker-compose.yml` in this repo is the Playwright/CI stack. It builds this frontend into its production nginx image, starts backend, warehouse-service, payment-service, and the Ollama mock, then exposes the app and backend API through an nginx gateway at `http://localhost:8081`.
+The `docker-compose.yml` in this repo is the Playwright/CI stack. It builds this frontend into its production nginx image, starts backend, warehouse-service, payment-service, notification-service, and the Ollama mock, then exposes the app and backend API through an nginx gateway at `http://localhost:8081`.
 
 ## Step-by-step
 
