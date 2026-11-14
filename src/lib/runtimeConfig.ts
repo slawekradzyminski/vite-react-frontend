@@ -5,6 +5,7 @@ type RuntimeEnv = {
   VITE_API_BASE_URL?: string;
   VITE_WAREHOUSE_API_BASE_URL?: string;
   VITE_PAYMENT_API_BASE_URL?: string;
+  VITE_NOTIFICATION_API_BASE_URL?: string;
   VITE_DOCKER?: string;
   VITE_WAREHOUSE_ENABLED?: string;
   VITE_PAYMENT_ENABLED?: string;
@@ -64,6 +65,21 @@ export const getPaymentApiBaseUrl = (
   location: RuntimeLocation = window.location,
 ) => {
   const configuredBaseUrl = env.VITE_PAYMENT_API_BASE_URL?.trim();
+  if (configuredBaseUrl) {
+    return trimTrailingSlash(configuredBaseUrl);
+  }
+
+  return getApiBaseUrl(env, location);
+};
+
+// Webhooks, webhook inboxes and the commerce email log are served by notification-service.
+// Behind the gateway it shares the backend origin, so only direct-to-service development
+// needs a separate origin.
+export const getNotificationApiBaseUrl = (
+  env: RuntimeEnv = import.meta.env,
+  location: RuntimeLocation = window.location,
+) => {
+  const configuredBaseUrl = env.VITE_NOTIFICATION_API_BASE_URL?.trim();
   if (configuredBaseUrl) {
     return trimTrailingSlash(configuredBaseUrl);
   }

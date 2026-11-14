@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { OrderDetails } from './OrderDetails';
-import { orders, auth, warehouse, payments } from '../../lib/api';
+import { orders, auth, warehouse, payments, adminOrders } from '../../lib/api';
 import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { OrderStatus } from '../../types/order';
@@ -143,7 +143,7 @@ describe('OrderDetails', () => {
       expect(await screen.findByText('Order #1')).toBeInTheDocument();
       expect(screen.queryByTestId('order-fulfilment')).not.toBeInTheDocument();
       expect(screen.queryByTestId('order-return-open')).not.toBeInTheDocument();
-      expect(warehouse.trackOrder).not.toHaveBeenCalled();
+      expect(warehouse.parcels).not.toHaveBeenCalled();
     });
 
     it('keeps warehouse calls out of GraphQL mode', async () => {
@@ -154,7 +154,7 @@ describe('OrderDetails', () => {
 
         expect(await screen.findByText('Order #1')).toBeInTheDocument();
         expect(screen.queryByTestId('order-fulfilment')).not.toBeInTheDocument();
-        expect(warehouse.trackOrder).not.toHaveBeenCalled();
+        expect(warehouse.parcels).not.toHaveBeenCalled();
       } finally {
         transport.value = 'rest';
       }
@@ -164,7 +164,7 @@ describe('OrderDetails', () => {
       renderWithProviders();
 
       expect(await screen.findByTestId('order-fulfilment')).toBeInTheDocument();
-      await waitFor(() => expect(warehouse.trackOrder).toHaveBeenCalledWith(1));
+      await waitFor(() => expect(warehouse.parcels).toHaveBeenCalledWith(1));
     });
   });
 
@@ -520,6 +520,75 @@ describe('OrderDetails', () => {
     await waitFor(() => {
       const badge = screen.getByTestId('order-details-status');
       expect(badge).toHaveClass(className);
+    });
+  });
+  describe('stock reservation', () => {
+    const admin = () => vi.mocked(auth.me).mockResolvedValue(createAuthResponse({ username: 'admin', roles: [Role.ADMIN] }));
+
+    afterEach(() => {
+      vi.mocked(auth.me).mockResolvedValue(createAuthResponse());
+    });
+
+    it('shows how long a PENDING order stays reserved', async () => {
+      vi.mocked(orders.getOrderById).mockResolvedValueOnce(createOrderResponse({ reservationExpiresAt: new Date(Date.now() + 10 * 60_000).toISOString() }));
+      renderWithProviders();
+
+      expect(await screen.findByTestId('reservation-countdown')).toHaveTextContent(/Reserved until \d\d:\d\d/);
+      expect(screen.getByTestId('reservation-countdown-remaining')).toHaveTextContent(/^(10:00|9:5\d) left to pay$/);
+    });
+
+    it('says the reservation expired on an order the backend cancelled for it', async () => {
+      vi.mocked(orders.getOrderById).mockResolvedValueOnce(createOrderResponse({
+        status: 'CANCELLED', reservationExpiresAt: '2026-11-14T10:30:00.000Z', updatedAt: '2026-11-14T10:30:04Z',
+      }));
+      renderWithProviders();
+
+      expect(await screen.findByTestId('reservation-expired')).toBeInTheDocument();
+      expect(screen.queryByTestId('reservation-countdown')).not.toBeInTheDocument();
+    });
+
+    it('lets an administrator expire the reservation of a PENDING order now', async () => {
+      admin();
+      vi.mocked(orders.getOrderById).mockResolvedValue(createOrderResponse({ reservationExpiresAt: new Date(Date.now() + 60_000).toISOString() }));
+      vi.mocked(adminOrders.expireReservation).mockResolvedValueOnce(createOrderResponse({
+        status: 'CANCELLED', reservationExpiresAt: '2026-11-14T10:30:00.000Z', updatedAt: '2026-11-14T10:30:00.000Z',
+      }));
+      renderWithProviders();
+
+      fireEvent.click(await screen.findByTestId('order-details-expire-reservation'));
+
+      await waitFor(() => expect(adminOrders.expireReservation).toHaveBeenCalledWith(1));
+      expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Reservation expired', variant: 'success' }));
+      vi.mocked(orders.getOrderById).mockResolvedValue(createOrderResponse());
+    });
+
+    it('shows why the backend refused to expire a reservation', async () => {
+      admin();
+      vi.mocked(adminOrders.expireReservation).mockRejectedValueOnce({
+        isAxiosError: true, response: { status: 409, data: { message: 'Only PENDING orders hold a reservation; order is PAID' } },
+      });
+      renderWithProviders();
+
+      fireEvent.click(await screen.findByTestId('order-details-expire-reservation'));
+
+      await waitFor(() => expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
+        description: 'Only PENDING orders hold a reservation; order is PAID', variant: 'error',
+      })));
+    });
+
+    it('offers the expiry only to administrators and only for PENDING orders', async () => {
+      renderWithProviders();
+      expect(await screen.findByText('Order #1')).toBeInTheDocument();
+      expect(screen.queryByTestId('order-details-expire-reservation')).not.toBeInTheDocument();
+    });
+
+    it('hides the expiry for orders that are no longer PENDING', async () => {
+      admin();
+      vi.mocked(orders.getOrderById).mockResolvedValueOnce(createOrderResponse({ status: 'PAID' }));
+      renderWithProviders();
+
+      expect(await screen.findByTestId('order-details-admin-controls')).toBeInTheDocument();
+      expect(screen.queryByTestId('order-details-expire-reservation')).not.toBeInTheDocument();
     });
   });
 }); 

@@ -5,6 +5,7 @@
 import type { components } from './generated/backend-api';
 import type { components as warehouseComponents } from './generated/warehouse-api';
 import type { components as paymentComponents } from './generated/payment-api';
+import type { components as notificationComponents } from './generated/notification-api';
 import type { RawCartResponse } from '../hooks/useEnrichedCart';
 import type {
   ForgotPasswordRequest,
@@ -34,13 +35,17 @@ import type {
   LoyaltyTransaction,
   ProductSearchResult,
   PublicTracking,
+  ReconciliationEntry,
+  Shipment,
   TaxPreview,
   Tracking,
   VatRate,
   WebhookDelivery,
   WebhookInbox,
+  WarehouseLocation,
   WebhookSubscription,
 } from './commerce';
+import type { NotificationEmail, NotificationEmailPage } from './notification';
 import type { EmailDto } from './email';
 import type { InventoryAdjustmentRequest, InventoryItem, InventoryMovement, PageDto } from './inventory';
 import type { ChatRequestDto, GenerateRequestDto, OllamaToolDefinition } from './ollama';
@@ -54,6 +59,7 @@ import type { TrafficInfoDto } from './traffic';
 type Schemas = components['schemas'];
 type WarehouseSchemas = warehouseComponents['schemas'];
 type PaymentSchemas = paymentComponents['schemas'];
+type NotificationSchemas = notificationComponents['schemas'];
 
 // springdoc marks few response fields as required, so a response is compared as if the
 // backend always sends every field it declares; nulls are left to the frontend's own guards.
@@ -180,9 +186,26 @@ describe('backend API contract', () => {
     expectTypeOf<ResponseViolations<GiftCardBalance, Schemas['GiftCardBalanceDto']>>().toEqualTypeOf<never>();
     expectTypeOf<ResponseViolations<LoyaltyAccount, Schemas['LoyaltyAccountDto']>>().toEqualTypeOf<never>();
     expectTypeOf<ResponseViolations<LoyaltyTransaction, Schemas['LoyaltyTransactionDto']>>().toEqualTypeOf<never>();
+  });
+
+  it('reads only fields notification-service sends for webhooks and commerce emails', () => {
+    expectTypeOf<ResponseViolations<WebhookSubscription, NotificationSchemas['WebhookSubscriptionDto']>>().toEqualTypeOf<never>();
+    expectTypeOf<ResponseViolations<WebhookDelivery, NotificationSchemas['WebhookDeliveryDto']>>().toEqualTypeOf<never>();
+    expectTypeOf<ResponseViolations<WebhookInbox, NotificationSchemas['WebhookInboxDto']>>().toEqualTypeOf<never>();
+    expectTypeOf<ResponseViolations<NotificationEmail, NotificationSchemas['NotificationEmailDto']>>().toEqualTypeOf<never>();
+    expectTypeOf<ResponseViolations<NotificationEmailPage, NotificationSchemas['PageDtoNotificationEmailDto']>>().toEqualTypeOf<never>();
+  });
+
+  it('keeps the backend webhook API identical to notification-service for older stacks', () => {
     expectTypeOf<ResponseViolations<WebhookSubscription, Schemas['WebhookSubscriptionDto']>>().toEqualTypeOf<never>();
     expectTypeOf<ResponseViolations<WebhookDelivery, Schemas['WebhookDeliveryDto']>>().toEqualTypeOf<never>();
     expectTypeOf<ResponseViolations<WebhookInbox, Schemas['WebhookInboxDto']>>().toEqualTypeOf<never>();
+  });
+
+  it('reads only fields warehouse-service sends for parcels and locations', () => {
+    expectTypeOf<ResponseViolations<Shipment, WarehouseSchemas['ShipmentDto']>>().toEqualTypeOf<never>();
+    expectTypeOf<ResponseViolations<WarehouseLocation, WarehouseSchemas['WarehouseLocationDto']>>().toEqualTypeOf<never>();
+    expectTypeOf<ResponseViolations<ReconciliationEntry, WarehouseSchemas['ReconciliationDto']>>().toEqualTypeOf<never>();
   });
 
   it('reads only fields payment-service sends and sends only fields it accepts', () => {
@@ -190,6 +213,10 @@ describe('backend API contract', () => {
     expectTypeOf<ResponseViolations<PaymentPage, PaymentSchemas['PageDtoPaymentDto']>>().toEqualTypeOf<never>();
     expectTypeOf<RequestViolations<CreatePaymentRequest, PaymentSchemas['CreatePaymentDto']>>().toEqualTypeOf<never>();
     expectTypeOf<RequestViolations<ThreeDsRequest, PaymentSchemas['ThreeDsDto']>>().toEqualTypeOf<never>();
+  });
+
+  it('reads the reservation end the backend sends on orders', () => {
+    expectTypeOf<NonNullable<Order['reservationExpiresAt']>>().toEqualTypeOf<NonNullable<Schemas['OrderDto']['reservationExpiresAt']>>();
   });
 
   it('tracks the backend fulfilment state values', () => {

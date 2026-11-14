@@ -4,7 +4,9 @@ import { OrderVat } from './OrderVat';
 import { isWarehouseEnabled } from '../../lib/runtimeConfig';
 import { commerceTransport } from '../../lib/commerceTransport';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { orders } from '../../lib/api';
+import { adminOrders, orders } from '../../lib/api';
+import { serverMessage } from '../../lib/requestErrors';
+import { ReservationCountdown } from './ReservationCountdown';
 import type { OrderStatus } from '../../types/order';
 import { Role } from '../../types/auth';
 import { useState } from 'react';
@@ -28,7 +30,7 @@ export const OrderDetails = () => {
   const { toast } = useToast();
 
   // Fetch order details
-  const { data: orderData, isLoading: isLoadingOrder } = useQuery({
+  const { data: orderData, isLoading: isLoadingOrder, refetch: refetchOrder } = useQuery({
     queryKey: ['order', orderId],
     queryFn: () => orders.getOrderById(orderId),
     enabled: orderId > 0,
@@ -63,6 +65,29 @@ export const OrderDetails = () => {
       toast({
         title: 'Error',
         description: 'Failed to cancel the order. Please try again.',
+        variant: 'error',
+      });
+    },
+  });
+
+  // Lab time control: ends the stock reservation of a PENDING order now (admin only).
+  const expireReservationMutation = useMutation({
+    mutationFn: (orderId: number) => adminOrders.expireReservation(orderId),
+    onSuccess: (response) => {
+      queryClient.setQueryData(['order', orderId], response);
+      queryClient.invalidateQueries({ queryKey: ['order', orderId] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      toast({
+        title: 'Reservation expired',
+        description: `Order #${orderId} was cancelled and its stock restored.`,
+        variant: 'success',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: serverMessage(error, 'Unable to expire the reservation.'),
         variant: 'error',
       });
     },
@@ -163,6 +188,8 @@ export const OrderDetails = () => {
         </Badge>
       </div>
 
+      <ReservationCountdown order={order} onDeadline={() => { void refetchOrder(); }} />
+
       <Surface variant="inset" padding="md" className="mb-6" data-testid="order-details-items-section">
         <h2 className="mb-3 text-lg font-semibold text-slate-950" data-testid="order-details-items-title">Items</h2>
         <div className="space-y-4" data-testid="order-details-items-list">
@@ -236,6 +263,17 @@ export const OrderDetails = () => {
 
         {isAdmin && (
           <div className="flex w-full flex-col gap-2 sm:ml-auto sm:w-auto sm:flex-row sm:items-center" data-testid="order-details-admin-controls">
+            {order.status === 'PENDING' && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => expireReservationMutation.mutate(orderId)}
+                disabled={expireReservationMutation.isPending}
+                data-testid="order-details-expire-reservation"
+              >
+                {expireReservationMutation.isPending ? 'Expiring…' : 'Expire reservation now'}
+              </Button>
+            )}
             <label htmlFor="order-details-status-select" className="text-sm font-medium text-slate-700">Order status</label>
             <select
               id="order-details-status-select"

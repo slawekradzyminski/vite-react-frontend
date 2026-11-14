@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   adminGiftCards,
+  adminOrders,
   adminPayments,
   adminReturns,
   adminWebhooks,
@@ -14,6 +15,7 @@ import {
   giftCards,
   inventory,
   loyalty,
+  notifications,
   ollama,
   orders,
   payments,
@@ -29,12 +31,12 @@ import {
   webhookInboxes,
   webhooks,
 } from './api';
-import { getApiBaseUrl, getPaymentApiBaseUrl, getWarehouseApiBaseUrl } from './runtimeConfig';
+import { getApiBaseUrl, getNotificationApiBaseUrl, getPaymentApiBaseUrl, getWarehouseApiBaseUrl } from './runtimeConfig';
 import { Role } from '../types/auth';
 import { pendingWriteCount } from './pendingWrites';
 
-// api.ts creates the backend instance first, the warehouse-service instance second and the
-// payment-service instance third.
+// api.ts creates the backend instance first, the warehouse-service instance second, the
+// payment-service instance third and the notification-service instance fourth.
 const mockAxios = vi.hoisted(() => {
   const makeInstance = () => {
     const instance: any = vi.fn(() => Promise.resolve({ data: {} }));
@@ -55,14 +57,17 @@ const mockAxios = vi.hoisted(() => {
   const main = makeInstance();
   const warehouseInstance = makeInstance();
   const paymentInstance = makeInstance();
+  const notificationInstance = makeInstance();
   main.warehouseInstance = warehouseInstance;
   main.paymentInstance = paymentInstance;
-  const instances = [main, warehouseInstance, paymentInstance];
+  main.notificationInstance = notificationInstance;
+  const instances = [main, warehouseInstance, paymentInstance, notificationInstance];
   main.create = vi.fn(() => instances[main.create.mock.calls.length - 1]);
   return main;
 });
 const mockWarehouseAxios = mockAxios.warehouseInstance;
 const mockPaymentAxios = mockAxios.paymentInstance;
+const mockNotificationAxios = mockAxios.notificationInstance;
 
 describe('inventory API', () => {
   beforeEach(() => {
@@ -952,7 +957,7 @@ describe('warehouse-service API client', () => {
   });
 
   it('creates a separate instance on the warehouse base URL with JSON headers', () => {
-    expect(mockAxios.create).toHaveBeenCalledTimes(3);
+    expect(mockAxios.create).toHaveBeenCalledTimes(4);
     expect(mockAxios.create).toHaveBeenNthCalledWith(1, {
       baseURL: getApiBaseUrl(),
       headers: { 'Content-Type': 'application/json' },
@@ -1348,6 +1353,98 @@ describe('payment-service API client', () => {
   });
 });
 
+describe('notification-service API client', () => {
+  const resetInstance = (instance: any) => {
+    instance.mockReset();
+    instance.mockImplementation(() => Promise.resolve({ data: {} }));
+    instance.get.mockReset();
+    instance.post.mockReset();
+    instance.put.mockReset();
+    instance.delete.mockReset();
+  };
+  let originalLocation: Location;
+
+  beforeEach(() => {
+    resetInstance(mockAxios);
+    resetInstance(mockWarehouseAxios);
+    resetInstance(mockPaymentAxios);
+    resetInstance(mockNotificationAxios);
+    localStorage.clear();
+    originalLocation = window.location;
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { href: 'http://localhost/' } as Location,
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
+  });
+
+  it('creates a fourth instance on the notification base URL with JSON headers', () => {
+    expect(mockAxios.create).toHaveBeenNthCalledWith(4, {
+      baseURL: getNotificationApiBaseUrl(),
+      headers: { 'Content-Type': 'application/json' },
+    });
+  });
+
+  it('attaches the bearer token and client session id to notification requests', () => {
+    localStorage.setItem('token', 'notification-token');
+    localStorage.setItem('clientSessionId', 'client-session-n');
+
+    const config = mockNotificationAxios.requestInterceptor({ url: '/api/v1/webhooks', headers: {} });
+
+    expect(config.headers.Authorization).toBe('Bearer notification-token');
+    expect(config.headers['X-Client-Session-Id']).toBe('client-session-n');
+  });
+
+  it('refreshes the token and retries a webhook request on the notification instance', async () => {
+    localStorage.setItem('token', 'expired-token');
+    localStorage.setItem('refreshToken', 'refresh-123');
+    const refreshSpy = vi.spyOn(auth, 'refresh').mockResolvedValue({
+      data: { token: 'new-token', refreshToken: 'new-refresh' },
+    } as any);
+    mockNotificationAxios.mockResolvedValueOnce({ data: { retried: true } });
+
+    const response = await mockNotificationAxios.responseErrorInterceptor({
+      config: { url: '/api/v1/webhooks', headers: {} },
+      response: { status: 401 },
+    });
+
+    expect(refreshSpy).toHaveBeenCalledWith({ refreshToken: 'refresh-123' });
+    expect(mockNotificationAxios).toHaveBeenCalledWith(expect.objectContaining({
+      url: '/api/v1/webhooks',
+      _retry: true,
+      headers: expect.objectContaining({ Authorization: 'Bearer new-token' }),
+    }));
+    expect(mockAxios).not.toHaveBeenCalled();
+    expect(response).toEqual({ data: { retried: true } });
+  });
+
+  it('keeps the session when notification-service answers 403', async () => {
+    localStorage.setItem('token', 'client-token');
+    localStorage.setItem('refreshToken', 'refresh-123');
+    const error = { config: { url: '/api/v1/notifications/emails', headers: {} }, response: { status: 403 } };
+
+    await expect(mockNotificationAxios.responseErrorInterceptor(error)).rejects.toBe(error);
+
+    expect(localStorage.getItem('token')).toBe('client-token');
+    expect(window.location.href).toBe('http://localhost/');
+  });
+
+  it('keeps the refreshed session when notification-service still answers 401 after the retry', async () => {
+    localStorage.setItem('token', 'fresh-token');
+    const error = { config: { url: '/api/v1/webhooks', headers: {}, _retry: true }, response: { status: 401 } };
+
+    await expect(mockNotificationAxios.responseErrorInterceptor(error)).rejects.toBe(error);
+
+    expect(mockNotificationAxios).not.toHaveBeenCalled();
+    expect(localStorage.getItem('token')).toBe('fresh-token');
+    expect(window.location.href).toBe('http://localhost/');
+  });
+});
+
 describe('shipment tracking API', () => {
   beforeEach(() => {
     mockAxios.get.mockReset();
@@ -1370,6 +1467,30 @@ describe('shipment tracking API', () => {
     expect(mockAxios.post).not.toHaveBeenCalled();
   });
 
+  it('lists parcels, manages locations and moves parcel lines on warehouse-service', async () => {
+    mockWarehouseAxios.put.mockReset();
+    await warehouse.parcels(42);
+    await warehouse.locations();
+    await warehouse.reconciliation();
+    await warehouse.setLocationActive('GDN/2', false);
+    await warehouse.reallocate(7);
+    await warehouse.reallocate(7, 'GDN');
+    await warehouse.shortPick(7, { productId: 3, missingQuantity: 1 });
+
+    expect(mockWarehouseAxios.get.mock.calls).toEqual([
+      ['/api/v1/orders/42/shipments'],
+      ['/api/v1/warehouse/locations'],
+      ['/api/v1/warehouse/reconciliation'],
+    ]);
+    expect(mockWarehouseAxios.put).toHaveBeenCalledWith('/api/v1/warehouse/locations/GDN%2F2', { active: false });
+    expect(mockWarehouseAxios.post.mock.calls).toEqual([
+      ['/api/v1/warehouse/shipments/7/reallocate', {}],
+      ['/api/v1/warehouse/shipments/7/reallocate', { targetLocation: 'GDN' }],
+      ['/api/v1/warehouse/shipments/7/short-pick', { productId: 3, missingQuantity: 1 }],
+    ]);
+    expect(mockAxios.get).not.toHaveBeenCalled();
+  });
+
   it('leaves the tracking number out so warehouse-service simulates the carrier', async () => {
     await warehouse.ship(7, 'INPOST');
     await warehouse.ship(7, 'DPD', '');
@@ -1389,6 +1510,10 @@ describe('backend commerce extensions API', () => {
     mockAxios.delete.mockReset();
     mockWarehouseAxios.get.mockReset();
     mockPaymentAxios.get.mockReset();
+    mockNotificationAxios.get.mockReset();
+    mockNotificationAxios.post.mockReset();
+    mockNotificationAxios.put.mockReset();
+    mockNotificationAxios.delete.mockReset();
   });
 
   it('searches products with repeated category parameters', async () => {
@@ -1479,7 +1604,7 @@ describe('backend commerce extensions API', () => {
     ]);
   });
 
-  it('manages webhook subscriptions and their deliveries', async () => {
+  it('manages webhook subscriptions and their deliveries on notification-service', async () => {
     const deliveryId = '5b0c1d3e-1111-4a2b-8c3d-9e8f7a6b5c4d';
     const subscription = { url: 'http://localhost:8081/hooks/abc', events: ['order.created'] };
 
@@ -1496,7 +1621,7 @@ describe('backend commerce extensions API', () => {
     await webhooks.update(3, { ...subscription, active: false });
     await webhooks.remove(3);
 
-    expect(mockAxios.get.mock.calls).toEqual([
+    expect(mockNotificationAxios.get.mock.calls).toEqual([
       ['/api/v1/webhooks'],
       ['/api/v1/webhooks/3'],
       ['/api/v1/webhooks/event-types'],
@@ -1504,17 +1629,17 @@ describe('backend commerce extensions API', () => {
       ['/api/v1/webhooks/3/deliveries', { params: { page: 1, size: 5, status: 'FAILED' } }],
       [`/api/v1/webhooks/3/deliveries/${deliveryId}`],
     ]);
-    expect(mockAxios.post.mock.calls).toEqual([
+    expect(mockNotificationAxios.post.mock.calls).toEqual([
       ['/api/v1/webhooks', subscription],
       ['/api/v1/webhooks/3/rotate-secret'],
       ['/api/v1/webhooks/3/test'],
       [`/api/v1/webhooks/3/deliveries/${deliveryId}/redeliver`],
     ]);
-    expect(mockAxios.put).toHaveBeenCalledWith('/api/v1/webhooks/3', { ...subscription, active: false });
-    expect(mockAxios.delete).toHaveBeenCalledWith('/api/v1/webhooks/3');
+    expect(mockNotificationAxios.put).toHaveBeenCalledWith('/api/v1/webhooks/3', { ...subscription, active: false });
+    expect(mockNotificationAxios.delete).toHaveBeenCalledWith('/api/v1/webhooks/3');
   });
 
-  it('manages webhook inboxes and lists subscriptions for admins', async () => {
+  it('manages webhook inboxes and lists subscriptions for admins on notification-service', async () => {
     await webhookInboxes.list();
     await webhookInboxes.create();
     await webhookInboxes.requests('tok/1');
@@ -1522,14 +1647,35 @@ describe('backend commerce extensions API', () => {
     await adminWebhooks.list();
     await adminWebhooks.list('client', 2, 10);
 
-    expect(mockAxios.get.mock.calls).toEqual([
+    expect(mockNotificationAxios.get.mock.calls).toEqual([
       ['/api/v1/webhook-inboxes'],
       ['/api/v1/webhook-inboxes/tok%2F1/requests'],
       ['/api/v1/admin/webhooks', { params: { page: 0, size: 20, username: undefined } }],
       ['/api/v1/admin/webhooks', { params: { page: 2, size: 10, username: 'client' } }],
     ]);
-    expect(mockAxios.post).toHaveBeenCalledWith('/api/v1/webhook-inboxes');
-    expect(mockAxios.delete).toHaveBeenCalledWith('/api/v1/webhook-inboxes/tok%2F1');
+    expect(mockNotificationAxios.post).toHaveBeenCalledWith('/api/v1/webhook-inboxes');
+    expect(mockNotificationAxios.delete).toHaveBeenCalledWith('/api/v1/webhook-inboxes/tok%2F1');
+    expect(mockAxios.get).not.toHaveBeenCalled();
+    expect(mockAxios.post).not.toHaveBeenCalled();
+    expect(mockAxios.delete).not.toHaveBeenCalled();
+  });
+
+  it('lists the caller\'s commerce emails on notification-service', async () => {
+    await notifications.emails();
+    await notifications.emails(2, 5);
+
+    expect(mockNotificationAxios.get.mock.calls).toEqual([
+      ['/api/v1/notifications/emails', { params: { page: 0, size: 20 } }],
+      ['/api/v1/notifications/emails', { params: { page: 2, size: 5 } }],
+    ]);
+    expect(mockAxios.get).not.toHaveBeenCalled();
+  });
+
+  it('expires an order reservation through the admin endpoint on the backend', async () => {
+    await adminOrders.expireReservation(42);
+
+    expect(mockAxios.post).toHaveBeenCalledWith('/api/v1/admin/orders/42/expire-reservation');
+    expect(mockNotificationAxios.post).not.toHaveBeenCalled();
   });
 
   it('keeps backend commerce extensions off the warehouse and payment instances', async () => {
@@ -1538,6 +1684,7 @@ describe('backend commerce extensions API', () => {
 
     expect(mockWarehouseAxios.get).not.toHaveBeenCalled();
     expect(mockPaymentAxios.get).not.toHaveBeenCalled();
+    expect(mockNotificationAxios.get).not.toHaveBeenCalled();
   });
 });
 

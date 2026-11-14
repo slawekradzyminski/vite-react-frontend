@@ -20,7 +20,6 @@ export function trackingRefreshInterval(status?: TrackingStatus | null) {
   return status === 'DELIVERED' ? false : TRACKING_REFRESH_MS;
 }
 
-export const orderTrackingQueryKey = (orderId: number) => ['order-tracking', orderId] as const;
 export const publicTrackingQueryKey = (trackingNumber: string) => ['public-tracking', trackingNumber] as const;
 
 /** Tracking numbers are upper-case letters and digits; spaces people paste in are dropped. */

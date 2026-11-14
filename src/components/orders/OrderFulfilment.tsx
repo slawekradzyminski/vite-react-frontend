@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { returns, warehouse } from '../../lib/api';
 import { responseStatus, serverMessage } from '../../lib/requestErrors';
-import type { ReturnReason } from '../../types/commerce';
+import type { ReturnReason, Shipment } from '../../types/commerce';
 import type { Order } from '../../types/order';
 import { formatDateTime, selectClassName } from '../../lib/commerceFormat';
 import { StatusBadge } from '../commerce/shared';
@@ -12,7 +12,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Surface } from '../ui/surface';
 import { Textarea } from '../ui/textarea';
-import { OrderTracking } from '../tracking/OrderTracking';
+import { ParcelTracking } from '../tracking/ParcelTracking';
 
 const REASONS: { value: ReturnReason; label: string }[] = [
   { value: 'DAMAGED', label: 'Arrived damaged' },
@@ -23,15 +23,64 @@ const REASONS: { value: ReturnReason; label: string }[] = [
 
 const STEPS = ['AWAITING_PICK', 'PICKED', 'PACKED', 'SHIPPED', 'DELIVERED'] as const;
 
-/** Shipment tracking and the return request form for one order. */
+/** One parcel of the order: where it ships from, what it holds, and its progress and carrier timeline. */
+function OrderParcel({ parcel, position, count }: { parcel: Shipment; position: number; count: number }) {
+  const index = parcel.parcelIndex || position;
+  const total = parcel.parcelCount || count;
+  const prefix = `parcel-${index}`;
+  const stepIndex = parcel.status ? STEPS.indexOf(parcel.status as (typeof STEPS)[number]) : -1;
+  const shipped = parcel.status === 'SHIPPED' || parcel.status === 'DELIVERED';
+  const location = parcel.locationName
+    ? `${parcel.locationName}${parcel.locationCode ? ` (${parcel.locationCode})` : ''}`
+    : parcel.locationCode;
+
+  return (
+    <li className="space-y-3 rounded-2xl border border-stone-200 bg-white/70 p-4" data-testid={prefix}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-base font-semibold text-slate-950" data-testid={`${prefix}-title`}>
+          Parcel {index} of {total}
+        </h3>
+        <StatusBadge status={parcel.status} testId={`${prefix}-status`} />
+      </div>
+      {location && <p className="text-sm text-slate-600" data-testid={`${prefix}-location`}>Ships from {location}</p>}
+      {parcel.lines && parcel.lines.length > 0 && (
+        <ul className="space-y-1 text-sm text-slate-700" data-testid={`${prefix}-lines`}>
+          {parcel.lines.map((line) => (
+            <li key={line.productId} className="flex justify-between gap-3" data-testid={`${prefix}-line-${line.productId}`}>
+              <span className="[overflow-wrap:anywhere]">{line.productName}</span>
+              <span className="shrink-0 tabular-nums">× {line.quantity}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {parcel.trackingNumber && (
+        <p className="text-sm text-slate-700" data-testid={`${prefix}-tracking-number`}>{parcel.carrier} · {parcel.trackingNumber}</p>
+      )}
+      {parcel.status !== 'CANCELLED' && (
+        <ol className="grid grid-cols-5 gap-1 text-[11px] uppercase tracking-wide text-slate-500" data-testid={`${prefix}-steps`}>
+          {STEPS.map((step, stepPosition) => (
+            <li key={step} className={`rounded-full px-2 py-1 text-center ${stepPosition <= stepIndex ? 'bg-slate-900 text-stone-50' : 'bg-stone-100'}`} data-testid={`${prefix}-step-${step.toLowerCase()}`}>
+              {step.replace('_', ' ')}
+            </li>
+          ))}
+        </ol>
+      )}
+      {parcel.deliveredAt && <p className="text-xs text-slate-500" data-testid={`${prefix}-delivered-at`}>Delivered {formatDateTime(parcel.deliveredAt)}</p>}
+      {shipped && parcel.trackingNumber && <ParcelTracking trackingNumber={parcel.trackingNumber} testIdPrefix={prefix} />}
+    </li>
+  );
+}
+
+/** The order's parcels with their tracking, and the return request form. */
 export function OrderFulfilment({ order }: { order: Order }) {
   const queryClient = useQueryClient();
   // Backends that know the fulfilment state say when no shipment exists yet; older ones
   // leave the field out, and the tracking endpoint answers 404 instead.
   const knownUnreleased = order.fulfilmentState === 'NONE';
-  const shipment = useQuery({
-    queryKey: ['order-shipment', order.id],
-    queryFn: () => warehouse.trackOrder(order.id),
+  // A split order ships as one parcel per warehouse location; the list is empty until release.
+  const parcels = useQuery({
+    queryKey: ['order-parcels', order.id],
+    queryFn: async () => (await warehouse.parcels(order.id)).data,
     retry: false,
     enabled: !knownUnreleased,
   });
@@ -59,35 +108,26 @@ export function OrderFulfilment({ order }: { order: Order }) {
     onError: (mutationError) => setError(serverMessage(mutationError, 'Unable to request this return.')),
   });
 
-  const tracked = shipment.data?.data;
-  const notReleased = knownUnreleased || responseStatus(shipment.error) === 404;
+  const parcelList = parcels.data ?? [];
+  const notReleased = knownUnreleased || responseStatus(parcels.error) === 404 || (parcels.isSuccess && parcelList.length === 0);
   const selectedUnits = Object.values(quantities).reduce((sum, value) => sum + (Number(value) || 0), 0);
-  const stepIndex = tracked?.status ? STEPS.indexOf(tracked.status as (typeof STEPS)[number]) : -1;
 
   return (
     <Surface variant="inset" padding="md" className="mb-6" data-testid="order-fulfilment">
       <h2 className="mb-3 text-lg font-semibold text-slate-950">Delivery</h2>
-      {shipment.isLoading && <p className="text-sm text-slate-500" data-testid="order-shipment-loading">Checking shipment…</p>}
+      {parcels.isLoading && <p className="text-sm text-slate-500" data-testid="order-shipment-loading">Checking shipment…</p>}
       {notReleased && <p className="text-sm text-slate-500" data-testid="order-shipment-none">Not handed to the warehouse yet. Orders are packed once payment is confirmed.</p>}
-      {tracked && (
+      {parcels.isError && !notReleased && <p className="text-sm text-slate-500" role="status" data-testid="order-shipment-unavailable">Shipment details are not available right now.</p>}
+      {parcelList.length > 0 && (
         <div className="space-y-3" data-testid="order-shipment">
-          <div className="flex flex-wrap items-center gap-3">
-            <StatusBadge status={tracked.status} testId="order-shipment-status" />
-            {tracked.trackingNumber && (
-              <span className="text-sm text-slate-700" data-testid="order-shipment-tracking">{tracked.carrier} · {tracked.trackingNumber}</span>
-            )}
-          </div>
-          {tracked.status !== 'CANCELLED' && (
-            <ol className="grid grid-cols-5 gap-1 text-[11px] uppercase tracking-wide text-slate-500" data-testid="order-shipment-steps">
-              {STEPS.map((step, index) => (
-                <li key={step} className={`rounded-full px-2 py-1 text-center ${index <= stepIndex ? 'bg-slate-900 text-stone-50' : 'bg-stone-100'}`} data-testid={`order-shipment-step-${step.toLowerCase()}`}>
-                  {step.replace('_', ' ')}
-                </li>
-              ))}
-            </ol>
+          {parcelList.length > 1 && (
+            <p className="text-sm text-slate-600" data-testid="order-parcel-count">This order ships in {parcelList.length} parcels from different warehouses.</p>
           )}
-          {tracked.deliveredAt && <p className="text-xs text-slate-500" data-testid="order-shipment-delivered-at">Delivered {formatDateTime(tracked.deliveredAt)}</p>}
-          {(tracked.status === 'SHIPPED' || tracked.status === 'DELIVERED') && <OrderTracking orderId={order.id} />}
+          <ol className="space-y-3" data-testid="order-parcels">
+            {parcelList.map((parcel, position) => (
+              <OrderParcel key={parcel.id ?? position} parcel={parcel} position={position + 1} count={parcelList.length} />
+            ))}
+          </ol>
         </div>
       )}
 

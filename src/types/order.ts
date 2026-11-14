@@ -32,6 +32,8 @@ export interface Order {
   /** What the card has to pay: totalAmount minus gift card and points. */
   amountDue?: number | null;
   refundedAmount?: number | null;
+  /** When the stock reservation of a PENDING order ends (backend 3.21.0); absent for orders without one. */
+  reservationExpiresAt?: string | null;
   shippingAddress: Address;
   createdAt: string;
   updatedAt: string;
