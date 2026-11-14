@@ -88,8 +88,8 @@ test.describe('Stock reservations (mocked services)', () => {
     await page.getByTestId('order-details-expire-reservation').click();
 
     // then
-    expect(calls).toEqual(['POST']);
     await expect(page.getByTestId('reservation-expired')).toBeVisible();
+    expect(calls).toEqual(['POST']);
     await expect(page.getByTestId('order-details-status')).toHaveText('CANCELLED');
     await expect(page.getByTestId('order-details-expire-reservation')).toHaveCount(0);
   });
@@ -161,8 +161,8 @@ test.describe('Warehouse locations (mocked warehouse-service)', () => {
     await page.getByTestId('warehouse-location-toggle-GDN').click();
 
     // then
-    expect(updates).toEqual([{ active: false }]);
     await expect(page.getByTestId('warehouse-location-status-GDN')).toHaveText('INACTIVE');
+    expect(updates).toEqual([{ active: false }]);
     await expect(page.getByTestId('warehouse-location-toggle-GDN')).toHaveText('Activate');
     await expect(page.getByTestId('warehouse-location-status-KRK')).toHaveText('ACTIVE');
     await expect(page.getByTestId('warehouse-reconciliation-expected-42')).toHaveText('PICKED');

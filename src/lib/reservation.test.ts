@@ -35,6 +35,13 @@ describe('reservation', () => {
       expect(reservationExpired({ status: 'CANCELLED', reservationExpiresAt: EXPIRES, updatedAt: '2026-11-14T10:30:12.345Z' })).toBe(true);
     });
 
+    it('reads the backend\'s offset-less updatedAt as UTC whatever the browser time zone', () => {
+      expect(reservationExpired({ status: 'CANCELLED', reservationExpiresAt: EXPIRES, updatedAt: '2026-11-14T10:30:00.123456' })).toBe(true);
+      expect(reservationExpired({ status: 'CANCELLED', reservationExpiresAt: EXPIRES, updatedAt: '2026-11-14T10:29:59.5' })).toBe(false);
+      expect(reservationExpired({ status: 'CANCELLED', reservationExpiresAt: EXPIRES, updatedAt: '2026-11-14T11:30:00+01:00' })).toBe(true);
+      expect(reservationExpired({ status: 'CANCELLED', reservationExpiresAt: EXPIRES, updatedAt: '2026-11-14T11:29:00+0100' })).toBe(false);
+    });
+
     it('does not mistake a cancellation before the deadline for an expiry', () => {
       expect(reservationExpired({ status: 'CANCELLED', reservationExpiresAt: EXPIRES, updatedAt: '2026-11-14T10:29:59.999Z' })).toBe(false);
     });

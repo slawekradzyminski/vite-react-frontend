@@ -5,9 +5,13 @@ type ReservationFields = Pick<Order, 'status' | 'reservationExpiresAt' | 'update
 /** How often the order is reloaded after the countdown reached zero but the backend has not expired it yet. */
 export const RESERVATION_EXPIRY_POLL_MS = 5000;
 
+// The backend sends updatedAt as a LocalDateTime without an offset, in UTC (the services run in
+// UTC); Date.parse would read such a value as browser-local time.
+const HAS_OFFSET = /(Z|[+-]\d\d:?\d\d)$/i;
+
 const parseInstant = (value?: string | null) => {
   if (!value) return null;
-  const time = Date.parse(value);
+  const time = Date.parse(value.includes('T') && !HAS_OFFSET.test(value) ? `${value}Z` : value);
   return Number.isNaN(time) ? null : time;
 };
 
