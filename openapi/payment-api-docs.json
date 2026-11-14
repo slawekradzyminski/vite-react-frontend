@@ -641,7 +641,7 @@
                 }
               }
             },
-            "description": "Order not payable (not PENDING, already paid, or another payment in progress), or Idempotency-Key reused with a different body",
+            "description": "Order not payable (not PENDING, already paid, or another payment in progress), \"Order reservation expired\" (the order's reservationExpiresAt has passed), or Idempotency-Key reused with a different body",
             "headers": {
               "X-Request-Id": {
                 "$ref": "#/components/headers/X-Request-Id"

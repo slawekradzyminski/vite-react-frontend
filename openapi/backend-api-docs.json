@@ -52,7 +52,7 @@
             "example": "35-119",
             "maxLength": 10,
             "minLength": 1,
-            "pattern": "^[0-9]{2}(-[0-9]{3})?|[0-9]{5}(-[0-9]{4})?$",
+            "pattern": "^(?:[0-9]{2}(?:-[0-9]{3})?|[0-9]{5}(?:-[0-9]{4})?)$",
             "type": "string"
           }
         },
@@ -818,12 +818,14 @@
             "description": "Email recipient",
             "example": "user@example.com",
             "format": "email",
+            "minLength": 1,
             "type": "string"
           }
         },
         "required": [
           "message",
-          "subject"
+          "subject",
+          "to"
         ],
         "type": "object"
       },
@@ -1398,14 +1400,14 @@
         "properties": {
           "password": {
             "description": "Password",
-            "example": "admin",
+            "example": "client",
             "maxLength": 255,
             "minLength": 4,
             "type": "string"
           },
           "username": {
             "description": "Username",
-            "example": "admin",
+            "example": "client",
             "maxLength": 255,
             "minLength": 4,
             "type": "string"
@@ -1984,6 +1986,15 @@
             "example": 49.99,
             "type": [
               "number",
+              "null"
+            ]
+          },
+          "reservationExpiresAt": {
+            "description": "When the stock reservation of a PENDING order ends (ISO-8601 UTC, milliseconds); the order is cancelled if it is not paid by then. Omitted for orders created without a reservation",
+            "example": "2026-11-14T10:30:00.000Z",
+            "format": "date-time",
+            "type": [
+              "string",
               "null"
             ]
           },
@@ -3302,7 +3313,7 @@
       "UserResponseDto": {
         "properties": {
           "email": {
-            "description": "Email address",
+            "description": "Email address. Shown in full to administrators and for the caller's own account; other accounts' addresses are masked for other callers, keeping the first character and the domain (j***@example.com).",
             "example": "john.doe@example.com",
             "type": "string"
           },
@@ -3858,7 +3869,7 @@
     }
   },
   "info": {
-    "description": "This is a sample JWT authentication service.",
+    "description": "This is a sample JWT authentication service.\n\nError bodies come in three documented shapes:\n- `ErrorDto` `{\"message\": \"...\"}` for business, authentication, authorization, unknown-path (404) and\n  unsupported-method (405) errors;\n- `ValidationErrorsDto` `{\"<field>\": \"<message>\"}` for invalid request bodies, one message per field;\n- `{\"error\": \"...\"}` (also a `ValidationErrorsDto`) when a body cannot be read at all or a path or query\n  parameter does not convert.\nTwo endpoints answer 404 with an empty body: deleting an unknown product and reading the traffic of an\nunknown correlation id.",
     "license": {
       "name": "Apache 2.0",
       "url": "http://springdoc.org"
@@ -5450,6 +5461,110 @@
         "summary": "List inventory movements",
         "tags": [
           "Inventory"
+        ]
+      }
+    },
+    "/api/v1/admin/orders/{id}/expire-reservation": {
+      "post": {
+        "description": "Time control for tests and the distributed-systems lab: sets the reservation end of a PENDING order to now and expires it at once, exactly as the reservation expiry job would. The order is cancelled, its stock is restored (ORDER_RESTORED, actor system), its coupon, gift card and points are released, and order.cancelled (reason RESERVATION_EXPIRED) and order.reservation-expired are published. Works for orders created without a reservation too.",
+        "operationId": "expireReservation",
+        "parameters": [
+          {
+            "description": "Order id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderDto"
+                }
+              }
+            },
+            "description": "Reservation expired; the cancelled order is returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Order not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The order is not PENDING, for example \"Only PENDING orders hold a reservation; order is PAID\"",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Expire an order's stock reservation now (Admin only)",
+        "tags": [
+          "Orders"
         ]
       }
     },
@@ -7241,7 +7356,7 @@
     },
     "/api/v1/email": {
       "post": {
-        "description": "Queues an email message for asynchronous delivery through the configured JMS destination.",
+        "description": "Queues an email message for asynchronous delivery through the configured JMS destination. Only administrators may choose a template other than GENERIC; system templates such as PASSWORD_RESET_REQUESTED are sent by the backend itself.",
         "operationId": "sendEmail",
         "requestBody": {
           "content": {
@@ -7270,7 +7385,7 @@
                 }
               }
             },
-            "description": "Invalid email data",
+            "description": "Invalid email data, or a non-GENERIC template from a non-administrator",
             "headers": {
               "X-Request-Id": {
                 "$ref": "#/components/headers/X-Request-Id"
@@ -10072,6 +10187,21 @@
                 "$ref": "#/components/headers/X-Request-Id"
               }
             }
+          },
+          "406": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The Accept header excludes image/png (validation errors are still reported as 400 JSON first)",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
           }
         },
         "security": [
@@ -10160,7 +10290,7 @@
     },
     "/api/v1/traffic/logs": {
       "get": {
-        "description": "Returns captured HTTP traffic logs with optional filters for session, method, status, path, text, and time range.",
+        "description": "Returns the caller's captured HTTP traffic with optional filters for session, method, status, path, text, and time range. Only records the caller made while signed in are returned, plus the anonymous records (such as a sign-in attempt) of a session that belongs to the caller; with X-Client-Session-Id the result is limited to that session. Passwords, tokens, 2FA and gift card codes and credential headers are always masked. With legacy public access an anonymous caller reads the records of the session in X-Client-Session-Id, or every record without the header.",
         "operationId": "getTrafficLogs",
         "parameters": [
           {
@@ -10305,7 +10435,7 @@
     },
     "/api/v1/traffic/logs/{correlationId}": {
       "get": {
-        "description": "Returns one captured HTTP traffic log entry using its correlation identifier.",
+        "description": "Returns one captured HTTP traffic log entry using its correlation identifier, under the same visibility rules as the list; a record the caller may not read returns 404.",
         "operationId": "getTrafficLog",
         "parameters": [
           {
@@ -10394,7 +10524,7 @@
     },
     "/api/v1/users": {
       "get": {
-        "description": "Returns all user accounts visible to the authenticated caller.",
+        "description": "Returns all user accounts. Administrators see every email address; other callers see only their own in full and the others masked (j***@example.com).",
         "operationId": "getAll",
         "responses": {
           "200": {
@@ -11786,7 +11916,7 @@
         ]
       },
       "get": {
-        "description": "Returns public account details for the requested username.",
+        "description": "Returns public account details for the requested username. The email address is masked (j***@example.com) unless the caller is an administrator or the account itself.",
         "operationId": "getByUsername",
         "parameters": [
           {
@@ -11992,7 +12122,7 @@
     },
     "/api/v1/users/{username}/right-to-be-forgotten": {
       "delete": {
-        "description": "Deletes the user account together with refresh tokens, reset tokens, email events, cart items, and orders.",
+        "description": "Deletes the user account together with refresh tokens, reset tokens, email events, cart items, and orders. Open (PENDING or PAID) orders are cancelled first: their stock is restored and card payments are refunded through the event feed. Shipped and delivered orders are deleted as they are.",
         "operationId": "forget",
         "parameters": [
           {
@@ -13278,7 +13408,7 @@
                 }
               }
             },
-            "description": "Subscription is disabled",
+            "description": "Subscription is disabled, or webhook delivery is disabled on this backend",
             "headers": {
               "X-Request-Id": {
                 "$ref": "#/components/headers/X-Request-Id"
@@ -13469,7 +13599,7 @@
                 }
               }
             },
-            "description": "Subscription is disabled",
+            "description": "Subscription is disabled, or webhook delivery is disabled on this backend",
             "headers": {
               "X-Request-Id": {
                 "$ref": "#/components/headers/X-Request-Id"

@@ -22,6 +22,12 @@ services:
       PAYMENT_SERVICE_TOKEN: ci-payment-service-token
       PAYMENT_WEBHOOK_SECRET: ci-payment-webhook-secret
       PAYMENT_BASE_URL: http://payment-service:4004
+      # notification-service (backend 3.21.0+) reads the event feed with its own token, sends the
+      # commerce emails and owns user webhooks: the backend records notification.requested feed
+      # events instead of sending those emails and runs no webhook dispatcher of its own.
+      NOTIFICATION_SERVICE_TOKEN: ci-notification-service-token
+      NOTIFICATIONS_DELIVERY: feed
+      WEBHOOKS_ENABLED: "false"
     depends_on:
       postgres:
         condition: service_healthy
@@ -93,8 +99,34 @@ services:
     networks:
       - my-private-ntwk
 
+  notification-service:
+    # Webhooks, webhook inboxes and commerce emails, fed by the backend event feed. Its document is
+    # openapi/notification-api-docs.json (NOTIFICATION_IMAGE overrides it).
+    # TODO(release train): 1.0.0 is not published yet; pin tag@sha256 like the other services.
+    image: ${NOTIFICATION_IMAGE:-slawekradzyminski/notification-service:1.0.0}
+    expose:
+      - "4005"
+    hostname: notification-service
+    environment:
+      # Shares the backend database (schema notification); emails stay in its in-memory outbox.
+      SPRING_PROFILES_ACTIVE: docker,demo
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/testdb?currentSchema=notification
+      SPRING_DATASOURCE_USERNAME: notification
+      SPRING_DATASOURCE_PASSWORD: ci-notification-db-password
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+      BACKEND_BASE_URL: http://backend:4001
+      NOTIFICATION_SERVICE_TOKEN: ci-notification-service-token
+      NOTIFICATION_EMAIL_TRANSPORT: local-outbox
+    depends_on:
+      backend:
+        condition: service_healthy
+      postgres-roles:
+        condition: service_completed_successfully
+    networks:
+      - my-private-ntwk
+
   postgres-roles:
-    # One-shot: gives warehouse-service and payment-service their own roles, each limited to
+    # One-shot: gives warehouse-service, payment-service and notification-service their own roles, each limited to
     # its own schema (deploy/postgres/service-roles.sh, copied from awesome-localstack).
     image: postgres:16.14-bookworm@sha256:92620daddcd947f8d5ab5ba66e848702fe443d87fed30c4cea8e389fd78dfc55
     entrypoint: ["bash", "/scripts/service-roles.sh"]
@@ -106,6 +138,7 @@ services:
       PGPASSWORD: postgres
       WAREHOUSE_DB_PASSWORD: ci-warehouse-db-password
       PAYMENT_DB_PASSWORD: ci-payment-db-password
+      NOTIFICATION_DB_PASSWORD: ci-notification-db-password
     volumes:
       - ./deploy/postgres:/scripts:ro
     depends_on:
@@ -116,7 +149,8 @@ services:
 
   postgres:
     # Disposable database for the backend's local profile (PostgreSQL with Flyway since backend 3.12.0),
-    # warehouse-service (schema warehouse) and payment-service (schema payment).
+    # warehouse-service (schema warehouse), payment-service (schema payment) and
+    # notification-service (schema notification).
     image: postgres:16.14-bookworm@sha256:92620daddcd947f8d5ab5ba66e848702fe443d87fed30c4cea8e389fd78dfc55
     environment:
       POSTGRES_DB: testdb
@@ -152,7 +186,8 @@ services:
       - frontend
       - backend
     ports:
-      - "8081:80"
+      # GATEWAY_PORT lets an isolated stack run beside another one (APP_BASE_URL follows it).
+      - "${GATEWAY_PORT:-8081}:80"
     volumes:
       - ./deploy/nginx/app-gateway.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
@@ -162,7 +197,7 @@ services:
     image: slawekradzyminski/ollama-mock:1.0.12@sha256:ee8a22bbc6b0f00959cf751e6f78d523fcc74eb32759ead0b9b274dc098d310f
     restart: always
     ports:
-      - "11434:11434"
+      - "${OLLAMA_MOCK_PORT:-11434}:11434"
     networks:
       - my-private-ntwk
 networks:

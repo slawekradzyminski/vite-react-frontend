@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_API_DOCS_URL,
+  DEFAULT_NOTIFICATION_API_DOCS_URL,
   DEFAULT_PAYMENT_API_DOCS_URL,
   DEFAULT_WAREHOUSE_API_DOCS_URL,
   describeDrift,
@@ -99,6 +100,21 @@ describe('api-contract', () => {
       expect(DEFAULT_PAYMENT_API_DOCS_URL).toBe('http://localhost:8081/payment/v3/api-docs');
       expect(resolveTarget(['check', 'payment'], { PAYMENT_API_DOCS_URL: 'http://payment:4004/v3/api-docs' }).url)
         .toBe('http://payment:4004/v3/api-docs');
+    });
+
+    it('targets the notification snapshot and its gateway URL', () => {
+      expect(resolveTarget(['check', 'notification'])).toMatchObject({
+        serviceName: 'notification',
+        service: {
+          snapshot: 'openapi/notification-api-docs.json',
+          urlEnv: 'NOTIFICATION_API_DOCS_URL',
+          snapshotScript: 'api:snapshot:notification',
+        },
+        url: DEFAULT_NOTIFICATION_API_DOCS_URL,
+      });
+      expect(DEFAULT_NOTIFICATION_API_DOCS_URL).toBe('http://localhost:8081/notification/v3/api-docs');
+      expect(resolveTarget(['snapshot', 'notification'], { NOTIFICATION_API_DOCS_URL: 'http://notification:4005/v3/api-docs' }).url)
+        .toBe('http://notification:4005/v3/api-docs');
     });
 
     it('prefers an explicit URL over the service environment variable', () => {

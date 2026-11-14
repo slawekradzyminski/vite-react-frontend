@@ -1,0 +1,2378 @@
+{
+  "components": {
+    "headers": {
+      "X-Request-Id": {
+        "description": "The request's correlation id: a valid incoming X-Request-Id (1-128 characters of [A-Za-z0-9._-]) or a generated one",
+        "schema": {
+          "maxLength": 128,
+          "type": "string"
+        }
+      }
+    },
+    "schemas": {
+      "EmailDto": {
+        "properties": {
+          "message": {
+            "description": "Email content",
+            "example": "Please read this message carefully",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "properties": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Template properties that help the consumer render the message",
+            "type": "object"
+          },
+          "subject": {
+            "description": "Email subject",
+            "example": "Important message",
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "template": {
+            "description": "Optional template identifier used by downstream consumers; may be null in local outbox payloads",
+            "enum": [
+              "BACK_IN_STOCK",
+              "ORDER_SHIPPED",
+              "ORDER_DELIVERED",
+              "RETURN_UPDATED",
+              "PAYMENT_RECEIVED",
+              "PAYMENT_FAILED",
+              "SHIPMENT_OUT_FOR_DELIVERY",
+              "SHIPMENT_DELIVERY_FAILED",
+              "LOYALTY_POINTS_EARNED",
+              "GIFT_CARD_ISSUED"
+            ],
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "to": {
+            "description": "Email recipient",
+            "example": "user@example.com",
+            "format": "email",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "subject",
+          "to"
+        ],
+        "type": "object"
+      },
+      "ErrorDto": {
+        "additionalProperties": false,
+        "properties": {
+          "message": {
+            "description": "Error message",
+            "example": "Error message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "type": "object"
+      },
+      "NotificationEmailDto": {
+        "description": "A commerce email sent (or being sent) to a customer",
+        "properties": {
+          "attempts": {
+            "description": "Send attempts so far",
+            "example": 1,
+            "format": "int32",
+            "type": "integer"
+          },
+          "createdAt": {
+            "description": "When the email was queued (UTC)",
+            "example": "2026-11-10T20:40:33Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "failureReason": {
+            "description": "Why the last attempt failed",
+            "example": "Broker unavailable",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "description": "Email id",
+            "example": "0b8f4f0e-3f43-4b8e-9d55-4a3f1c1f6a10",
+            "format": "uuid",
+            "type": "string"
+          },
+          "recipientMasked": {
+            "description": "Masked recipient email address",
+            "example": "j***@example.com",
+            "type": "string"
+          },
+          "sentAt": {
+            "description": "When the transport accepted it",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "description": "Delivery status",
+            "enum": [
+              "QUEUED",
+              "SENT",
+              "FAILED"
+            ],
+            "example": "SENT",
+            "type": "string"
+          },
+          "subject": {
+            "description": "Rendered subject",
+            "example": "Payment received for order #42",
+            "type": "string"
+          },
+          "template": {
+            "description": "Email template",
+            "enum": [
+              "BACK_IN_STOCK",
+              "ORDER_SHIPPED",
+              "ORDER_DELIVERED",
+              "RETURN_UPDATED",
+              "PAYMENT_RECEIVED",
+              "PAYMENT_FAILED",
+              "SHIPMENT_OUT_FOR_DELIVERY",
+              "SHIPMENT_DELIVERY_FAILED",
+              "LOYALTY_POINTS_EARNED",
+              "GIFT_CARD_ISSUED"
+            ],
+            "example": "PAYMENT_RECEIVED",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "Last status change (UTC)",
+            "example": "2026-11-10T20:40:34Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PageDtoNotificationEmailDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/NotificationEmailDto"
+            },
+            "type": "array"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageDtoWebhookDeliveryDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/WebhookDeliveryDto"
+            },
+            "type": "array"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PageDtoWebhookSubscriptionDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/WebhookSubscriptionDto"
+            },
+            "type": "array"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "StoredEmail": {
+        "description": "An email captured by the local outbox instead of being sent to the JMS queue",
+        "properties": {
+          "destination": {
+            "description": "Queue it would have been sent to",
+            "example": "email",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/EmailDto",
+            "description": "The email, exactly as it would have been sent"
+          },
+          "timestamp": {
+            "description": "When it was captured (UTC)",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ValidationErrorsDto": {
+        "additionalProperties": {
+          "description": "Validation messages keyed by field name; invalid arguments use the error key",
+          "example": {
+            "email": "Email should be valid"
+          },
+          "type": "string"
+        },
+        "description": "Validation messages keyed by field name; invalid arguments use the error key",
+        "example": {
+          "email": "Email should be valid"
+        },
+        "properties": {
+          "empty": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "WebhookCreateDto": {
+        "description": "New webhook subscription",
+        "properties": {
+          "description": {
+            "description": "Free-text label",
+            "example": "Order sync",
+            "maxLength": 255,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "events": {
+            "description": "Event types to receive; see GET /api/v1/webhooks/event-types",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "minItems": 0,
+            "type": "array"
+          },
+          "url": {
+            "description": "Public http(s) endpoint on port 80 or 443, or inbox://<token> of one of your inboxes",
+            "example": "https://example.com/webhooks/shop",
+            "maxLength": 2048,
+            "minLength": 0,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "events",
+          "url"
+        ],
+        "type": "object"
+      },
+      "WebhookDeliveryDto": {
+        "description": "One event sent to a webhook subscription and the outcome of its last attempt",
+        "properties": {
+          "attempts": {
+            "description": "Attempts made so far",
+            "example": 1,
+            "format": "int32",
+            "type": "integer"
+          },
+          "createdAt": {
+            "description": "Creation time (UTC)",
+            "example": "2026-11-10T20:40:33Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "deliveredAt": {
+            "description": "When a 2xx response was received",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "durationMs": {
+            "description": "Duration of the last attempt in milliseconds",
+            "example": 42,
+            "format": "int64",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "eventId": {
+            "description": "Event id (the payload's id); shared by redeliveries of the same event",
+            "example": "6a1f0f57-0f7c-4bb4-8a43-2f9d8f7e8c11",
+            "format": "uuid",
+            "type": "string"
+          },
+          "eventType": {
+            "description": "Event type, sent as X-Webhook-Event",
+            "example": "order.created",
+            "type": "string"
+          },
+          "id": {
+            "description": "Delivery id, sent as X-Webhook-Id",
+            "example": "0b8f4f0e-3f43-4b8e-9d55-4a3f1c1f6a10",
+            "format": "uuid",
+            "type": "string"
+          },
+          "lastError": {
+            "description": "Why the last attempt failed",
+            "example": "HTTP 500",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastStatusCode": {
+            "description": "HTTP status of the last attempt, if a response arrived",
+            "example": 200,
+            "format": "int32",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "nextAttemptAt": {
+            "description": "When the next retry is due (PENDING only)",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "payload": {
+            "description": "The exact JSON body that was signed and sent",
+            "example": {
+              "createdAt": "2026-11-10T20:40:33.120Z",
+              "data": {
+                "orderId": 1,
+                "status": "PENDING",
+                "totalAmount": 40
+              },
+              "id": "6a1f0f57-0f7c-4bb4-8a43-2f9d8f7e8c11",
+              "type": "order.created"
+            },
+            "type": "string"
+          },
+          "responseSnippet": {
+            "description": "First 500 characters of the last response body",
+            "example": "ok",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "description": "Delivery status",
+            "enum": [
+              "PENDING",
+              "DELIVERED",
+              "FAILED"
+            ],
+            "example": "DELIVERED",
+            "type": "string"
+          },
+          "subscriptionId": {
+            "description": "Subscription id",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "WebhookEventTypeDto": {
+        "description": "An event type a webhook can subscribe to",
+        "properties": {
+          "description": {
+            "description": "When it is sent",
+            "example": "An order was placed",
+            "type": "string"
+          },
+          "name": {
+            "description": "Wire name used in events[] and X-Webhook-Event",
+            "example": "order.created",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WebhookInboxDto": {
+        "description": "Built-in webhook receiver",
+        "properties": {
+          "createdAt": {
+            "description": "Creation time (UTC)",
+            "example": "2026-11-10T20:40:33Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "token": {
+            "description": "Inbox token",
+            "example": "Q2xhdWRlIGlzIGEgZ29vZCBib3QgOik",
+            "type": "string"
+          },
+          "url": {
+            "description": "Webhook URL to subscribe with",
+            "example": "inbox://Q2xhdWRlIGlzIGEgZ29vZCBib3QgOik",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WebhookInboxRequestDto": {
+        "description": "A webhook request received by an inbox",
+        "properties": {
+          "body": {
+            "description": "Raw request body (at most 16 KB)",
+            "example": {
+              "id": "...",
+              "type": "webhook.ping"
+            },
+            "type": "string"
+          },
+          "headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Request headers",
+            "example": {
+              "X-Webhook-Event": "webhook.ping",
+              "X-Webhook-Signature": "t=1794346833,v1=5f2b..."
+            },
+            "type": "object"
+          },
+          "id": {
+            "description": "Request id",
+            "example": 7,
+            "format": "int64",
+            "type": "integer"
+          },
+          "receivedAt": {
+            "description": "Receive time (UTC)",
+            "example": "2026-11-10T20:40:33Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WebhookSubscriptionDto": {
+        "description": "Webhook subscription",
+        "properties": {
+          "active": {
+            "description": "Whether events are delivered",
+            "example": true,
+            "type": "boolean"
+          },
+          "consecutiveFailures": {
+            "description": "Failed attempts since the last successful delivery; 20 disables the subscription",
+            "example": 0,
+            "format": "int32",
+            "type": "integer"
+          },
+          "createdAt": {
+            "description": "Creation time (UTC)",
+            "example": "2026-11-10T20:40:33Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "description": "Free-text label",
+            "example": "Order sync",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "disabledReason": {
+            "description": "Why the subscription was disabled automatically",
+            "example": "Disabled after 20 consecutive failed deliveries",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "events": {
+            "description": "Subscribed event types",
+            "example": [
+              "order.created"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "description": "Subscription id",
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "secret": {
+            "description": "Signing secret. Returned only by create and rotate-secret; store it, it is never shown again.",
+            "example": "whsec_q9nZ2l0aHViLmNvbS93ZWJob29rcy1zZWNyZXQtZXhhbXBsZQ",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "Last change (UTC)",
+            "example": "2026-11-10T20:40:33Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "url": {
+            "description": "Target URL",
+            "example": "https://example.com/webhooks/shop",
+            "type": "string"
+          },
+          "username": {
+            "description": "Owner",
+            "example": "client",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "WebhookUpdateDto": {
+        "description": "Replacement settings of a webhook subscription",
+        "properties": {
+          "active": {
+            "description": "Enable or disable deliveries; null keeps the current value. Re-enabling an auto-disabled subscription resets its failure counter.",
+            "example": true,
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "description": {
+            "description": "Free-text label; null clears it",
+            "example": "Order sync",
+            "maxLength": 255,
+            "minLength": 0,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "events": {
+            "description": "Event types to receive",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "minItems": 0,
+            "type": "array"
+          },
+          "url": {
+            "description": "Public http(s) endpoint on port 80 or 443, or inbox://<token> of one of your inboxes",
+            "example": "https://example.com/webhooks/shop",
+            "maxLength": 2048,
+            "minLength": 0,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "events",
+          "url"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "bearerFormat": "JWT",
+        "name": "bearerAuth",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "User webhooks (subscriptions, signed deliveries, inboxes) and commerce emails. Uses the access tokens issued by the backend. Requests may carry X-Request-Id and a W3C traceparent; every response answers X-Request-Id.",
+    "title": "Notification Service API",
+    "version": "1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/admin/webhooks": {
+      "get": {
+        "description": "Administrators list every user's subscriptions by id, optionally for one username. Secrets are never included. Negative page is clamped to zero; size is clamped to 1–100.",
+        "operationId": "list_3",
+        "parameters": [
+          {
+            "description": "Only this user's subscriptions",
+            "in": "query",
+            "name": "username",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoWebhookSubscriptionDto"
+                }
+              }
+            },
+            "description": "Subscriptions returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Invalid parameter",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Forbidden",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List all webhook subscriptions",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/local/notifications/outbox": {
+      "delete": {
+        "description": "Deletes every captured email.",
+        "operationId": "clearOutbox",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Local-Outbox-Key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Outbox cleared",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized or invalid Bearer token",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Administrator role required, or configured X-Local-Outbox-Key is missing or invalid",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The local outbox is not in use (JMS transport)",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Clear the local outbox",
+        "tags": [
+          "local-notification-outbox"
+        ]
+      },
+      "get": {
+        "description": "Oldest first, exactly as they would have been sent to the JMS queue. Requires an administrator and, when LOCAL_EMAIL_OUTBOX_ACCESS_KEY is set, X-Local-Outbox-Key.",
+        "operationId": "getOutbox",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Local-Outbox-Key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StoredEmail"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Captured emails returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized or invalid Bearer token",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Administrator role required, or configured X-Local-Outbox-Key is missing or invalid",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The local outbox is not in use (JMS transport)",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Fetch the commerce emails captured by the local outbox",
+        "tags": [
+          "local-notification-outbox"
+        ]
+      }
+    },
+    "/api/v1/notifications/emails": {
+      "get": {
+        "description": "Commerce emails of the caller, newest first, with the recipient masked. Administrators may pass username to read another user's. Negative page is clamped to zero; size is clamped to 1–100.",
+        "operationId": "list_2",
+        "parameters": [
+          {
+            "description": "Another user's emails (administrators only)",
+            "in": "query",
+            "name": "username",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoNotificationEmailDto"
+                }
+              }
+            },
+            "description": "Emails returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Invalid parameter",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "username names another user and the caller is not an administrator",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List my commerce emails",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/v1/webhook-inboxes": {
+      "get": {
+        "description": "Returns the caller's inboxes, oldest first.",
+        "operationId": "list_1",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WebhookInboxDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Inboxes returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List my webhook inboxes",
+        "tags": [
+          "Webhook inboxes"
+        ]
+      },
+      "post": {
+        "description": "Creates a receiver addressed as inbox://<token>. Use that URL in a subscription; deliveries to it are signed and logged like HTTP deliveries but stored here. At most 3 inboxes per user.",
+        "operationId": "create_1",
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookInboxDto"
+                }
+              }
+            },
+            "description": "Inbox created",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Inbox limit reached",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create webhook inbox",
+        "tags": [
+          "Webhook inboxes"
+        ]
+      }
+    },
+    "/api/v1/webhook-inboxes/{token}": {
+      "delete": {
+        "description": "Deletes the inbox and its requests. Subscriptions that target it fail until they are updated.",
+        "operationId": "delete_1",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Inbox deleted",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Inbox not found (or it belongs to another user)",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete webhook inbox",
+        "tags": [
+          "Webhook inboxes"
+        ]
+      }
+    },
+    "/api/v1/webhook-inboxes/{token}/requests": {
+      "get": {
+        "description": "Requests delivered to the inbox with their headers and body, newest first; the last 50 are kept.",
+        "operationId": "requests",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WebhookInboxRequestDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Requests returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Inbox not found (or it belongs to another user)",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List received webhook requests",
+        "tags": [
+          "Webhook inboxes"
+        ]
+      }
+    },
+    "/api/v1/webhooks": {
+      "get": {
+        "description": "Returns the caller's subscriptions, oldest first. Secrets are never included.",
+        "operationId": "list",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WebhookSubscriptionDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Subscriptions returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List my webhook subscriptions",
+        "tags": [
+          "Webhooks"
+        ]
+      },
+      "post": {
+        "description": "Subscribes a public http(s) URL on port 80 or 443 (or inbox://<token> of one of your inboxes) to your order events. URLs resolving to loopback, private, link-local or other internal addresses are rejected. The response contains the signing secret, which is shown only once. At most 5 subscriptions per user.",
+        "operationId": "create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookSubscriptionDto"
+                }
+              }
+            },
+            "description": "Subscription created; secret included once",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid body, unknown event type or rejected URL",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription limit reached",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Create webhook subscription",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/event-types": {
+      "get": {
+        "description": "Event names a subscription can list in events[]; each is also sent as X-Webhook-Event.",
+        "operationId": "eventTypes",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WebhookEventTypeDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Event types returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List webhook event types",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/{id}": {
+      "delete": {
+        "description": "Deletes the subscription and its delivery log.",
+        "operationId": "delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Subscription deleted",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The subscription belongs to another user",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Delete webhook subscription",
+        "tags": [
+          "Webhooks"
+        ]
+      },
+      "get": {
+        "description": "Returns one of the caller's subscriptions.",
+        "operationId": "get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookSubscriptionDto"
+                }
+              }
+            },
+            "description": "Subscription returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The subscription belongs to another user",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get webhook subscription",
+        "tags": [
+          "Webhooks"
+        ]
+      },
+      "put": {
+        "description": "Replaces url, events and description; active=false pauses deliveries and active=true re-enables an (auto-)disabled subscription and resets its failure counter. The URL is checked again. The secret is unchanged.",
+        "operationId": "update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookSubscriptionDto"
+                }
+              }
+            },
+            "description": "Subscription updated",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ValidationErrorsDto"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ErrorDto"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Invalid body, unknown event type or rejected URL",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The subscription belongs to another user",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Update webhook subscription",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/{id}/deliveries": {
+      "get": {
+        "description": "Delivery log of a subscription, newest first, optionally filtered by status. Negative page is clamped to zero; size is clamped to 1–100.",
+        "operationId": "deliveries",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "PENDING",
+                "DELIVERED",
+                "FAILED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoWebhookDeliveryDto"
+                }
+              }
+            },
+            "description": "Deliveries returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Invalid parameter",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The subscription belongs to another user",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "List webhook deliveries",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/{id}/deliveries/{deliveryId}": {
+      "get": {
+        "description": "Returns one delivery with its payload, last status code, error and response snippet.",
+        "operationId": "delivery",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "deliveryId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookDeliveryDto"
+                }
+              }
+            },
+            "description": "Delivery returned",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Invalid delivery id",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The subscription belongs to another user",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription or delivery not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get webhook delivery",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/{id}/deliveries/{deliveryId}/redeliver": {
+      "post": {
+        "description": "Sends the event of an earlier delivery again, now, as a new delivery with the same event id and body and a fresh signature. The original delivery is unchanged.",
+        "operationId": "redeliver",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "deliveryId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookDeliveryDto"
+                }
+              }
+            },
+            "description": "Redelivery sent; the new delivery shows the outcome",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Invalid delivery id",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The subscription belongs to another user",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription or delivery not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription is disabled",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Too many requests",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Redeliver webhook",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/{id}/rotate-secret": {
+      "post": {
+        "description": "Replaces the signing secret and returns the new one once. Later deliveries, including retries of earlier events, are signed with it.",
+        "operationId": "rotateSecret",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookSubscriptionDto"
+                }
+              }
+            },
+            "description": "Secret rotated; new secret included once",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The subscription belongs to another user",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Rotate webhook secret",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/{id}/test": {
+      "post": {
+        "description": "Sends a webhook.ping event now (waiting up to 5 seconds for the receiver) and returns the recorded delivery. A failed ping is retried like any other delivery.",
+        "operationId": "test",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookDeliveryDto"
+                }
+              }
+            },
+            "description": "Ping sent; the delivery shows the outcome",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Unauthorized",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "The subscription belongs to another user",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription not found",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Subscription is disabled",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Too many requests",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/X-Request-Id"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Send test webhook",
+        "tags": [
+          "Webhooks"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "description": "Commerce emails captured instead of being sent (local outbox transport)",
+      "name": "local-notification-outbox"
+    },
+    {
+      "description": "Commerce emails sent to you (payments, shipments, returns, loyalty, gift cards)",
+      "name": "Notifications"
+    },
+    {
+      "description": "Signed HTTP callbacks for your order events, with a delivery log and retries",
+      "name": "Webhooks"
+    },
+    {
+      "description": "Built-in webhook receivers, so no external server is needed",
+      "name": "Webhook inboxes"
+    }
+  ]
+}

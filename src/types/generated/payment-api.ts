@@ -437,7 +437,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
-            /** @description Order not payable (not PENDING, already paid, or another payment in progress), or Idempotency-Key reused with a different body */
+            /** @description Order not payable (not PENDING, already paid, or another payment in progress), "Order reservation expired" (the order's reservationExpiresAt has passed), or Idempotency-Key reused with a different body */
             409: {
                 headers: {
                     "X-Request-Id": components["headers"]["X-Request-Id"];

@@ -64,7 +64,7 @@ export interface paths {
          * Update draft purchase order
          * @description Replaces the supplier, note and lines of a DRAFT purchase order.
          */
-        put: operations["update"];
+        put: operations["update_1"];
         post?: never;
         delete?: never;
         options?: never;
@@ -285,7 +285,7 @@ export interface paths {
         };
         /**
          * Track order shipment
-         * @description Returns the shipment for one of the caller's orders. Administrators may track any order.
+         * @description Returns the first parcel of one of the caller's orders, with locationCode and parcelCount; GET /api/v1/orders/{id}/shipments lists every parcel. Administrators may track any order.
          */
         get: operations["track_1"];
         put?: never;
@@ -305,9 +305,29 @@ export interface paths {
         };
         /**
          * Track order parcel
-         * @description Returns the carrier tracking (scans, current status, estimated delivery) for one of the caller's orders. Administrators may track any order. Before the hand-over to the carrier the events are empty.
+         * @description Returns the carrier tracking of the order's first parcel (scans, current status, estimated delivery) for one of the caller's orders. Administrators may track any order. Before the hand-over to the carrier the events are empty.
          */
         get: operations["tracking"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{id}/shipments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List order parcels
+         * @description Returns every parcel of one of the caller's orders, oldest first, each with its location, lines and tracking number. Empty while the order is not released to the warehouse. Administrators may list any order.
+         */
+        get: operations["parcels"];
         put?: never;
         post?: never;
         delete?: never;
@@ -396,6 +416,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/warehouse/locations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List warehouse locations
+         * @description Lists every location by priority with its active flag and the categories it stocks as PRIMARY or BACKUP ("*" stands for every category without its own entry).
+         */
+        get: operations["locations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/warehouse/locations/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Activate or deactivate location
+         * @description An inactive location receives no new allocations; parcels already allocated there stay until they are reallocated.
+         */
+        put: operations["update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/warehouse/queue": {
         parameters: {
             query?: never;
@@ -408,6 +468,26 @@ export interface paths {
          * @description Lists PAID orders that have not been released to the warehouse yet, oldest first. Negative page is clamped to zero; size is clamped to 1-100.
          */
         get: operations["queue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/warehouse/reconciliation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Fulfilment reconciliation
+         * @description Orders (at most 100, lowest id first) with an open parcel whose expected backend state, max(last mirrored, aggregate of the parcels), differs from the backend's fulfilmentState, for example a customer cancellation the event feed has not applied yet.
+         */
+        get: operations["reconciliation"];
         put?: never;
         post?: never;
         delete?: never;
@@ -431,7 +511,7 @@ export interface paths {
         put?: never;
         /**
          * Create shipment
-         * @description Releases a PAID order to the warehouse as an AWAITING_PICK shipment.
+         * @description Releases a PAID order to the warehouse. Each order line is allocated to the highest-priority active location that stocks its category (one location for the whole order when one location can take every line), and one AWAITING_PICK parcel is created per location. Returns the first parcel; parcelCount tells how many were created.
          */
         post: operations["create"];
         delete?: never;
@@ -449,7 +529,7 @@ export interface paths {
         };
         /**
          * Get shipment
-         * @description Returns one shipment with its timestamps.
+         * @description Returns one parcel with its location, lines and timestamps.
          */
         get: operations["get_1"];
         put?: never;
@@ -471,7 +551,7 @@ export interface paths {
         put?: never;
         /**
          * Cancel shipment
-         * @description Cancels an AWAITING_PICK or PICKED shipment. The order is cancelled, stock is restored and any coupon redemption is released.
+         * @description Cancels an AWAITING_PICK or PICKED parcel together with its order: every AWAITING_PICK or PICKED parcel of the order is cancelled, stock is restored and any coupon redemption is released. Refused while another parcel of the order is already PACKED or later.
          */
         post: operations["cancel"];
         delete?: never;
@@ -569,11 +649,31 @@ export interface paths {
         };
         /**
          * Get pick list
-         * @description Returns the products to pick grouped by product and sorted by category, then name.
+         * @description Returns the parcel's products to pick grouped by product and sorted by category, then name.
          */
         get: operations["pickList"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/warehouse/shipments/{id}/reallocate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reallocate parcel
+         * @description Moves an AWAITING_PICK parcel to another active location: the given targetLocation, or without it the best other active location that stocks all of the parcel's categories. The lines merge into the order's parcel at that location when there is one (the moved parcel is then removed). Returns the parcel now holding the lines.
+         */
+        post: operations["reallocate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -594,6 +694,26 @@ export interface paths {
          * @description PACKED to SHIPPED. The tracking number must match the carrier format. Without a tracking number the parcel goes to the simulated carrier, which generates a tracking number and moves the parcel through IN_TRANSIT and OUT_FOR_DELIVERY to DELIVERED on its own. The order becomes SHIPPED and the customer receives an email.
          */
         post: operations["ship"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/warehouse/shipments/{id}/short-pick": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Report short pick
+         * @description Records units of a product that could not be picked for an AWAITING_PICK parcel and moves them to the order's AWAITING_PICK parcel at another active location that stocks the category (a new parcel when there is none). A parcel left without lines is removed. Returns the receiving parcel.
+         */
+        post: operations["shortPick"];
         delete?: never;
         options?: never;
         head?: never;
@@ -805,6 +925,26 @@ export interface components {
             totalElements?: number;
             /** Format: int32 */
             totalPages?: number;
+        };
+        /** @description Parcel status in a reconciliation entry */
+        Parcel: {
+            /**
+             * @description Location code
+             * @example KRK
+             */
+            locationCode?: string;
+            /**
+             * Format: int64
+             * @description Shipment ID
+             * @example 7
+             */
+            shipmentId?: number;
+            /**
+             * @description Parcel status
+             * @example PICKED
+             * @enum {string}
+             */
+            status?: "AWAITING_PICK" | "PICKED" | "PACKED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
         };
         /** @description Pick list grouped by product and sorted by category, then name */
         PickListDto: {
@@ -1048,6 +1188,14 @@ export interface components {
              */
             supplierId: number;
         };
+        /** @description Parcel reallocation. Omit targetLocation (or the whole body) to move the parcel to the best other active location that stocks all of its categories */
+        ReallocateShipmentDto: {
+            /**
+             * @description Target location code
+             * @example GDN
+             */
+            targetLocation?: string | null;
+        };
         /** @description Units received for one product */
         ReceiptLineDto: {
             /**
@@ -1093,6 +1241,35 @@ export interface components {
         ReceiveReturnDto: {
             /** @description Conditions per product */
             items: components["schemas"]["ReceiveItemDto"][];
+        };
+        /** @description An order whose parcels' aggregate fulfilment state disagrees with the backend */
+        ReconciliationDto: {
+            /**
+             * @description State the backend should have: max(last mirrored, aggregate of the parcels)
+             * @example PICKED
+             * @enum {string}
+             */
+            aggregateState?: "NONE" | "AWAITING_PICK" | "PICKED" | "PACKED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+            /**
+             * @description fulfilmentState on the backend; null when the backend does not know the order
+             * @example AWAITING_PICK
+             * @enum {string|null}
+             */
+            backendState?: "NONE" | "AWAITING_PICK" | "PICKED" | "PACKED" | "SHIPPED" | "DELIVERED" | "CANCELLED" | null;
+            /**
+             * @description State last mirrored to the backend
+             * @example AWAITING_PICK
+             * @enum {string|null}
+             */
+            lastMirroredState?: "NONE" | "AWAITING_PICK" | "PICKED" | "PACKED" | "SHIPPED" | "DELIVERED" | "CANCELLED" | null;
+            /**
+             * Format: int64
+             * @description Order ID
+             * @example 42
+             */
+            orderId?: number;
+            /** @description The order's parcels */
+            parcels?: components["schemas"]["Parcel"][];
         };
         /** @description Rejection reason shown to the customer */
         RejectReturnDto: {
@@ -1277,7 +1454,7 @@ export interface components {
              */
             trackingNumber?: string | null;
         };
-        /** @description Warehouse shipment for one order */
+        /** @description Warehouse shipment: one parcel of an order, shipped from one location */
         ShipmentDto: {
             /**
              * Format: local-date-time
@@ -1316,6 +1493,18 @@ export interface components {
              * @example warehouse
              */
             lastActor?: string;
+            /** @description Products in this parcel */
+            lines?: components["schemas"]["ShipmentLineDto"][];
+            /**
+             * @description Location the parcel ships from
+             * @example KRK
+             */
+            locationCode?: string;
+            /**
+             * @description Name of that location
+             * @example Krakow Central
+             */
+            locationName?: string;
             /**
              * Format: int64
              * @description Order ID
@@ -1327,6 +1516,18 @@ export interface components {
              * @description When packing finished
              */
             packedAt?: string | null;
+            /**
+             * Format: int32
+             * @description Number of parcels of the order
+             * @example 2
+             */
+            parcelCount?: number;
+            /**
+             * Format: int32
+             * @description 1-based position of the parcel among the order's parcels (oldest first)
+             * @example 1
+             */
+            parcelIndex?: number;
             /**
              * Format: local-date-time
              * @description When picking finished
@@ -1345,7 +1546,7 @@ export interface components {
             status?: "AWAITING_PICK" | "PICKED" | "PACKED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
             /**
              * Format: int32
-             * @description Units to pick
+             * @description Units to pick for this parcel
              * @example 3
              */
             totalUnits?: number;
@@ -1369,6 +1570,46 @@ export interface components {
              * @example 1.25
              */
             weightKg?: number | null;
+        };
+        /** @description Units of one product in a parcel */
+        ShipmentLineDto: {
+            /**
+             * @description Product category at release
+             * @example Electronics
+             */
+            category?: string | null;
+            /**
+             * Format: int64
+             * @description Product ID
+             * @example 3
+             */
+            productId?: number;
+            /**
+             * @description Product name at release
+             * @example iPhone 13 Pro
+             */
+            productName?: string;
+            /**
+             * Format: int32
+             * @description Units in this parcel
+             * @example 2
+             */
+            quantity?: number;
+        };
+        /** @description Units of a product that could not be found while picking */
+        ShortPickDto: {
+            /**
+             * Format: int32
+             * @description Units to move to a parcel at another location
+             * @example 1
+             */
+            missingQuantity: number;
+            /**
+             * Format: int64
+             * @description Product ID of a line in the parcel
+             * @example 3
+             */
+            productId: number;
         };
         /** @description Supplier */
         SupplierDto: {
@@ -1488,6 +1729,14 @@ export interface components {
              */
             status?: "LABEL_CREATED" | "IN_TRANSIT" | "OUT_FOR_DELIVERY" | "DELIVERY_FAILED" | "DELIVERED";
         };
+        /** @description Location activation */
+        UpdateLocationDto: {
+            /**
+             * @description false stops new allocations to the location; parcels already there stay
+             * @example false
+             */
+            active: boolean;
+        };
         /**
          * @description Validation messages keyed by field name; invalid arguments use the error key
          * @example {
@@ -1498,6 +1747,49 @@ export interface components {
             empty?: boolean;
         } & {
             [key: string]: string;
+        };
+        /** @description Warehouse location with the categories it stocks */
+        WarehouseLocationDto: {
+            /**
+             * @description Whether new parcels are allocated to this location
+             * @example true
+             */
+            active?: boolean;
+            /**
+             * @description Categories shipped from here when no primary location can; "*" as above
+             * @example [
+             *       "Books"
+             *     ]
+             */
+            backupCategories?: string[];
+            /**
+             * @description City
+             * @example Krakow
+             */
+            city?: string;
+            /**
+             * @description Location code
+             * @example KRK
+             */
+            code?: string;
+            /**
+             * @description Location name
+             * @example Krakow Central
+             */
+            name?: string;
+            /**
+             * @description Categories shipped from here first; "*" stands for every category without its own entry
+             * @example [
+             *       "*"
+             *     ]
+             */
+            primaryCategories?: string[];
+            /**
+             * Format: int32
+             * @description Allocation priority; lower numbers are preferred
+             * @example 1
+             */
+            priority?: number;
         };
     };
     responses: never;
@@ -1747,7 +2039,7 @@ export interface operations {
             };
         };
     };
-    update: {
+    update_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -2669,6 +2961,55 @@ export interface operations {
             };
         };
     };
+    parcels: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Parcels returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShipmentDto"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Order not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
     create_1: {
         parameters: {
             query?: never;
@@ -2867,6 +3208,106 @@ export interface operations {
             };
         };
     };
+    locations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Locations returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WarehouseLocationDto"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateLocationDto"];
+            };
+        };
+        responses: {
+            /** @description Location updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["WarehouseLocationDto"];
+                };
+            };
+            /** @description Missing active flag */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Warehouse location not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
     queue: {
         parameters: {
             query?: {
@@ -2888,6 +3329,53 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PageDtoOrderDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    reconciliation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Disagreeing orders returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReconciliationDto"][];
                 };
             };
             /** @description Unauthorized */
@@ -2985,7 +3473,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Shipment created */
+            /** @description Parcels created; the first one is returned */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -3030,7 +3518,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
-            /** @description Order is not PAID or already has a shipment */
+            /** @description Order is not PAID, already has a shipment, or no active location stocks one of its categories */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -3514,6 +4002,86 @@ export interface operations {
             };
         };
     };
+    reallocate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ReallocateShipmentDto"];
+            };
+        };
+        responses: {
+            /** @description Parcel reallocated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShipmentDto"];
+                };
+            };
+            /** @description Invalid target location code */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Shipment or target location not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Parcel is not AWAITING_PICK, or the target is the current, an inactive or a non-stocking location, or the order's parcel there is past AWAITING_PICK, or no other location can take it */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
     ship: {
         parameters: {
             query?: never;
@@ -3575,6 +4143,86 @@ export interface operations {
                 };
             };
             /** @description Transition not allowed from the current shipment status */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    shortPick: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShortPickDto"];
+            };
+        };
+        responses: {
+            /** @description Units moved */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ShipmentDto"];
+                };
+            };
+            /** @description Missing product or quantity below 1 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Forbidden; requires ROLE_WAREHOUSE or ROLE_ADMIN */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Shipment not found, or the product is not in it */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Parcel is not AWAITING_PICK, the quantity exceeds the line, or no other active location stocks the category */
             409: {
                 headers: {
                     [name: string]: unknown;
