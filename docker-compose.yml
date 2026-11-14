@@ -2,7 +2,7 @@ services:
   backend:
     # Release train pin, same digest as awesome-localstack's lightweight-docker-compose.yml.
     # openapi/backend-api-docs.json is this image's document (BACKEND_IMAGE overrides it).
-    image: ${BACKEND_IMAGE:-slawekradzyminski/backend:3.18.0@sha256:7b5ffeade75935ec76053d88136e6dd769d534b983cbdc35dfde19991e4c32c3}
+    image: ${BACKEND_IMAGE:-slawekradzyminski/backend:3.21.1@sha256:872f6c143a7165d87b17da599a9ae9a31ffe7a6a2b1fb9b3124cb1db3bc78d73}
     expose:
       - "4001"
     hostname: backend
@@ -53,7 +53,7 @@ services:
   warehouse-service:
     # Shipments, simulated carrier tracking, returns and purchasing. Release train pin; its document
     # is openapi/warehouse-api-docs.json (WAREHOUSE_IMAGE overrides it).
-    image: ${WAREHOUSE_IMAGE:-slawekradzyminski/warehouse-service:1.4.1@sha256:ffb3f679e922d7e4fcd1f513a9530816a6d8efd9aa40edfa36d215d2c5ea91c5}
+    image: ${WAREHOUSE_IMAGE:-slawekradzyminski/warehouse-service:1.5.1@sha256:17adbb3cc45ed71bb522cae280e442f4af3690cb48a20627c6f04efdb6371a7e}
     expose:
       - "4003"
     hostname: warehouse-service
@@ -77,7 +77,7 @@ services:
   payment-service:
     # Card payments with test cards and 3-D Secure. Release train pin; its document is
     # openapi/payment-api-docs.json (PAYMENT_IMAGE overrides it).
-    image: ${PAYMENT_IMAGE:-slawekradzyminski/payment-service:1.2.1@sha256:1b6a265827b426b5a45aec901361672428a84841f45529a1b2b966d0c0f97e91}
+    image: ${PAYMENT_IMAGE:-slawekradzyminski/payment-service:1.3.1@sha256:a82b2da62b18514a27039c716ac6d6b49a6ed804f58a739a8812f49cd91bc5b8}
     expose:
       - "4004"
     hostname: payment-service
@@ -102,8 +102,7 @@ services:
   notification-service:
     # Webhooks, webhook inboxes and commerce emails, fed by the backend event feed. Its document is
     # openapi/notification-api-docs.json (NOTIFICATION_IMAGE overrides it).
-    # TODO(release train): 1.0.0 is not published yet; pin tag@sha256 like the other services.
-    image: ${NOTIFICATION_IMAGE:-slawekradzyminski/notification-service:1.0.0}
+    image: ${NOTIFICATION_IMAGE:-slawekradzyminski/notification-service:1.0.1@sha256:1a051e8aa54e90f5e9dd9d8dbd1aacd94b1af6f886ea571a0f4d7cac23019c52}
     expose:
       - "4005"
     hostname: notification-service
@@ -194,7 +193,7 @@ services:
       - my-private-ntwk
 
   ollama-mock:
-    image: slawekradzyminski/ollama-mock:1.0.12@sha256:ee8a22bbc6b0f00959cf751e6f78d523fcc74eb32759ead0b9b274dc098d310f
+    image: slawekradzyminski/ollama-mock:1.0.13@sha256:7e3ea7b3c6774c38e81726e64e47323159cea53ce5777ab35754a0e5a9b4ef5e
     restart: always
     ports:
       - "${OLLAMA_MOCK_PORT:-11434}:11434"
