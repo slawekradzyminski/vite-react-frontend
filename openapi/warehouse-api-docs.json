@@ -49,6 +49,20 @@
         ],
         "type": "object"
       },
+      "ConfirmReservationRequestDto": {
+        "properties": {
+          "orderId": {
+            "example": 123,
+            "exclusiveMinimum": 0,
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "orderId"
+        ],
+        "type": "object"
+      },
       "CreateReturnDto": {
         "description": "Return request for a delivered order",
         "properties": {
@@ -115,6 +129,91 @@
         "required": [
           "message"
         ],
+        "type": "object"
+      },
+      "InitialStockRequestDto": {
+        "properties": {
+          "actor": {
+            "example": "admin",
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "initialQuantity": {
+            "example": 10,
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "requestId": {
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "actor",
+          "initialQuantity"
+        ],
+        "type": "object"
+      },
+      "InventoryMovementDto": {
+        "properties": {
+          "actor": {
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "UTC date and time without an offset",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "delta": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "orderId": {
+            "format": "int64",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "productId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "quantityAfter": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "requestId": {
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "enum": [
+              "INITIAL_STOCK",
+              "ADMIN_ADJUSTMENT",
+              "ORDER_DEDUCTED",
+              "ORDER_RESTORED",
+              "PURCHASE_RECEIVED",
+              "RETURN_RESTOCKED"
+            ],
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "OrderDto": {
@@ -252,6 +351,33 @@
         "required": [
           "weightKg"
         ],
+        "type": "object"
+      },
+      "PageDtoInventoryMovementDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/InventoryMovementDto"
+            },
+            "type": "array"
+          },
+          "pageNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageSize": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
         "type": "object"
       },
       "PageDtoOrderDto": {
@@ -931,6 +1057,27 @@
         ],
         "type": "object"
       },
+      "ReleasedReservationDto": {
+        "properties": {
+          "reservationId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PENDING_CONFIRMATION",
+              "CONFIRMED",
+              "RELEASED"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "reservationId",
+          "status"
+        ],
+        "type": "object"
+      },
       "ReorderSuggestionDto": {
         "description": "Product that should be reordered",
         "properties": {
@@ -969,6 +1116,78 @@
             "type": "integer"
           }
         },
+        "type": "object"
+      },
+      "ReservationDto": {
+        "properties": {
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/ReservedLineDto"
+            },
+            "type": "array"
+          },
+          "reservationId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lines",
+          "reservationId"
+        ],
+        "type": "object"
+      },
+      "ReserveStockRequestDto": {
+        "properties": {
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/StockLineDto"
+            },
+            "maxItems": 100,
+            "minItems": 0,
+            "type": "array"
+          },
+          "reservationId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "username": {
+            "example": "alice",
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "required": [
+          "lines",
+          "reservationId",
+          "username"
+        ],
+        "type": "object"
+      },
+      "ReservedLineDto": {
+        "properties": {
+          "ledgerVersion": {
+            "example": 42,
+            "format": "int64",
+            "type": "integer"
+          },
+          "productId": {
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "quantityAfter": {
+            "example": 8,
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "ledgerVersion",
+          "productId",
+          "quantityAfter"
+        ],
         "type": "object"
       },
       "ReturnDto": {
@@ -1401,6 +1620,170 @@
         ],
         "type": "object"
       },
+      "StockAdjustmentDto": {
+        "properties": {
+          "actor": {
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "UTC date and time without an offset",
+            "format": "local-date-time",
+            "type": "string"
+          },
+          "delta": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "ledgerVersion": {
+            "example": 43,
+            "format": "int64",
+            "type": "integer"
+          },
+          "orderId": {
+            "format": "int64",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "productId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "quantityAfter": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "requestId": {
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "enum": [
+              "INITIAL_STOCK",
+              "ADMIN_ADJUSTMENT",
+              "ORDER_DEDUCTED",
+              "ORDER_RESTORED",
+              "PURCHASE_RECEIVED",
+              "RETURN_RESTOCKED"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "StockAdjustmentRequestDto": {
+        "properties": {
+          "actor": {
+            "example": "admin",
+            "maxLength": 255,
+            "minLength": 0,
+            "type": "string"
+          },
+          "delta": {
+            "example": -3,
+            "format": "int32",
+            "type": "integer"
+          },
+          "productId": {
+            "example": 1,
+            "exclusiveMinimum": 0,
+            "format": "int64",
+            "type": "integer"
+          },
+          "reason": {
+            "example": "Damaged",
+            "maxLength": 500,
+            "minLength": 0,
+            "type": "string"
+          },
+          "requestId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "actor",
+          "delta",
+          "productId",
+          "reason",
+          "requestId"
+        ],
+        "type": "object"
+      },
+      "StockErrorDto": {
+        "properties": {
+          "message": {
+            "example": "Insufficient stock for product 1",
+            "type": "string"
+          },
+          "productId": {
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "type": "object"
+      },
+      "StockItemDto": {
+        "properties": {
+          "ledgerVersion": {
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "productId": {
+            "example": 1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "quantity": {
+            "example": 10,
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "ledgerVersion",
+          "productId",
+          "quantity"
+        ],
+        "type": "object"
+      },
+      "StockLineDto": {
+        "properties": {
+          "productId": {
+            "example": 1,
+            "exclusiveMinimum": 0,
+            "format": "int64",
+            "type": "integer"
+          },
+          "quantity": {
+            "example": 2,
+            "exclusiveMinimum": 0,
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "productId",
+          "quantity"
+        ],
+        "type": "object"
+      },
       "SupplierDto": {
         "description": "Supplier",
         "properties": {
@@ -1664,6 +2047,12 @@
       }
     },
     "securitySchemes": {
+      "backendServiceToken": {
+        "description": "The backend's BACKEND_SERVICE_TOKEN (caller BACKEND), only for /internal/v1/stock",
+        "name": "backendServiceToken",
+        "scheme": "bearer",
+        "type": "http"
+      },
       "bearerAuth": {
         "bearerFormat": "JWT",
         "name": "bearerAuth",
@@ -1673,7 +2062,7 @@
     }
   },
   "info": {
-    "description": "Shipments, returns (RMA), suppliers and purchase orders. Uses the access tokens issued by the backend.",
+    "description": "Shipments, returns (RMA), suppliers, purchase orders and the stock ledger. Uses the access tokens issued by the backend.",
     "license": {
       "name": "Apache 2.0",
       "url": "http://springdoc.org"
@@ -5073,9 +5462,654 @@
           "Warehouse"
         ]
       }
+    },
+    "/internal/v1/stock/adjustments": {
+      "post": {
+        "description": "Admin adjustment with the backend's former rules: a replay of (productId, requestId) with the same delta and reason returns the stored movement; the result must stay within 0..2147483647. Returns the movement plus the ledger version it left.",
+        "operationId": "adjust",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StockAdjustmentRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockAdjustmentDto"
+                }
+              }
+            },
+            "description": "Adjustment recorded (or the stored one replayed)"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid request or a zero delta"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Missing or invalid backend service token"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product not found (no stock item)"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "requestId already used with different payload, insufficient stock, or the result exceeds the supported maximum"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Stock ledger not initialised (the startup import is running)"
+          }
+        },
+        "security": [
+          {
+            "backendServiceToken": []
+          }
+        ],
+        "summary": "Adjust stock",
+        "tags": [
+          "Stock ledger (internal)"
+        ]
+      }
+    },
+    "/internal/v1/stock/items/{productId}": {
+      "delete": {
+        "description": "Deletes the item, its movements, its reservation lines and its pending levels. Idempotent: 204 also when there is no item.",
+        "operationId": "deleteItem",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Stock item deleted (or absent)"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Missing or invalid backend service token"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Stock ledger not initialised (the startup import is running)"
+          }
+        },
+        "security": [
+          {
+            "backendServiceToken": []
+          }
+        ],
+        "summary": "Delete a product's stock",
+        "tags": [
+          "Stock ledger (internal)"
+        ]
+      },
+      "get": {
+        "description": "Returns the quantity and ledger version.",
+        "operationId": "item",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockItemDto"
+                }
+              }
+            },
+            "description": "Stock item returned"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Missing or invalid backend service token"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Product not found (no stock item)"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Stock ledger not initialised (the startup import is running)"
+          }
+        },
+        "security": [
+          {
+            "backendServiceToken": []
+          }
+        ],
+        "summary": "Get a product's stock",
+        "tags": [
+          "Stock ledger (internal)"
+        ]
+      },
+      "put": {
+        "description": "Creates the item with ledgerVersion 1 and, for a positive quantity, an INITIAL_STOCK movement. An existing item is left unchanged and returned with 200.",
+        "operationId": "createItem",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InitialStockRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockItemDto"
+                }
+              }
+            },
+            "description": "Stock item already existed"
+          },
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockItemDto"
+                }
+              }
+            },
+            "description": "Stock item created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Missing or invalid backend service token"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Stock ledger not initialised (the startup import is running)"
+          }
+        },
+        "security": [
+          {
+            "backendServiceToken": []
+          }
+        ],
+        "summary": "Create a product's stock item",
+        "tags": [
+          "Stock ledger (internal)"
+        ]
+      }
+    },
+    "/internal/v1/stock/movements": {
+      "get": {
+        "description": "Movements newest first (createdAt desc, then id desc), in the backend's page format. Negative page is clamped to zero; size is clamped to 1-100. A product without a stock item has no movements.",
+        "operationId": "movements",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "productId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDtoInventoryMovementDto"
+                }
+              }
+            },
+            "description": "Movements returned"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Missing or invalid parameter"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Missing or invalid backend service token"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Stock ledger not initialised (the startup import is running)"
+          }
+        },
+        "security": [
+          {
+            "backendServiceToken": []
+          }
+        ],
+        "summary": "List a product's movements",
+        "tags": [
+          "Stock ledger (internal)"
+        ]
+      }
+    },
+    "/internal/v1/stock/reservations": {
+      "post": {
+        "description": "Locks the items in product id order, checks every line, then deducts every line with an ORDER_DEDUCTED movement. The reservation stays PENDING_CONFIRMATION until confirmed. A repeated call with the same reservationId and lines returns the stored reservation.",
+        "operationId": "reserve",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReserveStockRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDto"
+                }
+              }
+            },
+            "description": "Stock reserved (or the stored reservation replayed)"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid request or a product listed twice"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Missing or invalid backend service token"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockErrorDto"
+                }
+              }
+            },
+            "description": "A product has no stock item; nothing was deducted"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockErrorDto"
+                }
+              }
+            },
+            "description": "Insufficient stock (the first short product in id order), or the reservationId was used with different lines; nothing was deducted"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Stock ledger not initialised (the startup import is running)"
+          }
+        },
+        "security": [
+          {
+            "backendServiceToken": []
+          }
+        ],
+        "summary": "Reserve stock for a checkout",
+        "tags": [
+          "Stock ledger (internal)"
+        ]
+      }
+    },
+    "/internal/v1/stock/reservations/{reservationId}/confirm": {
+      "post": {
+        "description": "Marks the reservation CONFIRMED for the order and sets the order id on its movements. Idempotent for the same order.",
+        "operationId": "confirm",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "reservationId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmReservationRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReservationDto"
+                }
+              }
+            },
+            "description": "Reservation confirmed"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorsDto"
+                }
+              }
+            },
+            "description": "Invalid request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Missing or invalid backend service token"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Reservation not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Reservation released, or confirmed for another order"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Stock ledger not initialised (the startup import is running)"
+          }
+        },
+        "security": [
+          {
+            "backendServiceToken": []
+          }
+        ],
+        "summary": "Confirm a reservation",
+        "tags": [
+          "Stock ledger (internal)"
+        ]
+      }
+    },
+    "/internal/v1/stock/reservations/{reservationId}/release": {
+      "post": {
+        "description": "Puts back the stock of a PENDING_CONFIRMATION reservation (ORDER_RESTORED movements by \"system\", reason \"Reservation released\") and marks it RELEASED. Repeated calls return the same body. Confirmed reservations are restored only through order.cancelled.",
+        "operationId": "release",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "reservationId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleasedReservationDto"
+                }
+              }
+            },
+            "description": "Reservation released"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Missing or invalid backend service token"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Reservation not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Reservation already confirmed"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorDto"
+                }
+              }
+            },
+            "description": "Stock ledger not initialised (the startup import is running)"
+          }
+        },
+        "security": [
+          {
+            "backendServiceToken": []
+          }
+        ],
+        "summary": "Release a reservation",
+        "tags": [
+          "Stock ledger (internal)"
+        ]
+      }
     }
   },
   "tags": [
+    {
+      "description": "Reservations, adjustments, stock items and movements; called by the backend with its service token",
+      "name": "Stock ledger (internal)"
+    },
     {
       "description": "Customer returns (RMA)",
       "name": "Returns"
