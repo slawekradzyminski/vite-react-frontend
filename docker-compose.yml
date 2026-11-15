@@ -2,7 +2,7 @@ services:
   backend:
     # Release train pin, same digest as awesome-localstack's lightweight-docker-compose.yml.
     # openapi/backend-api-docs.json is this image's document (BACKEND_IMAGE overrides it).
-    image: ${BACKEND_IMAGE:-slawekradzyminski/backend:3.21.1@sha256:872f6c143a7165d87b17da599a9ae9a31ffe7a6a2b1fb9b3124cb1db3bc78d73}
+    image: ${BACKEND_IMAGE:-slawekradzyminski/backend:3.22.0@sha256:f16bbc2d585f663b2fd7f7f6892d65fe17ae2c1ceb349a4a4d20929e82390399}
     expose:
       - "4001"
     hostname: backend
@@ -28,6 +28,10 @@ services:
       NOTIFICATION_SERVICE_TOKEN: ci-notification-service-token
       NOTIFICATIONS_DELIVERY: feed
       WEBHOOKS_ENABLED: "false"
+      # warehouse-service owns the stock ledger (backend 3.22.0+): checkout reservations, admin
+      # adjustments and initial stock are calls to it with this token. Until it is ready they answer 503.
+      WAREHOUSE_URL: http://warehouse-service:4003
+      BACKEND_SERVICE_TOKEN: ci-backend-service-token
     depends_on:
       postgres:
         condition: service_healthy
@@ -53,7 +57,7 @@ services:
   warehouse-service:
     # Shipments, simulated carrier tracking, returns and purchasing. Release train pin; its document
     # is openapi/warehouse-api-docs.json (WAREHOUSE_IMAGE overrides it).
-    image: ${WAREHOUSE_IMAGE:-slawekradzyminski/warehouse-service:1.5.1@sha256:17adbb3cc45ed71bb522cae280e442f4af3690cb48a20627c6f04efdb6371a7e}
+    image: ${WAREHOUSE_IMAGE:-slawekradzyminski/warehouse-service:1.6.0@sha256:8cb354517b9408600cca55a1e23e0ff83ada2ade9a0507e8270ff23fc0482ead}
     expose:
       - "4003"
     hostname: warehouse-service
@@ -66,11 +70,28 @@ services:
       SERVER_FORWARD_HEADERS_STRATEGY: framework
       BACKEND_BASE_URL: http://backend:4001
       WAREHOUSE_SERVICE_TOKEN: ci-warehouse-service-token
+      # Checks the backend's stock-command calls (warehouse-service 1.6.0+).
+      BACKEND_SERVICE_TOKEN: ci-backend-service-token
     depends_on:
       backend:
         condition: service_healthy
       postgres-roles:
         condition: service_completed_successfully
+    healthcheck:
+      # Readiness stays down until the first-start stock ledger import from the backend is done.
+      test:
+        - CMD
+        - bash
+        - -ec
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/4003;
+          printf 'GET /actuator/health/readiness HTTP/1.0\r\nHost: localhost\r\n\r\n' >&3;
+          read -r _ status _ <&3;
+          test "$$status" = 200
+      interval: 5s
+      timeout: 5s
+      retries: 36
+      start_period: 30s
     networks:
       - my-private-ntwk
 
@@ -182,8 +203,13 @@ services:
   gateway:
     image: nginx:1.31.3-trixie@sha256:5a88c9c45479443d7be2eadc894b4ed0a9801bae03d97a5760ae13b5c2005942
     depends_on:
-      - frontend
-      - backend
+      frontend:
+        condition: service_started
+      backend:
+        condition: service_started
+      # Checkout needs the stock ledger, so the gateway opens once warehouse-service has imported it.
+      warehouse-service:
+        condition: service_healthy
     ports:
       # GATEWAY_PORT lets an isolated stack run beside another one (APP_BASE_URL follows it).
       - "${GATEWAY_PORT:-8081}:80"

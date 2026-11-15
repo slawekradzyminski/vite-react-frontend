@@ -4907,6 +4907,16 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Inventory service unavailable: warehouse-service, which owns the stock ledger, did not answer */
+            503: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
     movements: {
@@ -4965,6 +4975,16 @@ export interface operations {
             };
             /** @description Product not found */
             404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Inventory service unavailable: the movement history is read from warehouse-service */
+            503: {
                 headers: {
                     "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
@@ -5144,6 +5164,16 @@ export interface operations {
             };
             /** @description File larger than 1 MB */
             413: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Inventory service unavailable: a stockQuantity change could not be recorded; nothing was imported */
+            503: {
                 headers: {
                     "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;
@@ -6746,6 +6776,16 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorDto"];
                 };
             };
+            /** @description Inventory service unavailable: warehouse-service could not reserve the stock; nothing was ordered and the cart is unchanged */
+            503: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
         };
     };
     getAllOrders: {
@@ -7284,6 +7324,16 @@ export interface operations {
             };
             /** @description If-Match does not match the current product version */
             412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["X-Request-Id"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Inventory service unavailable: a stockQuantity change could not be recorded; the product is unchanged */
+            503: {
                 headers: {
                     "X-Request-Id": components["headers"]["X-Request-Id"];
                     [name: string]: unknown;

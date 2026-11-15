@@ -720,6 +720,134 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/internal/v1/stock/adjustments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Adjust stock
+         * @description Admin adjustment with the backend's former rules: a replay of (productId, requestId) with the same delta and reason returns the stored movement; the result must stay within 0..2147483647. Returns the movement plus the ledger version it left.
+         */
+        post: operations["adjust"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/internal/v1/stock/items/{productId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a product's stock
+         * @description Returns the quantity and ledger version.
+         */
+        get: operations["item"];
+        /**
+         * Create a product's stock item
+         * @description Creates the item with ledgerVersion 1 and, for a positive quantity, an INITIAL_STOCK movement. An existing item is left unchanged and returned with 200.
+         */
+        put: operations["createItem"];
+        post?: never;
+        /**
+         * Delete a product's stock
+         * @description Deletes the item, its movements, its reservation lines and its pending levels. Idempotent: 204 also when there is no item.
+         */
+        delete: operations["deleteItem"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/internal/v1/stock/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List a product's movements
+         * @description Movements newest first (createdAt desc, then id desc), in the backend's page format. Negative page is clamped to zero; size is clamped to 1-100. A product without a stock item has no movements.
+         */
+        get: operations["movements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/internal/v1/stock/reservations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reserve stock for a checkout
+         * @description Locks the items in product id order, checks every line, then deducts every line with an ORDER_DEDUCTED movement. The reservation stays PENDING_CONFIRMATION until confirmed. A repeated call with the same reservationId and lines returns the stored reservation.
+         */
+        post: operations["reserve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/internal/v1/stock/reservations/{reservationId}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm a reservation
+         * @description Marks the reservation CONFIRMED for the order and sets the order id on its movements. Idempotent for the same order.
+         */
+        post: operations["confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/internal/v1/stock/reservations/{reservationId}/release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Release a reservation
+         * @description Puts back the stock of a PENDING_CONFIRMATION reservation (ORDER_RESTORED movements by "system", reason "Reservation released") and marks it RELEASED. Repeated calls return the same body. Confirmed reservations are restored only through order.cancelled.
+         */
+        post: operations["release"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -752,6 +880,13 @@ export interface components {
              */
             zipCode: string;
         };
+        ConfirmReservationRequestDto: {
+            /**
+             * Format: int64
+             * @example 123
+             */
+            orderId: number;
+        };
         /** @description Return request for a delivered order */
         CreateReturnDto: {
             /**
@@ -783,6 +918,40 @@ export interface components {
              * @example Error message
              */
             message: string;
+        };
+        InitialStockRequestDto: {
+            /** @example admin */
+            actor: string;
+            /**
+             * Format: int32
+             * @example 10
+             */
+            initialQuantity: number;
+            /** Format: uuid */
+            requestId?: string | null;
+        };
+        InventoryMovementDto: {
+            actor?: string;
+            /**
+             * Format: local-date-time
+             * @description UTC date and time without an offset
+             */
+            createdAt?: string;
+            /** Format: int32 */
+            delta?: number;
+            /** Format: int64 */
+            id?: number;
+            /** Format: int64 */
+            orderId?: number | null;
+            /** Format: int64 */
+            productId?: number;
+            /** Format: int32 */
+            quantityAfter?: number;
+            reason?: string;
+            /** Format: uuid */
+            requestId?: string | null;
+            /** @enum {string} */
+            type?: "INITIAL_STOCK" | "ADMIN_ADJUSTMENT" | "ORDER_DEDUCTED" | "ORDER_RESTORED" | "PURCHASE_RECEIVED" | "RETURN_RESTOCKED";
         };
         /** @description Order data transfer object */
         OrderDto: {
@@ -881,6 +1050,17 @@ export interface components {
              * @example 1.25
              */
             weightKg: number;
+        };
+        PageDtoInventoryMovementDto: {
+            content?: components["schemas"]["InventoryMovementDto"][];
+            /** Format: int32 */
+            pageNumber?: number;
+            /** Format: int32 */
+            pageSize?: number;
+            /** Format: int64 */
+            totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
         };
         PageDtoOrderDto: {
             content?: components["schemas"]["OrderDto"][];
@@ -1279,6 +1459,12 @@ export interface components {
              */
             note: string;
         };
+        ReleasedReservationDto: {
+            /** Format: uuid */
+            reservationId: string;
+            /** @enum {string} */
+            status: "PENDING_CONFIRMATION" | "CONFIRMED" | "RELEASED";
+        };
         /** @description Product that should be reordered */
         ReorderSuggestionDto: {
             /**
@@ -1315,6 +1501,35 @@ export interface components {
              * @example 18
              */
             suggestedQuantity?: number;
+        };
+        ReservationDto: {
+            lines: components["schemas"]["ReservedLineDto"][];
+            /** Format: uuid */
+            reservationId: string;
+        };
+        ReserveStockRequestDto: {
+            lines: components["schemas"]["StockLineDto"][];
+            /** Format: uuid */
+            reservationId: string;
+            /** @example alice */
+            username: string;
+        };
+        ReservedLineDto: {
+            /**
+             * Format: int64
+             * @example 42
+             */
+            ledgerVersion: number;
+            /**
+             * Format: int64
+             * @example 1
+             */
+            productId: number;
+            /**
+             * Format: int32
+             * @example 8
+             */
+            quantityAfter: number;
         };
         /** @description Return request (RMA) */
         ReturnDto: {
@@ -1610,6 +1825,90 @@ export interface components {
              * @example 3
              */
             productId: number;
+        };
+        StockAdjustmentDto: {
+            actor?: string;
+            /**
+             * Format: local-date-time
+             * @description UTC date and time without an offset
+             */
+            createdAt?: string;
+            /** Format: int32 */
+            delta?: number;
+            /** Format: int64 */
+            id?: number;
+            /**
+             * Format: int64
+             * @example 43
+             */
+            ledgerVersion?: number;
+            /** Format: int64 */
+            orderId?: number | null;
+            /** Format: int64 */
+            productId?: number;
+            /** Format: int32 */
+            quantityAfter?: number;
+            reason?: string;
+            /** Format: uuid */
+            requestId?: string | null;
+            /** @enum {string} */
+            type?: "INITIAL_STOCK" | "ADMIN_ADJUSTMENT" | "ORDER_DEDUCTED" | "ORDER_RESTORED" | "PURCHASE_RECEIVED" | "RETURN_RESTOCKED";
+        };
+        StockAdjustmentRequestDto: {
+            /** @example admin */
+            actor: string;
+            /**
+             * Format: int32
+             * @example -3
+             */
+            delta: number;
+            /**
+             * Format: int64
+             * @example 1
+             */
+            productId: number;
+            /** @example Damaged */
+            reason: string;
+            /** Format: uuid */
+            requestId: string;
+        };
+        StockErrorDto: {
+            /** @example Insufficient stock for product 1 */
+            message: string;
+            /**
+             * Format: int64
+             * @example 1
+             */
+            productId?: number;
+        };
+        StockItemDto: {
+            /**
+             * Format: int64
+             * @example 1
+             */
+            ledgerVersion: number;
+            /**
+             * Format: int64
+             * @example 1
+             */
+            productId: number;
+            /**
+             * Format: int32
+             * @example 10
+             */
+            quantity: number;
+        };
+        StockLineDto: {
+            /**
+             * Format: int64
+             * @example 1
+             */
+            productId: number;
+            /**
+             * Format: int32
+             * @example 2
+             */
+            quantity: number;
         };
         /** @description Supplier */
         SupplierDto: {
@@ -4232,6 +4531,473 @@ export interface operations {
                 };
             };
             /** @description Backend unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    adjust: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StockAdjustmentRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Adjustment recorded (or the stored one replayed) */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StockAdjustmentDto"];
+                };
+            };
+            /** @description Invalid request or a zero delta */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"];
+                };
+            };
+            /** @description Missing or invalid backend service token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Product not found (no stock item) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description requestId already used with different payload, insufficient stock, or the result exceeds the supported maximum */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Stock ledger not initialised (the startup import is running) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    item: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Stock item returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StockItemDto"];
+                };
+            };
+            /** @description Missing or invalid backend service token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Product not found (no stock item) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Stock ledger not initialised (the startup import is running) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    createItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InitialStockRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Stock item already existed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StockItemDto"];
+                };
+            };
+            /** @description Stock item created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StockItemDto"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"];
+                };
+            };
+            /** @description Missing or invalid backend service token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Stock ledger not initialised (the startup import is running) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    deleteItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Stock item deleted (or absent) */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing or invalid backend service token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Stock ledger not initialised (the startup import is running) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    movements: {
+        parameters: {
+            query: {
+                productId: number;
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Movements returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PageDtoInventoryMovementDto"];
+                };
+            };
+            /** @description Missing or invalid parameter */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"];
+                };
+            };
+            /** @description Missing or invalid backend service token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Stock ledger not initialised (the startup import is running) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    reserve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReserveStockRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Stock reserved (or the stored reservation replayed) */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReservationDto"];
+                };
+            };
+            /** @description Invalid request or a product listed twice */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"];
+                };
+            };
+            /** @description Missing or invalid backend service token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description A product has no stock item; nothing was deducted */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockErrorDto"];
+                };
+            };
+            /** @description Insufficient stock (the first short product in id order), or the reservationId was used with different lines; nothing was deducted */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StockErrorDto"];
+                };
+            };
+            /** @description Stock ledger not initialised (the startup import is running) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    confirm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reservationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmReservationRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Reservation confirmed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReservationDto"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorsDto"];
+                };
+            };
+            /** @description Missing or invalid backend service token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Reservation not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Reservation released, or confirmed for another order */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Stock ledger not initialised (the startup import is running) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+        };
+    };
+    release: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reservationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reservation released */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReleasedReservationDto"];
+                };
+            };
+            /** @description Missing or invalid backend service token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Reservation not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Reservation already confirmed */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorDto"];
+                };
+            };
+            /** @description Stock ledger not initialised (the startup import is running) */
             503: {
                 headers: {
                     [name: string]: unknown;
