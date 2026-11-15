@@ -2,7 +2,7 @@ services:
   backend:
     # Release train pin, same digest as awesome-localstack's lightweight-docker-compose.yml.
     # openapi/backend-api-docs.json is this image's document (BACKEND_IMAGE overrides it).
-    image: ${BACKEND_IMAGE:-slawekradzyminski/backend:3.22.0@sha256:f16bbc2d585f663b2fd7f7f6892d65fe17ae2c1ceb349a4a4d20929e82390399}
+    image: ${BACKEND_IMAGE:-slawekradzyminski/backend:3.22.1@sha256:eaa41570307a70107a894fdb89c8cc63a39bb16675738ec707d979cb8a2aba97}
     expose:
       - "4001"
     hostname: backend
