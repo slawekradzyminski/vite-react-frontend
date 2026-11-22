@@ -63,22 +63,59 @@ jobs:
           check-latest: true
           cache: 'npm'
 
-      # The stack start (image pulls plus the frontend image build, 85-110 s) and the host toolchain
-      # (npm ci plus the Playwright browser, 45-90 s) are independent, so run them side by side
-      # instead of one after the other. Either failure fails the step.
+      - uses: docker/setup-buildx-action@v4.4.1
+
+      # Lets the `docker buildx build` call below use the GitHub Actions cache (type=gha).
+      - name: Expose the Actions cache to Buildx
+        uses: crazy-max/ghaction-github-runtime@v4.0.0
+
+      # node_modules and the Playwright browsers depend only on the lockfile and the Node version.
+      # On a hit `npm ci` (about a minute while the image builds) and the browser download are skipped.
+      - name: Restore node_modules and the Playwright browsers
+        id: toolchain
+        uses: actions/cache@v6.1.0
+        with:
+          path: |
+            node_modules
+            ~/.cache/ms-playwright
+          key: e2e-toolchain-${{ runner.os }}-${{ hashFiles('.nvmrc', 'package-lock.json') }}
+
+      # The stack (image pulls plus the frontend image build) and the host toolchain are independent,
+      # so they run side by side. The frontend image is built with a layer cache: its `npm ci` layer
+      # changes only with package*.json. Shard 1 writes the cache; a branch reads its own or main's.
+      # Any failure fails the step.
       - name: Start the stack and install the test toolchain in parallel
+        env:
+          TOOLCHAIN_CACHED: ${{ steps.toolchain.outputs.cache-hit }}
+          WRITE_IMAGE_CACHE: ${{ matrix.shard == 1 }}
         run: |
-          docker compose up -d > "$RUNNER_TEMP/compose-up.log" 2>&1 &
-          compose_pid=$!
-          (npm ci && npx playwright install chromium --with-deps) &
+          docker compose pull --quiet --ignore-buildable > "$RUNNER_TEMP/compose-pull.log" 2>&1 &
+          pull_pid=$!
+          cache_to=()
+          if [ "$WRITE_IMAGE_CACHE" = "true" ]; then
+            cache_to=(--cache-to "type=gha,mode=max,scope=frontend-e2e")
+          fi
+          docker buildx build --load --tag vite-react-frontend:local \
+            --build-arg VITE_WAREHOUSE_ENABLED=true \
+            --cache-from type=gha,scope=frontend-e2e "${cache_to[@]}" . > "$RUNNER_TEMP/image-build.log" 2>&1 &
+          build_pid=$!
+          if [ "$TOOLCHAIN_CACHED" = "true" ]; then
+            npx playwright install-deps chromium &
+          else
+            (npm ci && npx playwright install chromium --with-deps) &
+          fi
           toolchain_pid=$!
           status=0
           wait "$toolchain_pid" || status=1
-          wait "$compose_pid" || status=1
-          echo "::group::docker compose up"
-          cat "$RUNNER_TEMP/compose-up.log"
-          echo "::endgroup::"
-          exit "$status"
+          wait "$pull_pid" || status=1
+          wait "$build_pid" || status=1
+          for log in compose-pull image-build; do
+            echo "::group::$log"
+            cat "$RUNNER_TEMP/$log.log"
+            echo "::endgroup::"
+          done
+          [ "$status" -eq 0 ] || exit 1
+          docker compose up -d --no-build
 
       - name: Make scripts executable
         run: |
