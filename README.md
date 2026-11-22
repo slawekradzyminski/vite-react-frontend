@@ -219,6 +219,8 @@ Playwright exercises the full stack (e.g., the Tools tab triggers real streaming
 
 CI uses this repository's `docker-compose.yml`. After backend changes, publish a new backend image from `../test-secure-backend` with `./build-multiarch.sh <version>`, then run frontend CI with `BACKEND_IMAGE=slawekradzyminski/backend:<version>` or update the compose default tag. `WAREHOUSE_IMAGE`, `PAYMENT_IMAGE` and `NOTIFICATION_IMAGE` override warehouse-service, payment-service and notification-service the same way.
 
+CI caches what depends only on `package-lock.json`: `node_modules` and the Playwright browsers (`actions/cache`), and the `npm ci` layer of the frontend image (Buildx layer cache, scope `frontend-e2e`, written by e2e shard 1). A lockfile change rebuilds all of them.
+
 ## Release pipeline
 
 Pushing a `vX.Y.Z` tag runs `.github/workflows/publish-image.yml`:
