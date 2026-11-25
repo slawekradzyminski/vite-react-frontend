@@ -12,6 +12,7 @@ import {
   catalogCsv,
   coupons,
   currencies,
+  DEFAULT_REQUEST_TIMEOUT_MS,
   giftCards,
   inventory,
   loyalty,
@@ -1034,7 +1035,19 @@ describe('commerce API headers', () => {
     const [url, body, config] = mockAxios.post.mock.calls[0];
     expect(url).toBe('/api/v1/admin/products/import');
     expect((body as FormData).get('file')).toBe(file);
-    expect(config).toEqual({ params: { dryRun: true }, headers: { 'Content-Type': 'multipart/form-data' } });
+    expect(config).toEqual({ params: { dryRun: true }, headers: { 'Content-Type': 'multipart/form-data' }, timeout: 120_000 });
+  });
+
+  it('gives the CSV export a longer timeout than the default', async () => {
+    mockAxios.get.mockResolvedValue({ data: new Blob() });
+
+    await catalogCsv.export();
+
+    expect(mockAxios.get).toHaveBeenCalledWith('/api/v1/admin/products/export', {
+      responseType: 'blob',
+      headers: { Accept: 'text/csv' },
+      timeout: 120_000,
+    });
   });
 });
 
@@ -1065,14 +1078,23 @@ describe('warehouse-service API client', () => {
     Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
   });
 
+  it('gives every axios instance the default request timeout', () => {
+    expect(DEFAULT_REQUEST_TIMEOUT_MS).toBe(15_000);
+    mockAxios.create.mock.calls.forEach(([config]: [{ timeout?: number }]) => {
+      expect(config.timeout).toBe(DEFAULT_REQUEST_TIMEOUT_MS);
+    });
+  });
+
   it('creates a separate instance on the warehouse base URL with JSON headers', () => {
     expect(mockAxios.create).toHaveBeenCalledTimes(4);
     expect(mockAxios.create).toHaveBeenNthCalledWith(1, {
       baseURL: getApiBaseUrl(),
+      timeout: 15_000,
       headers: { 'Content-Type': 'application/json' },
     });
     expect(mockAxios.create).toHaveBeenNthCalledWith(2, {
       baseURL: getWarehouseApiBaseUrl(),
+      timeout: 15_000,
       headers: { 'Content-Type': 'application/json' },
     });
   });
@@ -1338,6 +1360,7 @@ describe('payment-service API client', () => {
   it('creates a third instance on the payment base URL with JSON headers', () => {
     expect(mockAxios.create).toHaveBeenNthCalledWith(3, {
       baseURL: getPaymentApiBaseUrl(),
+      timeout: 15_000,
       headers: { 'Content-Type': 'application/json' },
     });
   });
@@ -1507,6 +1530,7 @@ describe('notification-service API client', () => {
   it('creates a fourth instance on the notification base URL with JSON headers', () => {
     expect(mockAxios.create).toHaveBeenNthCalledWith(4, {
       baseURL: getNotificationApiBaseUrl(),
+      timeout: 15_000,
       headers: { 'Content-Type': 'application/json' },
     });
   });

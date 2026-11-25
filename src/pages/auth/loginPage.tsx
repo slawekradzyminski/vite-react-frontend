@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { auth } from '../../lib/api';
+import { isTimeout } from '../../lib/requestErrors';
 import { authStorage } from '../../lib/authStorage';
 import { LoginFormData, loginSchema } from '../../validators/auth';
 import { useToast } from '../../hooks/useToast';
@@ -57,6 +58,12 @@ export function LoginPage() {
           variant: 'error',
           title: 'Error',
           description: 'Invalid username/password',
+        });
+      } else if (isTimeout(err)) {
+        toast({
+          variant: 'error',
+          title: 'Error',
+          description: 'The server did not respond in time. Please try again.',
         });
       } else {
         toast({

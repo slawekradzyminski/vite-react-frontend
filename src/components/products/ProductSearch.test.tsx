@@ -3,6 +3,7 @@ import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, useLocation } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 import { productSearch } from '../../lib/api';
 import type { ProductSearchParams, ProductSearchResult } from '../../types/commerce';
 import { ProductSearch } from './ProductSearch';
@@ -249,6 +250,13 @@ describe('ProductSearch', () => {
     vi.mocked(productSearch.search).mockRejectedValue(Object.assign(new Error('Server'), { isAxiosError: true, response: { status: 404 } }));
     renderAt();
     expect(await screen.findByTestId('error-message')).toHaveTextContent('Error loading products');
+  });
+
+  it('shows the error state after a single timed-out request instead of retrying it', async () => {
+    vi.mocked(productSearch.search).mockRejectedValue(new AxiosError('timeout of 15000ms exceeded', 'ECONNABORTED'));
+    renderAt();
+    expect(await screen.findByTestId('error-message')).toHaveTextContent('Error loading products');
+    expect(productSearch.search).toHaveBeenCalledTimes(1);
   });
 
   it('lets the WebMCP search tool drive the visible search', async () => {

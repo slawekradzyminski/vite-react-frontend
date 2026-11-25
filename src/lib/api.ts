@@ -103,8 +103,15 @@ import {
 } from './runtimeConfig';
 import { withTrackedWrites } from './pendingWrites';
 
+// Without a timeout a hung request keeps the UI in "Signing in..." or "Loading..." forever.
+// Streams (LLM chat and generate) use fetch and are not affected; slow admin CSV transfers
+// override it per request.
+export const DEFAULT_REQUEST_TIMEOUT_MS = 15_000;
+const CSV_TRANSFER_TIMEOUT_MS = 120_000;
+
 const api = axios.create({
   baseURL: getApiBaseUrl(),
+  timeout: DEFAULT_REQUEST_TIMEOUT_MS,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -114,6 +121,7 @@ const api = axios.create({
 // warehouse-service. It accepts the backend's tokens, so it shares the auth interceptors.
 const warehouseApi = axios.create({
   baseURL: getWarehouseApiBaseUrl(),
+  timeout: DEFAULT_REQUEST_TIMEOUT_MS,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -122,6 +130,7 @@ const warehouseApi = axios.create({
 // Card payments live in payment-service, which also accepts the backend's tokens.
 const paymentApi = axios.create({
   baseURL: getPaymentApiBaseUrl(),
+  timeout: DEFAULT_REQUEST_TIMEOUT_MS,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -131,6 +140,7 @@ const paymentApi = axios.create({
 // also accepts the backend's tokens.
 const notificationApi = axios.create({
   baseURL: getNotificationApiBaseUrl(),
+  timeout: DEFAULT_REQUEST_TIMEOUT_MS,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -578,13 +588,14 @@ export const wishlist = {
 };
 
 export const catalogCsv = {
-  export: () => api.get<Blob>(`${ADMIN_API}/products/export`, { responseType: 'blob', headers: { Accept: 'text/csv' } }),
+  export: () => api.get<Blob>(`${ADMIN_API}/products/export`, { responseType: 'blob', headers: { Accept: 'text/csv' }, timeout: CSV_TRANSFER_TIMEOUT_MS }),
   import: (file: File, dryRun: boolean) => {
     const body = new FormData();
     body.append('file', file);
     return api.post<ImportReport>(`${ADMIN_API}/products/import`, body, {
       params: { dryRun },
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: CSV_TRANSFER_TIMEOUT_MS,
     });
   },
 };

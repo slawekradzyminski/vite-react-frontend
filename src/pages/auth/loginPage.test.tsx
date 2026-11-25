@@ -4,7 +4,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { LoginPage } from './loginPage';
 import { readLoginReturnTo } from '../../lib/loginNavigation';
 import { Role } from '../../types/auth';
-import { AxiosResponse } from 'axios';
+import { AxiosError, AxiosResponse } from 'axios';
 
 // Mock API first, before any variable declarations
 vi.mock('../../lib/api', () => ({
@@ -321,6 +321,29 @@ describe('LoginPage', () => {
         description: 'Server error occurred',
       });
     });
+  });
+
+  it('ends the sign-in with an error toast when the request times out', async () => {
+    // given
+    const { auth } = await import('../../lib/api');
+    vi.mocked(auth.login).mockRejectedValue(new AxiosError('timeout of 15000ms exceeded', 'ECONNABORTED'));
+    render(<LoginPage />);
+
+    // when
+    await user.type(screen.getByTestId('login-username-input'), 'validuser');
+    await user.type(screen.getByTestId('login-password-input'), 'validpassword');
+    await user.click(screen.getByTestId('login-submit-button'));
+
+    // then
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith({
+        variant: 'error',
+        title: 'Error',
+        description: 'The server did not respond in time. Please try again.',
+      });
+    });
+    expect(screen.getByTestId('login-submit-button')).toHaveTextContent('Sign in');
+    expect(screen.getByTestId('login-submit-button')).toBeEnabled();
   });
 
   it('navigates to register page when register link is clicked', async () => {
