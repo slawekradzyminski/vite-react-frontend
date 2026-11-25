@@ -5,7 +5,7 @@ import { isWarehouseEnabled } from '../../lib/runtimeConfig';
 import { commerceTransport } from '../../lib/commerceTransport';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminOrders, orders } from '../../lib/api';
-import { serverMessage } from '../../lib/requestErrors';
+import { responseStatus, serverMessage } from '../../lib/requestErrors';
 import { ReservationCountdown } from './ReservationCountdown';
 import type { OrderStatus } from '../../types/order';
 import { Role } from '../../types/auth';
@@ -30,7 +30,14 @@ export const OrderDetails = () => {
   const { toast } = useToast();
 
   // Fetch order details
-  const { data: orderData, isLoading: isLoadingOrder, refetch: refetchOrder } = useQuery({
+  const {
+    data: orderData,
+    isLoading: isLoadingOrder,
+    isError: isOrderError,
+    error: orderError,
+    isFetching: isFetchingOrder,
+    refetch: refetchOrder,
+  } = useQuery({
     queryKey: ['order', orderId],
     queryFn: () => orders.getOrderById(orderId),
     enabled: orderId > 0,
@@ -162,6 +169,20 @@ export const OrderDetails = () => {
 
   if (isLoadingOrder) {
     return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="order-details-loading">Loading order details...</Surface>;
+  }
+
+  // Only an invalid id or a 404 means the order does not exist. Any other failure (5xx, network,
+  // timeout) is shown as an error the user can retry, not as "Order not found".
+  if (!order && isOrderError && responseStatus(orderError) !== 404) {
+    return (
+      <Surface variant="muted" padding="message" className="text-center" data-testid="order-details-error">
+        <h1 className="text-lg font-semibold text-red-700" role="alert" data-testid="order-details-error-message">Unable to load the order</h1>
+        <p className="mt-2 text-sm text-slate-500">The server could not be reached or failed to answer. Please try again.</p>
+        <Button className="mt-4" onClick={() => refetchOrder()} disabled={isFetchingOrder} data-testid="order-details-retry">
+          {isFetchingOrder ? 'Retrying...' : 'Retry'}
+        </Button>
+      </Surface>
+    );
   }
 
   if (!order) {
