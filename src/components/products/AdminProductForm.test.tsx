@@ -4,6 +4,7 @@ import { AdminProductForm } from './AdminProductForm';
 import { products } from '../../lib/api';
 import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AxiosError, type AxiosResponse } from 'axios';
 
 // Mock the products API
 vi.mock('../../lib/api', async () => ({
@@ -254,5 +255,34 @@ describe('AdminProductForm', () => {
 
     // then
     await waitFor(() => expect(onSuccess).toHaveBeenCalledTimes(1));
+  });
+
+  describe('loading the product to edit', () => {
+    const httpError = (status: number) =>
+      new AxiosError(`Request failed with status code ${status}`, 'ERR_BAD_RESPONSE', undefined, undefined, { status, data: {} } as AxiosResponse);
+
+    it('shows "Product not found" instead of an empty editable form for a 404', async () => {
+      vi.mocked(products.getProductById).mockRejectedValueOnce(httpError(404));
+
+      renderWithProviders(<AdminProductForm productId={999999} />);
+
+      expect(await screen.findByTestId('product-form-not-found-message')).toHaveTextContent('Product not found');
+      expect(screen.queryByTestId('product-form')).not.toBeInTheDocument();
+      expect(products.getProductById).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows an error with Retry for a server failure and loads the form once it recovers', async () => {
+      vi.mocked(products.getProductById).mockRejectedValueOnce(httpError(503));
+
+      renderWithProviders(<AdminProductForm productId={1} />);
+
+      expect(await screen.findByTestId('product-form-load-error-message')).toHaveTextContent('Unable to load the product');
+      expect(screen.queryByTestId('product-form')).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByTestId('product-form-retry'));
+
+      expect(await screen.findByTestId('product-form')).toBeInTheDocument();
+      await waitFor(() => expect(screen.getByTestId('product-name-input')).toHaveValue('Test Product'));
+    });
   });
 });

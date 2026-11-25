@@ -1,15 +1,19 @@
-import { useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import { AdminProductForm } from '../../components/products/AdminProductForm';
 import { Surface } from '../../components/ui/surface';
 import { AdminSectionNav } from '../../components/admin/AdminSectionNav';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { useToast } from '../../hooks/useToast';
+import { parseRouteId } from '../../lib/routeIds';
 
 export function AdminProductFormPage() {
   const { id } = useParams<{ id: string }>();
-  const productId = id ? parseInt(id, 10) : undefined;
-  const isEditing = !!productId;
-  useDocumentTitle(isEditing ? 'Edit Product' : 'Add New Product');
+  // /admin/products/edit/:id always edits: an id that is not a positive integer ("abc", "1.5")
+  // names no product, instead of silently turning the page into "Add New Product".
+  const isEditing = id !== undefined;
+  const productId = parseRouteId(id) ?? undefined;
+  const invalidId = isEditing && productId === undefined;
+  useDocumentTitle(invalidId ? 'Product not found' : isEditing ? 'Edit Product' : 'Add New Product');
   const navigate = useNavigate();
   const { toast } = useToast();
   // The toast outlives the navigation, so the list page shows the confirmation.
@@ -33,7 +37,17 @@ export function AdminProductFormPage() {
         </h1>
       </Surface>
       <div className="mx-auto max-w-3xl">
-      <AdminProductForm productId={productId} onSuccess={handleSaved} />
+        {invalidId ? (
+          <Surface variant="muted" padding="message" className="text-center" data-testid="product-form-invalid-id">
+            <p className="text-lg font-semibold text-slate-700" role="alert" data-testid="product-form-invalid-id-message">Product not found</p>
+            <p className="mt-2 text-sm text-slate-500">&quot;{id}&quot; is not a valid product id.</p>
+            <Link to="/admin/products" className="mt-4 inline-block text-sm font-medium text-slate-900 underline" data-testid="product-form-invalid-id-back">
+              Back to products
+            </Link>
+          </Surface>
+        ) : (
+          <AdminProductForm productId={productId} onSuccess={handleSaved} />
+        )}
       </div>
     </div>
   );

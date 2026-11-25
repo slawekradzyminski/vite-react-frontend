@@ -94,4 +94,19 @@ describe('AdminProductFormPage', () => {
     expect(screen.getByTestId('toast-title')).toHaveTextContent(title);
     expect(screen.getByTestId('toast-description')).toHaveTextContent(description);
   });
+
+  it.each(['abc', '0', '1.5', '9223372036854775807'])('shows "Product not found" instead of "Add New Product" for the id %s', (id) => {
+    // given
+    (useParams as Mock).mockReturnValue({ id });
+
+    // when
+    renderAdminProductFormPage();
+
+    // then
+    expect(screen.getByTestId('product-form-invalid-id-message')).toHaveTextContent('Product not found');
+    expect(screen.getByTestId('admin-product-form-title')).toHaveTextContent('Edit Product');
+    expect(screen.queryByText('Add New Product')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('admin-product-form-mock')).not.toBeInTheDocument();
+    expect(document.title).toBe('Product not found – Awesome Testing');
+  });
 });
