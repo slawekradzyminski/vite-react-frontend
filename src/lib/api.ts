@@ -212,6 +212,13 @@ const redirectToLogin = () => {
   window.location.href = '/login';
 };
 
+// Only the refresh endpoint's own rejection proves the refresh token is no longer valid. A
+// network error, a timeout or a 5xx says nothing about it, so the tokens are kept and the
+// request fails like any other.
+const REFRESH_TOKEN_REJECTED: readonly (number | undefined)[] = [400, 401, 403];
+const isRefreshTokenRejected = (error: unknown) =>
+  REFRESH_TOKEN_REJECTED.includes((error as { response?: { status?: number } } | null | undefined)?.response?.status);
+
 // Applied to every instance so each one sends the session and bearer headers and retries
 // its own requests after a shared token refresh. Only a 401 ends the session. A 403 is a
 // business or authorization answer (a review by someone who did not receive the product, a
@@ -244,7 +251,9 @@ const installAuthInterceptors = (instance: AxiosInstance, ownsSession: boolean) 
       const status = error.response?.status;
       const originalRequest = error.config as RefreshableRequestConfig | undefined;
       if (originalRequest && isRefreshEndpoint(originalRequest.url)) {
-        redirectToLogin();
+        if (isRefreshTokenRejected(error)) {
+          redirectToLogin();
+        }
         return Promise.reject(error);
       }
 
@@ -264,7 +273,9 @@ const installAuthInterceptors = (instance: AxiosInstance, ownsSession: boolean) 
             };
             return instance(originalRequest);
           } catch (refreshError) {
-            redirectToLogin();
+            if (isRefreshTokenRejected(refreshError)) {
+              redirectToLogin();
+            }
             return Promise.reject(refreshError);
           }
         }
@@ -305,11 +316,13 @@ const streamWithAuth = async (path: string, payload: unknown) => {
   if (response.status === 401) {
     const refreshToken = authStorage.getRefreshToken();
     if (refreshToken) {
-      let tokens: TokenPair;
-      try {
-        tokens = await enqueueRefresh(refreshToken);
-      } catch {
-        redirectToLogin();
+      const tokens = await enqueueRefresh(refreshToken).catch((refreshError: unknown) => {
+        if (isRefreshTokenRejected(refreshError)) {
+          redirectToLogin();
+        }
+        return null;
+      });
+      if (!tokens) {
         throw new Error('Failed to refresh session');
       }
 

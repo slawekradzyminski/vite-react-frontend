@@ -65,6 +65,9 @@ const mockAxios = vi.hoisted(() => {
   main.create = vi.fn(() => instances[main.create.mock.calls.length - 1]);
   return main;
 });
+// What the refresh endpoint answers when the refresh token is no longer valid.
+const refreshRejection = (message: string, status = 401) => Object.assign(new Error(message), { response: { status } });
+
 const mockWarehouseAxios = mockAxios.warehouseInstance;
 const mockPaymentAxios = mockAxios.paymentInstance;
 const mockNotificationAxios = mockAxios.notificationInstance;
@@ -389,7 +392,7 @@ describe('API Client', () => {
       const errorInterceptor = getErrorInterceptor();
       localStorage.setItem('token', 'expired-token');
       localStorage.setItem('refreshToken', 'refresh-123');
-      const refreshSpy = vi.spyOn(auth, 'refresh').mockRejectedValue(new Error('Invalid refresh token'));
+      const refreshSpy = vi.spyOn(auth, 'refresh').mockRejectedValue(refreshRejection('Invalid refresh token'));
       const originalLocation = window.location;
       Object.defineProperty(window, 'location', {
         configurable: true,
@@ -481,6 +484,84 @@ describe('API Client', () => {
       expect(window.location.href).toBe('/login');
 
       refreshSpy.mockRestore();
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    });
+
+    it.each([
+      ['a network error', () => Object.assign(new Error('Network Error'), { code: 'ERR_NETWORK' })],
+      ['a timeout', () => Object.assign(new Error('timeout of 15000ms exceeded'), { code: 'ECONNABORTED' })],
+      ['a 503', () => refreshRejection('Service Unavailable', 503)],
+      ['a 500', () => refreshRejection('Internal Server Error', 500)],
+      ['no error value at all', () => undefined],
+    ])('keeps the tokens when the refresh fails with %s', async (_label, makeError) => {
+      const errorInterceptor = getErrorInterceptor();
+      localStorage.setItem('token', 'expired-token');
+      localStorage.setItem('refreshToken', 'refresh-123');
+      const refreshError = makeError();
+      const refreshSpy = vi.spyOn(auth, 'refresh').mockRejectedValue(refreshError);
+      const originalLocation = window.location;
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: { href: 'http://localhost/orders' } as Location,
+      });
+
+      await expect(
+        errorInterceptor({ config: { url: '/api/v1/orders', headers: {} }, response: { status: 401 } } as any)
+      ).rejects.toBe(refreshError);
+
+      expect(localStorage.getItem('token')).toBe('expired-token');
+      expect(localStorage.getItem('refreshToken')).toBe('refresh-123');
+      expect(window.location.href).toBe('http://localhost/orders');
+      refreshSpy.mockRestore();
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    });
+
+    it.each([400, 401, 403])('signs out when the refresh endpoint itself answers %i', async (status) => {
+      const errorInterceptor = getErrorInterceptor();
+      localStorage.setItem('token', 'expired-token');
+      localStorage.setItem('refreshToken', 'refresh-123');
+      const originalLocation = window.location;
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: { href: 'http://localhost/' } as Location,
+      });
+
+      const error = { config: { url: '/api/v1/users/refresh', headers: {} }, response: { status } };
+      await expect(errorInterceptor(error as any)).rejects.toBe(error as any);
+
+      expect(localStorage.getItem('refreshToken')).toBeNull();
+      expect(window.location.href).toBe('/login');
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    });
+
+    it.each([
+      ['a 502', { response: { status: 502 } }],
+      ['a network error', { message: 'Network Error' }],
+    ])('keeps the tokens when the refresh endpoint fails with %s', async (_label, failure) => {
+      const errorInterceptor = getErrorInterceptor();
+      localStorage.setItem('token', 'expired-token');
+      localStorage.setItem('refreshToken', 'refresh-123');
+      const originalLocation = window.location;
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: { href: 'http://localhost/' } as Location,
+      });
+
+      const error = { config: { url: '/api/v1/users/refresh', headers: {} }, ...failure };
+      await expect(errorInterceptor(error as any)).rejects.toBe(error as any);
+
+      expect(localStorage.getItem('token')).toBe('expired-token');
+      expect(localStorage.getItem('refreshToken')).toBe('refresh-123');
+      expect(window.location.href).toBe('http://localhost/');
       Object.defineProperty(window, 'location', {
         configurable: true,
         value: originalLocation,
@@ -784,7 +865,7 @@ describe('API Client', () => {
       );
       localStorage.setItem('token', 'expired');
       localStorage.setItem('refreshToken', 'revoked-refresh-token');
-      const refreshSpy = vi.spyOn(auth, 'refresh').mockRejectedValue(new Error('refresh rejected'));
+      const refreshSpy = vi.spyOn(auth, 'refresh').mockRejectedValue(refreshRejection('refresh rejected', 400));
       const originalLocation = window.location;
       Object.defineProperty(window, 'location', {
         configurable: true,
@@ -797,6 +878,30 @@ describe('API Client', () => {
       expect(localStorage.getItem('token')).toBeNull();
       expect(localStorage.getItem('refreshToken')).toBeNull();
       expect(window.location.href).toBe('/login');
+
+      refreshSpy.mockRestore();
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+    });
+
+    it('keeps the tokens when the refresh behind a stream fails with a network error', async () => {
+      vi.mocked(global.fetch).mockResolvedValue(
+        new Response(null, { status: 401, statusText: 'Unauthorized' })
+      );
+      localStorage.setItem('token', 'expired');
+      localStorage.setItem('refreshToken', 'valid-refresh-token');
+      const refreshSpy = vi.spyOn(auth, 'refresh').mockRejectedValue(new Error('Network Error'));
+      const originalLocation = window.location;
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: { href: 'http://localhost/llm' } as Location,
+      });
+
+      await expect(ollama.generate(requestBody)).rejects.toThrow('Failed to refresh session');
+      expect(localStorage.getItem('refreshToken')).toBe('valid-refresh-token');
+      expect(window.location.href).toBe('http://localhost/llm');
 
       refreshSpy.mockRestore();
       Object.defineProperty(window, 'location', {
@@ -1140,7 +1245,7 @@ describe('warehouse-service API client', () => {
   it('signs out when a warehouse refresh fails', async () => {
     localStorage.setItem('token', 'expired-token');
     localStorage.setItem('refreshToken', 'refresh-123');
-    vi.spyOn(auth, 'refresh').mockRejectedValue(new Error('Invalid refresh token'));
+    vi.spyOn(auth, 'refresh').mockRejectedValue(refreshRejection('Invalid refresh token'));
 
     await expect(mockWarehouseAxios.responseErrorInterceptor({
       config: { url: '/api/v1/admin/suppliers', headers: {} },
@@ -1348,7 +1453,7 @@ describe('payment-service API client', () => {
   it('signs out when the refresh behind a payment 401 fails', async () => {
     localStorage.setItem('token', 'expired-token');
     localStorage.setItem('refreshToken', 'refresh-123');
-    vi.spyOn(auth, 'refresh').mockRejectedValue(new Error('Invalid refresh token'));
+    vi.spyOn(auth, 'refresh').mockRejectedValue(refreshRejection('Invalid refresh token'));
 
     await expect(mockPaymentAxios.responseErrorInterceptor({
       config: { url: '/api/v1/orders/2/payments', headers: {} },
