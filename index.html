@@ -7,9 +7,23 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/branding/generated/at-180.png?v=3.6.13" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Awesome Testing</title>
+    <style>
+      /* Shown only if the app never mounts (the main bundle failed to load or threw before the
+         first render): React replaces everything inside #root once it renders. */
+      #app-boot-fallback { visibility: hidden; animation: app-boot-fallback-show 0s linear 10s forwards; max-width: 32rem; margin: 4rem auto; padding: 0 1rem; text-align: center; font-family: system-ui, sans-serif; color: #0f172a; }
+      @keyframes app-boot-fallback-show { to { visibility: visible; } }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <noscript>
+      <p data-testid="app-noscript" style="max-width: 32rem; margin: 4rem auto; text-align: center; font-family: system-ui, sans-serif;">
+        Awesome Testing needs JavaScript. Enable it in your browser and reload the page.
+      </p>
+    </noscript>
+    <div id="root"><div id="app-boot-fallback" role="alert" data-testid="app-boot-fallback">
+      <h1 style="font-size: 1.5rem; font-weight: 600;">The application could not be loaded</h1>
+      <p>Check your connection and <a href="/" data-testid="app-boot-fallback-reload">reload the page</a>.</p>
+    </div></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
