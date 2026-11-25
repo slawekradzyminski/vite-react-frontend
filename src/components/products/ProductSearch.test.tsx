@@ -259,6 +259,22 @@ describe('ProductSearch', () => {
     expect(productSearch.search).toHaveBeenCalledTimes(1);
   });
 
+  it.each([
+    ['an HTML error page', '<html>502 Bad Gateway</html>'],
+    ['a body without a content list', { totalElements: 0 }],
+    ['a product with a string price', { content: [{ id: 1, name: 'Mug', price: 'abc', stockQuantity: 1 }], totalElements: 1 }],
+  ])('shows an error with Retry instead of "No products found" for %s', async (_label, body) => {
+    vi.mocked(productSearch.search).mockResolvedValueOnce({ data: body } as never);
+    renderAt();
+
+    expect(await screen.findByTestId('error-message')).toHaveTextContent('Error loading products');
+    expect(screen.queryByText('No products found')).not.toBeInTheDocument();
+
+    await userEvent.setup().click(screen.getByTestId('product-list-retry'));
+
+    expect(await screen.findByTestId('card-1')).toBeInTheDocument();
+  });
+
   it('lets the WebMCP search tool drive the visible search', async () => {
     // given
     renderAt('/products?category=Chairs&page=2');

@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { products } from '../../lib/api';
 import { ProductCard } from './ProductCard';
+import { isProductList } from '../../lib/responseShape';
 import { useShopWebMcp } from '../../features/webmcp/useShopWebMcp';
 import { filterProducts } from '../../features/webmcp/webmcp-model';
 import { ShopToolPanel } from '../../features/webmcp/ShopToolPanel';
@@ -44,15 +45,18 @@ export function ProductList({ category }: ProductListProps) {
   const params = new URLSearchParams(window.location.search);
   const webmcp = useShopWebMcp(onSearch, params.get('tools') !== 'off');
 
-  const { data: allProducts, isLoading, error } = useQuery({
+  const { data: allProducts, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ['products'],
     queryFn: products.getAllProducts,
   });
+  // A body that is not a list of products is a failed load, not an empty catalogue.
+  const catalogue = isProductList(allProducts?.data) ? allProducts.data : null;
+  const malformed = allProducts !== undefined && catalogue === null;
 
   const filteredProducts = useMemo(() => {
-    if (!allProducts?.data) return [];
+    if (!catalogue) return [];
 
-    let filtered = filterProducts(allProducts.data, searchTerm, inStockOnly);
+    let filtered = filterProducts(catalogue, searchTerm, inStockOnly);
 
     if (category) {
       filtered = filtered.filter(product => product.category === category);
@@ -70,7 +74,7 @@ export function ProductList({ category }: ProductListProps) {
       default:
         return filtered;
     }
-  }, [allProducts, category, searchTerm, sortOption, inStockOnly]);
+  }, [catalogue, category, searchTerm, sortOption, inStockOnly]);
 
   const clearSearch = () => {
     setSearchTerm('');
@@ -146,8 +150,15 @@ export function ProductList({ category }: ProductListProps) {
     return <div className="rounded-[1.75rem] border border-stone-200/80 bg-white/84 px-6 py-12 text-center text-slate-500" data-testid="product-list-loading">Loading products...</div>;
   }
 
-  if (error) {
-    return <div className="rounded-[1.75rem] border border-red-200 bg-red-50 px-6 py-12 text-center text-red-600" data-testid="error-message">Error loading products</div>;
+  if (error || malformed) {
+    return (
+      <div className="rounded-[1.75rem] border border-red-200 bg-red-50 px-6 py-12 text-center text-red-600">
+        <p role="alert" data-testid="error-message">Error loading products</p>
+        <button type="button" onClick={() => refetch()} disabled={isFetching} className="mt-4 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-stone-50 transition hover:bg-slate-800 disabled:opacity-60" data-testid="product-list-retry">
+          {isFetching ? 'Retrying...' : 'Retry'}
+        </button>
+      </div>
+    );
   }
 
   if (!filteredProducts.length) {

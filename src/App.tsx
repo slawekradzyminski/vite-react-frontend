@@ -1,5 +1,5 @@
 import { BrowserRouter, useLocation } from 'react-router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { ArrowUpRight, Coffee, UserRound } from 'lucide-react';
 import { AppRoutes } from './AppRoutes';
 import { ToastProvider } from './components/ui/ToastProvider';
@@ -7,10 +7,11 @@ import { Navigation } from './components/layout/Navigation';
 import { AppErrorBoundary } from './components/layout/AppErrorBoundary';
 import { Button } from './components/ui/button';
 import { brandMarkSrc } from './lib/brandingAssets';
+import { createAppQueryClient } from './lib/queryClient';
 import { Theme } from '@radix-ui/themes';
 import '@radix-ui/themes/styles.css';
 
-const queryClient = new QueryClient();
+const queryClient = createAppQueryClient();
 
 const footerLinks = [
   {
