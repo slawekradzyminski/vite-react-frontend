@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type { AxiosResponse } from 'axios';
+import { AxiosError, type AxiosResponse } from 'axios';
 import { AppRoutes } from './AppRoutes';
 import { auth } from './lib/api';
 import { authStorage } from './lib/authStorage';
@@ -170,11 +170,26 @@ describe('AppRoutes access contract', () => {
 
   it('sends a visitor whose session the backend rejects to the login page', async () => {
     authStorage.setTokens({ token: 'expired-token', refreshToken: 'refresh-token' });
-    vi.mocked(auth.me).mockRejectedValue(new Error('401'));
+    vi.mocked(auth.me).mockRejectedValue(
+      new AxiosError('Request failed with status code 401', 'ERR_BAD_REQUEST', undefined, undefined, { status: 401 } as AxiosResponse)
+    );
 
     renderAt('/admin');
 
     expect(await screen.findByText('page:Login')).toBeInTheDocument();
+  });
+
+  it('keeps a signed-in visitor on the page with a retry when the session check fails with 503', async () => {
+    authStorage.setTokens({ token: 'valid-token', refreshToken: 'refresh-token' });
+    vi.mocked(auth.me).mockRejectedValue(
+      new AxiosError('Request failed with status code 503', 'ERR_BAD_RESPONSE', undefined, undefined, { status: 503 } as AxiosResponse)
+    );
+
+    renderAt('/admin');
+
+    expect(await screen.findByTestId('protected-route-retry')).toBeInTheDocument();
+    expect(screen.queryByText('page:Login')).not.toBeInTheDocument();
+    expect(authStorage.getAccessToken()).toBe('valid-token');
   });
 
   it('no longer serves the removed SSO callback route', async () => {

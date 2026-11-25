@@ -4,6 +4,12 @@ export function responseStatus(error: unknown) {
   return axios.isAxiosError(error) ? error.response?.status : undefined;
 }
 
+// The backend rejected the credentials themselves. The axios interceptors only let a 401 through
+// after the token refresh failed or the retried request was still unauthorized.
+export function isSessionRejected(error: unknown) {
+  return responseStatus(error) === 401;
+}
+
 export function isClientError(error: unknown) {
   const status = responseStatus(error);
   return status !== undefined && status >= 400 && status < 500;

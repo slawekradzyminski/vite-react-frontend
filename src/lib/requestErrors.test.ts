@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { AxiosError, AxiosHeaders } from 'axios';
-import { describeCartError, retryServerErrors, serverFieldErrors, serverMessage } from './requestErrors';
+import { describeCartError, isSessionRejected, retryServerErrors, serverFieldErrors, serverMessage } from './requestErrors';
 
 const httpError = (status: number) =>
   new AxiosError('failed', 'ERR', undefined, undefined, {
@@ -75,5 +75,15 @@ describe('serverFieldErrors', () => {
 
   it('returns nothing for a network error without a response', () => {
     expect(serverFieldErrors(Object.assign(new Error('Network Error'), { isAxiosError: true }))).toEqual({});
+  });
+});
+
+describe('isSessionRejected', () => {
+  it('is true only for a 401 response', () => {
+    expect(isSessionRejected(httpError(401))).toBe(true);
+    expect(isSessionRejected(httpError(403))).toBe(false);
+    expect(isSessionRejected(httpError(503))).toBe(false);
+    expect(isSessionRejected(new AxiosError('Network Error', 'ERR_NETWORK'))).toBe(false);
+    expect(isSessionRejected(new Error('boom'))).toBe(false);
   });
 });
