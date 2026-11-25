@@ -29,7 +29,14 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
 
   const [conflict, setConflict] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const { data: productData, isLoading: isLoadingProduct, refetch: reloadProduct } = useQuery({
+  const {
+    data: productData,
+    isLoading: isLoadingProduct,
+    isError: productLoadFailed,
+    error: productLoadError,
+    isFetching: isFetchingProduct,
+    refetch: reloadProduct,
+  } = useQuery({
     queryKey: ['product', productId],
     queryFn: () => products.getProductById(Number(productId)),
     enabled: isEditMode,
@@ -100,6 +107,29 @@ export function AdminProductForm({ productId, onSuccess }: AdminProductFormProps
 
   if (isEditMode && isLoadingProduct) {
     return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="product-form-loading">Loading product data...</Surface>;
+  }
+
+  // Editing needs the product: without it the form would be empty yet editable.
+  if (isEditMode && !productData?.data) {
+    if (productLoadFailed && responseStatus(productLoadError) !== 404) {
+      return (
+        <Surface variant="muted" padding="message" className="text-center" data-testid="product-form-load-error">
+          <p className="text-lg font-semibold text-red-700" role="alert" data-testid="product-form-load-error-message">Unable to load the product</p>
+          <Button type="button" className="mt-4" onClick={() => reloadProduct()} disabled={isFetchingProduct} data-testid="product-form-retry">
+            {isFetchingProduct ? 'Retrying...' : 'Retry'}
+          </Button>
+        </Surface>
+      );
+    }
+    return (
+      <Surface variant="muted" padding="message" className="text-center" data-testid="product-form-not-found">
+        <p className="text-lg font-semibold text-slate-700" role="alert" data-testid="product-form-not-found-message">Product not found</p>
+        <p className="mt-2 text-sm text-slate-500">This product does not exist or may have been removed.</p>
+        <a href="/admin/products" className="mt-4 inline-block text-sm font-medium text-slate-900 underline" data-testid="product-form-not-found-back">
+          Back to products
+        </a>
+      </Surface>
+    );
   }
 
   return (

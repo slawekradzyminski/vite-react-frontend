@@ -9,6 +9,7 @@ import { PaymentStatusBadge } from './PaymentStatusBadge';
 import type { Order } from '../../types/order';
 import type { Payment } from '../../types/payment';
 import { useMe } from '../../hooks/useMe';
+import { formatDateTime } from '../../lib/commerceFormat';
 
 function PaymentFacts({ payment }: { payment: Payment }) {
   const failed = payment.status === 'FAILED' || payment.status === 'VOIDED';
@@ -80,7 +81,7 @@ export function OrderPaymentPanel({ order }: { order: Order }) {
           <ul className="space-y-2 text-sm" data-testid="order-payment-attempts">
             {list.map((payment) => (
               <li key={payment.id} className="flex flex-wrap items-center justify-between gap-2" data-testid={`order-payment-attempt-${payment.id}`}>
-                <span className="text-slate-700">{new Date(payment.createdAt).toLocaleString()} · {describeCard(payment)}</span>
+                <span className="text-slate-700">{formatDateTime(payment.createdAt)} · {describeCard(payment)}</span>
                 <span className="flex items-center gap-2">
                   <span className="text-slate-900">{formatMoney(payment.amount, payment.currency)}</span>
                   <PaymentStatusBadge status={payment.status} testId={`order-payment-attempt-status-${payment.id}`} />

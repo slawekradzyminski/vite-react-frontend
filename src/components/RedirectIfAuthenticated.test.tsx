@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { AxiosError, type AxiosResponse } from 'axios';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RedirectIfAuthenticated } from './RedirectIfAuthenticated';
@@ -10,6 +11,9 @@ vi.mock('../lib/api', () => ({
     me: vi.fn(),
   },
 }));
+
+const httpError = (status: number) =>
+  new AxiosError(`Request failed with status code ${status}`, 'ERR_BAD_RESPONSE', undefined, undefined, { status } as AxiosResponse);
 
 const renderAt = (entry: string) => {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -73,7 +77,7 @@ describe('RedirectIfAuthenticated', () => {
     localStorage.setItem('token', 'expired-token');
     localStorage.setItem('refreshToken', 'expired-refresh');
     localStorage.setItem('clientSessionId', 'expired-user-session-01');
-    vi.mocked(auth.me).mockRejectedValue(new Error('401'));
+    vi.mocked(auth.me).mockRejectedValue(httpError(401));
 
     // when
     renderAt('/login');
@@ -105,6 +109,32 @@ describe('RedirectIfAuthenticated', () => {
 
     // when
     renderAt(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+
+    // then
+    expect(await screen.findByText('Home')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['a 503', () => httpError(503)],
+    ['a network error', () => new AxiosError('Network Error', 'ERR_NETWORK')],
+  ])('keeps the tokens and offers a retry when the session check fails with %s', async (_label, makeError) => {
+    // given
+    localStorage.setItem('token', 'valid-token');
+    localStorage.setItem('refreshToken', 'valid-refresh');
+    vi.mocked(auth.me).mockRejectedValueOnce(makeError());
+
+    // when
+    renderAt('/login');
+
+    // then
+    expect(await screen.findByTestId('auth-redirect-error')).toBeInTheDocument();
+    expect(screen.getByText('Login form')).toBeInTheDocument();
+    expect(localStorage.getItem('token')).toBe('valid-token');
+    expect(localStorage.getItem('refreshToken')).toBe('valid-refresh');
+
+    // when the backend recovers
+    vi.mocked(auth.me).mockResolvedValue({ data: { username: 'client' } } as never);
+    fireEvent.click(screen.getByTestId('auth-redirect-retry'));
 
     // then
     expect(await screen.findByText('Home')).toBeInTheDocument();

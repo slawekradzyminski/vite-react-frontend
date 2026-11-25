@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { AxiosError, AxiosHeaders } from 'axios';
-import { describeCartError, retryServerErrors, serverFieldErrors, serverMessage } from './requestErrors';
+import { describeCartError, isSessionRejected, isTimeout, retryServerErrors, serverFieldErrors, serverMessage } from './requestErrors';
 
 const httpError = (status: number) =>
   new AxiosError('failed', 'ERR', undefined, undefined, {
@@ -14,6 +14,11 @@ const httpError = (status: number) =>
 describe('retryServerErrors', () => {
   it.each([400, 404, 409])('does not retry HTTP %i', (status) => {
     expect(retryServerErrors(0, httpError(status))).toBe(false);
+  });
+
+  it('does not retry a request that timed out', () => {
+    expect(retryServerErrors(0, new AxiosError('timeout of 15000ms exceeded', 'ECONNABORTED'))).toBe(false);
+    expect(retryServerErrors(0, new AxiosError('connect ETIMEDOUT', 'ETIMEDOUT'))).toBe(false);
   });
 
   it('retries server and network errors up to three times', () => {
@@ -75,5 +80,25 @@ describe('serverFieldErrors', () => {
 
   it('returns nothing for a network error without a response', () => {
     expect(serverFieldErrors(Object.assign(new Error('Network Error'), { isAxiosError: true }))).toEqual({});
+  });
+});
+
+describe('isSessionRejected', () => {
+  it('is true only for a 401 response', () => {
+    expect(isSessionRejected(httpError(401))).toBe(true);
+    expect(isSessionRejected(httpError(403))).toBe(false);
+    expect(isSessionRejected(httpError(503))).toBe(false);
+    expect(isSessionRejected(new AxiosError('Network Error', 'ERR_NETWORK'))).toBe(false);
+    expect(isSessionRejected(new Error('boom'))).toBe(false);
+  });
+});
+
+describe('isTimeout', () => {
+  it('recognises axios and OS timeouts only', () => {
+    expect(isTimeout(new AxiosError('timeout of 15000ms exceeded', 'ECONNABORTED'))).toBe(true);
+    expect(isTimeout(new AxiosError('connect ETIMEDOUT', 'ETIMEDOUT'))).toBe(true);
+    expect(isTimeout(new AxiosError('Network Error', 'ERR_NETWORK'))).toBe(false);
+    expect(isTimeout(httpError(504))).toBe(false);
+    expect(isTimeout(new Error('timeout'))).toBe(false);
   });
 });

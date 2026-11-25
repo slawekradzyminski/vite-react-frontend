@@ -13,6 +13,7 @@ import { Badge } from '../ui/badge';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
 import { useMoney } from '../../hooks/useMoney';
 import { describeCartError, responseStatus, retryServerErrors } from '../../lib/requestErrors';
+import { isProduct } from '../../lib/responseShape';
 
 const parseProductId = (value: string | undefined) => (value && /^[1-9]\d*$/.test(value) ? Number(value) : null);
 
@@ -29,14 +30,17 @@ export function ProductDetails() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: product, isLoading, error, refetch: refetchProduct } = useQuery({
+  const { data: product, isLoading, error, isFetching: isFetchingProduct, refetch: refetchProduct } = useQuery({
     queryKey: ['product', id],
     queryFn: () => products.getProductById(productId as number),
     enabled: productId !== null,
     retry: retryServerErrors,
   });
-  // Only a failed request other than 404 is a loading problem; everything else means the product does not exist.
-  const productMissing = productId === null || responseStatus(error) === 404 || (!error && !isLoading && !product?.data);
+  // Only an invalid id or a 404 means the product does not exist. Any other failed request, and a
+  // body without a usable id, name, price and stock level, is "Product unavailable": rendering it
+  // would show $NaN and an enabled Add to Cart.
+  const productMissing = productId === null || responseStatus(error) === 404;
+  const productValid = isProduct(product?.data);
 
   const signedIn = !!authStorage.getAccessToken();
   const { data: cartData, isLoading: isLoadingCart, isError: cartFailed, isFetching: isFetchingCart, refetch: refetchCart } = useQuery({
@@ -48,7 +52,7 @@ export function ProductDetails() {
   // Without a known cart the page cannot tell "Add" from "Update", so cart actions wait for it.
   const cartUnknown = signedIn && (isLoadingCart || cartFailed);
 
-  const loadFailed = !isLoading && (!!error || !product?.data);
+  const loadFailed = !isLoading && (!!error || !productValid);
   useDocumentTitle(isLoading ? 'Product details' : loadFailed ? (productMissing ? 'Product not found' : 'Product unavailable') : product?.data?.name);
 
   const cartItem = cartData?.data?.items?.find(item => item.productId === productId);
@@ -145,7 +149,7 @@ export function ProductDetails() {
     return <Surface variant="muted" padding="message" className="text-center text-slate-500" data-testid="product-loading">Loading product details...</Surface>;
   }
 
-  if (error || !product?.data) {
+  if (error || !product || !productValid) {
     return (
       <Surface variant="danger" padding="message" className="text-center" role="alert" data-testid="product-not-found">
         <h1 className="mb-2 text-2xl font-semibold text-red-800">{productMissing ? 'Product not found' : 'Product unavailable'}</h1>
@@ -154,6 +158,17 @@ export function ProductDetails() {
             ? 'This product does not exist or may have been removed.'
             : 'Error loading product details'}
         </p>
+        {!productMissing && (
+          <button
+            type="button"
+            onClick={() => refetchProduct()}
+            disabled={isFetchingProduct}
+            className="mb-4 mr-4 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-stone-50 transition hover:bg-slate-800 disabled:opacity-60"
+            data-testid="product-retry"
+          >
+            {isFetchingProduct ? 'Retrying...' : 'Retry'}
+          </button>
+        )}
         <Link to="/products" className="text-sm font-medium text-slate-900 underline-offset-4 hover:underline" data-testid="product-not-found-back-link">
           Back to Products
         </Link>

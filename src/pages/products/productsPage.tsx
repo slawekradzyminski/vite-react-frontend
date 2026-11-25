@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router';
 import { ProductList } from '../../components/products/ProductList';
 import { useQuery } from '@tanstack/react-query';
 import { products } from '../../lib/api';
+import { isProductList } from '../../lib/responseShape';
 import type { Product } from '../../types/product';
 import { Surface } from '../../components/ui/surface';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
@@ -37,7 +38,8 @@ function CatalogProductsPage() {
     queryFn: products.getAllProducts,
   });
   
-  const allProducts = data?.data && Array.isArray(data.data) ? data.data : [];
+  const allProducts = isProductList(data?.data) ? data.data : [];
+  const catalogueFailed = isError || (data !== undefined && !isProductList(data.data));
   
   const categories = [...new Set(allProducts.map((product: Product) => product.category))]
     .filter(Boolean)
@@ -54,7 +56,7 @@ function CatalogProductsPage() {
             <h2 className="mt-2 text-xl font-semibold text-slate-950" data-testid="products-categories-title">Categories</h2>
             {isLoading ? (
               <p className="mt-4 text-sm text-slate-500" data-testid="products-categories-loading">Loading categories...</p>
-            ) : isError ? (
+            ) : catalogueFailed ? (
               <p className="mt-4 text-sm text-red-600" data-testid="products-categories-error">Error loading categories</p>
             ) : categories.length === 0 ? (
               <p className="mt-4 text-sm text-slate-500" data-testid="products-categories-empty">No categories found (Total products: {allProducts.length})</p>

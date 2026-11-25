@@ -4,6 +4,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { productSearch } from '../../lib/api';
 import { retryServerErrors } from '../../lib/requestErrors';
+import { isProductSearchResult } from '../../lib/responseShape';
 import {
   MIN_RATING_OPTIONS,
   SEARCH_PAGE_SIZE,
@@ -152,7 +153,9 @@ export function ProductSearch() {
     ? searchValidationErrors(search.error.response.data)
     : {};
   const hasValidationErrors = Object.keys(validationErrors).length > 0;
-  const result = hasValidationErrors ? undefined : search.data;
+  // A body that is not a page of products is a failed load, not an empty result.
+  const malformed = !hasValidationErrors && search.data !== undefined && !isProductSearchResult(search.data);
+  const result = hasValidationErrors || malformed ? undefined : search.data;
   const items = (result?.content ?? []).map(toSearchProduct);
   const totalElements = result?.totalElements ?? 0;
   const totalPages = result?.totalPages ?? 0;
@@ -188,8 +191,15 @@ export function ProductSearch() {
     if (search.isLoading) {
       return <div className="rounded-[1.75rem] border border-stone-200/80 bg-white/84 px-6 py-12 text-center text-slate-500" data-testid="product-list-loading">Loading products...</div>;
     }
-    if (search.isError && !hasValidationErrors) {
-      return <div className="rounded-[1.75rem] border border-red-200 bg-red-50 px-6 py-12 text-center text-red-600" role="alert" data-testid="error-message">Error loading products</div>;
+    if ((search.isError && !hasValidationErrors) || malformed) {
+      return (
+        <div className="rounded-[1.75rem] border border-red-200 bg-red-50 px-6 py-12 text-center text-red-600">
+          <p role="alert" data-testid="error-message">Error loading products</p>
+          <button type="button" onClick={() => search.refetch()} disabled={search.isFetching} className="mt-4 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-stone-50 transition hover:bg-slate-800 disabled:opacity-60" data-testid="product-list-retry">
+            {search.isFetching ? 'Retrying...' : 'Retry'}
+          </button>
+        </div>
+      );
     }
     if (hasValidationErrors) return null;
     if (items.length === 0) {

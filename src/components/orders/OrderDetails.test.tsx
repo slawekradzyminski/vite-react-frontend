@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { OrderStatus } from '../../types/order';
 import { Role } from '../../types/auth';
 import { ToastContext } from '../../hooks/useToast';
-import type { AxiosResponse } from 'axios';
+import { AxiosError, type AxiosResponse } from 'axios';
 import type { Order } from '../../types/order';
 import type { User } from '../../types/auth';
 
@@ -129,6 +129,46 @@ describe('OrderDetails', () => {
       </QueryClientProvider>
     );
   };
+
+  describe('load failures', () => {
+    const httpError = (status: number) =>
+      new AxiosError(`Request failed with status code ${status}`, 'ERR_BAD_RESPONSE', undefined, undefined, { status, data: {} } as AxiosResponse);
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('shows "Order not found" for a 404', async () => {
+      vi.mocked(orders.getOrderById).mockRejectedValueOnce(httpError(404));
+      renderWithProviders();
+
+      expect(await screen.findByTestId('order-details-not-found')).toHaveTextContent('Order not found');
+      expect(screen.queryByTestId('order-details-error')).not.toBeInTheDocument();
+      expect(orders.getOrderById).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows an error with Retry instead of "Order not found" when the server fails with 500', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      // The first attempt and the three retries all fail.
+      [1, 2, 3, 4].forEach(() => vi.mocked(orders.getOrderById).mockRejectedValueOnce(httpError(500)));
+      renderWithProviders();
+
+      await vi.advanceTimersByTimeAsync(10_000);
+
+      expect(await screen.findByTestId('order-details-error-message')).toHaveTextContent('Unable to load the order');
+      expect(screen.queryByTestId('order-details-not-found')).not.toBeInTheDocument();
+    });
+
+    it('loads the order after Retry once the server recovers', async () => {
+      vi.mocked(orders.getOrderById).mockRejectedValueOnce(new AxiosError('timeout of 15000ms exceeded', 'ECONNABORTED'));
+      renderWithProviders();
+
+      fireEvent.click(await screen.findByTestId('order-details-retry'));
+
+      expect(await screen.findByText('Order #1')).toBeInTheDocument();
+      expect(screen.queryByTestId('order-details-error')).not.toBeInTheDocument();
+    });
+  });
 
   describe('delivery section', () => {
     afterEach(() => {

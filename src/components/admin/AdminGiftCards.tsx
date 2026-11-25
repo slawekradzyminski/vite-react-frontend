@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { adminGiftCards } from '../../lib/api';
 import { refetchAfterWrite } from '../../lib/queryRefresh';
 import { formatPrice } from '../../lib/format';
-import { formatDateTime, formatUtcDateTime, localInputToUtcIso, selectClassName } from '../../lib/commerceFormat';
+import { formatDateTime, localInputToUtcIso, selectClassName } from '../../lib/commerceFormat';
 import { fieldErrorId } from '../../lib/fieldError';
 import { serverMessage } from '../../lib/requestErrors';
 import { giftCardSchema, type GiftCardFormData } from '../../validators/adminCommerce';
@@ -95,7 +95,7 @@ function GiftCardDetails({ code, onClose }: { code: string | null; onClose: () =
             <div><dt className="text-xs uppercase text-slate-500">Status</dt><dd className="mt-1"><StatusBadge status={card.status} testId="admin-gift-card-details-status" /></dd></div>
             <div><dt className="text-xs uppercase text-slate-500">Balance</dt><dd className="mt-1 font-semibold" data-testid="admin-gift-card-details-balance">{formatPrice(card.balance ?? 0)} of {formatPrice(card.initialAmount ?? 0)}</dd></div>
             <div><dt className="text-xs uppercase text-slate-500">Recipient</dt><dd className="mt-1">{card.recipientUsername ?? '—'}</dd></div>
-            <div><dt className="text-xs uppercase text-slate-500">Expires</dt><dd className="mt-1" data-testid="admin-gift-card-details-expires">{formatUtcDateTime(card.expiresAt)}</dd></div>
+            <div><dt className="text-xs uppercase text-slate-500">Expires</dt><dd className="mt-1" data-testid="admin-gift-card-details-expires">{formatDateTime(card.expiresAt)}</dd></div>
             <div><dt className="text-xs uppercase text-slate-500">Issued by</dt><dd className="mt-1">{card.createdBy ?? '—'}</dd></div>
             <div><dt className="text-xs uppercase text-slate-500">Note</dt><dd className="mt-1">{card.note ?? '—'}</dd></div>
           </dl>
@@ -180,7 +180,7 @@ export function AdminGiftCards() {
                       <td className="px-4 py-3" data-testid={`admin-gift-card-balance-${card.code}`}>{formatPrice(card.balance ?? 0)}<span className="block text-xs text-slate-500">of {formatPrice(card.initialAmount ?? 0)}</span></td>
                       <td className="px-4 py-3"><StatusBadge status={card.status} testId={`admin-gift-card-status-${card.code}`} /></td>
                       <td className="px-4 py-3 text-slate-600">{card.recipientUsername ?? '—'}</td>
-                      <td className="px-4 py-3 text-slate-600" data-testid={`admin-gift-card-expires-${card.code}`}>{formatUtcDateTime(card.expiresAt)}</td>
+                      <td className="px-4 py-3 text-slate-600" data-testid={`admin-gift-card-expires-${card.code}`}>{formatDateTime(card.expiresAt)}</td>
                       <td className="px-4 py-3 text-right"><Button variant="outline" size="sm" onClick={() => setSelected(card.code as string)} aria-label={`Details of gift card ${card.code}`} data-testid={`admin-gift-card-view-${card.code}`}>Details</Button></td>
                     </tr>
                   ))}

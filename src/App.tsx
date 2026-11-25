@@ -1,15 +1,17 @@
 import { BrowserRouter, useLocation } from 'react-router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { ArrowUpRight, Coffee, UserRound } from 'lucide-react';
 import { AppRoutes } from './AppRoutes';
 import { ToastProvider } from './components/ui/ToastProvider';
 import { Navigation } from './components/layout/Navigation';
+import { AppErrorBoundary } from './components/layout/AppErrorBoundary';
 import { Button } from './components/ui/button';
 import { brandMarkSrc } from './lib/brandingAssets';
+import { createAppQueryClient } from './lib/queryClient';
 import { Theme } from '@radix-ui/themes';
 import '@radix-ui/themes/styles.css';
 
-const queryClient = new QueryClient();
+const queryClient = createAppQueryClient();
 
 const footerLinks = [
   {
@@ -55,8 +57,11 @@ function AppShell() {
       <Navigation />
       <main className={`mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 lg:px-8 ${isAuthPage ? 'py-2' : 'py-6'}`} data-testid="app-main">
         {/* Each path gets a fresh page (also between /admin/products/new and /edit/5); the toasts
-            and the navigation live outside it and survive the change. */}
-        <AppRoutes key={location.pathname} />
+            and the navigation live outside it and survive the change. The error boundary is keyed
+            the same way, so a page that failed to render is retried after navigating elsewhere. */}
+        <AppErrorBoundary key={location.pathname} testIdPrefix="route-error">
+          <AppRoutes />
+        </AppErrorBoundary>
       </main>
       <footer className="border-t border-stone-200/80 bg-stone-50/82" data-testid="app-footer">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8" data-testid="app-footer-content">

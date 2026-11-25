@@ -177,16 +177,57 @@ describe('ProductDetails', () => {
     expect(document.title).toBe('Product details – Awesome Testing');
   });
 
-  it('treats a response without product data as not found', () => {
+  it('treats a successful response without product data as unavailable, not as not found', () => {
     // given
-    (useQuery as any).mockImplementation(() => ({ data: null, isLoading: false, error: null }));
+    (useQuery as any).mockImplementation(() => ({ data: { data: '' }, isLoading: false, error: null }));
 
     // when
     renderWithProviders(<ProductDetails />);
 
     // then
-    expect(screen.getByRole('alert')).toHaveTextContent('Product not found');
-    expect(document.title).toBe('Product not found – Awesome Testing');
+    expect(screen.getByRole('alert')).toHaveTextContent('Product unavailable');
+    expect(document.title).toBe('Product unavailable – Awesome Testing');
+  });
+
+  it.each([
+    ['a string price', { price: 'abc' }],
+    ['a missing price', { price: undefined }],
+    ['a localised name object', { name: { en: 'iPhone' } }],
+    ['a missing stock level', { stockQuantity: undefined }],
+  ])('shows "Product unavailable" with Retry instead of $NaN and Add to Cart for %s', (_label, overrides) => {
+    // given
+    const refetch = vi.fn().mockResolvedValue({});
+    (useQuery as any).mockImplementation(({ queryKey }) => (queryKey[0] === 'product'
+      ? { data: { data: { ...mockProduct.data, ...overrides } }, isLoading: false, error: null, refetch, isFetching: false }
+      : { data: null, isLoading: false, error: null }));
+
+    // when
+    renderWithProviders(<ProductDetails />);
+
+    // then
+    expect(screen.getByRole('heading', { level: 1, name: 'Product unavailable' })).toBeInTheDocument();
+    expect(screen.queryByText(/NaN/)).not.toBeInTheDocument();
+    expect(screen.queryByTestId('add-to-cart')).not.toBeInTheDocument();
+
+    // when
+    fireEvent.click(screen.getByTestId('product-retry'));
+
+    // then
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('offers no Retry for a product that does not exist', () => {
+    // given
+    (useQuery as any).mockImplementation(({ queryKey }) => (queryKey[0] === 'product'
+      ? { data: undefined, isLoading: false, error: Object.assign(new Error('Not found'), { isAxiosError: true, response: { status: 404 } }) }
+      : { data: null, isLoading: false, error: null }));
+
+    // when
+    renderWithProviders(<ProductDetails />);
+
+    // then
+    expect(screen.getByRole('heading', { level: 1, name: 'Product not found' })).toBeInTheDocument();
+    expect(screen.queryByTestId('product-retry')).not.toBeInTheDocument();
   });
 
   it('shows error message when product fetch fails', () => {

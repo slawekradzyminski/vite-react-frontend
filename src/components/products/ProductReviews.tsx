@@ -11,6 +11,7 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Surface } from '../ui/surface';
 import { Textarea } from '../ui/textarea';
+import { formatDate } from '../../lib/commerceFormat';
 
 function Stars({ rating, testId }: { rating: number; testId: string }) {
   return (
@@ -158,7 +159,7 @@ export function ProductReviews({ productId }: { productId: number }) {
           <article key={review.id} className="border-t border-stone-100 pt-4" data-testid={`review-${review.id}`}>
             <div className="flex items-center justify-between gap-2">
               <Stars rating={review.rating ?? 0} testId={`review-stars-${review.id}`} />
-              <span className="text-xs text-slate-500">{review.username} · {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : ''}</span>
+              <span className="text-xs text-slate-500">{review.username} · {review.createdAt ? formatDate(review.createdAt) : ''}</span>
             </div>
             <p className="mt-1 font-medium text-slate-900">{review.title}</p>
             <p className="mt-1 whitespace-pre-line text-sm text-slate-600">{review.body}</p>

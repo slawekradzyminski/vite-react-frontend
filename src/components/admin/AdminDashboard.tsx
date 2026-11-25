@@ -7,6 +7,7 @@ import { Surface } from '../ui/surface';
 import { Badge } from '../ui/badge';
 import { AdminSectionNav } from './AdminSectionNav';
 import { isPaymentEnabled } from '../../lib/runtimeConfig';
+import { formatDate, parseUtcDateTime } from '../../lib/commerceFormat';
 
 const settingsLinks = [
   { label: 'Gift cards', path: '/admin/gift-cards', testId: 'admin-dashboard-gift-cards-link', hint: 'Issue cards and review their ledger' },
@@ -90,7 +91,7 @@ export function AdminDashboard() {
   
   // Get recent orders (last 5)
   const recentOrders = [...orderList]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sort((a, b) => parseUtcDateTime(b.createdAt).getTime() - parseUtcDateTime(a.createdAt).getTime())
     .slice(0, 5);
   
   return (
@@ -173,7 +174,7 @@ export function AdminDashboard() {
                   <div>
                     <p className="font-medium text-slate-900" data-testid={`admin-dashboard-order-id-${order.id}`}>Order #{order.id}</p>
                     <p className="text-sm text-slate-500" data-testid={`admin-dashboard-order-date-${order.id}`}>
-                      {new Date(order.createdAt).toLocaleDateString()}
+                      {formatDate(order.createdAt)}
                     </p>
                   </div>
                   <div className="text-right">

@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProtectedRoute } from './ProtectedRoute';
 import { auth } from '../lib/api';
 import { Role } from '../types/auth';
-import type { AxiosResponse } from 'axios';
+import { AxiosError, type AxiosResponse } from 'axios';
 import type { User } from '../types/auth';
 
 vi.mock('../lib/api', () => ({
@@ -21,6 +21,9 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+const httpError = (status: number) =>
+  new AxiosError(`Request failed with status code ${status}`, 'ERR_BAD_RESPONSE', undefined, undefined, { status } as AxiosResponse);
 
 const TestComponent = () => <div>Protected Content</div>;
 
@@ -142,10 +145,10 @@ const fulfillAuth = (
   });
 
   // given
-  it('redirects to login when API call fails', async () => {
+  it('redirects to login when the backend rejects the session with 401', async () => {
     // when
     localStorage.setItem('token', 'fake-token');
-    vi.mocked(auth.me).mockRejectedValue(new Error('Unauthorized'));
+    vi.mocked(auth.me).mockRejectedValue(httpError(401));
 
     renderWithProviders(
       <ProtectedRoute>
@@ -157,6 +160,39 @@ const fulfillAuth = (
     await waitFor(() => {
       expect(screen.getByText('Login Page')).toBeInTheDocument();
     });
+  });
+
+  it.each([
+    ['a 503', () => httpError(503)],
+    ['a network error', () => new AxiosError('Network Error', 'ERR_NETWORK')],
+    ['a timeout', () => new AxiosError('timeout of 15000ms exceeded', 'ECONNABORTED')],
+  ])('keeps the session and offers a retry when the user check fails with %s', async (_label, makeError) => {
+    // given
+    localStorage.setItem('token', 'fake-token');
+    localStorage.setItem('refreshToken', 'fake-refresh');
+    vi.mocked(auth.me).mockRejectedValueOnce(makeError());
+
+    renderWithProviders(
+      <ProtectedRoute>
+        <TestComponent />
+      </ProtectedRoute>
+    );
+
+    // then
+    expect(await screen.findByTestId('protected-route-error-message')).toBeInTheDocument();
+    expect(screen.queryByText('Login Page')).not.toBeInTheDocument();
+    expect(localStorage.getItem('token')).toBe('fake-token');
+    expect(localStorage.getItem('refreshToken')).toBe('fake-refresh');
+
+    expect(screen.getByTestId('protected-route-retry')).toHaveTextContent('Retry');
+    expect(screen.getByTestId('protected-route-retry')).toBeEnabled();
+
+    // when the backend recovers
+    vi.mocked(auth.me).mockResolvedValue(fulfillAuth([Role.CLIENT]));
+    fireEvent.click(screen.getByTestId('protected-route-retry'));
+
+    // then
+    expect(await screen.findByText('Protected Content')).toBeInTheDocument();
   });
 
   it('shows loading indicator while fetching user data', async () => {

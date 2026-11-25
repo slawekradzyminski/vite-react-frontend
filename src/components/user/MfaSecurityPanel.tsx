@@ -10,6 +10,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Surface } from '../ui/surface';
+import { formatTime } from '../../lib/commerceFormat';
 
 type ActiveAction = 'setup' | 'regenerate' | 'disable' | null;
 type BusyAction = Exclude<ActiveAction, null> | 'confirm' | null;
@@ -193,7 +194,7 @@ export function MfaSecurityPanel() {
                     <Copy className="h-4 w-4" aria-hidden="true" />
                   </Button>
                 </div>
-                <p className="mt-2 text-xs text-slate-500">Setup expires {new Date(setup.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.</p>
+                <p className="mt-2 text-xs text-slate-500">Setup expires {formatTime(setup.expiresAt, { hour: '2-digit', minute: '2-digit' })}.</p>
               </div>
               <form className="space-y-3" onSubmit={confirmSetup} data-testid="mfa-confirm-form">
                 <div>

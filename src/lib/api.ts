@@ -103,8 +103,15 @@ import {
 } from './runtimeConfig';
 import { withTrackedWrites } from './pendingWrites';
 
+// Without a timeout a hung request keeps the UI in "Signing in..." or "Loading..." forever.
+// Streams (LLM chat and generate) use fetch and are not affected; slow admin CSV transfers
+// override it per request.
+export const DEFAULT_REQUEST_TIMEOUT_MS = 15_000;
+const CSV_TRANSFER_TIMEOUT_MS = 120_000;
+
 const api = axios.create({
   baseURL: getApiBaseUrl(),
+  timeout: DEFAULT_REQUEST_TIMEOUT_MS,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -114,6 +121,7 @@ const api = axios.create({
 // warehouse-service. It accepts the backend's tokens, so it shares the auth interceptors.
 const warehouseApi = axios.create({
   baseURL: getWarehouseApiBaseUrl(),
+  timeout: DEFAULT_REQUEST_TIMEOUT_MS,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -122,6 +130,7 @@ const warehouseApi = axios.create({
 // Card payments live in payment-service, which also accepts the backend's tokens.
 const paymentApi = axios.create({
   baseURL: getPaymentApiBaseUrl(),
+  timeout: DEFAULT_REQUEST_TIMEOUT_MS,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -131,6 +140,7 @@ const paymentApi = axios.create({
 // also accepts the backend's tokens.
 const notificationApi = axios.create({
   baseURL: getNotificationApiBaseUrl(),
+  timeout: DEFAULT_REQUEST_TIMEOUT_MS,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -212,11 +222,20 @@ const redirectToLogin = () => {
   window.location.href = '/login';
 };
 
+// Only the refresh endpoint's own rejection proves the refresh token is no longer valid. A
+// network error, a timeout or a 5xx says nothing about it, so the tokens are kept and the
+// request fails like any other.
+const REFRESH_TOKEN_REJECTED: readonly (number | undefined)[] = [400, 401, 403];
+const isRefreshTokenRejected = (error: unknown) =>
+  REFRESH_TOKEN_REJECTED.includes((error as { response?: { status?: number } } | null | undefined)?.response?.status);
+
 // Applied to every instance so each one sends the session and bearer headers and retries
-// its own requests after a shared token refresh. Only the backend owns the session: a 401 or
-// 403 from it signs the user out. warehouse-, payment- and notification-service only accept the
-// backend's tokens, so a 403 from them (someone else's order, a missing role) or a 401 that
-// survives a successful refresh is their own answer and must not end the session.
+// its own requests after a shared token refresh. Only a 401 ends the session. A 403 is a
+// business or authorization answer (a review by someone who did not receive the product, a
+// missing role, someone else's order) and is surfaced to the caller. Only the backend owns the
+// session: a 401 from it that survives the refresh signs the user out. warehouse-, payment- and
+// notification-service only accept the backend's tokens, so a 401 from them after a successful
+// refresh is their own answer and must not end the session.
 const installAuthInterceptors = (instance: AxiosInstance, ownsSession: boolean) => {
   instance.interceptors.request.use((config) => {
     config.headers = config.headers ?? {};
@@ -242,7 +261,9 @@ const installAuthInterceptors = (instance: AxiosInstance, ownsSession: boolean) 
       const status = error.response?.status;
       const originalRequest = error.config as RefreshableRequestConfig | undefined;
       if (originalRequest && isRefreshEndpoint(originalRequest.url)) {
-        redirectToLogin();
+        if (isRefreshTokenRejected(error)) {
+          redirectToLogin();
+        }
         return Promise.reject(error);
       }
 
@@ -262,15 +283,15 @@ const installAuthInterceptors = (instance: AxiosInstance, ownsSession: boolean) 
             };
             return instance(originalRequest);
           } catch (refreshError) {
-            redirectToLogin();
+            if (isRefreshTokenRejected(refreshError)) {
+              redirectToLogin();
+            }
             return Promise.reject(refreshError);
           }
         }
       }
 
-      const sessionRejected = ownsSession
-        ? status === 401 || status === 403
-        : status === 401 && !originalRequest?._retry;
+      const sessionRejected = status === 401 && (ownsSession || !originalRequest?._retry);
       if (sessionRejected) {
         redirectToLogin();
       }
@@ -305,11 +326,13 @@ const streamWithAuth = async (path: string, payload: unknown) => {
   if (response.status === 401) {
     const refreshToken = authStorage.getRefreshToken();
     if (refreshToken) {
-      let tokens: TokenPair;
-      try {
-        tokens = await enqueueRefresh(refreshToken);
-      } catch {
-        redirectToLogin();
+      const tokens = await enqueueRefresh(refreshToken).catch((refreshError: unknown) => {
+        if (isRefreshTokenRejected(refreshError)) {
+          redirectToLogin();
+        }
+        return null;
+      });
+      if (!tokens) {
         throw new Error('Failed to refresh session');
       }
 
@@ -319,7 +342,7 @@ const streamWithAuth = async (path: string, payload: unknown) => {
   }
 
   if (!response.ok) {
-    if (response.status === 401 || response.status === 403) {
+    if (response.status === 401) {
       redirectToLogin();
     }
     throw new Error(`Failed to fetch stream: ${response.statusText}`);
@@ -565,13 +588,14 @@ export const wishlist = {
 };
 
 export const catalogCsv = {
-  export: () => api.get<Blob>(`${ADMIN_API}/products/export`, { responseType: 'blob', headers: { Accept: 'text/csv' } }),
+  export: () => api.get<Blob>(`${ADMIN_API}/products/export`, { responseType: 'blob', headers: { Accept: 'text/csv' }, timeout: CSV_TRANSFER_TIMEOUT_MS }),
   import: (file: File, dryRun: boolean) => {
     const body = new FormData();
     body.append('file', file);
     return api.post<ImportReport>(`${ADMIN_API}/products/import`, body, {
       params: { dryRun },
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: CSV_TRANSFER_TIMEOUT_MS,
     });
   },
 };

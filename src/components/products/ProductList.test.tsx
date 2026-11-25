@@ -264,6 +264,29 @@ describe('ProductList', () => {
     expect(screen.getByText(/Error loading products/i)).toBeInTheDocument();
   });
 
+  it.each([
+    ['an HTML error page', '<html>502 Bad Gateway</html>'],
+    ['an object instead of a list', { content: [] }],
+    ['a product with a localised name object', [{ id: 1, name: { en: 'iPhone' }, price: 1, stockQuantity: 1 }]],
+  ])('shows an error with Retry instead of "No products found" for %s', async (_label, body) => {
+    // given
+    const refetch = vi.fn();
+    (useQuery as any).mockReturnValue({ data: { data: body }, isLoading: false, error: null, refetch, isFetching: false });
+
+    // when
+    renderProductList();
+
+    // then
+    expect(screen.getByTestId('error-message')).toHaveTextContent('Error loading products');
+    expect(screen.queryByText(/No products found/i)).not.toBeInTheDocument();
+
+    // when
+    await userEvent.setup().click(screen.getByTestId('product-list-retry'));
+
+    // then
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
   it('displays no products found message when filtered results are empty', async () => {
     // given
     renderProductList({ category: 'NonExistentCategory' });

@@ -4,14 +4,26 @@ export function responseStatus(error: unknown) {
   return axios.isAxiosError(error) ? error.response?.status : undefined;
 }
 
+// The backend rejected the credentials themselves. The axios interceptors only let a 401 through
+// after the token refresh failed or the retried request was still unauthorized.
+export function isSessionRejected(error: unknown) {
+  return responseStatus(error) === 401;
+}
+
 export function isClientError(error: unknown) {
   const status = responseStatus(error);
   return status !== undefined && status >= 400 && status < 500;
 }
 
-// Retrying a 4xx only delays the error the user will see anyway (BUG-006).
+// The request was aborted by the axios timeout (ECONNABORTED) or the OS (ETIMEDOUT).
+export function isTimeout(error: unknown) {
+  return axios.isAxiosError(error) && (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT');
+}
+
+// Retrying a 4xx only delays the error the user will see anyway (BUG-006). A timeout has already
+// kept the user waiting for the full request timeout, so it is not retried either.
 export function retryServerErrors(failureCount: number, error: unknown) {
-  return !isClientError(error) && failureCount < 3;
+  return !isClientError(error) && !isTimeout(error) && failureCount < 3;
 }
 
 export function describeCartError(error: unknown, fallback: string) {
