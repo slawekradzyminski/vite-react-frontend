@@ -31,6 +31,23 @@ describe('LoyaltyTransactions', () => {
     expect(loyalty.transactions).toHaveBeenCalledWith(0, 10);
   });
 
+  it('shows a naive backend timestamp as UTC in the browser zone', async () => {
+    // given: the backend sends 19:30:50 UTC without an offset; in Warsaw (CET) that is 20:30:50
+    const originalZone = process.env.TZ;
+    process.env.TZ = 'Europe/Warsaw';
+    try {
+      vi.mocked(loyalty.transactions).mockResolvedValue(page(0, 1, [
+        { id: 9, type: 'EARNED', points: 5, balanceAfter: 5, orderId: null, createdAt: '2026-11-24T19:30:50.189678' },
+      ]));
+      // when
+      renderWithRoute(<LoyaltyTransactions />);
+      // then
+      expect(await screen.findByTestId('loyalty-transaction-9')).toHaveTextContent(new Date(2026, 10, 24, 20, 30, 50).toLocaleString());
+    } finally {
+      process.env.TZ = originalZone;
+    }
+  });
+
   it('pages through the history', async () => {
     // given
     vi.mocked(loyalty.transactions)

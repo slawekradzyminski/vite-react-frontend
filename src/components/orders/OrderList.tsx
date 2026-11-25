@@ -6,6 +6,7 @@ import { Order, OrderStatus } from '../../types/order';
 import { Badge } from '../ui/badge';
 import { isPaymentEnabled } from '../../lib/runtimeConfig';
 import { useMoney } from '../../hooks/useMoney';
+import { formatDate } from '../../lib/commerceFormat';
 
 export function OrderList() {
   const { formatMoney } = useMoney();
@@ -100,7 +101,7 @@ export function OrderList() {
               <div>
                 <h3 className="font-semibold text-slate-950" data-testid={`order-id-${order.id}`}>Order #{order.id}</h3>
                 <p className="text-sm text-slate-500" data-testid={`order-date-${order.id}`}>
-                  Placed on {new Date(order.createdAt).toLocaleDateString()}
+                  Placed on {formatDate(order.createdAt)}
                 </p>
               </div>
               <div>

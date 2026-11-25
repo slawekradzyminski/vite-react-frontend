@@ -6,7 +6,7 @@ import { formatPrice } from '../../lib/format';
 import { serverMessage } from '../../lib/requestErrors';
 import { type CouponForm, validateCouponForm } from '../../lib/commerceValidation';
 import type { Coupon, CouponRequest, CouponType } from '../../types/commerce';
-import { formatUtcDateTime, localInputToUtcIso, selectClassName, utcToLocalInput } from '../../lib/commerceFormat';
+import { formatDateTime, localInputToUtcIso, selectClassName, utcToLocalInput } from '../../lib/commerceFormat';
 import { PageHeader, StatusBadge } from '../commerce/shared';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -89,7 +89,7 @@ export function AdminCoupons() {
                     <td className="px-4 py-3"><span className="font-semibold text-slate-950" data-testid={`coupon-code-${coupon.id}`}>{coupon.code}</span><p className="text-xs text-slate-500">{coupon.description}</p></td>
                     <td className="px-4 py-3">{describeValue(coupon)}{coupon.minOrderAmount != null && <span className="block text-xs text-slate-500">from {formatPrice(coupon.minOrderAmount)}</span>}</td>
                     <td className="px-4 py-3" data-testid={`coupon-usage-${coupon.id}`}>{coupon.redemptionCount}{coupon.maxRedemptions != null ? ` / ${coupon.maxRedemptions}` : ''}<span className="block text-xs text-slate-500">{coupon.perUserLimit} per user</span></td>
-                    <td className="px-4 py-3"><StatusBadge status={coupon.status} testId={`coupon-status-${coupon.id}`} />{coupon.validUntil && <span className="block text-xs text-slate-500">until {formatUtcDateTime(coupon.validUntil)}</span>}</td>
+                    <td className="px-4 py-3"><StatusBadge status={coupon.status} testId={`coupon-status-${coupon.id}`} />{coupon.validUntil && <span className="block text-xs text-slate-500">until {formatDateTime(coupon.validUntil)}</span>}</td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-2">
                         <Button variant="outline" size="sm" onClick={() => edit(coupon)} data-testid={`coupon-edit-${coupon.id}`}>Edit</Button>

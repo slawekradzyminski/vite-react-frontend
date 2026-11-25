@@ -10,6 +10,7 @@ import { trafficPresentation } from '../../lib/trafficPresentation';
 import { authStorage } from '../../lib/authStorage';
 import { Surface } from '../../components/ui/surface';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle';
+import { formatTime, parseUtcDateTime } from '../../lib/commerceFormat';
 
 type TrafficEventView = TrafficEventDto & { eventKey: string };
 
@@ -61,7 +62,7 @@ export function TrafficMonitorPage() {
         stompClient.subscribe(topic, (message) => {
           try {
             const event: TrafficEventDto = JSON.parse(message.body);
-            const eventTimestamp = event.timestamp ? Date.parse(event.timestamp) : null;
+            const eventTimestamp = event.timestamp ? parseUtcDateTime(event.timestamp).getTime() : null;
             eventSequenceRef.current += 1;
             const eventWithKey: TrafficEventView = {
               ...event,
@@ -200,7 +201,7 @@ export function TrafficMonitorPage() {
                       {event.durationMs}ms
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500" data-testid={`traffic-event-time-${index}`}>
-                      {new Date(event.timestamp).toLocaleTimeString()}
+                      {formatTime(event.timestamp)}
                     </td>
                   </tr>;
                 })}

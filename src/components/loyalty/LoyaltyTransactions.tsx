@@ -5,6 +5,7 @@ import { loyalty } from '../../lib/api';
 import { LOYALTY_TRANSACTIONS_QUERY_KEY } from '../../lib/tenderQueryKeys';
 import { formatPoints } from '../../lib/payment';
 import { StatusBadge } from '../commerce/shared';
+import { formatDateTime } from '../../lib/commerceFormat';
 
 const PAGE_SIZE = 10;
 
@@ -43,7 +44,7 @@ export function LoyaltyTransactions() {
               const points = entry.points ?? 0;
               return (
                 <tr key={entry.id} data-testid={`loyalty-transaction-${entry.id}`}>
-                  <td className="whitespace-nowrap px-4 py-2 text-slate-600">{entry.createdAt ? new Date(entry.createdAt).toLocaleString() : '—'}</td>
+                  <td className="whitespace-nowrap px-4 py-2 text-slate-600">{formatDateTime(entry.createdAt)}</td>
                   <td className="px-4 py-2"><StatusBadge status={entry.type} testId={`loyalty-transaction-type-${entry.id}`} /></td>
                   <td className="px-4 py-2">
                     {entry.orderId
