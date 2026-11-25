@@ -633,7 +633,7 @@ describe('API Client', () => {
       });
     });
 
-    it('redirects on 403 without trying to refresh the token', async () => {
+    it('keeps the session on a backend 403 and passes it to the caller', async () => {
       const errorInterceptor = getErrorInterceptor();
       localStorage.setItem('token', 'valid-token');
       localStorage.setItem('refreshToken', 'refresh-123');
@@ -641,17 +641,21 @@ describe('API Client', () => {
       const originalLocation = window.location;
       Object.defineProperty(window, 'location', {
         configurable: true,
-        value: { href: 'http://localhost/' } as Location,
+        value: { href: 'http://localhost/products/3' } as Location,
       });
 
+      // A business rule, not a session problem: the backend refuses a review from someone who
+      // did not receive the product.
       const error = {
-        config: { url: '/api/v1/orders/admin', headers: {} },
-        response: { status: 403 },
+        config: { url: '/api/v1/products/3/reviews', headers: {} },
+        response: { status: 403, data: { message: 'Only customers who received this product can review it' } },
       };
       await expect(errorInterceptor(error as any)).rejects.toBe(error as any);
 
       expect(refreshSpy).not.toHaveBeenCalled();
-      expect(window.location.href).toBe('/login');
+      expect(localStorage.getItem('token')).toBe('valid-token');
+      expect(localStorage.getItem('refreshToken')).toBe('refresh-123');
+      expect(window.location.href).toBe('http://localhost/products/3');
       refreshSpy.mockRestore();
       Object.defineProperty(window, 'location', {
         configurable: true,
@@ -801,7 +805,7 @@ describe('API Client', () => {
       });
     });
 
-    it('clears auth and redirects when a stream is forbidden', async () => {
+    it('keeps the session when a stream is forbidden', async () => {
       vi.mocked(global.fetch).mockResolvedValue(
         new Response(null, { status: 403, statusText: 'Forbidden' })
       );
@@ -813,8 +817,8 @@ describe('API Client', () => {
       });
 
       await expect(ollama.generate(requestBody)).rejects.toThrow('Failed to fetch stream: Forbidden');
-      expect(localStorage.getItem('token')).toBeNull();
-      expect(window.location.href).toBe('/login');
+      expect(localStorage.getItem('token')).toBe('abc');
+      expect(window.location.href).toBe('http://localhost/');
 
       Object.defineProperty(window, 'location', {
         configurable: true,
@@ -1146,6 +1150,19 @@ describe('warehouse-service API client', () => {
     expect(mockWarehouseAxios).not.toHaveBeenCalled();
     expect(localStorage.getItem('token')).toBeNull();
     expect(window.location.href).toBe('/login');
+  });
+
+  it('keeps the refreshed session when warehouse-service still answers 401 after the retry', async () => {
+    localStorage.setItem('token', 'fresh-token');
+    localStorage.setItem('refreshToken', 'refresh-123');
+    const refreshSpy = vi.spyOn(auth, 'refresh');
+    const error = { config: { url: '/api/v1/admin/suppliers', headers: {}, _retry: true }, response: { status: 401 } };
+
+    await expect(mockWarehouseAxios.responseErrorInterceptor(error)).rejects.toBe(error);
+
+    expect(refreshSpy).not.toHaveBeenCalled();
+    expect(localStorage.getItem('token')).toBe('fresh-token');
+    expect(window.location.href).toBe('http://localhost/');
   });
 
   it('keeps the session on a warehouse 403 without refreshing', async () => {

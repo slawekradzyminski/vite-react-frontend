@@ -213,10 +213,12 @@ const redirectToLogin = () => {
 };
 
 // Applied to every instance so each one sends the session and bearer headers and retries
-// its own requests after a shared token refresh. Only the backend owns the session: a 401 or
-// 403 from it signs the user out. warehouse-, payment- and notification-service only accept the
-// backend's tokens, so a 403 from them (someone else's order, a missing role) or a 401 that
-// survives a successful refresh is their own answer and must not end the session.
+// its own requests after a shared token refresh. Only a 401 ends the session. A 403 is a
+// business or authorization answer (a review by someone who did not receive the product, a
+// missing role, someone else's order) and is surfaced to the caller. Only the backend owns the
+// session: a 401 from it that survives the refresh signs the user out. warehouse-, payment- and
+// notification-service only accept the backend's tokens, so a 401 from them after a successful
+// refresh is their own answer and must not end the session.
 const installAuthInterceptors = (instance: AxiosInstance, ownsSession: boolean) => {
   instance.interceptors.request.use((config) => {
     config.headers = config.headers ?? {};
@@ -268,9 +270,7 @@ const installAuthInterceptors = (instance: AxiosInstance, ownsSession: boolean) 
         }
       }
 
-      const sessionRejected = ownsSession
-        ? status === 401 || status === 403
-        : status === 401 && !originalRequest?._retry;
+      const sessionRejected = status === 401 && (ownsSession || !originalRequest?._retry);
       if (sessionRejected) {
         redirectToLogin();
       }
@@ -319,7 +319,7 @@ const streamWithAuth = async (path: string, payload: unknown) => {
   }
 
   if (!response.ok) {
-    if (response.status === 401 || response.status === 403) {
+    if (response.status === 401) {
       redirectToLogin();
     }
     throw new Error(`Failed to fetch stream: ${response.statusText}`);
